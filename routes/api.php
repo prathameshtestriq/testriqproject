@@ -35,12 +35,15 @@ Route::controller(LoginController::class)->group(function () {
 });
 
 Route::controller(EventController::class)->group(function () {
+    Route::post('get_data_location_wise', 'get_data_location_wise');
+
     Route::post('events', 'getEvents');
 });
 
 Route::controller(UserController::class)->group(function () {
     Route::get('get_profile', 'getProfile');
     Route::post('edit_profile', 'editProfile');
+    Route::post('add_new_user','addnewuser');
 });
 
 

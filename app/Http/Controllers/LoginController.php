@@ -11,10 +11,16 @@ use Illuminate\Support\Facades\Validator;
 use App\Libraries\Authenticate;
 use App\Libraries\SmsApis;
 use App\Libraries\Emails;
+use App\Models\UserRight;
+
 
 class LoginController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->admin_user_rights = new UserRight();
+    }
     public function validate_request($request)
     {
         // dd($request);
@@ -141,7 +147,7 @@ class LoginController extends Controller
 
                                             $value->address_proof_doc_upload = (!empty($value->address_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->address_proof_doc_upload . '' : '';
 
-
+                                            $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
                                             // $value->dob = isset($value->dob) ? date("d-m-Y", strtotime($value->dob)) : "";
                                         }
 
@@ -149,8 +155,10 @@ class LoginController extends Controller
                                         // dd($ResponseData['details']);
                                         $SQL = 'UPDATE Users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                                         DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
-                                        #MODULES OF USER ON BASIS OF TYPE
-                                        // $Modules = Modules::whereIn('type', explode(',', $
+
+                                        #MODULES OF USER ON BASIS OF ITS ROLE
+                                        $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->superadmin);
+                                        $ResponseData['modules'] = $aModules;
 
                                         $ResposneCode = 200;
                                         $message = 'Registered Successfully';
@@ -248,7 +256,7 @@ class LoginController extends Controller
 
                                 $value->address_proof_doc_upload = (!empty($value->address_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->address_proof_doc_upload . '' : '';
 
-
+                                $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
                                 // $value->dob = isset($value->dob) ? date("d-m-Y", strtotime($value->dob)) : "";
                             }
 
@@ -256,6 +264,11 @@ class LoginController extends Controller
                             // dd($ResponseData['details']);
                             $SQL = 'UPDATE Users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                             DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
+
+
+                            #MODULES OF USER ON BASIS OF ITS ROLE
+                            $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->superadmin);
+                            $ResponseData['modules'] = $aModules;
 
                             $message = 'Login Successfully';
                             $ResposneCode = 200;
@@ -294,7 +307,6 @@ class LoginController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
-
 
     public function GoogleSignUp(Request $request)
     {
@@ -355,13 +367,18 @@ class LoginController extends Controller
                                         // $value->barcode_image = (!empty($value->barcode_image)) ? env('ATHLETE_BARCODE_PATH') . $value->barcode_image . '' : "";
 
                                         $value->profile_pic = (!empty($value->profile_pic)) ? env('ATHLETE_PROFILE_PATH') . $value->profile_pic . '' : '';
+                                        $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
 
                                         // $value->dob = isset($value->dob) ? date("d-m-Y", strtotime($value->dob)) : "";
                                     }
                                     $ResponseData['details'] = $aResult[0];
-                                    // dd($ResponseData['details']);
+
                                     $SQL = 'UPDATE Users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                                     DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
+
+                                    #MODULES OF USER ON BASIS OF ITS ROLE
+                                    $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->superadmin);
+                                    $ResponseData['modules'] = $aModules;
 
                                     $message = 'Login Successfully';
                                     $ResposneCode = 200;
@@ -410,6 +427,10 @@ class LoginController extends Controller
                                     // dd($ResponseData['details']);
                                     $SQL = 'UPDATE Users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                                     DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
+
+                                    #MODULES OF USER ON BASIS OF ITS ROLE
+                                    $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->superadmin);
+                                    $ResponseData['modules'] = $aModules;
 
                                     $message = 'Login Successfully';
                                     $ResposneCode = 200;
@@ -530,22 +551,16 @@ class LoginController extends Controller
 
                 if (sizeof($Exist) > 0) {
 
-                    #GENERATE NEW PWD AND STORE INTO DB
-                    // $randomPassword = $this->randomPassword();
-                    // DB::table('Users')->where('id', $Exist[0]->id)->update(['password' => md5($randomPassword)]);
-                    // dd($randomPassword);
-                    #############################################
-
                     #SEND PASSWORD MAIL
                     $Email = new Emails();
                     $Email->post_email_pwd($aPost['email'], $Exist[0]->password);
-                    // Error: Class &quot;SendGrid\Mail\Mail&quot; not found in file /var/www/html/RacesWeb/app/Libraries/Emails.php on line 11
 
                     $SQL3 = 'SELECT * FROM Users WHERE id =:id';
                     $ResponseData['userData'] = DB::select($SQL3, array('id' => $Exist[0]->id));
 
-                    #MODULES OF USER ON BASIS OF TYPE
-                    // $Modules = Modules::whereIn('type', explode(',', $
+                    #MODULES OF USER ON BASIS OF ITS ROLE
+                    $aModules = $this->admin_user_rights->get_user_modules($Exist[0]->id, $Exist[0]->superadmin);
+                    $ResponseData['modules'] = $aModules;
 
                     $ResposneCode = 200;
                     $message = 'Registered Successfully';
