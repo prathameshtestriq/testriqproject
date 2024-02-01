@@ -85,7 +85,7 @@ class LoginController extends Controller
                                 if (preg_match('/^[0-9]{10}+$/', $aPost['mobile'])) {
 
                                     #EXIST CHECK
-                                    $SQL1 = 'SELECT id FROM Users WHERE (email=:email OR mobile=:mobile) AND is_deleted = 0';
+                                    $SQL1 = 'SELECT id FROM users WHERE (email=:email OR mobile=:mobile) AND is_deleted = 0';
                                     $Exist = DB::select($SQL1, array('email' => $aPost['email'], 'mobile' => $aPost['mobile']));
 
                                     if (sizeof($Exist) == 0) {
@@ -101,14 +101,14 @@ class LoginController extends Controller
                                             'created_at' => strtotime('now')
                                         );
 
-                                        $SQL2 = 'INSERT INTO Users (firstname,lastname,mobile,email,dob,gender,password,created_at) VALUES(:firstname,:lastname,:mobile,:email,:dob,:gender,:password,:created_at)';
+                                        $SQL2 = 'INSERT INTO users (firstname,lastname,mobile,email,dob,gender,password,created_at) VALUES(:firstname,:lastname,:mobile,:email,:dob,:gender,:password,:created_at)';
                                         DB::select($SQL2, $Binding);
 
                                         $lastInsertedId = DB::getPdo()->lastInsertId();
 
                                         $otp = rand(1000, 9999);
                                         if (!empty($otp)) {
-                                            $data = DB::table('Users')->where('id', $lastInsertedId)->update(['otp' => $otp]);
+                                            $data = DB::table('users')->where('id', $lastInsertedId)->update(['otp' => $otp]);
 
                                             #SEND OTP MESSAGE
                                             $SmsObj = new SmsApis();
@@ -120,7 +120,7 @@ class LoginController extends Controller
                                             // Error: Class &quot;SendGrid\Mail\Mail&quot; not found in file /var/www/html/RacesWeb/app/Libraries/Emails.php on line 11
                                         }
 
-                                        $SQL3 = 'SELECT * FROM Users WHERE id =:id';
+                                        $SQL3 = 'SELECT * FROM users WHERE id =:id';
                                         $aResult = DB::select($SQL3, array('id' => $lastInsertedId));
 
                                         $aToken['ID'] = $aResult[0]->id;
@@ -147,7 +147,7 @@ class LoginController extends Controller
 
                                         $ResponseData['userData'] = $aResult[0];
                                         // dd($ResponseData['details']);
-                                        $SQL = 'UPDATE Users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
+                                        $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                                         DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
                                         #MODULES OF USER ON BASIS OF TYPE
                                         // $Modules = Modules::whereIn('type', explode(',', $
@@ -220,11 +220,11 @@ class LoginController extends Controller
 
         if (!$empty) {
             // Check Multple Athlete Exists or not with same email or mobile?
-            $sql1 = 'SELECT id FROM Users WHERE email = :email and is_deleted = 0';
+            $sql1 = 'SELECT id FROM users WHERE email = :email and is_deleted = 0';
             $oUser = DB::select($sql1, array('email' => $aPost['Email']));
             // dd(count($oUser));
             if (count($oUser) == 1) {
-                $sql2 = 'SELECT * FROM Users WHERE id=:id AND password =:password';
+                $sql2 = 'SELECT * FROM users WHERE id=:id AND password =:password';
                 $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => md5($aPost['Password'])));
                 // dd($aResult);
                 if ($aResult) {
@@ -254,7 +254,7 @@ class LoginController extends Controller
 
                             $ResponseData['userData'] = $aResult[0];
                             // dd($ResponseData['details']);
-                            $SQL = 'UPDATE Users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
+                            $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                             DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
 
                             $message = 'Login Successfully';
@@ -322,7 +322,7 @@ class LoginController extends Controller
             if (filter_var($aPost['email'], FILTER_VALIDATE_EMAIL)) {
                 if (strlen($aPost['password']) >= 5) {
                     #EXIST CHECK
-                    $SQL1 = 'SELECT id FROM Users WHERE email=:email AND is_deleted = 0';
+                    $SQL1 = 'SELECT id FROM users WHERE email=:email AND is_deleted = 0';
                     $Exist = DB::select($SQL1, array('email' => $aPost['email']));
 
                     if (sizeof($Exist) == 0) {
@@ -332,12 +332,12 @@ class LoginController extends Controller
                             'created_at' => strtotime('now')
                         );
 
-                        $SQL2 = 'INSERT INTO Users (password,email,created_at) VALUES(:password,:email,:created_at)';
+                        $SQL2 = 'INSERT INTO users (password,email,created_at) VALUES(:password,:email,:created_at)';
                         DB::select($SQL2, $Binding);
 
                         $UserId = DB::getPdo()->lastInsertId();
 
-                        $SQL3 = 'SELECT * FROM Users WHERE id=:id';
+                        $SQL3 = 'SELECT * FROM users WHERE id=:id';
                         $aResult = DB::select($SQL3, array('id' => $UserId));
                         //-----------------------------------------------------------------------------------------------
 
@@ -360,7 +360,7 @@ class LoginController extends Controller
                                     }
                                     $ResponseData['details'] = $aResult[0];
                                     // dd($ResponseData['details']);
-                                    $SQL = 'UPDATE Users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
+                                    $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                                     DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
 
                                     $message = 'Login Successfully';
@@ -380,7 +380,7 @@ class LoginController extends Controller
                         // ----------------------------------------------------------------------------------------------
                     } else if (sizeof($Exist) == 1) {
                         $UserId = $Exist[0]->id;
-                        $SQL3 = 'SELECT * FROM Users WHERE id=:id';
+                        $SQL3 = 'SELECT * FROM users WHERE id=:id';
                         $aResult = DB::select($SQL3, array('id' => $UserId));
 
                         if ($aResult) {
@@ -408,7 +408,7 @@ class LoginController extends Controller
 
                                     $ResponseData['details'] = $aResult[0];
                                     // dd($ResponseData['details']);
-                                    $SQL = 'UPDATE Users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
+                                    $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                                     DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
 
                                     $message = 'Login Successfully';
@@ -482,7 +482,7 @@ class LoginController extends Controller
                 $UserId = $aToken['data']->ID;
                 // $Event = $aPost['event'];
 
-                $sql = 'UPDATE Users SET auth_token=:auth_token WHERE id=:id';
+                $sql = 'UPDATE users SET auth_token=:auth_token WHERE id=:id';
                 DB::select($sql, ['id' => $UserId, 'auth_token' => '']);
                 $message = 'Logout Successfully';
             } else {
@@ -525,7 +525,7 @@ class LoginController extends Controller
             if (filter_var($aPost['email'], FILTER_VALIDATE_EMAIL)) {
 
                 #EXIST CHECK
-                $SQL1 = 'SELECT id,password FROM Users WHERE email=:email AND is_deleted = 0';
+                $SQL1 = 'SELECT id,password FROM users WHERE email=:email AND is_deleted = 0';
                 $Exist = DB::select($SQL1, array('email' => $aPost['email']));
 
                 if (sizeof($Exist) > 0) {
@@ -541,7 +541,7 @@ class LoginController extends Controller
                     $Email->post_email_pwd($aPost['email'], $Exist[0]->password);
                     // Error: Class &quot;SendGrid\Mail\Mail&quot; not found in file /var/www/html/RacesWeb/app/Libraries/Emails.php on line 11
 
-                    $SQL3 = 'SELECT * FROM Users WHERE id =:id';
+                    $SQL3 = 'SELECT * FROM users WHERE id =:id';
                     $ResponseData['userData'] = DB::select($SQL3, array('id' => $Exist[0]->id));
 
                     #MODULES OF USER ON BASIS OF TYPE
@@ -631,13 +631,13 @@ class LoginController extends Controller
             $Auth = new Authenticate();
             $Auth->apiLog($request);
 
-            $s_sql = 'SELECT id, email FROM Users WHERE is_deleted = 0 AND email = :email';
+            $s_sql = 'SELECT id, email FROM users WHERE is_deleted = 0 AND email = :email';
             $a_customer = DB::select($s_sql, array($aPost['email']));
             // dd($a_customer);
 
             if (!empty($a_customer[0])) {
                 $ResponseData['token'] = bin2hex(random_bytes(16));
-                $s_sql = 'UPDATE Users SET ResetPasswordToken = :ResetPasswordToken
+                $s_sql = 'UPDATE users SET ResetPasswordToken = :ResetPasswordToken
                 WHERE is_deleted = 0 AND email =:email';
 
                 $Bindings = array(
@@ -717,11 +717,11 @@ class LoginController extends Controller
             if (preg_match("/^(?=.*?[a-z])(?=.*?[0-9]).{8,20}$/", $aPost['new_password'])) {
                 if ($aPost['confirm_new_password'] == $aPost['new_password']) {
 
-                    $s_sql = 'SELECT id FROM Users WHERE ResetPasswordToken =:ResetPasswordToken AND is_deleted = 0';
+                    $s_sql = 'SELECT id FROM users WHERE ResetPasswordToken =:ResetPasswordToken AND is_deleted = 0';
                     $Result = DB::select($s_sql, array('ResetPasswordToken' => $token));
 
                     if (!empty($Result[0])) {
-                        $s_sql = 'UPDATE Users SET password =:Password, ResetPasswordToken="" WHERE id = :id';
+                        $s_sql = 'UPDATE users SET password =:Password, ResetPasswordToken="" WHERE id = :id';
 
                         $Bindings = array(
                             'Password' => md5($aPost['new_password']),

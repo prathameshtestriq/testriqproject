@@ -4,8 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventTicketController;
+use App\Http\Controllers\EventUserFollowController;
 use App\Http\Controllers\UserController;
-
+use App\Http\Controllers\UserEventDetailsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,12 +38,34 @@ Route::controller(LoginController::class)->group(function () {
 
 Route::controller(EventController::class)->group(function () {
     Route::post('events', 'getEvents');
+    Route::post('duplicate_events', 'DuplicateEvents');
+    Route::post('delete_event/{id}', 'EventDelete'); 
+    Route::post('event_status', 'EventStatus');
 });
 
 Route::controller(UserController::class)->group(function () {
     Route::get('get_profile', 'getProfile');
     Route::post('edit_profile', 'editProfile');
+    Route::post('add_new_user','addnewuser');
 });
+
+Route::controller(EventUserFollowController::class)->group(function () {
+    Route::post('event_user_follow', 'Eventuserfollow'); 
+    Route::post('event_user_unfollow', 'Eventuserunfollow'); 
+});
+
+Route::controller(EventTicketController::class)->group(function () {
+    Route::post('get_event_ticket', 'geteventticket');
+    Route::post('get_ticket_detail/{id}', 'getticketdetail');  
+    Route::post('add_edit_event_ticket/{id?}', 'addediteventticket');
+    Route::post('delete_event_ticket/{id?}', 'EventTicketDelete'); 
+});
+
+Route::controller(UserEventDetailsController::class)->group(function () {
+    Route::get('get_all_users', 'getallUsers');
+    Route::get('get_all_events', 'getallEvents');
+});
+
 
 
 
