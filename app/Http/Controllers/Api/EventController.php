@@ -1,0 +1,1045 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
+use App\Libraries\Authenticate;
+use Illuminate\Support\Facades\DB;
+use App\Models\Master;
+use App\Models\Event;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+use Config;
+class EventController extends Controller
+{
+
+    function ManipulateEvents($Events, $UserId = 0)
+    {
+        // dd($Events,$UserId);
+        $master = new Master();
+        $e = new Event();
+        foreach ($Events as $event) {
+            $event->name = !empty($event->name) ? ucwords($event->name) : "";
+            $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
+            $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
+            $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
+
+            $event->banner_image = !empty($event->banner_image) ? url('/') . '/uploads/banner_image/' . $event->banner_image . '' : '';
+            $event->logo_image = !empty($event->logo_image) ? url('/') . '/uploads/logo_image/' . $event->logo_image . '' : '';
+            $event->background_image = url('/') . '/uploads/images/banner-bg-2.jpg';
+            $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
+            $event->state_name = !empty($event->state) ? $master->getStateName($event->state) : "";
+            $event->country_name = !empty($event->country) ? $master->getCountryName($event->country) : "";
+
+            $event->latitude = !empty($event->city) ? $master->getCityLatitude($event->city) : "";
+            $event->longitude = !empty($event->city) ? $master->getCityLongitude($event->city) : "";
+
+            #FOLLOW(WISHLIST)
+            $event->is_follow = !empty($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
+
+            #GET ALL TICKETS
+            $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 ORDER BY ticket_price";
+            $Tickets = DB::select($SQL, array('event_id' => $event->id));
+
+            $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
+            $event->max_price = (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0;
+            $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
+        }
+        // dd($Events);
+        return $Events;
+    }
+
+    #COUNTRY WISE SEARCH BANNER AND EVENTS(NO RELATION BETWEEN EVENTS AND BANNERS)
+    function get_banner_events(Request $request)
+    {
+        // dd($request);
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = '';
+        $Events = [];
+        $ResponseData['CityName'] = '';
+        $ResponseData['CountryId'] = $ResponseData['StateId'] = $ResponseData['CityId'] = 0;
+        $FewSuggestionFlag = 0;
+        $NowTime = strtotime('now');
+        #IF USER IS LOGIN GET USER ID
+        // $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // $UserId = $aToken['data']->ID;
+        $Auth = new Authenticate();
+        #ELSE USER NOT LOGIN
+        $aToken = $Auth->decode_token($request->header('Authorization'));
+        $UserId = 0;
+        if (!empty($aToken)) {
+            $UserId = $aToken->ID;
+        }
+        // dd($aToken,$UserId);
+
+        #GET EVENTS COUNTRY WISE
+        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+        // $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
+        $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
+
+        $CountryCode = $request->country_code;
+        $City = isset($request->city) ? $request->city : '';
+        $State = isset($request->state) ? $request->state : '';
+
+        $city_id = isset($request->scity) ? $request->scity : 0;
+        $state_id = isset($request->sstate) ? $request->sstate : 0;
+        $country_id = isset($request->scountry) ? $request->scountry : 0;
+        // dd($state_id);
+        if (!empty($CountryCode)) {
+            $sSQL = 'SELECT id FROM countries WHERE LOWER(country_code) =:country_code';
+            $CountryId = DB::select($sSQL, array('country_code' => strtolower($CountryCode)));
+            // dd($CountryId);
+            if (sizeof($CountryId) > 0) {
+                $EventSql .= ' AND e.country=' . $CountryId[0]->id;
+                $BannerSql .= ' AND b.country=' . $CountryId[0]->id;
+                $UpcomingSql .= ' AND u.country=' . $CountryId[0]->id;
+                $ResponseData['CountryId'] = $CountryId[0]->id;
+            }
+        }
+        // dd($EventSql,$BannerSql);
+        if (!empty($City)) {
+            $sSQL = 'SELECT id,name FROM cities WHERE LOWER(name) =:name';
+            $CityId = DB::select($sSQL, array('name' => strtolower($City)));
+            if (sizeof($CityId) > 0) {
+                $EventSql .= ' AND e.city=' . $CityId[0]->id;
+                $BannerSql .= ' AND b.city=' . $CityId[0]->id;
+                $UpcomingSql .= ' AND u.city=' . $CityId[0]->id;
+                $ResponseData['CityId'] = $CityId[0]->id;
+                $ResponseData['CityName'] = $CityId[0]->name;
+            }
+        }
+        if (!empty($State)) {
+            $sSQL = 'SELECT id FROM states WHERE LOWER(name) =:name';
+            $StateId = DB::select($sSQL, array('name' => strtolower($State)));
+            if (sizeof($StateId) > 0) {
+                $EventSql .= ' AND e.state=' . $StateId[0]->id;
+                $BannerSql .= ' AND b.state=' . $StateId[0]->id;
+                $UpcomingSql .= ' AND u.state=' . $StateId[0]->id;
+                $ResponseData['StateId'] = $StateId[0]->id;
+            }
+        }
+
+        // dd($EventSql,$BannerSql);
+        $Events = DB::select($EventSql);
+        $Banners = DB::select($BannerSql);
+        $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
+
+        #NEW SECTION STARTS IF EVENTS AND BANNERS GETTINGS EMPTY
+        ##IF NO EVENTS OR BANNERS ARE FOUND FOR THE GIVEN TIME FRAME, THEN WE SHOW ALL AVAILABLE ON
+        $NewState_id = (!empty($state_id)) ? $state_id : $ResponseData['StateId'];
+        if (Sizeof($Events) == 0) {
+            // $message = 'Few Suggestions';
+            $FewSuggestionFlag = 1;
+
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+            if (!empty($NewState_id)) {
+                $EventSql .= ' AND e.state=' . $NewState_id;
+            }
+            $Events = DB::select($EventSql);
+        }
+
+        if (Sizeof($Banners) == 0) {
+            $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
+            if (!empty($NewState_id)) {
+                $BannerSql .= ' AND b.state=' . $NewState_id;
+            }
+            $Banners = DB::select($BannerSql);
+        }
+        if (Sizeof($UpcomingEvents) == 0) {
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+            if (!empty($NewState_id)) {
+                $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
+            }
+            $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+        }
+        // dd($EventSql,$BannerSql,$Banners);
+        $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
+        if (Sizeof($Events) == 0) {
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+            if (!empty($NewCountry_id) && $NewCountry_id > 0) {
+                $EventSql .= ' AND e.country=' . $NewCountry_id;
+            }
+            $Events = DB::select($EventSql);
+        }
+        if (Sizeof($Banners) == 0) {
+            $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
+            if (!empty($NewCountry_id)) {
+                $BannerSql .= ' AND b.country=' . $NewCountry_id;
+            }
+            $Banners = DB::select($BannerSql);
+        }
+        if (Sizeof($UpcomingEvents) == 0) {
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+            if (!empty($NewState_id)) {
+                $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
+            }
+            $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+        }
+
+        $BannerImages = [];
+        foreach ($Banners as $key => $banner) {
+            if (!empty((!empty($banner->banner_image)) && ($key <= 4))) {
+                $banner->banner_url = !empty($banner->banner_url) ? $banner->banner_url : "";
+                $banner->banner_image = !empty($banner->banner_image) ? url('/') . '/uploads/banner_image/' . $banner->banner_image . '' : '';
+                $BannerImages[$key]['url'] = $banner->banner_url;
+                $BannerImages[$key]['img'] = $banner->banner_image;
+            }
+        }
+        // dd($Events,$Banners);
+
+        $ResponseData['eventData'] = $this->ManipulateEvents($Events, $UserId);
+        $ResponseData['BannerImages'] = $BannerImages;
+
+        #UPCOMING EVENTS
+        $ResponseData['UpcomingEventData'] = $this->ManipulateEvents($UpcomingEvents, $UserId);
+        $ResponseData['MAX_UPLOAD_FILE_SIZE'] = config('custom.max_size');//Config::get('custom.MAX_UPLOAD_FILE_SIZE');
+
+        // dd($ResponseData['BannerImages']);
+        $response = [
+            'status' => 200,
+            'data' => $ResponseData,
+            'message' => $message,
+            'FewSuggestionFlag' => $FewSuggestionFlag
+        ];
+
+        return response()->json($response, $ResposneCode);
+
+
+    }
+
+    public function getEvents(Request $request)
+    {
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = '';
+        $FewSuggestionFlag = 0;
+        $aData = array();
+        $aPost = $request->all();
+
+        $Auth = new Authenticate();
+        $Auth->apiLog($request);
+
+        #IF USER IS LOGIN GET USER ID
+        // $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // $UserId = $aToken['data']->ID;
+
+        #ELSE USER NOT LOGIN
+        $aToken = $Auth->decode_token($request->header('Authorization'));
+        $UserId = 0;
+        if (!empty($aToken)) {
+            $UserId = $aToken->ID;
+        }
+        // dd($aToken,$UserId);
+
+        $EventId = isset($request->event_id) ? $request->event_id : 0;//for view event (Event Details page)
+        $EventName = isset($request->event_name) ? $request->event_name : '';
+        $Filter = isset($request->filter) ? $request->filter : '';
+        $Category = isset($request->category_id) ? $request->category_id : 0;
+        $StartDateTime = isset($request->start_date) ? strtotime($request->start_date) : 0;
+        $CityId = isset($request->city) ? $request->city : 0;
+        $StateId = isset($request->state) ? $request->state : 0;
+        $CountryId = isset($request->country) ? $request->country : 0;
+        $EndDateTime = (isset($request->end_date) && !empty($request->end_date)) ? strtotime(date("Y-m-d 23:59:59", strtotime($request->end_date))) : 0;
+        $Distance = isset($request->distance) ? $request->distance : 0;
+        // dd($StartDateTime,$EndDateTime);
+        $EventSql = "SELECT * FROM events AS e";
+        if (!empty($EventId)) {
+            $EventSql .= " WHERE e.id=" . $EventId;
+        }
+        if (!empty($Category)) {
+            $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
+        }
+        if (empty($Category) && empty($EventId)) {
+            $EventSql .= " WHERE e.active=1 AND e.deleted=0";
+        } else {
+            $EventSql .= " AND e.active=1 AND e.deleted=0";
+        }
+        if ($EventName != "") {
+            $EventSql .= " AND e.name LIKE '%" . $EventName . "%' ";
+        }
+        if ((!empty($StartDateTime)) && (empty($EndDateTime))) {
+            $EventSql .= " AND e.start_time >=" . $StartDateTime;
+        }
+        if ((!empty($EndDateTime)) && (empty($StartDateTime))) {
+            $EventSql .= " AND e.end_time <=" . $EndDateTime;
+        }
+        if ((!empty($StartDateTime)) && (!empty($EndDateTime))) {
+            $EventSql .= ' AND e.start_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
+        }
+        if (!empty($Distance)) {
+            $EventSql .= " AND e.distance =" . $Distance;
+        }
+        if (!empty($CountryId)) {
+            $EventSql .= " AND e.country=" . $CountryId;
+        }
+        if (!empty($StateId)) {
+            $EventSql .= " AND e.state=" . $StateId;
+        }
+        if (!empty($CityId)) {
+            $EventSql .= " AND e.city=" . $CityId;
+        }
+
+        // dd($EventSql);
+        if (!empty($Filter)) {
+            switch ($Filter) {
+                case 'today':
+                    $StartDate = strtotime(date('Y-m-d 00:00:00'));
+                    $EndDate = strtotime(date('Y-m-d 23:59:59'));
+                    break;
+
+                case 'tomorrow':
+                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime("+1 day")));
+                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime("+1 day")));
+                    break;
+
+                case 'month':
+                    $Start = new Carbon('first day of this month');
+                    $StartDate = strtotime($Start->startOfMonth());
+
+                    $End = new Carbon('last day of this month');
+                    $EndDate = strtotime($End->endOfMonth());
+                    break;
+
+                case 'week':
+                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
+                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('saturday this week')));
+                    break;
+
+                case 'weekend':
+                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('saturday this week')));
+                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
+                    break;
+
+                default:
+                    break;
+            }
+
+            // dd($StartDate, $EndDate);
+            if (isset($StartDate) && isset($EndDate)) {
+                $EventSql .= ' AND e.start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            } else if ($Filter == 'free') {
+                $EventSql .= " AND e.is_paid=0";
+            }
+        }
+        // dd($EventSql);
+
+        $Events = DB::select($EventSql);
+        // dd($Events);
+        $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
+        $response = [
+            'status' => 200,
+            'data' => $ResponseData,
+            'message' => $message,
+            'FewSuggestionFlag' => $FewSuggestionFlag
+        ];
+
+        return response()->json($response, $ResposneCode);
+
+    }
+
+    public function get_data_location_wise(Request $request)
+    {
+        // dd($request);
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = '';
+        $Events = [];
+        $ResponseData['CityName'] = '';
+        $ResponseData['CountryId'] = $ResponseData['StateId'] = $ResponseData['CityId'] = 0;
+        $FewSuggestionFlag = 0;
+        $NowTime = strtotime('now');
+
+        #IF USER IS LOGIN GET USER ID
+        // $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // $UserId = $aToken['data']->ID;
+        $Auth = new Authenticate();
+        #ELSE USER NOT LOGIN
+        $aToken = $Auth->decode_token($request->header('Authorization'));
+        $UserId = 0;
+        if (!empty($aToken)) {
+            $UserId = $aToken->ID;
+        }
+        // dd($aToken,$UserId);
+
+        #GET EVENTS COUNTRY WISE
+        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+        $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
+        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+
+        // $CountryCode = $request->country_code;
+        $City = isset($request->city) ? $request->city : '';
+        // $State = isset($request->state) ? $request->state : '';
+        $city_id = isset($request->scity) ? $request->scity : 0;
+        $state_id = isset($request->state) ? $request->state : 0;
+        $country_id = isset($request->country) ? $request->country : 0;
+
+        if (!empty($City)) {
+            $sSQL = 'SELECT id,name,state_id,country_id FROM cities WHERE id =:id';
+            $CityId = DB::select($sSQL, array('id' => $City));
+
+            $EventSql .= ' AND e.city=' . $City;
+            $BannerSql .= ' AND b.city=' . $City;
+            if (sizeof($CityId) > 0) {
+                $ResponseData['CityName'] = $CityId[0]->name;
+                $ResponseData['CountryId'] = $CityId[0]->country_id;
+                $ResponseData['StateId'] = $CityId[0]->state_id;
+                $ResponseData['CityId'] = $CityId[0]->id;
+            }
+        }
+
+        $Events = DB::select($EventSql);
+        $Banners = DB::select($BannerSql);
+        $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
+
+        #NEW SECTION STARTS IF EVENTS AND BANNERS GETTINGS EMPTY
+        ##IF NO EVENTS OR BANNERS ARE FOUND FOR THE GIVEN TIME FRAME, THEN WE SHOW ALL AVAILABLE ON
+        $NewState_id = (!empty($state_id)) ? $state_id : $ResponseData['StateId'];
+        if (Sizeof($Events) == 0) {
+            $FewSuggestionFlag = 1;
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+            if (!empty($NewState_id)) {
+                $EventSql .= ' AND e.state=' . $NewState_id;
+            }
+            $Events = DB::select($EventSql);
+        }
+        // dd($EventSql,$BannerSql);
+        if (Sizeof($Banners) == 0) {
+            $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
+            if (!empty($NewState_id)) {
+                $BannerSql .= ' AND b.state=' . $NewState_id;
+            }
+            $Banners = DB::select($BannerSql);
+        }
+        if (Sizeof($UpcomingEvents) == 0) {
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+            if (!empty($NewState_id)) {
+                $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
+            }
+            $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+        }
+
+
+        $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
+        if (Sizeof($Events) == 0) {
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+            if (!empty($NewCountry_id) && $NewCountry_id > 0) {
+                $EventSql .= ' AND e.country=' . $NewCountry_id;
+            }
+            $Events = DB::select($EventSql);
+        }
+        if (Sizeof($Banners) == 0) {
+            $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
+            if (!empty($NewCountry_id)) {
+                $BannerSql .= ' AND b.country=' . $NewCountry_id;
+            }
+            $Banners = DB::select($BannerSql);
+        }
+        if (Sizeof($UpcomingEvents) == 0) {
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+            if (!empty($NewState_id)) {
+                $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
+            }
+            $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+        }
+
+        $BannerImages = [];
+        foreach ($Banners as $key => $banner) {
+            if (!empty((!empty($banner->banner_image)) && ($key <= 4))) {
+                $banner->banner_url = !empty($banner->banner_url) ? $banner->banner_url : "";
+                $banner->banner_image = !empty($banner->banner_image) ? url('/') . '/uploads/banner_image/' . $banner->banner_image . '' : '';
+                $BannerImages[$key]['url'] = $banner->banner_url;
+                $BannerImages[$key]['img'] = $banner->banner_image;
+            }
+        }
+        // dd($Events,$Banners);
+        $ResponseData['eventData'] = $this->ManipulateEvents($Events, $UserId);
+        $ResponseData['BannerImages'] = $BannerImages;
+
+        #UPCOMING EVENTS
+        $ResponseData['UpcomingEventData'] = $this->ManipulateEvents($UpcomingEvents, $UserId);
+        $ResponseData['MAX_UPLOAD_FILE_SIZE'] = config('custom.max_size');
+
+        $response = [
+            'status' => 'success',
+            'data' => $ResponseData,
+            'message' => $message,
+            'FewSuggestionFlag' => $FewSuggestionFlag
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function createEventBasicInfo(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            // if (empty($aPost['event_info_status'])) {
+            //     $empty = true;
+            //     $field = 'Event Status';
+            // }
+            if (empty($aPost['event_name'])) {
+                $empty = true;
+                $field = 'Event Name';
+            }
+            if (!$empty) {
+                //ADD EVENT CODE
+                $EventStatus = isset($request->event_info_status) ? $request->event_info_status : 0;
+                $EventName = isset($request->event_name) ? $request->event_name : "";
+                $EventDisplayStatus = isset($request->display_name_status) ? $request->display_name_status : 0;
+                $EventDisplayName = isset($request->display_name) ? $request->display_name : "";
+                $Category = isset($request->category_id) ? $request->category_id : [];
+                $EventTypes = isset($request->event_types) ? $request->event_types : [];
+
+                $EventUrl = isset($request->event_url) ? $request->event_url : "";
+                $EventType = isset($request->event_type) ? $request->event_type : 0;
+
+                $EventId = (isset($request->event_id) && !empty($request->event_id)) ? $request->event_id : 0;
+
+                if (empty($EventId)) {
+                    $Bindings = array(
+                        "event_info_status" => $EventStatus,
+                        "event_name" => $EventName,
+                        "display_name_status" => $EventDisplayStatus,
+                        "display_name" => $EventDisplayName,
+                        "event_url" => $EventUrl,
+                        "event_type" => $EventType,
+                        "created_by" => $UserId
+                    );
+                    $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_url,event_type,created_by) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_url,:event_type,:created_by)";
+                    DB::insert($SQL, $Bindings);
+                    $EventId = DB::getPdo()->lastInsertId();
+
+                    if (!empty($Category) && !empty($EventId)) {
+                        foreach ($Category as $value) {
+                            // dd($value);
+                            if ($value['checked'] == "true") {
+                                $sql = "INSERT INTO event_category (event_id, category_id,created_by) VALUES(:event_id,:category_id,:created_by)";
+                                $Bind = array(
+                                    "event_id" => $EventId,
+                                    "category_id" => $value['id'],
+                                    "created_by" => $UserId
+                                );
+                                DB::insert($sql, $Bind);
+                            }
+                        }
+                    }
+
+                    if (!empty($EventTypes) && !empty($EventId)) {
+                        foreach ($EventTypes as $value) {
+                            if ($value['checked'] == "true") {
+                                $sql = "INSERT INTO event_type (event_id, type_id,created_by) VALUES(:event_id,:type_id,:created_by)";
+                                $Bind = array(
+                                    "event_id" => $EventId,
+                                    "type_id" => $value['id'],
+                                    "created_by" => $UserId
+                                );
+                                DB::insert($sql, $Bind);
+                            }
+                        }
+                    }
+
+                    $message = "Basic inforamtion of event added successfully";
+                } else {
+                    // dd($Category);
+                    $Bindings = array(
+                        "event_info_status" => $EventStatus,
+                        "event_name" => $EventName,
+                        "display_name_status" => $EventDisplayStatus,
+                        "display_name" => $EventDisplayName,
+                        "event_url" => $EventUrl,
+                        "event_type" => $EventType,
+                        "id" => $EventId
+                    );
+
+                    $SQL = "UPDATE events SET event_info_status=:event_info_status,name=:event_name,event_visibilty=:display_name_status,event_display_name=:display_name,event_url=:event_url,event_type=:event_type WHERE id=:id";
+                    DB::update($SQL, $Bindings);
+
+                    #DELETE ALL CATEGORY AND TYPES OF EVENT
+                    $delete_cat = 'DELETE FROM event_category WHERE event_id=:event_id';
+                    DB::delete($delete_cat, array('event_id' => $EventId));
+                    $delete_typ = 'DELETE FROM event_type WHERE event_id=:event_id';
+                    DB::delete($delete_typ, array('event_id' => $EventId));
+
+
+                    #NEWLY INSERT ALL CATEGORY AND TYPES OF EVENT
+                    if (!empty($Category) && !empty($EventId)) {
+                        foreach ($Category as $value) {
+                            // dd($value);
+                            if ($value['checked'] == "true") {
+                                $sql = "INSERT INTO event_category (event_id, category_id,created_by) VALUES(:event_id,:category_id,:created_by)";
+                                $Bind = array(
+                                    "event_id" => $EventId,
+                                    "category_id" => $value['id'],
+                                    "created_by" => $UserId
+                                );
+                                DB::insert($sql, $Bind);
+                            }
+                        }
+                    }
+
+                    if (!empty($EventTypes) && !empty($EventId)) {
+                        foreach ($EventTypes as $value) {
+                            if ($value['checked'] == "true") {
+                                $sql = "INSERT INTO event_type (event_id, type_id,created_by) VALUES(:event_id,:type_id,:created_by)";
+                                $Bind = array(
+                                    "event_id" => $EventId,
+                                    "type_id" => $value['id'],
+                                    "created_by" => $UserId
+                                );
+                                DB::insert($sql, $Bind);
+                            }
+                        }
+                    }
+                    $message = "Basic inforamtion of event updated successfully";
+                }
+                $ResponseData['event_id'] = $EventId;
+                $ResposneCode = 200;
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+
+    }
+
+    public function getEventDetails(Request $request)
+    {
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = '';
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+
+        if ($aToken['code'] == 200) {
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+            $EventId = isset($request->event_id) ? $request->event_id : 0;
+            $Events = array();
+            if (!empty($EventId)) {
+                $sql = "SELECT * from events WHERE active=1 AND deleted=0";
+                $sql .= " AND id=" . $EventId;
+                $Events = DB::select($sql);
+            }
+
+            // dd($Events);
+            $master = new Master();
+            $e = new Event();
+            foreach ($Events as $event) {
+                $event->start_date = (!empty($event->start_time)) ? date("Y-m-d", $event->start_time) : 0;
+                $event->start_time_event = (!empty($event->start_time)) ? date("h:i", $event->start_time) : 0;
+
+                $event->end_date = (!empty($event->end_time)) ? date("Y-m-d", $event->end_time) : 0;
+                $event->end_time_event = (!empty($event->end_time)) ? date("h:i", $event->end_time) : 0;
+
+                $event->repeat_start_time = (!empty($event->repeat_start_time)) ? date("h:i", $event->repeat_start_time) : 0;
+                $event->repeat_end_time = (!empty($event->repeat_end_time)) ? date("h:i", $event->repeat_end_time) : 0;
+
+                $event->banner_image = !empty($event->banner_image) ? url('/') . '/uploads/banner_image/' . $event->banner_image . '' : '';
+                $event->logo_image = !empty($event->logo_image) ? url('/') . '/uploads/logo_image/' . $event->logo_image . '' : '';
+                $event->background_image = url('/') . '/uploads/images/banner-bg-2.jpg';
+                $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
+                $event->state_name = !empty($event->state) ? $master->getStateName($event->state) : "";
+                $event->country_name = !empty($event->country) ? $master->getCountryName($event->country) : "";
+
+                // $event->types = !empty($event->id) ? $e->getTypes($event->id) : [];
+                // $event->category = !empty($event->id) ? $e->getCategory($event->id) : [];
+
+
+                // $event->latitude = !empty($event->city) ? $master->getCityLatitude($event->city) : "";
+                // $event->longitude = !empty($event->city) ? $master->getCityLongitude($event->city) : "";
+
+                #FOLLOW(WISHLIST)
+                $event->is_follow = !empty($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
+
+                #GET ALL TICKETS
+                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 ORDER BY ticket_price";
+                $Tickets = DB::select($SQL, array('event_id' => $event->id));
+
+                $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
+                $event->max_price = (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0;
+                $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
+            }
+            // dd($Events);
+            $ResponseData['EventData'] = $Events;
+
+            $ResponseData['AllCategory'] = $e->getCategory($EventId);
+            $ResponseData['AllEventTypes'] = $e->getTypes($EventId);
+
+            #Preview data array
+            $ResponseData['PreviewEventDetails'] = array();
+            if (!empty($Events)) {
+                $ResponseData['PreviewEventDetails'] = array(
+                    "banner_img" => !empty($Events[0]->banner_image) ? $Events[0]->banner_image . '' : "",
+                    "event_id" => $Events[0]->id,
+                    "start_date" => (!empty($Events[0]->start_time)) ? date("F d, Y", $Events[0]->start_time) : 0,
+                    "city" => !empty($Events[0]->city) ? $master->getCityName($Events[0]->city) : "",
+                    "event_name" => $Events[0]->name,
+                    "event_display_name" => !empty($Events[0]->event_display_name) ? $Events[0]->event_display_name : $Events[0]->name
+                );
+            }
+
+            #GETTING EVENT IMAGES
+            $ImageQry = "SELECT * FROM event_images WHERE event_id=:event_id";
+            $EventImg = DB::select($ImageQry, array('event_id' => $EventId));
+
+            if (sizeOf($EventImg) > 0) {
+                foreach ($EventImg as $value) {
+                    $value->image = !empty($value->image) ? url('/') . '/uploads/event_images/' . $value->image : "";
+                }
+            }
+            $ResponseData['EventImages'] = $EventImg;
+            $ResposneCode = 200;
+            $message = "Events Data getting successfully";
+            // $ResponseData['EventData'] = Event::get($aData)->orderBy('id', 'DESC')->paginate(config('custom.page_limit'));
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'status' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message,
+        ];
+
+        return response()->json($response, $ResposneCode);
+
+    }
+
+    public function addEventDuration(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $EventId = $aPost['event_id'];
+                //ADD EVENT CODE
+                $Timezone = isset($request->timezone_id) ? $request->timezone_id : 0;
+
+                $EventStartTime = $EventEndTime = 0;
+                $StartDate = isset($request->event_start_date) ? $request->event_start_date : 0;
+                $StartTime = isset($request->event_start_time) ? $request->event_start_time : 0;
+                if (!empty($StartDate)) {
+                    $start_date_time_string = $StartDate . ' ' . $StartTime;
+                    $EventStartTime = strtotime($start_date_time_string);
+                }
+
+                $EndDate = isset($request->event_end_date) ? $request->event_end_date : 0;
+                $EndTime = isset($request->event_end_time) ? $request->event_end_time : 0;
+                if (!empty($EndDate)) {
+                    $end_date_time_string = $EndDate . ' ' . $EndTime;
+                    $EventEndTime = strtotime($end_date_time_string);
+                }
+
+                $IsRepeatEvent = isset($request->repeating_event) ? $request->repeating_event : 0;
+                $RepeatType = isset($request->repeat_type) ? $request->repeat_type : 0;
+                $RepeatStartTime = (isset($request->repeat_start_time) && !empty($request->repeat_start_time)) ? strtotime($request->repeat_start_time) : 0;
+                $RepeatEndTime = (isset($request->repeat_end_time) && !empty($request->repeat_end_time)) ? strtotime($request->repeat_end_time) : 0;
+
+                $CountryId = isset($request->country_id) ? $request->country_id : 0;
+                $StateId = isset($request->state_id) ? $request->state_id : 0;
+                $CityId = isset($request->city_id) ? $request->city_id : 0;
+                $Address = isset($request->address) ? $request->address : "";
+
+                $Bindings = array(
+                    "timezone_id" => $Timezone,
+                    "start_time" => $EventStartTime,
+                    "end_time" => $EventEndTime,
+                    "is_repeat" => $IsRepeatEvent,
+                    "repeat_type" => $RepeatType,
+                    "repeat_start_time" => $RepeatStartTime,
+                    "repeat_end_time" => $RepeatEndTime,
+                    "country" => $CountryId,
+                    "state" => $StateId,
+                    "city" => $CityId,
+                    "address" => $Address,
+                    "id" => $EventId
+                );
+                $sql = 'UPDATE events SET
+                time_zone=:timezone_id,
+                start_time=:start_time,
+                end_time=:end_time,
+                is_repeat=:is_repeat,
+                repeat_type=:repeat_type,
+                repeat_start_time=:repeat_start_time,
+                repeat_end_time=:repeat_end_time,
+                country=:country,
+                state=:state,
+                city=:city,
+                address=:address
+             WHERE id=:id';
+                DB::update($sql, $Bindings);
+
+                $ResponseData['event_id'] = $EventId;
+                $ResposneCode = 200;
+                $message = "Event Duration added successfully";
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+
+    }
+
+    public function addEventDescription(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $auth = new Authenticate();
+            $auth->apiLog($request);
+            $userId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $EventId = $aPost['event_id'];
+                $Description = isset($request->event_description) ? $request->event_description : '';
+                $event_keywords = isset($request->event_keywords) ? $request->event_keywords : '';
+
+                // if (preg_match("/^[a-zA-Z-']*$/", $Description)) {
+                $banner_image = '';
+                $event_image = '';
+
+                $sql = 'UPDATE events SET event_description=:description,event_keywords=:event_keywords WHERE id=:id';
+                $bindings = [
+                    "description" => $Description,
+                    "event_keywords" => $event_keywords,
+                    "id" => $EventId
+                ];
+                // $ResponseData['sql'] = $sql;
+
+                $Result = DB::update($sql, $bindings);
+                // dd($res);
+                // if ($Result) {
+                if (!empty($request->file('event_banner'))) {
+                    $Path = public_path('uploads/banner_image/');
+                    $logo_image = $request->file('event_banner');
+                    $originalName = $logo_image->getClientOriginalName();
+                    $banner_image = $originalName;
+                    $logo_image->move($Path, $banner_image);
+
+                    $sSQLImg = 'UPDATE events SET banner_image = :banner_image WHERE id=:id';
+                    DB::update($sSQLImg, ['banner_image' => $banner_image, 'id' => $EventId]);
+                }
+
+                // $ResponseData['uploadedFile'] = $request->file('event_photos');
+
+                if ($request->file('event_photos')) {
+                    $delete_event = 'DELETE FROM event_images WHERE event_id=:event_id';
+                    DB::delete($delete_event, array('event_id' => $EventId));
+
+                    $Path = public_path('uploads/event_images/');
+                    foreach ($request->file('event_photos') as $key => $uploadedFile) {
+                        $validator = Validator::make(['event_photos' => $uploadedFile], [
+                            'event_photos' => 'image|mimes:jpeg,png,jpg,gif',
+                        ]);
+                        if ($validator->fails()) {
+                            continue;
+                        }
+                        if ($uploadedFile->isValid()) {
+                            $originalName = strtotime('now') . '_' . $uploadedFile->getClientOriginalName();
+                            $event_image = $originalName;
+                            $uploadedFile->move($Path, $event_image);
+
+                            $sSQL = 'INSERT INTO event_images (event_id, image, created_by) VALUES(:event_id, :image, :created_by)';
+                            $bindings = array(
+                                'event_id' => $EventId,
+                                'image' => $event_image,
+                                'created_by' => $userId
+                            );
+                            DB::insert($sSQL, $bindings);
+                        }
+                    }
+                }
+                $message = 'Event Details updated successfully';
+                $ResposneCode = 200;
+                // } else {
+                //     $ResposneCode = 400;
+                //     $message = 'Invalid description format';
+                // }
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'status' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+
+    }
+
+    public function UserFollowEvent(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+
+        if ($aToken['code'] == 200) {
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+            $sSQL = 'SELECT events.* FROM event_user_follow eu
+                    JOIN events ON eu.event_id = events.id
+                    WHERE eu.user_id = :User_Id';
+            $userfollowevent = DB::select($sSQL, [
+                'User_Id' => $aToken['data']->ID
+            ]);
+
+            if (!empty($userfollowevent)) {
+                $ResponseData['userfollowevent'] = $this->ManipulateEvents($userfollowevent, $UserId);
+            }
+
+
+            $ResposneCode = 200;
+            $message = 'Request processed successfully';
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+    }
+
+
+    function PopularCity(Request $request)
+    {
+        // dd($request);
+        $CityArr = new \stdClass;
+        $e = new Event();
+        $CityArr = [
+            0 => [
+                'id' => 133024,
+                'city' => 'Mumbai',
+                'type' => 'city',
+                'image' => url('/') . '/uploads/city_images/mumbai-1.png',
+                'event_count' => $e->getEventCount(133024)
+            ],
+            1 => [
+                'id' => 57933,
+                'city' => 'Bengaluru',
+                'type' => 'city',
+                'image' => url('/') . '/uploads/city_images/Bengaluru-1.png',
+                'event_count' => $e->getEventCount(57933)
+            ],
+            2 => [
+                'id' => 131517,
+                'city' => 'Chennai',
+                'type' => 'city',
+                'image' => url('/') . '/uploads/city_images/bangalore-1.png',
+                'event_count' => $e->getEventCount(131517)
+            ],
+            3 => [
+                'id' => 131679,
+                'city' => 'Delhi',
+                'type' => 'state',
+                'image' => url('/') . '/uploads/city_images/delhi-1.png',
+                'event_count' => $e->getEventCount(131679)
+            ],
+            4 => [
+                'id' => 57686,
+                'city' => 'Amritsar',
+                'type' => 'state',
+                'image' => url('/') . '/uploads/city_images/panjab-1.png',
+                'event_count' => $e->getEventCount(57686)
+
+            ],
+            5 => [
+                'id' => 133504,
+                'city' => 'Pune',
+                'type' => 'city',
+                'image' => url('/') . '/uploads/city_images/pune-1.png',
+                'event_count' => $e->getEventCount(133504)
+            ]
+        ];
+        $ResponseData['CityArr'] = $CityArr;
+        $message = "City Data getting successfully";
+        $ResposneCode = 200;
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+        // dd($CityArr);
+    }
+
+}

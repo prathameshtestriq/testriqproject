@@ -2,186 +2,237 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Libraries\Authenticate;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use App\Models\Event;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\File;
+use Illuminate\Http\Request;
+
 
 class EventController extends Controller
 {
-    public function getEvents(Request $request)
+    //
+    public function clear_search()
     {
-        // return($request->header());
+        session()->forget('name');
+        session()->forget('city');
+        session()->forget('state');
+        session()->forget('country');
+        return redirect('/event');
+    }
 
-        $ResponseData = [];
-        $ResposneCode = 200;
-        $empty = false;
-        $message = 'Success';
-        $field = '';
 
-        $aToken = app('App\Http\Controllers\LoginController')->validate_request($request);
-        // dd($aToken);
-        if ($aToken['code'] == 200) {
-            $aData = array();
-            $aPost = $request->all();
+    public function index(Request $request)
+    {
+        // dd($request->all());
+        // dd('here');
 
-            $Auth = new Authenticate();
-            $Auth->apiLog($request);
+        $aReturn = array();
+        $aReturn['search_name'] = '';
+        $aReturn['search_city'] = '';
+        // $aReturn['search_state'] = DB::table('vehicle_master')->where('isdeleted', 0)->pluck('vehicle_name', 'id');
+        // $aReturn['search_country'] = DB::table('vehicle_management')->where('isdeleted', 0)->pluck('vehicle_number', 'id');
+        // dd($aReturn['vehicle_numbers']);
+        //  dd('vehicle_types');
 
-            $ResponseData['eventData'] = Event::get($aData)->orderBy('id', 'DESC')->paginate(config('custom.page_limit'));
-            // dd($ResponseData);
+        if (isset($request->form_type) && $request->form_type == 'search_event') {
+            session(['name' => $request->name]);
+            session(['city' => $request->city]);
+            session(['state' => $request->state]);
+            session(['country' => $request->country]);
+            return redirect('/event');
+        }
+
+        $aReturn['search_name'] = (!empty(session('name'))) ? session('name') : '';
+        $aReturn['search_city'] = (!empty(session('city'))) ? session('city') : null;
+        $aReturn['search_state'] = (!empty(session('state'))) ? session('state') : '';
+        $aReturn['search_country'] = (!empty(session('country'))) ? session('country') : '';
+        //dd($aReturn['search_vehicle_number']);
+        $FiltersSql = '';
+        //  dd($aReturn['search_district_name']);
+
+        if (!empty($aReturn['search_name'])) {
+            $FiltersSql .= ' AND (LOWER(vm.name) LIKE \'%' . strtolower($aReturn['search_name']) . '%\')';
         } else {
-            $ResposneCode = $aToken['code'];
-            $message = $aToken['message'];
+            $aReturn['search_name'] = '';
         }
+        // if (!empty($aReturn['search_vehicle_number'])) {
+        //     $FiltersSql .= ' AND vm.id = ' . $aReturn['search_vehicle_number'];
 
-        $response = [
-            'status' => 'success',
-            'data' => $ResponseData,
-            'message' => $message
-        ];
+        //     //  dd($FiltersSql);
 
-        return response()->json($response, $ResposneCode);
+        // } else {
+        //     $aReturn['search_vehicle_number'] = '';
+        //     // dd($aReturn['search_vehicle_number']);
+        // }
+        // // dd($FiltersSql);
+        // if (!empty($aReturn['search_vehicle_type'])) {
+        //     $FiltersSql .= ' AND vm.vehicle_type = ' . $aReturn['search_vehicle_type'] . '';
+        // } else {
+        //     $aReturn['search_vehicle_type'] = '';
+        // }
+        //  dd($FiltersSql);
 
+        #PAGINATION
+        $sSQL = 'SELECT count(vm.id) as count FROM events as vm WHERE 1=1 AND vm.deleted=0 ' . $FiltersSql;
+        $CountsResult = DB::select($sSQL);
+        // dd($CountsResult);
+        $CountRows = 0;
+        if (!empty($CountsResult)) {
+            $CountRows = $CountsResult[0]->count;
+        }
+        // dd($count);
+        $PageNo = request()->input('page', 1);
+        $Limit = config('custom.per_page');
+        $aReturn['Offset'] = ($PageNo - 1) * $Limit;
+
+        $sSQL = 'SELECT vm.id,vm.name,vm.start_time,vm.end_time,vm.city,vm.state,vm.country,vm.active FROM events as vm WHERE vm.deleted = 0' . $FiltersSql;
+
+        $sSQL .= ' ORDER BY vm.name ASC ';
+
+        if ($Limit > 0) {
+            $sSQL .= ' LIMIT ' . $aReturn['Offset'] . ',' . $Limit;
+        }
+        //dd($sSQL );
+        $aReturn['event_array'] = DB::select($sSQL, array());
+       //  dd($aReturn['event_array']);
+        $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['event_array'], $CountRows, $Limit, $PageNo);
+        $aReturn['Paginator']->setPath(request()->url());
+        //dd($aReturn);
+
+        return view('master_data.event.list', $aReturn);
     }
 
-    public function get_data_location_wise(Request $request)
+    public function add_edit(Request $request, $iId = 0)
     {
-        // dd($request);
-        $ResponseData = [];
-        $ResposneCode = 200;
-        $empty = false;
-        $message = 'Success';
-        $field = '';
-        $Events = [];
-        $ResponseData['CityName'] = '';
+        $aReturn['name'] = '';
+        $aReturn['start_time'] = '';
+        $aReturn['end_time'] = '';
+        $aReturn['city'] = '';
+        $aReturn['state'] = '';
+        $aReturn['country'] = '';
+        $SuccessMessage = '';
+        //dd($request);
+        if (isset($request->form_type) && $request->form_type == 'add_edit_event') {
+            // dd('aa');
+            $Rules = [
+                'name' => 'required|string',
+                'start_time' => 'required|string',
+                'end_time' => 'required|string',
+                'city' => 'required|string',
+                'state' => 'required|string',
+                'country' => 'required|string',
+                //   'driver_contact_no' => 'required|max:13',
+              //  'driver_contact_no' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|max:10|min:10',
 
-        #GET EVENTS COUNTRY WISE
-        $sql = "SELECT e.* FROM events AS e ";
-
-        $CountryCode = $request->country_code;
-        $City = isset($request->city) ? $request->city : '';
-
-        $sSQL = 'SELECT id FROM countries WHERE LOWER(country_code) =:country_code';
-        $CountryId = DB::select($sSQL, array('country_code' => strtolower($CountryCode)));
-        // dd($CountryId);
-        if (sizeof($CountryId) > 0) {
-            $SQL = $sql . 'WHERE e.active=1 AND e.country=:country';
-            $Events = DB::select($SQL, array('country' => $CountryId[0]->id));
-            // dd($SQL,$Events);
-        }
-
-        #SEARCH EVENTS WITH DROPDOWN CITIES
-        if (!empty($City)) {
-            $SQL = $sql . 'WHERE e.active=1 AND e.city=:city';
-            $Events = DB::select($SQL, array('city' => $City));
-
-            $SQL2 = 'SELECT name FROM cities WHERE id=:city';
-            $FieldValue = DB::select($SQL2, array('city' => $City));
-            // dd($FieldValue);
-            $CityName = $FieldValue[0]->name;
-            $ResponseData['CityName'] = strtolower($CityName);
-        }
-
-        #GET CITY WITH DROPDOWN COUNTRY WISE
-        $Cities = array();
-        if (sizeof($CountryId) > 0) {
-            $SQL = 'SELECT * FROM cities WHERE country_id=:country_id AND show_flag=1'; //show_flag is show city flag
-            $Cities = DB::select($SQL, array('country_id' => $CountryId[0]->id));
-        }
-        $ResponseData['cityData'] = $Cities;
+            ];
+            $name = (!empty($request->name)) ? $request->name : '';
+            $start_time = (!empty($request->start_time)) ? $request->start_time : 0;
+            $end_time = (!empty($request->end_time)) ? $request->end_time : '';
+            $city = (!empty($request->city)) ? $request->city : '';
+            $state = (!empty($request->state)) ? $request->state : '';
+            $country = (!empty($request->country)) ? $request->country : '';
 
 
-        #GET EVENTS WITH INPUT CITY
-        $DropdownArr = array();
-        if (!empty($request->input_city)) {
-            $SearchText = strtolower($request->input_city);
-            // dd($SearchText);
-            $SQL3 = $sql . "LEFT JOIN cities AS c ON e.city = c.id
-                          LEFT JOIN states AS s ON e.state = s.id
-                          WHERE e.active=1 AND
-                             LOWER(e.name) LIKE '%" . $SearchText . "%'
-                          OR LOWER(c.name) LIKE '%" . $SearchText . "%'
-                          OR LOWER(s.name) LIKE '%" . $SearchText . "%'
-                         ";
-            $Events = DB::select($SQL3);
-            // dd($SQL3,$Events);
+            if ($iId > 0) {
+                //dd('update');
+                #UPDATE
 
-            #GET DATA FRO DROPDOWN ON TYPE
-            $SQL4 = "SELECT e.id AS event_id,e.name AS event_name,
-                            c.id AS city_id,c.name AS city_name,
-                            s.id AS state_id,s.name AS state_name
-                        FROM events AS e
-                        LEFT JOIN cities AS c ON e.city = c.id
-                        LEFT JOIN states AS s ON e.state = s.id
-                        WHERE e.active=1 AND
-                        LOWER(e.name) LIKE '%" . $SearchText . "%'
-                        OR LOWER(c.name) LIKE '%" . $SearchText . "%'
-                        OR LOWER(s.name) LIKE '%" . $SearchText . "%'
-                    ";
-            $DropdownArr = DB::select($SQL4);
-            // dd($SQL4,$DropdownArr);
-            $ResponseData['DropdownArr'] = $DropdownArr;
-        }
-        foreach ($Events as $value) {
-            $value->banner_image = !empty($value->banner_image) ? url('/') . '/uploads/banner_image/' . $value->banner_image . '' : '';
-            $value->logo_image = !empty($value->logo_image) ? url('/') . '/uploads/logo_image/' . $value->logo_image . '' : '';
-        }
+                $sSQL = 'UPDATE events SET name = :name,start_time = :start_time,end_time = :end_time,city = :city,state = :state, country = :country WHERE id = :id';
 
-        if (!empty($request->filter)) {
-            $Filter = $request->filter;
 
-            switch ($Filter) {
-                case 'today':
-                    $StartDate = strtotime(date('Y-m-d 00:00:00'));
-                    $EndDate = strtotime(date('Y-m-d 23:59:59'));
-                    break;
 
-                case 'tomorrow':
-                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime("+1 day")));
-                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime("+1 day")));
-                    break;
+                $Bindings = array(
+                    'name' => $name,
+                    'start_time' => $start_time,
+                    'end_time' => $end_time,
+                    'city' => $city,
+                    'state' => $state,
+                    'country' => $country,
+                    'id' => $iId
+                );
+                //  dd($Bindings);
+                //duplication
+                // $sSQL1 = "SELECT count(id) AS rec_count FROM vehicle_management WHERE LOWER(vehicle_brand) = '" . strtolower($vehicle_brand) . "' and id != " . $iId . " and isdeleted = 0 ";
 
-                case 'month':
-                    $Start = new Carbon('first day of this month');
-                    $StartDate = strtotime($Start->startOfMonth());
+                $sSQL1 = "SELECT COUNT(id) AS rec_count FROM events WHERE LOWER(name) = :name AND id != :id AND deleted = 0";
+                $rResult = DB::select($sSQL1, ['name' => strtolower($name), 'id' => $iId]);
+                //  dd($rResult);
+                if (($rResult[0]->rec_count) == 1) {
+                    $SuccessMessage = 'Event already exist';
+                    return redirect('event/add')->with('error', $SuccessMessage);
+                } else {
+                    $Result = DB::update($sSQL, $Bindings);
+                    $SuccessMessage = 'Event updated successfully';
+                }
+                // dd($Result);
+            } else {
+                // dd('insert');
 
-                    $End = new Carbon('last day of this month');
-                    $EndDate = strtotime($End->endOfMonth());
-                    break;
 
-                case 'week':
-                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
-                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('saturday this week')));
-                    break;
+                #ADD
+                $request->validate($Rules);
+                $sSQL = 'INSERT INTO events (name, start_time, end_time,city, state, country, created_date) VALUES (:name, :start_time, :end_time, :city, :state, :country,:created_date)';
+                //   dd($sSQL);
+                $Bindings = array(
+                    'name' => $name,
+                    'start_time' => $start_time,
+                    'end_time' => $end_time,
+                    'city' => $city,
+                    'state' => $state,
+                    'country' => $country,
+                    'created_date' => time()
+                );
+                //dd($Bindings);
 
-                case 'weekend':
-                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('saturday this week')));
-                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
-                    break;
+                //duplication
+                //  $sSQL1 = "SELECT count(id) AS rec_count FROM vehicle_management WHERE vehicle_brand = '" . $vehicle_brand . "' AND vehicle_type = '" . $vehicle_type . "' AND vehicle_number = '" . $vehicle_number . "'";
+                $sSQL1 = "SELECT COUNT(id) AS rec_count FROM events WHERE LOWER(name) = :name AND id != :id AND deleted = 0";
+$rResult = DB::select($sSQL1, ['name' => strtolower($name), 'id' => $iId]);
 
-                default:
-                    break;
+                //dd($sSQL1);
+                // $rResult = DB::select(DB::raw($sSQL1));
+                //  dd($rResult);
+
+                if (($rResult[0]->rec_count) == 0) {
+                    $Result = DB::insert($sSQL, $Bindings);
+                    $SuccessMessage = 'Event added successfully';
+                } else {
+                    $SuccessMessage = ' Event already exist';
+                    return redirect('evnet/add')->with('error', $SuccessMessage);
+
+                }
             }
-            // dd($StartDate, $EndDate);
-            if (isset($StartDate) && isset($EndDate)) {
-                $SQL5 = $sql . 'WHERE e.active=1 AND e.start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
-            }else if($Filter == 'free'){
-                $SQL5 =  $sql ."WHERE e.active=1 AND e.is_paid=0";
-            }
-            // dd($SQL5,$Events);
-            $Events = DB::select($SQL5);
+            return redirect('/event')->with('success', $SuccessMessage);
+        } else {
+
+
+            //EDIT
+            // if ($iId > 0) {
+
+            //     $sSQL = 'SELECT * FROM events WHERE id=:id';
+            //     $Materials = DB::select($sSQL, array('id' => $iId));
+            //   //  dd($Materials);
+            //     $aReturn = (array) $Materials[0];
+            // }
         }
-        $ResponseData['eventData'] = $Events;
 
-        $response = [
-            'status' => 'success',
-            'data' => $ResponseData,
-            'message' => $message
-        ];
-
-        return response()->json($response, $ResposneCode);
+        $aSql = 'select id,name FROM events where deleted = 0';
+        $aReturn['event_array'] = DB::select($aSql);
+       // dd($aReturn['event_array']);
+        return view('master_data.event.create', $aReturn);
     }
 
+    public function remove_vehicle_management($iId)
+    {
+        if (!empty($iId)) {
+            // dd($iId);
+            $sSQL = 'UPDATE events SET deleted = 1 WHERE id=:id';
+            $Result = DB::update($sSQL, array('id' => $iId));
+            //   dd($Result);
+        }
+        return redirect('/event')->with('success', 'event deleted successfully');
+    }
 }

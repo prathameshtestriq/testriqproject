@@ -24,7 +24,7 @@ class UserRight extends Model
             $rAccess = DB::table('master_roles')
                         ->select('id as role_id')
                         ->where('active','=',1)
-                        ->orderBy('sort_order', 'ASC')
+                        // ->orderBy('sort_order', 'ASC')
                         ->get();
         }else{
             $rAccess = DB::table('master_roles')
@@ -41,7 +41,7 @@ class UserRight extends Model
 		foreach($rAccess as $aAccess){
             $rModule = DB::table('master_roles')->select('*')->where('id','=',$aAccess->role_id)->first();
             $rModule = json_decode(json_encode($rModule,true),true);
-			$aReturn[$rModule['role_name']] = $rModule;
+			// $aReturn[$rModule['role_name']] = $rModule;
 		}
 		return $aReturn;
     }

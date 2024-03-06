@@ -1,0 +1,57 @@
+1) Banner images not showing on location detect - Done
+2) Banner images not showing with proper size & background - Done
+3) Banner -> Arrows missing & click curser not used - Done
+4) Popular Events -> Arrows hide/show as per available events - Done
+5) Events -> Prices will show range if multiple tickets available
+6) Advertisement -> click curser not used, check size for different image (it should look same as design)
+7) What Our Top Clints Say -> section looks scattered, should show as design - Done
+8) Forgot Password -> should have click cursor - Done
+9) Forgot Password -> not having cancel/back button - Done
+10) After login -> user details should be displayed in menu (FirstName, LastName & email) - Done
+11) Logo should redirect to home page of website - Done
+12) Event search not working at all - Done
+13) Loader is missing on all actions throughout the system
+14) Top bar not fixed to page scroll - Done
+15) Responsiveness issues are there on landing page - Done
+16) Logo & page scroll top option is missing - Done
+
+- API's for event creation (co-ordinate with Prathamesh) - Done
+- Lazy loader for 'no image found' - Done
+- Detect my location redirects to event details page (if its blocked) - Done
+- On event view it is opening event portfolio section it should redirect to top of the screen - Done
+- Assign next tasks related to admin panel - Done
+- Get admin panel & edit profile tested by Kavita - Done
+- Event details page (few fields are not showing dynamically) - Done
+- Clear search option/solution - Done
+- Search page for showing event results (with left sidebar for more filters)
+
+Event type - running, cycling, walking - Done
+Category - 3k, 10k etc masters - Done
+Event URL - non editable
+Event - keywords/tags to be used in meta - Done
+Repeating event - no use, ignore - Done
+Promoted -> flag from table & backend - Done
+after 2-3 click -> view all option
+Health Details profile -> have all details from document
+Terrains
+
+1) footer logo image - Done
+2) logo click - redirect to home page - Done
+3) Home page not loading first time - need local storage clear
+4) Remove category filter on home page - redirect it to search page with filter selected
+5) Upcoming events - same as Popular Events
+6) Header event search - redirects to search page - Done
+7) Scroll top - Done
+8) Profile header adjustment - related changes (url, logout etc.) - Done
+
+//28/2/2024
+1) use loading image
+2) edit profile new design integration
+3) organiser tab basic details showing and edit
+4) organiser page display
+5) testing of completed modules by Kavita
+6) create event integration with - select event type popup
+7) Banner image should have lazy loading, Lazy loading shows gray box till images gets loaded
+
+
+
