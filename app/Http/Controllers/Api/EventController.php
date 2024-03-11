@@ -12,6 +12,7 @@ use App\Models\Event;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Config;
+
 class EventController extends Controller
 {
 
@@ -46,6 +47,14 @@ class EventController extends Controller
             $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
             $event->max_price = (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0;
             $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
+
+            //event start month
+            $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : 0;
+            //event start d
+            $event->start_event_date = (!empty($event->start_time)) ? gmdate("d", $event->start_time) : 0;
+
+            //registration closing date
+            $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : 0;
         }
         // dd($Events);
         return $Events;
@@ -60,7 +69,7 @@ class EventController extends Controller
         $empty = false;
         $message = 'Success';
         $field = '';
-        $Events = [];
+        $Events = $Banners = $UpcomingEvents = [];
         $ResponseData['CityName'] = '';
         $ResponseData['CountryId'] = $ResponseData['StateId'] = $ResponseData['CityId'] = 0;
         $FewSuggestionFlag = 0;
@@ -140,23 +149,23 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
+                $Events = DB::select($EventSql);
             }
-            $Events = DB::select($EventSql);
         }
 
         if (Sizeof($Banners) == 0) {
             $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
             if (!empty($NewState_id)) {
                 $BannerSql .= ' AND b.state=' . $NewState_id;
+                $Banners = DB::select($BannerSql);
             }
-            $Banners = DB::select($BannerSql);
         }
         if (Sizeof($UpcomingEvents) == 0) {
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
+                $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
             }
-            $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
         }
         // dd($EventSql,$BannerSql,$Banners);
         $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
@@ -164,22 +173,22 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
+                $Events = DB::select($EventSql);
             }
-            $Events = DB::select($EventSql);
         }
         if (Sizeof($Banners) == 0) {
             $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
             if (!empty($NewCountry_id)) {
                 $BannerSql .= ' AND b.country=' . $NewCountry_id;
+                $Banners = DB::select($BannerSql);
             }
-            $Banners = DB::select($BannerSql);
         }
         if (Sizeof($UpcomingEvents) == 0) {
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
+                $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
             }
-            $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
         }
 
         $BannerImages = [];
@@ -272,7 +281,9 @@ class EventController extends Controller
             $EventSql .= " AND e.end_time <=" . $EndDateTime;
         }
         if ((!empty($StartDateTime)) && (!empty($EndDateTime))) {
-            $EventSql .= ' AND e.start_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
+            // $EventSql .= ' AND e.start_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
+            $EventSql .= ' AND e.start_time >=' . $StartDateTime . ' AND e.end_time <= ' . $EndDateTime;
+
         }
         if (!empty($Distance)) {
             $EventSql .= " AND e.distance =" . $Distance;
@@ -301,11 +312,8 @@ class EventController extends Controller
                     break;
 
                 case 'month':
-                    $Start = new Carbon('first day of this month');
-                    $StartDate = strtotime($Start->startOfMonth());
-
-                    $End = new Carbon('last day of this month');
-                    $EndDate = strtotime($End->endOfMonth());
+                    $StartDate = strtotime(date('Y-m-01'));
+                    $EndDate = strtotime(date('Y-m-t'));
                     break;
 
                 case 'week':
@@ -325,11 +333,13 @@ class EventController extends Controller
             // dd($StartDate, $EndDate);
             if (isset($StartDate) && isset($EndDate)) {
                 $EventSql .= ' AND e.start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+                // $EventSql .= ' AND e.start_time >=' . $StartDate . ' AND e.end_time <= ' . $EndDate;
+
             } else if ($Filter == 'free') {
                 $EventSql .= " AND e.is_paid=0";
             }
         }
-        // dd($EventSql);
+        // dd($EventSql, $StartDate, $EndDate);
 
         $Events = DB::select($EventSql);
         // dd($Events);
@@ -353,7 +363,7 @@ class EventController extends Controller
         $empty = false;
         $message = 'Success';
         $field = '';
-        $Events = [];
+        $Events = $Banners = $UpcomingEvents = [];
         $ResponseData['CityName'] = '';
         $ResponseData['CountryId'] = $ResponseData['StateId'] = $ResponseData['CityId'] = 0;
         $FewSuggestionFlag = 0;
@@ -382,74 +392,86 @@ class EventController extends Controller
         $city_id = isset($request->scity) ? $request->scity : 0;
         $state_id = isset($request->state) ? $request->state : 0;
         $country_id = isset($request->country) ? $request->country : 0;
-
+        // dd($country_id,$City);
         if (!empty($City)) {
             $sSQL = 'SELECT id,name,state_id,country_id FROM cities WHERE id =:id';
             $CityId = DB::select($sSQL, array('id' => $City));
 
             $EventSql .= ' AND e.city=' . $City;
             $BannerSql .= ' AND b.city=' . $City;
+            $UpcomingSql .= ' AND u.city=' . $City;
+
             if (sizeof($CityId) > 0) {
                 $ResponseData['CityName'] = $CityId[0]->name;
                 $ResponseData['CountryId'] = $CityId[0]->country_id;
                 $ResponseData['StateId'] = $CityId[0]->state_id;
                 $ResponseData['CityId'] = $CityId[0]->id;
             }
+            $Events = DB::select($EventSql);
+            // dd($EventSql,$Events);
+            $Banners = DB::select($BannerSql);
+            $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
         }
-
-        $Events = DB::select($EventSql);
-        $Banners = DB::select($BannerSql);
-        $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
 
         #NEW SECTION STARTS IF EVENTS AND BANNERS GETTINGS EMPTY
         ##IF NO EVENTS OR BANNERS ARE FOUND FOR THE GIVEN TIME FRAME, THEN WE SHOW ALL AVAILABLE ON
         $NewState_id = (!empty($state_id)) ? $state_id : $ResponseData['StateId'];
+        // dd($NewState_id, $Events);
+
         if (Sizeof($Events) == 0) {
             $FewSuggestionFlag = 1;
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
+                if (empty($ResponseData['StateId'])) {
+                    // dd($ResponseData,$NewState_id);
+                    $ResponseData['StateId'] = $NewState_id;
+                }
+                $Events = DB::select($EventSql);
             }
-            $Events = DB::select($EventSql);
+
         }
         // dd($EventSql,$BannerSql);
         if (Sizeof($Banners) == 0) {
             $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
             if (!empty($NewState_id)) {
                 $BannerSql .= ' AND b.state=' . $NewState_id;
+                $Banners = DB::select($BannerSql);
             }
-            $Banners = DB::select($BannerSql);
         }
         if (Sizeof($UpcomingEvents) == 0) {
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
+                $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
             }
-            $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
         }
 
-
         $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
+        // dd($ResponseData['CountryId'],$NewCountry_id,$Events);
         if (Sizeof($Events) == 0) {
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
+                if (empty($ResponseData['CountryId'])) {
+                    $ResponseData['CountryId'] = $NewCountry_id;
+                }
+                $Events = DB::select($EventSql);
             }
-            $Events = DB::select($EventSql);
         }
         if (Sizeof($Banners) == 0) {
             $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
             if (!empty($NewCountry_id)) {
                 $BannerSql .= ' AND b.country=' . $NewCountry_id;
+                $Banners = DB::select($BannerSql);
             }
-            $Banners = DB::select($BannerSql);
         }
         if (Sizeof($UpcomingEvents) == 0) {
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
+                $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
             }
-            $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
         }
 
         $BannerImages = [];
@@ -468,6 +490,7 @@ class EventController extends Controller
         #UPCOMING EVENTS
         $ResponseData['UpcomingEventData'] = $this->ManipulateEvents($UpcomingEvents, $UserId);
         $ResponseData['MAX_UPLOAD_FILE_SIZE'] = config('custom.max_size');
+        // dd($ResponseData);
 
         $response = [
             'status' => 'success',
@@ -691,6 +714,14 @@ class EventController extends Controller
                 $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
                 $event->max_price = (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0;
                 $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
+
+                //event start month
+                $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : 0;
+                //event start d
+                $event->start_event_date = (!empty($event->start_time)) ? gmdate("d", $event->start_time) : 0;
+
+                //registration closing date
+                $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d M Y", $event->registration_end_time) : 0;
             }
             // dd($Events);
             $ResponseData['EventData'] = $Events;
@@ -700,16 +731,18 @@ class EventController extends Controller
 
             #Preview data array
             $ResponseData['PreviewEventDetails'] = array();
-            if (!empty($Events)) {
-                $ResponseData['PreviewEventDetails'] = array(
-                    "banner_img" => !empty($Events[0]->banner_image) ? $Events[0]->banner_image . '' : "",
-                    "event_id" => $Events[0]->id,
-                    "start_date" => (!empty($Events[0]->start_time)) ? date("F d, Y", $Events[0]->start_time) : 0,
-                    "city" => !empty($Events[0]->city) ? $master->getCityName($Events[0]->city) : "",
-                    "event_name" => $Events[0]->name,
-                    "event_display_name" => !empty($Events[0]->event_display_name) ? $Events[0]->event_display_name : $Events[0]->name
-                );
-            }
+            // if (!empty($Events)) {
+            $ResponseData['PreviewEventDetails'] = array(
+                "banner_img" => (isset($Events[0]->banner_image) && !empty($Events[0]->banner_image)) ? $Events[0]->banner_image . '' : "",
+                "event_id" => isset($Events[0]->id) && !empty($Events[0]->id) ? $Events[0]->id : "",
+                "start_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("F d, Y", $Events[0]->start_time) : 0,
+                "city" => (isset($Events[0]->city) && !empty($Events[0]->city)) ? $master->getCityName($Events[0]->city) : "",
+                "event_name" => (isset($Events[0]->name) && !empty($Events[0]->name)) ? $Events[0]->name : "",
+                "start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("M", $Events[0]->start_time) : gmdate("M", strtotime('today')),
+                "start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("d", $Events[0]->start_time) : gmdate("d", strtotime('today')),
+                "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('today'))
+            );
+            // }
 
             #GETTING EVENT IMAGES
             $ImageQry = "SELECT * FROM event_images WHERE event_id=:event_id";
@@ -766,16 +799,20 @@ class EventController extends Controller
                 $EventStartTime = $EventEndTime = 0;
                 $StartDate = isset($request->event_start_date) ? $request->event_start_date : 0;
                 $StartTime = isset($request->event_start_time) ? $request->event_start_time : 0;
-                if (!empty($StartDate)) {
+                if (!empty($StartDate) && !empty($StartTime)) {
                     $start_date_time_string = $StartDate . ' ' . $StartTime;
                     $EventStartTime = strtotime($start_date_time_string);
+                } else if (!empty($StartDate) && empty($StartTime)) {
+                    $EventStartTime = strtotime($StartDate);
                 }
 
                 $EndDate = isset($request->event_end_date) ? $request->event_end_date : 0;
                 $EndTime = isset($request->event_end_time) ? $request->event_end_time : 0;
-                if (!empty($EndDate)) {
+                if (!empty($EndDate) && !empty($EndTime)) {
                     $end_date_time_string = $EndDate . ' ' . $EndTime;
                     $EventEndTime = strtotime($end_date_time_string);
+                } else if (!empty($EndDate) && empty($EndTime)) {
+                    $EventEndTime = strtotime($EndDate);
                 }
 
                 $IsRepeatEvent = isset($request->repeating_event) ? $request->repeating_event : 0;
@@ -979,7 +1016,6 @@ class EventController extends Controller
         ];
         return response()->json($response, $ResposneCode);
     }
-
 
     function PopularCity(Request $request)
     {

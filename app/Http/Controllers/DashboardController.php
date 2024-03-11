@@ -18,7 +18,7 @@ class DashboardController extends Controller
    public function dashboard_details(Request $request, $code='')
    {
       $aReturn = [];//$this-> common_data();
-        //dd('dashboard');
+
       return view('dashboard.dashboard',$aReturn);
    }
 

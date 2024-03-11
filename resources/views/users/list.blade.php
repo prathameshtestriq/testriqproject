@@ -100,7 +100,17 @@
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-left">Name</th>
+                                        <th class="text-left">Name</th>                                                <div class="col-xs-12 col-md-12">
+                                            <div class="form-group mb-5">
+                                                {{-- <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Contact Number <span style="color:red;">*</span></label> --}}
+                                                {{-- <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
+                                                    placeholder="mobile" autocomplete="off" value="{{ old('mobile',$mobile) }}" /> --}}
+                                                    <h5><small class="text-danger" id="mobile_err"></small></h5>
+                                                    @error('mobile')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
                                         {{-- <th class="text-left">User Name</th> --}}
                                         <th class="text-left">Email ID</th>
                                         <th class="text-left">Contact Number</th>
@@ -109,7 +119,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="text-center">
-                                
+                    
                                     <?php 
                                     if (!empty($user_array)){
                                         $i = $Offset;?>
@@ -124,7 +134,6 @@
 
 
                                                 <td class="text-center">
-
                                                     <div class="custom-control custom-switch custom-switch-success">
                                                         <input type="checkbox" class="custom-control-input"
                                                             id="{{ $val->id }}" {{ $val->is_active ? 'checked' : '' }}
@@ -135,6 +144,8 @@
                                                         </label>
                                                     </div>
                                                 </td>
+
+                                               
 
                                                 <td>
                                                     <a href="{{ url('/user/add_edit', $val->id) }}"><i
@@ -182,8 +193,10 @@
         }
     }
 
+
     function change_status(_this, id) {
-        // alert(id);
+        //  alert(id)
+;
         var status = $(_this).prop('checked') == true ? 1 : 0;
         // alert(status);
         
@@ -200,6 +213,7 @@
                 },
                 success: function(result) {
                     if(result == 1){
+                        console.log(result);
                         alert('Status changed successfully')
                         //location.reload(); 
                     }else{
@@ -228,6 +242,7 @@
             return false;
         }
     }
+    
     
   
 </script>

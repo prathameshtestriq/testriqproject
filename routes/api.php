@@ -70,6 +70,12 @@ Route::controller(UserController::class)->group(function () {
     Route::post('delete_profile', 'delete_profile');
     Route::post('update_profile_pic', 'update_profile_pic');
     Route::post('edit_user_medical', 'EditUserMedical');
+    #New Routes
+    Route::post('personal_details', 'PersonalDetails');
+    Route::post('general_details', 'GeneralDetails');
+    Route::post('address_details', 'AddressDetails');
+    Route::post('social_media', 'SocialMedia');
+    Route::post('communication_settings', 'CommunicationSettings');
 });
 
 Route::controller(EventUserFollowController::class)->group(function () {

@@ -60,6 +60,48 @@
                                 User
                             </a>
                         </div>
+                    </li> 
+                    <li class="nav-item d-inline ">
+                        <div class="btn-group">
+                            <a class="btn btn-flat-primary <?php
+                            // if ($uriSegment == 'category') {
+                            //     echo 'active';
+                            // }
+                            ?>" href="{{ url('/category') }}"
+                                type="button">
+
+                                <i class="fa fa-users" aria-hidden="true"></i>
+                                Category
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item d-inline ">
+                        <div class="btn-group">
+                            <a class="btn btn-flat-primary <?php
+                            // if ($uriSegment == 'category') {
+                            //     echo 'active';
+                            // }
+                            ?>" href="{{ url('/banner') }}"
+                                type="button">
+
+                                <i class="fa fa-users" aria-hidden="true"></i>
+                                Banner
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item d-inline ">
+                        <div class="btn-group">
+                            <a class="btn btn-flat-primary <?php
+                            // if ($uriSegment == 'category') {
+                            //     echo 'active';
+                            // }
+                            ?>" href="{{ url('/advertisement') }}"
+                                type="button">
+
+                                <i class="fa fa-users" aria-hidden="true"></i>
+                                Advertisement
+                            </a>
+                        </div>
                     </li>
                     <li class="nav-item d-inline ">
                         <div class="btn-group">
@@ -76,6 +118,38 @@
                             </a>
                         </div>
                     </li>
+                    <li class="nav-item d-inline ">
+                        <div class="btn-group">
+                            <a class="btn btn-flat-primary <?php
+                            if ($uriSegment == 'testimonial') {
+                                echo 'active';
+                            }
+                            ?>" href="{{ url('/testimonial') }}"
+                                type="button">
+
+                                <i class="fa fa-users" aria-hidden="true"></i>
+                                Testimonial
+
+                            </a>
+                        </div>
+                    </li>
+
+                    <li class="nav-item d-inline ">
+                        <div class="btn-group">
+                            <a class="btn btn-flat-primary <?php
+                            if ($uriSegment == 'type') {
+                                echo 'active';
+                            }
+                            ?>" href="{{ url('/type') }}"
+                                type="button">
+
+                                <i class="fa fa-users" aria-hidden="true"></i>
+                                Types
+
+                            </a>
+                        </div>
+                    </li>
+
 
             </div>
 
@@ -112,7 +186,7 @@
                                 ?>
                             </div>
                             <span class="avatar"><img class="round"
-                                    src="{{ asset('app-assets/images/logo/logo.png')}}" alt="avatar" height="40"
+                                    src="{{ asset('app-assets/images/logo/logo.jpg')}}" alt="avatar" height="40"
                                     width="40"><span class="avatar-status-online"></span></span>
                         </a>
                         <!-- <span class="avatar"><img class="round"

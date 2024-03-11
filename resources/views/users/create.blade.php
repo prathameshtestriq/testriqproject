@@ -35,6 +35,22 @@
             </div>
         </div>
 
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
         @if ($message = Session::get('error'))
             <div class="demo-spacing-0 mb-1">
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -69,42 +85,35 @@
 {{--                                                 
                                                 --}}
 
-                                                
                                                 <div class="col-xs-12 col-md-12">
                                                     <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left" for="firstname" style="margin-top:5px">First Name <span style="color:red;">*</span></label>
-                                                        <input type="text" id="firstname" class="form-control col-sm-8 float-right"
-                                                            placeholder="First Name" name="firstname" autocomplete="off" value="{{ old('firstname',$firstname) }}" />
+                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >First name <span style="color:red;">*</span></label>
+                                                        <input type="firstname" id="firstname" class="form-control col-sm-8 float-right" name="firstname"
+                                                            placeholder="First Name" autocomplete="off" value="{{ old('firstname',$firstname) }}" />
                                                             <h5><small class="text-danger" id="firstname_err"></small></h5>
                                                             @error('firstname')
                                                             <span class="error" style="color:red;">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
-
-
-
                                                 
                                                 <div class="col-xs-12 col-md-12">
                                                     <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left" for="lastname" style="margin-top:10px">Last Name <span style="color:red;">*</span></label>
-                                                        <input type="text" id="lastname" class="form-control col-sm-8 float-right"
-                                                            placeholder="Last Name" name="lastname" autocomplete="off" value="{{ old('lastname',$lastname) }}" />
-                                                            <h5><small class="text-danger" id="lastname_err"></small></h5>
+                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Last Number <span style="color:red;">*</span></label>
+                                                        <input type="text" id="lastname" class="form-control col-sm-8 float-right" name="lastname"
+                                                            placeholder="lastname" autocomplete="off" value="{{ old('lastname',$lastname) }}" />
+                                                            <h5><span class="text-danger" id="lastname_err"></span></h5>
                                                             @error('lastname')
                                                             <span class="error" style="color:red;">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
 
-
-
-                                                
                                                 <div class="col-xs-12 col-md-12">
                                                     <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Contact Number <span style="color:red;">*</span></label>
-                                                        <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="contact_number"
-                                                            placeholder="mobile" autocomplete="off" value="{{ old('contact_number',$mobile) }}" />
+                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >contact number <span style="color:red;">*</span></label>
+                                                        <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
+                                                            placeholder="mobile" autocomplete="off" value="{{ old('mobile',$mobile) }}" />
                                                             <h5><small class="text-danger" id="mobile_err"></small></h5>
                                                             @error('mobile')
                                                             <span class="error" style="color:red;">{{ $message }}</span>
@@ -134,11 +143,11 @@
                                             <div class="row">
                                                 <h4 class="m-1">Credential:</h4>
                                                 
-                                                <div class="col-md-12 col-12">
+                                                <div class="col-xs-12 col-md-12">
                                                     <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left"  for="password">Password <span style="color:red;">*</span></label>
+                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >password <span style="color:red;">*</span></label>
                                                         <input type="password" id="password" class="form-control col-sm-8 float-right" name="password"
-                                                            placeholder="Password"  autocomplete="off"/>
+                                                            placeholder="password" autocomplete="off"/>
                                                             <h5><small class="text-danger" id="password_err"></small></h5>
                                                             @error('password')
                                                             <span class="error" style="color:red;">{{ $message }}</span>
@@ -148,15 +157,15 @@
                                                 
                                                 <div class="col-xs-12 col-md-12">
                                                     <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left"  for="password_confirmation" style="margin-top:10px">Confirm Password </label>
-                                                        <input type="password" id="password_confirmation" class="form-control col-sm-8 float-right"
-                                                            name="password_confirmation" placeholder="Confirm Password" />
+                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Confirm password <span style="color:red;">*</span></label>
+                                                        <input type="password" id="password_confirmation" class="form-control col-sm-8 float-right" name="password_confirmation"
+                                                            placeholder="Confirm Password" autocomplete="off"/>
                                                             <h5><small class="text-danger" id="password_confirmation_err"></small></h5>
                                                             @error('password_confirmation')
                                                             <span class="error" style="color:red;">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div> 
+                                                </div>
 
                                                 <div class="col-xs-12 col-md-12">
                                                     <label class="col-sm-4 float-left" for="password_confirmation" style="margin-top:10px">Status</label>
@@ -180,14 +189,12 @@
                                                 <div class="form-group mb-5">
                                             
                                                     <label for="role" class="col-sm-4 float-left"> Type <span style="color:red;">*</span></label>
-                                                    
                                                     <select name="type" id="type" class="form-control form-select col-sm-8 float-right" onchange="return get_info()">
                                                         <option value="">Select Role</option>
-                                                        @foreach ($type as $value)
-                                                            <option value="{{ $value->id }}" {{ old('user', $type) == $value->id ? 'selected' : '' }}>{{ $value->role_name }}</option>
+                                                        @foreach ($type as $role)
+                                                            <option value="{{ $role->id }}">{{ $role->role_name }}</option>
                                                         @endforeach
                                                     </select>
-                                                    
                                                     <h5><small class="text-danger" id="user_role_err"></small></h5>
                                                     @error('user_role')
                                                     <span class="text-danger">{{ $message }}</span>

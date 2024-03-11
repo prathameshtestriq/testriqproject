@@ -22,9 +22,9 @@
                                        <h1>Welcome to dashboard</h1>
 
                             </form>
-                            {{-- @include('dashboard.tabs') --}}
+                            <!-- @include('dashboard.tabs')
                             <?php ?>
-                           <div class="tab-content">
+                           <div class="tab-content"> -->
 
                            <!-- </div>
                         </div>

@@ -44,7 +44,7 @@ class UserController extends Controller
 
             $master = new Master();
             foreach ($userData as $value) {
-                $value->profile_pic = (!empty($value->profile_pic)) ? url('/').'/uploads/profile_images/' . $value->profile_pic . '' : url('/').'/uploads/profile_images/user-icon.png' ;
+                $value->profile_pic = (!empty($value->profile_pic)) ? url('/') . '/uploads/profile_images/' . $value->profile_pic . '' : url('/') . '/uploads/profile_images/user-icon.png';
                 $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
 
                 $value->id_proof_doc_upload = (!empty($value->id_proof_doc_upload)) ? url('') . '/uploads/user_documents/' . $value->id_proof_doc_upload . '' : '';
@@ -85,72 +85,461 @@ class UserController extends Controller
         ];
         return response()->json($response, $ResposneCode);
     }
-    // public function getProfile(Request $request)
-    // {
-    //     $ResponseData = [];
-    //     $response['message'] = "";
-    //     $ResposneCode = 400;
-    //     $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-    //     // dd( $aToken['data']->ID);
 
-    //     if ($aToken['code'] == 200) {
+    function PersonalDetails(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
 
-    //         $Auth = new Authenticate();
-    //         $Auth->apiLog($request);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
 
-    //         // $sSQL = 'SELECT * FROM users Where id =:Id';
-    //         // $userData = DB::select(
-    //         //     $sSQL,
-    //         //     array(
-    //         //         'Id' => $aToken['data']->ID
-    //         //     )
-    //         // );
+            $sSQL = 'SELECT * FROM users Where id =:Id';
+            $userData = DB::select($sSQL, array('Id' => $aToken['data']->ID));
 
-    //         $sSQL = 'SELECT users.*, user_details.* FROM users LEFT JOIN user_details ON users.id = user_details.user_id WHERE users.id=:Id';
-    //         $userData = DB::select(
-    //             $sSQL,
-    //             array(
-    //                 'Id' => $aToken['data']->ID
-    //             )
-    //         );
-
-    //         foreach ($userData as $value) {
-    //             $value->profile_pic = (!empty($value->profile_pic)) ? env('ATHLETE_PROFILE_PATH') . $value->profile_pic . '' : '';
-    //             $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
-    //         }
-    //         if (!empty($userData)) {
-    //             $ResponseData['userData'] = $userData;
-    //         }
-
-
-    //         //   dd($ResponseData['userdetailsData']);
-
-    //         // $sSQL = 'SELECT * FROM master_timezones Where active = 1';
-    //         // $ResponseData['timezones'] = DB::select($sSQL, array());
-
-    //         $ResposneCode = 200;
-    //         $message = 'Request processed successfully';
-
-    //         // $response = [
-    //         //     'data' => $ResponseData,
-    //         //     'message' => $message
-    //         // ];
-
-    //     } else {
-    //         $ResposneCode = $aToken['code'];
-    //         $message = $aToken['message'];
-    //     }
-
-    //     $response = [
-    //         'data' => $ResponseData,
-    //         'message' => $message
-    //     ];
-    //     // dd($response);
-    //     return response()->json($response, $ResposneCode);
-    // }
+            if (empty($aPost['firstname'])) {
+                $empty = true;
+                $field = 'Firstname';
+            }
+            if (empty($aPost['lastname'])) {
+                $empty = true;
+                $field = 'Lastname';
+            }
+            if (empty($aPost['mobile'])) {
+                $empty = true;
+                $field = 'Mobile No';
+            }
+            if (empty($aPost['email'])) {
+                $empty = true;
+                $field = 'Email Id';
+            }
+            if (empty($aPost['dob'])) {
+                $empty = true;
+                $field = 'Birth Date';
+            }
+            if (empty($aPost['gender'])) {
+                $empty = true;
+                $field = 'Gender';
+            }
 
 
+            if (!$empty) {
+                $UserId = $aToken['data']->ID;
 
+                // if (preg_match("/^(?=.*?[a-z])(?=.*?[0-9]).{8,20}$/", $aPost['password'])) {
+                if (preg_match("/^[a-zA-Z-' ]*$/", $aPost['firstname'])) {
+                    if (preg_match("/^[a-zA-Z-' ]*$/", $aPost['lastname'])) {
+                        if (filter_var($aPost['email'], FILTER_VALIDATE_EMAIL)) {
+                            if (preg_match('/^[0-9]{10}+$/', $aPost['mobile'])) {
+
+                                $Exist = array();
+                                $mobile = $aPost['mobile'];
+                                $email = $aPost['email'];
+                                $dob = date('Y-m-d', strtotime($aPost['dob']));
+
+                                #CHECK IF SAME EMAIL OR MOBILE USER EXIST OR NOT
+                                $SQL2 = 'SELECT id FROM users WHERE (mobile=:mobile OR
+                                        email=:email) AND NOT id =:id';
+                                $Exist = DB::select($SQL2, array('mobile' => $mobile, 'email' => $email, 'id' => $UserId));
+
+                                if (sizeof($Exist) == 0) {
+                                    $about_you = isset($request->about_you) ? $request->about_you : "";
+
+                                    $SQL = 'UPDATE users SET
+                                            firstname= :firstname,
+                                            lastname= :lastname,
+                                            email= :email,
+                                            mobile=:mobile,
+                                            dob=:dob,
+                                            gender= :gender,
+                                            about_you=:about_you
+                                            WHERE id=:id';
+                                    $Bindings = array(
+                                        'firstname' => $aPost['firstname'],
+                                        'lastname' => $aPost['lastname'],
+                                        'email' => $aPost['email'],
+                                        'mobile' => $aPost['mobile'],
+                                        'dob' => $dob,
+                                        'gender' => $aPost['gender'],
+                                        'about_you' => $about_you,
+                                        'id' => $UserId
+                                    );
+                                    // dd( $Bindings);
+                                    DB::update($SQL, $Bindings);
+
+                                    $message = 'Personal Details updated successfully';
+                                    $ResposneCode = 200;
+                                } else {
+                                    #ELSE
+                                    $ResposneCode = 400;
+                                    $message = 'User is exist with same credentials';
+                                }
+
+                            } else {
+                                $ResposneCode = 400;
+                                $message = 'Invalid mobile number format';
+                            }
+                        } else {
+                            $ResposneCode = 400;
+                            $message = 'Invalid email format';
+                        }
+                    } else {
+                        $ResposneCode = 400;
+                        $message = 'Invalid lastname format';
+                    }
+                } else {
+                    $ResposneCode = 400;
+                    $message = 'Invalid firstname format';
+                }
+            } else {
+
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+
+    }
+
+    function AddressDetails(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+
+            $sSQL = 'SELECT * FROM users Where id =:Id';
+            $userData = DB::select($sSQL, array('Id' => $aToken['data']->ID));
+            $address_proof_doc_upload = $userData[0]->address_proof_doc_upload;
+
+            if (!$empty) {
+                $UserId = $aToken['data']->ID;
+                $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
+                $is_valid = false;
+                $filename = '';
+                #PDF VALIDATION
+                if (!empty($_FILES["address_proof_doc_upload"]["name"])) {
+                    $address_proof_doc_upload_temp = explode(".", $_FILES["address_proof_doc_upload"]["name"]);
+                    $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
+                    if (!in_array($address_proof_type, $allowedExts)) {
+                        $filename = 'Address proof document';
+                        $is_valid = true;
+                    }
+                }
+                if (!$is_valid) {
+                    #PDF UPLOAD
+                    if (!empty($request->file('address_proof_doc_upload'))) {
+                        $Path = public_path('uploads/user_documents/');
+                        $logo_image = $request->file('address_proof_doc_upload');
+
+                        $ImageExtention = $logo_image->getClientOriginalExtension(); #get proper by code;
+                        $address_proof_doc_upload = strtotime('now') . '.' . $ImageExtention;
+                        $logo_image->move($Path, $address_proof_doc_upload);
+                    }
+
+                    $address1 = (!empty($request->address1)) ? $request->address1 : '';
+                    $address2 = (!empty($request->address2)) ? $request->address2 : '';
+                    $city = (!empty($request->city)) ? $request->city : '';
+                    $state = (!empty($request->state)) ? $request->state : '';
+                    $country = (!empty($request->country)) ? $request->country : '';
+                    $pincode = (!empty($request->pincode)) ? $request->pincode : '';
+
+                    $SQL = 'UPDATE users SET
+
+                    address1= :address1,
+                    address2= :address2,
+                    city= :city,
+                    state= :state,
+                    country= :country,
+                    pincode=:pincode,
+
+                    ca_address1= :ca_address1,
+                    ca_address2= :ca_address2,
+                    ca_city= :ca_city,
+                    ca_state= :ca_state,
+                    ca_pincode= :ca_pincode,
+                    ca_country= :ca_country,
+
+                    nationality= :nationality,
+                    address_proof_type= :address_proof_type,
+                    address_proof_no= :address_proof_no,
+                    address_proof_doc_upload= :address_proof_doc_upload
+                    WHERE id=:id';
+                    $Bindings = array(
+
+                        'address1' => $address1,
+                        'address2' => $address2,
+                        'city' => $city,
+                        'state' => $state,
+                        'country' => $country,
+                        'pincode' => $pincode,
+
+                        'ca_address1' => !empty($request->ca_address1) ? $request->ca_address1 : "",
+                        'ca_address2' => $request->ca_address2,
+                        'ca_city' => $request->ca_city,
+                        'ca_state' => $request->ca_state,
+                        'ca_pincode' => $request->ca_pincode,
+                        'ca_country' => $request->ca_country,
+
+                        'nationality' => $request->nationality,
+                        'address_proof_type' => $request->address_proof_type,
+                        'address_proof_no' => $request->address_proof_no,
+                        'address_proof_doc_upload' => $address_proof_doc_upload,
+
+                        'id' => $UserId
+                    );
+                    DB::update($SQL, $Bindings);
+
+                    $message = 'Address updated successfully';
+                    $ResposneCode = 200;
+                } else {
+                    $ResposneCode = 400;
+                    $message = $filename . ' file is in invalid format';
+                }
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function GeneralDetails(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $UserId = $aToken['data']->ID;
+
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+
+            if (!$empty) {
+                $UserId = $aToken['data']->ID;
+                $sSQL = 'SELECT * FROM users Where id =:Id';
+                $userData = DB::select($sSQL, array('Id' => $aToken['data']->ID));
+
+                $is_valid = false;
+                $filename = '';
+                $id_proof_doc_upload = $userData[0]->id_proof_doc_upload;
+                $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
+                #IMAGE VALIDATION
+                if (!empty($_FILES["id_proof_doc_upload"]["name"])) {
+                    $id_proof_doc_upload_temp = explode(".", $_FILES["id_proof_doc_upload"]["name"]);
+                    $id_proof_doc_upload_extension = strtolower(end($id_proof_doc_upload_temp));
+
+                    if (!in_array($id_proof_doc_upload_extension, $allowedExts)) {
+                        $filename = 'Id proof document';
+                        $is_valid = true;
+                    }
+                }
+                if (!$is_valid) {
+                    #IMAGE UPLOAD
+                    if (!empty($request->file('id_proof_doc_upload'))) {
+                        $Path = public_path('uploads/user_documents/');
+                        $logo_image = $request->file('id_proof_doc_upload');
+
+                        $ImageExtention = $logo_image->getClientOriginalExtension(); #get proper by code;
+                        $id_proof_doc_upload = strtotime('now') . '.' . $ImageExtention;
+                        $logo_image->move($Path, $id_proof_doc_upload);
+                    }
+
+                    $SQL = 'UPDATE users SET
+                        emergency_contact_person= :emergency_contact_person,
+                        emergency_contact_no1=:emergency_contact_no,
+                        organization= :organization,
+                        designation= :designation,
+                        id_proof_type= :id_proof_type,
+                        id_proof_no= :id_proof_no,
+                        id_proof_doc_upload= :id_proof_doc_upload
+                WHERE id=:id';
+                    $Bindings = array(
+                        'emergency_contact_person' => $request->emergency_contact_person,
+                        'emergency_contact_no' => $request->emergency_contact_no,
+                        'organization' => $request->organization,
+                        'designation' => $request->designation,
+                        'id_proof_type' => $request->id_proof_type,
+                        'id_proof_no' => $request->id_proof_no,
+                        'id_proof_doc_upload' => $id_proof_doc_upload,
+                        'id' => $UserId
+                    );
+                    // dd( $Bindings);
+                    DB::update($SQL, $Bindings);
+
+                    $message = 'General details updated successfully';
+                    $ResposneCode = 200;
+
+
+                } else {
+                    $ResposneCode = 400;
+                    $message = $filename . ' file is in invalid format';
+                }
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function SocialMedia(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $UserId = $aToken['data']->ID;
+
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+
+            if (!$empty) {
+                $UserId = $aToken['data']->ID;
+                $sSQL = 'SELECT * FROM users Where id =:Id';
+                $userData = DB::select($sSQL, array('Id' => $aToken['data']->ID));
+
+                $SQL = 'UPDATE users SET
+                        facebook_link= :facebook_link,
+                        twitter_profile_link= :twitter_link,
+                        linkedin_profile_link= :linkedin_profile_link
+                WHERE id=:id';
+                $Bindings = array(
+                    'facebook_link' => $request->facebook_link,
+                    'twitter_link' => $request->twitter_link,
+                    'linkedin_profile_link' => $request->linkedin_profile_link,
+                    'id' => $UserId
+                );
+                // dd( $Bindings);
+                DB::update($SQL, $Bindings);
+
+                $message = 'Social Media details updated successfully';
+                $ResposneCode = 200;
+
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function CommunicationSettings(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $UserId = $aToken['data']->ID;
+
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+
+            if (!$empty) {
+                $UserId = $aToken['data']->ID;
+                $sSQL = 'SELECT * FROM users Where id =:Id';
+                $userData = DB::select($sSQL, array('Id' => $aToken['data']->ID));
+
+                $SQL = 'UPDATE users SET
+                        support_email_id= :support_email_id,
+                        support_mobile= :support_mobile,
+                        email_notification_frequency= :email_notification_frequency
+                WHERE id=:id';
+                $Bindings = array(
+                    'support_mobile' => $request->support_mobile,
+                    'support_email_id' => $request->support_email_id,
+                    'email_notification_frequency' => $request->email_notification_frequency,
+                    'id' => $UserId
+                );
+                // dd( $Bindings);
+                DB::update($SQL, $Bindings);
+
+                $message = 'Communication Settings updated successfully';
+                $ResposneCode = 200;
+
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
     public function editProfile(Request $request)
     {
         $ResponseData = [];
@@ -166,7 +555,7 @@ class UserController extends Controller
             $Auth->apiLog($request);
 
             $sSQL = 'SELECT * FROM users Where id =:Id';
-            $userData = DB::select($sSQL,array('Id' => $aToken['data']->ID));
+            $userData = DB::select($sSQL, array('Id' => $aToken['data']->ID));
 
             if (empty($aPost['firstname'])) {
                 $empty = true;
@@ -356,7 +745,6 @@ class UserController extends Controller
                                             blood_group= :blood_group,
                                             weight= :weight,
                                             height= :height,
-                                            support_email_id= :support_email_id,
                                             organization= :organization,
                                             designation= :designation,
                                             address1= :address1,
@@ -384,6 +772,7 @@ class UserController extends Controller
                                             twitter_profile_link= :twitter_link,
                                             created_at= :created_at,
                                             linkedin_profile_link= :linkedin_profile_link,
+                                            support_email_id= :support_email_id,
                                             support_mobile= :support_mobile,
                                             email_notification_frequency= :email_notification_frequency,
                                             -- UDB= :UDB,
@@ -413,7 +802,6 @@ class UserController extends Controller
                                             'blood_group' => $blood_group,
                                             'weight' => $weight,
                                             'height' => $height,
-                                            'support_email_id' => $support_email_id,
                                             'organization' => $organization,
                                             'designation' => $designation,
                                             'address1' => $address1,
@@ -442,6 +830,7 @@ class UserController extends Controller
                                             'linkedin_profile_link' => $request->linkedin_profile_link,
                                             'created_at' => strtotime('now'),
                                             'support_mobile' => $support_mobile,
+                                            'support_email_id' => $support_email_id,
                                             'email_notification_frequency' => $email_notification_frequency,
                                             'allergies' => $request->allergies,
                                             'medical_conditions' => $request->medical_conditions,
@@ -883,11 +1272,11 @@ class UserController extends Controller
                     'currentmedications' => $currentmedications,
                     'familydoctorname' => $familydoctorname,
                     'familydoctorcontactno' => $familydoctorcontactno,
-                    'meditaion_details'=> $meditaion_details,
-                    'drug_allergy_details'=> $drug_allergy_details,
-                    'hospitalization_details'=>$hospitalization_details,
-                    'stage_pregnancy'=>$stage_pregnancy,
-                    'current_medication_names'=>$current_medication_names,
+                    'meditaion_details' => $meditaion_details,
+                    'drug_allergy_details' => $drug_allergy_details,
+                    'hospitalization_details' => $hospitalization_details,
+                    'stage_pregnancy' => $stage_pregnancy,
+                    'current_medication_names' => $current_medication_names,
                     'user_id' => $userId
                     // 'id' => $id
 
@@ -904,12 +1293,12 @@ class UserController extends Controller
                 WHERE  id=:user_id';
 
                 $Binding = [
-                    'blood_group'=> $request->blood_group,
-                    'weight'=>$request->weight,
-                    'height'=> $request->height,
-                    'allergies'=>$request->allergies,
-                    'medical_conditions'=>$request->medical_conditions,
-                    'user_id'=>$userId
+                    'blood_group' => $request->blood_group,
+                    'weight' => $request->weight,
+                    'height' => $request->height,
+                    'allergies' => $request->allergies,
+                    'medical_conditions' => $request->medical_conditions,
+                    'user_id' => $userId
                 ];
                 $responseData['user'] = DB::update($sql, $Binding);
 
@@ -918,13 +1307,13 @@ class UserController extends Controller
                 $responseCode = 200;
                 $message = 'Medical Details updated successfully';
 
-            }else {
+            } else {
 
                 $sql = 'INSERT INTO user_details( diabetes , chestpain, dehydrationseverity, musclecramps, lowbloodsugar,undermedication, drugallergy,angina,abnormalheartrhythm,pacemaker,highbloodpressure,epilepsy,bleedingdisorders,asthma,anemia,hospitalized,infections,pregnant,covidstatus,currentmedications,familydoctorname,familydoctorcontactno,user_id,meditaion_details,drug_allergy_details,hospitalization_details,stage_pregnancy,current_medication_names) VALUES
                 (:diabetes,:chestpain,:dehydrationseverity,:musclecramps,:lowbloodsugar,:undermedication,:drugallergy,:angina,:abnormalheartrhythm,:pacemaker,:highbloodpressure,:epilepsy,:bleedingdisorders,:asthma,:anemia,:hospitalized,:infections,:pregnant,:covidstatus,:currentmedications,:familydoctorname,:familydoctorcontactno,:user_id,:meditaion_details,:drug_allergy_details,:hospitalization_details,:stage_pregnancy,:current_medication_names)';
 
                 $Binding = [
-                    'diabetes' =>  $diabetes,
+                    'diabetes' => $diabetes,
                     'chestpain' => $chestpain,
                     'dehydrationseverity' => $dehydrationseverity,
                     'musclecramps' => $musclecramps,
@@ -947,11 +1336,11 @@ class UserController extends Controller
                     'familydoctorname' => $familydoctorname,
                     'familydoctorcontactno' => $familydoctorcontactno,
                     'user_id' => $userId,
-                    'meditaion_details' =>  $meditaion_details,
+                    'meditaion_details' => $meditaion_details,
                     'drug_allergy_details' => $drug_allergy_details,
                     'hospitalization_details' => $hospitalization_details,
                     'stage_pregnancy' => $stage_pregnancy,
-                    'current_medication_names'=> $current_medication_names
+                    'current_medication_names' => $current_medication_names
                 ];
 
 
@@ -967,12 +1356,12 @@ class UserController extends Controller
                 WHERE  id=:user_id';
 
                 $Binding = [
-                    'blood_group'=> $request->blood_group,
-                    'weight'=>$request->weight,
-                    'height'=> $request->height,
-                    'allergies'=>$request->allergies,
-                    'medical_conditions'=>$request->medical_conditions,
-                    'user_id'=>$userId
+                    'blood_group' => $request->blood_group,
+                    'weight' => $request->weight,
+                    'height' => $request->height,
+                    'allergies' => $request->allergies,
+                    'medical_conditions' => $request->medical_conditions,
+                    'user_id' => $userId
                 ];
                 $responseData['user'] = DB::update($sql, $Binding);
 
