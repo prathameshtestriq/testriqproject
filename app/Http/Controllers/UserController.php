@@ -32,8 +32,9 @@ class UserController extends Controller
     public function index(Request $request){
         $aReturn = array();
         $aReturn['search_name'] = '';
-use App\Libraries\Authenticate;
-use Intervention\Image\Facades\Image;
+
+        use App\Libraries\Authenticate;
+        use Intervention\Image\Facades\Image;
 
 // use function Laravel\Prompts\select;
 
