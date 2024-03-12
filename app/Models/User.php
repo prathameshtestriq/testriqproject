@@ -86,7 +86,6 @@ class User extends Authenticatable
 
     public $timestamps = false;
 
-
     public static function get_all($limit, $a_search = array())
     {
         $a_return = [];
@@ -140,51 +139,55 @@ class User extends Authenticatable
 
     public static function add_user($request)
     {
-        // Extract data from the request
-        $firstname = $request->firstname;
-        $lastname = $request->lastname;
-        $email = $request->email;
-        $password = $request->password;
-        $mobile = $request->mobile;
-        $user_role = $request->user_role;
-        $status = $request->status == 'active' ? 1 : 0;
-    
-        // Hash the password (assuming you are using Laravel's built-in Hash facade)
-        //$hashedPassword = Hash::make($password);
-    
-        // Define the SQL query
-        $sSQL = 'INSERT INTO users(firstname, lastname, email, password, mobile, type, is_active)
-                 VALUES(:firstname, :lastname, :email, :password, :mobile, :type, :is_active)';
-    
-        // Bind parameters for the query execution
-        $bindings = array(
-            'firstname' => $firstname,
-            'lastname' => $lastname,
-            'email' => $email,
-            'password' =>md5($password), // Use the hashed password
-            'mobile' =>  $mobile ,
-            'type' => $user_role,
-            'is_active' => $status,
-           'is_active' => $status,
-        );
-    
-        // Execute the query
-        $result = DB::insert($sSQL, $bindings);
-    
-        // Return the result (true or false)
-        return $result;
-    }
-    
-    public static function update_user($iId, $request)
-    { 
-        //  dd($request->all());
+        // dd($request->all());
         $firstname = (!empty($request->firstname)) ? $request->firstname : '';
         $lastname = (!empty($request->lastname)) ? $request->lastname : '';
         $email = (!empty($request->email)) ? $request->email : '';
         $password = (!empty($request->password)) ? $request->password : '';
+        $username = !empty($request->username) ? $request->username : '';
         $user_role = !empty($request->user_role) ? $request->user_role : '0';
-        $mobile =!empty( $request->mobile) ? $request->mobile : '';
-        // dd( $mobile);
+        if ($request->status == 'active') {
+            $status = 1;
+        }
+        if ($request->status == 'inactive') {
+            $status = 0;
+        }
+
+
+
+        $firstname = (!empty($request->firstname)) ? $request->firstname : '';
+        $lastname = (!empty($request->lastname)) ? $request->lastname : '';
+        $email = (!empty($request->email)) ? $request->email : '';
+        $password = (!empty($request->password)) ? $request->password : '';
+        $username = !empty($request->username) ? $request->username : '';
+        $user_role = !empty($request->user_role) ? $request->user_role : '0';
+        $status = $request->status == 'active' ? 1 : 0;
+
+        $sSQL = 'INSERT INTO users(firstname, lastname, email, password, mobile, type, is_active)
+                 VALUES(:firstname, :lastname, :email, :password, :mobile, :type, :is_active)';
+
+        $bindings = array(
+            'firstname' => $firstname,
+            'lastname' => $lastname,
+            'email' => $email,
+            'password' => md5($password),
+            'mobile' => $request->mobile,
+            'type' => $user_role,
+            'is_active' => $status,
+        );
+
+        $result = DB::insert($sSQL, $bindings);
+        // dd($Result);
+
+    }
+    public static function update_user($iId, $request)
+    {  //dd($request->all());
+        $firstname = (!empty($request->firstname)) ? $request->firstname : '';
+        $lastname = (!empty($request->lastname)) ? $request->lastname : '';
+        $email = (!empty($request->email)) ? $request->email : '';
+        $password = (!empty($request->password)) ? $request->password : '';
+        $username = !empty($request->username) ? $request->username : '';
+        $user_role = !empty($request->user_role) ? $request->user_role : '0';
         if ($request->status == 'active') {
             $status = 1;
         }
@@ -193,28 +196,32 @@ class User extends Authenticatable
         }
 
         if ($iId > 0) {
+
+
             $sSQL = 'UPDATE users SET
-                firstname = :firstname,
-                lastname = :lastname,
-                email = :email,
-                type = :type,
-                is_active = :is_active,
-                mobile = :mobile
-                WHERE id = :id';
-        
+            firstname = :firstname,
+            lastname = :lastname,
+            username= :username,
+            email = :email,
+            -- password = :password,
+            user_role=:user_role,
+            is_active=:is_active,
+            contact_number = :contact_number
+            WHERE id=:id';
+
             $Bindings = array(
                 'firstname' => $firstname,
                 'lastname' => $lastname,
+                'username' => $username,
                 'email' => $email,
-                'type' => $user_role, // Assuming 'type' corresponds to 'user_role'
+                // 'password' => md5($password),
+                'contact_number' => $request->contact_number,
+                'user_role' => $user_role,
                 'is_active' => $status,
-                'mobile' => $mobile, // Assuming 'mobile' corresponds to 'contact_number'
                 'id' => $iId
             );
-          
+            // dd($Bindings);
             $result = DB::update($sSQL, $Bindings);
-        }
-        
 
             if (!empty($password)) {
 
@@ -231,7 +238,7 @@ class User extends Authenticatable
 
             // return $Result;
         }
-    
+    }
 
     public static function change_status($request)
     {
@@ -248,7 +255,6 @@ class User extends Authenticatable
 
     public static function remove_user($iId)
     {
-        $Result = null; 
         if (!empty($iId)) {
             $sSQL = 'DELETE FROM `users` WHERE id=:id';
             $Result = DB::update(

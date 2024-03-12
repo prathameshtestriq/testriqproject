@@ -119,7 +119,11 @@
                                     </tr>
                                 </thead>
                                 <tbody class="text-center">
+<<<<<<< HEAD
                  {{-- <?php   dd($user_array);  ?> --}}
+=======
+                    
+>>>>>>> bc04005a288d82b5285e035b67b4e40fc17b30ff
                                     <?php 
                                     if (!empty($user_array)){
                                         $i = $Offset;?>

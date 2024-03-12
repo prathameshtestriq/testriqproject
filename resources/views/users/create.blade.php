@@ -1,11 +1,7 @@
 @extends('layout.index')
-{{-- @section('title', 'User Create') --}}
+@section('title', 'User Create')
 <!-- Dashboard Ecommerce start -->
-@if (isset($id))
-    @section('title', 'Edit User Details')
-@else
-    @section('title', 'Add User Details')
-@endif
+
 <style>
     *{
         font-size: 15px;
@@ -19,11 +15,7 @@
                 <div class="content-header-left col-md-9 col-12 mb-2">
                     <div class="row breadcrumbs-top">
                         <div class="col-12 d-flex">
-                            @if (isset($id))
-                            <h2 class="content-header-title float-start mb-0">Edit User</h2>
-                            @else
                             <h2 class="content-header-title float-start mb-0">Add User</h2>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -193,7 +185,7 @@
                                                         <span class="error" style="color:red;">{{ $message }}</span>
                                                     @enderror
                                                 </div> 
-                                           
+                                    
                                                 <div class="col-xs-12 col-md-12 ">
                                                 <div class="form-group mb-5">
                                             

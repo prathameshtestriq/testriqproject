@@ -4,8 +4,8 @@
 
 return [
 
-    
-    'page_title' => 'CC-MEL - ',
+    'max_size' => 2097152,
+    'page_title' => 'Races2.0 - ',
     'base_url' => env('APP_URL'),
 
     'a_countries'=>array(
@@ -16,9 +16,9 @@ return [
 
     // 'season' =>  env('CURRENT_SEASON', 'default_season_value'),
     'season' => env('CURRENT_SEASON'),
-  
 
-    
+
+
     'filter' => [
         (object)[
             "id" => 1,
@@ -62,7 +62,6 @@ return [
 
 
     'per_page' => (!empty(env('PER_PAGE'))) ? env('PER_PAGE') : 30,
-    
     'master_types' => [
         (object)[
             "id" => 1,
@@ -96,4 +95,5 @@ return [
         'en'=>'english',
         'hi'=>'hindi'
     ),
+     # 2MB
 ];

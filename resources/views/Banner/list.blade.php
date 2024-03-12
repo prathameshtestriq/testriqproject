@@ -117,7 +117,11 @@
                                         <th class="text-left">end time</th>
                                         <th class="text-left">Country</th>
                                         <th class="text-left">state</th>
+<<<<<<< HEAD
                                         <th class="text-left">City</th>
+=======
+                                        <th class="text-left">city</th>
+>>>>>>> bc04005a288d82b5285e035b67b4e40fc17b30ff
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -146,9 +150,15 @@
                                             
                                                 <td class="text-left">{{ date('Y-m-d H:i:s',$val->start_time) }}</td>
                                                 <td class="text-left">{{ date('Y-m-d H:i:s',$val->end_time) }}</td>
+<<<<<<< HEAD
                                                 <td class="text-left">{{ $val->country}}</td>
                                                 <td class="text-left">{{ $val->state}}</td> 
                                                 <td class="text-left">{{ $val->city}}</td>
+=======
+                                                <td class="text-left">{{ $val->city}}</td>
+                                                <td class="text-left">{{ $val->state}}</td> 
+                                                <td class="text-left">{{ $val->country}}</td>
+>>>>>>> bc04005a288d82b5285e035b67b4e40fc17b30ff
 
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success">
@@ -271,4 +281,8 @@ function delbanner(id) {
     
     
   
+<<<<<<< HEAD
 </script>
+=======
+</script>
+>>>>>>> bc04005a288d82b5285e035b67b4e40fc17b30ff

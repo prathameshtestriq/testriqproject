@@ -11,6 +11,10 @@ use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MasterController;
 
+use App\Http\Controllers\EventTicketController;
+
+use App\Http\Controllers\UserEventDetailsController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -61,6 +65,10 @@ Route::controller(EventController::class)->group(function () {
     Route::post('event_description', 'addEventDescription');
     Route::post('userfollowevent', 'UserFollowEvent');
     Route::get('popular_cities', 'PopularCity');
+
+    Route::post('duplicate_events', 'DuplicateEvents');
+    Route::post('delete_event/{id}', 'EventDelete');
+    Route::post('event_status', 'EventStatus');
 });
 
 Route::controller(UserController::class)->group(function () {
@@ -82,6 +90,28 @@ Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('/follow', 'Eventuserfollow');
 });
 
+    // Route::post('add_new_user','addnewuser');
+
+
+Route::controller(EventUserFollowController::class)->group(function () {
+    Route::post('event_user_follow', 'Eventuserfollow');
+    Route::post('event_user_unfollow', 'Eventuserunfollow');
+});
+
+Route::controller(EventTicketController::class)->group(function () {
+    Route::post('get_event_ticket', 'geteventticket');
+    Route::post('get_ticket_detail/{id}', 'getticketdetail');
+    Route::post('add_edit_event_ticket/{id?}', 'addediteventticket');
+    Route::post('delete_event_ticket/{id?}', 'EventTicketDelete');
+});
+
+Route::controller(UserEventDetailsController::class)->group(function () {
+    Route::get('get_all_users', 'getallUsers');
+    Route::get('get_all_events', 'getallEvents');
+});
+
+
+
 Route::controller(AdvertisementController::class)->group(function () {
     Route::Get('/get_advertisement', 'GetAdvertisement');
 });
@@ -89,6 +119,7 @@ Route::controller(AdvertisementController::class)->group(function () {
 Route::controller(TestimonialController::class)->group(function () {
     Route::Get('/get_testimonial', 'GetTestimonial');
 });
+
 
 Route::controller(OrganizerController::class)->group(function () {
     Route::Post('/get_organizer', 'GetOrganizer');
