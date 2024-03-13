@@ -99,7 +99,7 @@ Route::controller(EventUserFollowController::class)->group(function () {
 Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_event_ticket', 'geteventticket');
     Route::post('get_ticket_detail', 'getTicketDetail');
-    Route::post('add_edit_event_ticket/{id?}', 'addediteventticket');
+    Route::post('add_edit_event_ticket', 'addediteventticket');
     Route::post('delete_event_ticket', 'EventTicketDelete');
 });
 
