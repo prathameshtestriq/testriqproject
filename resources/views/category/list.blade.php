@@ -96,7 +96,7 @@
                                     <tr>
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Category Name</th>
-                                        <th class="text-center">Logo Name</th>
+                                        {{-- <th class="text-center">Logo Name</th> --}}
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -106,7 +106,7 @@
                                         <tr>
                                             <td class="text-center">{{ $category->id }}</td>
                                             <td class="text-left">{{ $category->name }}</td>
-                                            <td class="text-center">{{ $category->logo }}</td>
+                                            {{-- <td class="text-center">{{ $category->logo }}</td> --}}
                                             <td class="text-center">
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input"
@@ -183,7 +183,7 @@
                     if (result == 1) {
                         console.log(result);
                         alert('Status changed successfully')
-                        //location.reload(); 
+                        //location.reload();
                     } else {
                         alert('Some error occured');
                         if (status)

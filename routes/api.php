@@ -6,14 +6,11 @@ use App\Http\Controllers\Api\OrganizerController;
 use App\Http\Controllers\Api\TestimonialController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MasterController;
-
 use App\Http\Controllers\EventTicketController;
-
 use App\Http\Controllers\UserEventDetailsController;
 
 /*
@@ -76,7 +73,6 @@ Route::controller(EventController::class)->group(function () {
 Route::controller(UserController::class)->group(function () {
     Route::get('get_profile', 'getProfile');
     Route::post('edit_profile', 'editProfile');
-<<<<<<< HEAD
     Route::post('add_new_user', 'addnewuser');
     Route::post('delete_profile', 'delete_profile');
     Route::post('update_profile_pic', 'update_profile_pic');
@@ -92,9 +88,6 @@ Route::controller(UserController::class)->group(function () {
 Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('/follow', 'Eventuserfollow');
 });
-=======
-    Route::post('add_new_user','addnewuser');
-});
 
 Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('event_user_follow', 'Eventuserfollow');
@@ -103,18 +96,15 @@ Route::controller(EventUserFollowController::class)->group(function () {
 
 Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_event_ticket', 'geteventticket');
-    Route::post('get_ticket_detail/{id}', 'getticketdetail');
+    Route::post('get_ticket_detail', 'getTicketDetail');
     Route::post('add_edit_event_ticket/{id?}', 'addediteventticket');
-    Route::post('delete_event_ticket/{id?}', 'EventTicketDelete');
+    Route::post('delete_event_ticket', 'EventTicketDelete');
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {
     Route::get('get_all_users', 'getallUsers');
     Route::get('get_all_events', 'getallEvents');
 });
-
-
->>>>>>> 49b25029e7c7109f406ea5c3d95a2c5f0c3622d6
 
 Route::controller(AdvertisementController::class)->group(function () {
     Route::Get('/get_advertisement', 'GetAdvertisement');

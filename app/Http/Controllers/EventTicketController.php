@@ -8,39 +8,41 @@ use Illuminate\Support\Facades\DB;
 
 class EventTicketController extends Controller
 {
-    public function geteventticket(Request $request){
+    public function geteventticket(Request $request)
+    {
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
         $empty = false;
-        $aToken = app('App\Http\Controllers\LoginController')->validate_request($request);
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($aToken);
 
         if ($aToken['code'] == 200) {
-            $aPost = $request->all(); 
+            $aPost = $request->all();
             $Auth = new Authenticate();
             $Auth->apiLog($request);
             if (empty($aPost['event_id'])) {
                 $empty = true;
                 $field = 'Event Id';
             }
-            
+
             if (!$empty) {
                 $sSQL = 'SELECT * FROM event_tickets Where event_id =:event_id';
                 $ResponseData = DB::select($sSQL, array(
                     'event_id' => $request->event_id
-                ));
+                )
+                );
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
 
-            }else {     
+            } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
                 // dd($message);
             }
 
-        }else {
+        } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];
         }
@@ -52,13 +54,14 @@ class EventTicketController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
-    public function addediteventticket(Request $request){
+    public function addediteventticket(Request $request)
+    {
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
         $empty = false;
         $flag = true;
-        $aToken = app('App\Http\Controllers\LoginController')->validate_request($request);
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($aToken);
         if ($aToken['code'] == 200) {
             $aPosts = $request->all();
@@ -87,43 +90,43 @@ class EventTicketController extends Controller
                     $field = 'Ticket Sale End Date';
                 }
 
-            
+
                 if (!$empty) {
                     //ticket_type=[1=>paid,2=>free,3=>donation]
                     $tickettype = $aPost['ticket_type'];
-                    if($tickettype == 1) {
-                    if(!empty($aPost['ticket_price'])){
-                        $aPost['minimum_donation_amount']=0;
-                    }else{
-                        $field = 'Ticket Price';
-                        $flag = false;
+                    if ($tickettype == 1) {
+                        if (!empty($aPost['ticket_price'])) {
+                            $aPost['minimum_donation_amount'] = 0;
+                        } else {
+                            $field = 'Ticket Price';
+                            $flag = false;
+                        }
                     }
-                    }
-                    if($tickettype == 2) {
-                        if(!empty($aPost['min_booking']) && !empty($aPost['max_booking'])){
-                        $aPost['ticket_price'] = 0;    
-                        $aPost['minimum_donation_amount']=0;    
-                        }else{
+                    if ($tickettype == 2) {
+                        if (!empty($aPost['min_booking']) && !empty($aPost['max_booking'])) {
+                            $aPost['ticket_price'] = 0;
+                            $aPost['minimum_donation_amount'] = 0;
+                        } else {
                             $field = 'Min Max Booking';
                             $flag = false;
                         }
                     }
-                    if($tickettype == 3) {
-                        if(!empty($aPost['minimum_donation_amount'])){
-                        $aPost['ticket_price'] = 0;
-                        $aPost['min_booking'] = 0;
-                        $aPost['max_booking'] = 0;
-                        }else{
-                        $field = 'Min Donation Amount';
-                        $flag = false;
+                    if ($tickettype == 3) {
+                        if (!empty($aPost['minimum_donation_amount'])) {
+                            $aPost['ticket_price'] = 0;
+                            $aPost['min_booking'] = 0;
+                            $aPost['max_booking'] = 0;
+                        } else {
+                            $field = 'Min Donation Amount';
+                            $flag = false;
                         }
                     }
-    
+
 
                     // dd($flag);
-                    if($flag){
+                    if ($flag) {
                         $EventTicketId = isset($request->id) ? $request->id : 0;
-                        if(!empty($EventTicketId)){
+                        if (!empty($EventTicketId)) {
                             // dd("here");
                             $Binding = array(
                                 // 'event_id' => $aPost['event_id'],
@@ -146,49 +149,49 @@ class EventTicketController extends Controller
                             // dd($Binding);
                             $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_type = :ticket_type,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount WHERE id=:id';
                             DB::update($SQL, $Binding);
-                        
+
                             $ResposneCode = 200;
                             $message = 'Event Ticket Update Successfully';
 
-                        }else{
+                        } else {
                             if (empty($aPost['event_id'])) {
                                 $empty = true;
                                 $field = 'Event Id';
                             }
-                            if(!$empty){
+                            if (!$empty) {
                                 $Binding = array(
-                                'event_id' => $aPost['event_id'],
-                                'ticket_name' => $aPost['ticket_name'],
-                                'ticket_type' => $aPost['ticket_type'],
-                                'total_quantity' => $aPost['total_quantity'],
-                                'ticket_price' => $aPost['ticket_price'],
-                                'payment_to_you' => $aPost['payment_to_you'],
-                                'ticket_sale_start_date' => strtotime(date('Y-m-d H:i', strtotime($aPost['ticket_sale_start_date']))),
-                                'ticket_sale_end_date' => strtotime(date('Y-m-d H:i', strtotime($aPost['ticket_sale_end_date']))),
-                                'player_of_fee' => $aPost['player_of_fee'],
-                                'player_of_gateway_fee' => $aPost['player_of_gateway_fee'],
-                                'min_booking' => $aPost['min_booking'],
-                                'max_booking' => $aPost['max_booking'],
-                                'ticket_description' => $aPost['ticket_description'],
-                                'msg_attendance' => $aPost['msg_attendance'],
-                                'minimum_donation_amount' => $aPost['minimum_donation_amount']
+                                    'event_id' => $aPost['event_id'],
+                                    'ticket_name' => $aPost['ticket_name'],
+                                    'ticket_type' => $aPost['ticket_type'],
+                                    'total_quantity' => $aPost['total_quantity'],
+                                    'ticket_price' => $aPost['ticket_price'],
+                                    'payment_to_you' => $aPost['payment_to_you'],
+                                    'ticket_sale_start_date' => strtotime(date('Y-m-d H:i', strtotime($aPost['ticket_sale_start_date']))),
+                                    'ticket_sale_end_date' => strtotime(date('Y-m-d H:i', strtotime($aPost['ticket_sale_end_date']))),
+                                    'player_of_fee' => $aPost['player_of_fee'],
+                                    'player_of_gateway_fee' => $aPost['player_of_gateway_fee'],
+                                    'min_booking' => $aPost['min_booking'],
+                                    'max_booking' => $aPost['max_booking'],
+                                    'ticket_description' => $aPost['ticket_description'],
+                                    'msg_attendance' => $aPost['msg_attendance'],
+                                    'minimum_donation_amount' => $aPost['minimum_donation_amount']
                                 );
                                 // dd($Binding);
                                 $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_type,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount) VALUES(:event_id,:ticket_name,:ticket_type,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount)';
-                            
+
                                 DB::select($SQL2, $Binding);
-                                
+
                                 $ResposneCode = 200;
                                 $message = 'Event Ticket Insert Successfully';
                             } else {
                                 $ResposneCode = 400;
-                                $message = $field  . ' is empty';
-                            } 
-                        }     
+                                $message = $field . ' is empty';
+                            }
+                        }
                     } else {
                         $ResposneCode = 400;
-                        $message = $field  . ' is empty';
-                    }          
+                        $message = $field . ' is empty';
+                    }
                 } else {
                     $ResposneCode = 400;
                     $message = $field . ' is empty';
@@ -207,62 +210,82 @@ class EventTicketController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
-    public function EventTicketDelete(Request $request){
+
+    public function EventTicketDelete(Request $request)
+    {
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
         $empty = false;
-        $aToken = app('App\Http\Controllers\LoginController')->validate_request($request);
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($aToken);
-    
+
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
             $Auth = new Authenticate();
             $Auth->apiLog($request);
-        
-            $sSQL = 'DELETE FROM event_tickets WHERE id=:id ';
-            $ResponseData= DB::delete($sSQL,
+
+            // $sSQL = 'DELETE FROM event_tickets WHERE id=:id ';
+            // $ResponseData= DB::delete($sSQL,
+            //     array(
+            //         'id' => $request->ticket_id
+            //     )
+            // );
+            $sSQL = 'UPDATE event_tickets SET is_deleted = 1 WHERE id=:id ';
+            $ResponseData = DB::update(
+                $sSQL,
                 array(
-                    'id' => $request->id
+                    'id' => $request->ticket_id
                 )
             );
             $ResposneCode = 200;
             $message = 'Event Ticket Deleted Successfully';
-           
-        }else {
+
+        } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];
         }
-    
+
         $response = [
             'data' => $ResponseData,
             'message' => $message
         ];
-    
+
         return response()->json($response, $ResposneCode);
     }
-    public function getticketdetail(Request $request){
+
+    public function getTicketDetail(Request $request)
+    {
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
         $empty = false;
-        $aToken = app('App\Http\Controllers\LoginController')->validate_request($request);
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($aToken);
-        
+
         if ($aToken['code'] == 200) {
-            $aPost = $request->all(); 
+            $aPost = $request->all();
             $Auth = new Authenticate();
             $Auth->apiLog($request);
 
-            $sSQL = 'SELECT * FROM event_tickets Where id =:id';
-            $ResponseData = DB::select($sSQL, array(
-                'id' => $request->id
-            ));
-             
+            $sSQL = 'SELECT * FROM event_tickets WHERE id =:id AND is_deleted = 0 AND active = 1';
+            $Ticket = DB::select($sSQL, array(
+                'id' => $request->ticket_id
+            )
+            );
+
+            foreach ($Ticket as $key => $value) {
+                $value->start_date = !empty($value->ticket_sale_start_date) ? date("Y-m-d", $value->ticket_sale_start_date) : 0;
+                $value->start_time = (!empty($value->ticket_sale_start_date)) ? date("h:i", $value->ticket_sale_start_date) : 0;
+
+                $value->end_date = !empty($value->ticket_sale_end_date) ? date("Y-m-d", $value->ticket_sale_end_date) : 0;
+                $value->end_time = (!empty($value->ticket_sale_end_date)) ? date("h:i", $value->ticket_sale_end_date) : 0;
+            }
+            $ResponseData['Ticket'] = $Ticket;
             $ResposneCode = 200;
             $message = 'Request processed successfully';
 
-        }else {
+        } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];
         }
@@ -274,5 +297,5 @@ class EventTicketController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
-    
+
 }

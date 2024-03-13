@@ -41,7 +41,7 @@ class EventController extends Controller
             $event->is_follow = !empty($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
 
             #GET ALL TICKETS
-            $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 ORDER BY ticket_price";
+            $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
             $Tickets = DB::select($SQL, array('event_id' => $event->id));
 
             $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
@@ -697,18 +697,11 @@ class EventController extends Controller
                 $event->state_name = !empty($event->state) ? $master->getStateName($event->state) : "";
                 $event->country_name = !empty($event->country) ? $master->getCountryName($event->country) : "";
 
-                // $event->types = !empty($event->id) ? $e->getTypes($event->id) : [];
-                // $event->category = !empty($event->id) ? $e->getCategory($event->id) : [];
-
-
-                // $event->latitude = !empty($event->city) ? $master->getCityLatitude($event->city) : "";
-                // $event->longitude = !empty($event->city) ? $master->getCityLongitude($event->city) : "";
-
                 #FOLLOW(WISHLIST)
                 $event->is_follow = !empty($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
 
                 #GET ALL TICKETS
-                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 ORDER BY ticket_price";
+                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
                 $Tickets = DB::select($SQL, array('event_id' => $event->id));
 
                 $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
@@ -754,9 +747,19 @@ class EventController extends Controller
                 }
             }
             $ResponseData['EventImages'] = $EventImg;
+
+            #EVENT TICKETS
+            $sql = "SELECT * FROM event_tickets WHERE event_id=:event_id AND is_deleted = 0 AND active = 1";
+            $EventTickets = DB::select($sql, array('event_id' => $EventId));
+            foreach ($EventTickets as $key => $ticket) {
+               $ticket->ticket_sale_start_date = (!empty($ticket->ticket_sale_start_date)) ? date("d F Y", $ticket->ticket_sale_start_date) : 0;
+               $ticket->ticket_sale_end_date = (!empty($ticket->ticket_sale_end_date)) ? date("d F Y", $ticket->ticket_sale_end_date) : 0;
+
+            }
+            $ResponseData['EventTickets'] = $EventTickets;
+
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
-            // $ResponseData['EventData'] = Event::get($aData)->orderBy('id', 'DESC')->paginate(config('custom.page_limit'));
         } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];

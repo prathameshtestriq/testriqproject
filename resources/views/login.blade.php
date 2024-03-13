@@ -9,7 +9,7 @@
     <meta name="description" content="vts">
     <meta name="keywords" content="vts, nashik">
     <meta name="author" content="swt">
-    <title>Login -CC-MEL </title>
+    <title>Login -YTCR </title>
     {{-- <link rel="apple-touch-icon" href={{ asset('app-assets/images/ico/apple-icon-120.png')}}> --}}
     <link rel="shortcut icon" type="image/x-icon" href={{ asset('app-assets/images/logo/logo.jpg')}}>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600"
@@ -63,13 +63,13 @@
                         <!-- /Brand logo-->
                         <!-- Left Text-->
                         <div class="d-none d-lg-flex col-lg-8 align-items-center p-5  auth-bg" >
-                            <div class="w-100 d-lg-flex align-items-center justify-content-center px-5"><img class="img-fluid" src={{ asset('app-assets/images/logo/cc_logo.jpg') }} alt="Login V2"  width="500px"/></div>
+                            <div class="w-100 d-lg-flex align-items-center justify-content-center px-5"><img class="img-fluid" src={{ asset('app-assets/images/logo/logo.png') }} alt="Login V2"  width="500px"/></div>
                         </div>
                         <!-- /Left Text-->
                         <!-- Login-->
                         <div class="d-flex col-lg-4 align-items-center auth-bg px-2 p-lg-5" style="color:rgb(181, 208, 231)">
                             <div class="col-12 col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
-                                <h2 class="card-title font-weight-bold mb-1 " style="color:#202B63">Welcome to Cotton Connect! 👋</h2>
+                                <h2 class="card-title font-weight-bold mb-1 " style="color:#202B63">Welcome to Races2.0! 👋</h2>
                                 <p class="card-text mb-2" style="color:#2a335f">Please sign-in to your account</p>
                                 @if ($message = Session::get('success'))
                                     <div class="demo-spacing-0 mb-1">

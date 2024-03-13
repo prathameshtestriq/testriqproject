@@ -60,7 +60,7 @@
                                 User
                             </a>
                         </div>
-                    </li> 
+                    </li>
                     <li class="nav-item d-inline ">
                         <div class="btn-group">
                             <a class="btn btn-flat-primary <?php
@@ -186,8 +186,8 @@
                                 ?>
                             </div>
                             <span class="avatar"><img class="round"
-                                    src="{{ asset('app-assets/images/logo/logo.jpg')}}" alt="avatar" height="40"
-                                    width="40"><span class="avatar-status-online"></span></span>
+                                src="{{ asset('app-assets/images/logo/logo1.jpg')}}" alt="avatar" height="40"
+                                width="40"><span class="avatar-status-online"></span></span>
                         </a>
                         <!-- <span class="avatar"><img class="round"
                                     src="{{ asset('assets/logo/ytcr-logo.png')}}" alt="avatar" height="40"
