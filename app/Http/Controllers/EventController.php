@@ -38,7 +38,7 @@ class EventController extends Controller
         // $aReturn['search_country'] = DB::table('vehicle_management')->where('isdeleted', 0)->pluck('vehicle_number', 'id');
         // dd($aReturn['vehicle_numbers']);
         //  dd('vehicle_types');
-        $request->city = '';
+        // $request->city = '';
         // $aReturn['citys'] = DB::table('cities')->where('show_flag', 1)->pluck('name', 'id');
         // dd($aReturn['city']);
         // $aReturn['vehicle_numbers'] = DB::table('vehicle_management')->where('isdeleted', 0)->pluck('vehicle_number', 'id');

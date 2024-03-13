@@ -1,5 +1,9 @@
 @extends('layout.index')
-@section('title', 'User Create')
+@if (!empty($aReturn['id']))
+    @section('title', 'Edit Category Details')
+@else
+    @section('title', 'Add Category Details')
+@endif
 <!-- Dashboard Ecommerce start -->
 <style>
     * {
@@ -8,13 +12,18 @@
 </style>
 @section('content')
     <section>
-
         <div class="content-body">
             <div class="content-header row">
                 <div class="content-header-left col-md-9 col-12 mb-2">
                     <div class="row breadcrumbs-top">
                         <div class="col-12 d-flex">
-                            <h2 class="content-header-title float-start mb-0">Add Category</h2>
+                            <h2 class="content-header-title float-start mb-0">
+                                @if (!empty($aReturn['id']))
+                                   Edit Category Details
+                                @else
+                                   Add Category Details
+                                @endif 
+                            </h2>
                         </div>
                     </div>
                 </div>
@@ -24,9 +33,14 @@
                             <ol class="breadcrumb" style="justify-content: flex-end">
                                 <li class="breadcrumb-item"><a href="#">Home</a>
                                 </li>
-                                <li class="breadcrumb-item"><a href="#">Users</a>
+                                <li class="breadcrumb-item"><a href="#">Category</a>
                                 </li>
-                                <li class="breadcrumb-item active">Add category
+                                <li class="breadcrumb-item active">
+                                    @if (!empty($aReturn['id']))
+                                        Edit category 
+                                    @else
+                                         Add category
+                                    @endif 
                                 </li>
                             </ol>
                         </div>

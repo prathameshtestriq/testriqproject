@@ -97,6 +97,7 @@ class BannerController extends Controller
             $rules = [
                 'banner_name' => 'required',
                 'banner_url' => 'required',
+                'banner_image' => 'required',
                 'start_time' => 'required',
                 'end_time' => 'required',
                 'city' => 'required',
@@ -129,7 +130,7 @@ class BannerController extends Controller
         } else {
             if ($iId > 0) {
                 // #SHOW EXISTING DETAILS ON EDIT
-                $sql = 'SELECT banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
+                $sql = 'SELECT id,banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
                         FROM banner 
                         WHERE id = ?';
 

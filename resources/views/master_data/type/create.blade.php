@@ -1,5 +1,9 @@
 @extends('layout.index')
-@section('title', 'Type Create')
+@if (!empty($id))
+@section('title', 'Edit Type Details')
+@else
+@section('title', 'Add Type Details')
+@endif
 <?php //dd($Category_array)?>
 
 <!-- Include necessary stylesheets -->
@@ -20,7 +24,13 @@
             <div class="content-header-left col-md-9 col-12 mb-2">
                 <div class="row breadcrumbs-top">
                     <div class="col-12 d-flex">
-                        <h2 class="content-header-title float-start mb-0">Add Type</h2>
+                        <h2 class="content-header-title float-start mb-0">
+                            @if (!empty($id))
+                            Edit Type Details
+                            @else
+                            Add Type Details
+                            @endif
+                        </h2>
                     </div>
                 </div>
             </div>
@@ -31,7 +41,13 @@
                         <ol class="breadcrumb" style="justify-content: flex-end">
                             <li class="breadcrumb-item"><a href="#">Home</a></li>
                             <li class="breadcrumb-item"><a href="#">Type</a></li>
-                            <li class="breadcrumb-item active">Add Type</li>
+                            <li class="breadcrumb-item active">
+                                @if (!empty($id))
+                                Edit Type Details
+                                @else
+                                Add Type Details
+                                @endif
+                            </li>
                         </ol>
                     </div>
                 </div>
@@ -74,7 +90,10 @@
                                             <input type="text" id="name" class="form-control" name="name"
                                                 placeholder="Event Name" autocomplete="off"
                                                 value="{{ old('name', $name) }}" />
-                                            <small class="text-danger">{{ $errors->first('name') }}</small>
+                                            <span style="color:red;" id="name_err"></span>
+                                            @error('name')
+                                            <span class="error">{{ $message }}</span>
+                                            @enderror
                                         </div>
 
                                         <!-- Type select field -->
@@ -82,13 +101,18 @@
                                             <label for="categorySelect">Select Type <span
                                                     style="color:red;">*</span></label>
                                             <select class="form-control form-select select2" multiple
-                                                style="min-width: 400px;" id="categorySelect" name="type_id[]">
+                                                style="min-width: 400px;" id="type" name="type_id[]">
                                                 @foreach($allTypes as $type)
-                                                <option value="{{ $type->type_id}}" {{ $type->selected ? 'selected' : '' }}>
+                                                <option value="{{ $type->type_id}}" {{ $type->selected ? 'selected' : ''
+                                                    }}>
                                                     {{ $type->type_name }}
                                                 </option>
                                                 @endforeach
                                             </select>
+                                            <span style="color:red;" id="type_err"></span>
+                                            @error('type_id[]')
+                                            <span class="error">{{ $message }}</span>
+                                            @enderror
                                         </div>
                                     </div>
 
@@ -99,8 +123,8 @@
                                             <label for="logo" class="form-label">Image <span
                                                     style="color:red">*</span></label>
                                             @if (!empty($logo))
-                                            <img src="{{ asset('uploads/type_images/' . $logo) }}"
-                                                alt="Current Image" style="width: 50px;">
+                                            <img src="{{ asset('uploads/type_images/' . $logo) }}" alt="Current Image"
+                                                style="width: 50px;">
                                             <input type="hidden" name="hidden_logo" value="{{ old('logo', $logo) }}"
                                                 accept="image/jpeg, image/png">
                                             @endif
@@ -115,21 +139,23 @@
 
                                         <!-- Status radio buttons -->
                                         <div class="form-group mb-3">
-                                        <label for="status" class="col-sm-2 float-left">Status <span
-                                                style="color:red;">*</span></label>
-                                        <div class="form-check mt-1 mb-2">
-                                            <input class="form-check-input active1" type="radio" name="active" style="cursor: pointer;"
-                                                id="active1" value="active" {{ $active == 1 ? 'checked' : '' }}>
-                                            <label class="form-check-label mr-4" for="active1" >Active</label>
-                                            <input class="form-check-input active1" type="radio" name="active" style="cursor: pointer;"
-                                                id="active2" value="inactive" {{ $active == 0 ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="active2">Inactive</label>
+                                            <label for="status" class="col-sm-2 float-left">Status <span
+                                                    style="color:red;">*</span></label>
+                                            <div class="form-check mt-1 mb-2">
+                                                <input class="form-check-input active1" type="radio" name="active"
+                                                    style="cursor: pointer;" id="status" value="active" {{ $active==1
+                                                    ? 'checked' : '' }}>
+                                                <label class="form-check-label mr-4" for="active1">Active</label>
+                                                <input class="form-check-input active1" type="radio" name="active"
+                                                    style="cursor: pointer;" id="status" value="inactive" {{ $active==0
+                                                    ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="active2">Inactive</label>
+                                            </div>
+                                            <h5><span class="text-danger" id="status_err"></span></h5>
+                                            @error('active')
+                                            <span class="error" style="color:red;">{{ $message }}</span>
+                                            @enderror
                                         </div>
-                                        <h5><small class="text-danger" id="active_err"></small></h5>
-                                        @error('active')
-                                        <span class="error" style="color:red;">{{ $message }}</span>
-                                        @enderror
-                                    </div>
                                     </div>
                                 </div>
 
@@ -154,10 +180,37 @@
 <script>
     function validation() {
         var isValid = true;
+        if ($('#name').val() == "") {
+            $('#name_err').html('Please enter name.');
+            $('#name').focus();
+            $('#name').keyup(function () {
+                $('#name').parent().removeClass('has-error');
+                $('#name_err').html('');
+            });
+            isValid = false;
+        }
 
+        if ($('#type').val() == "") {
+            $('#type_err').html('Please enter type.');
+            $('#type').focus();
+            $('#type').keyup(function () {
+                $('#type').parent().removeClass('has-error');
+                $('#type_err').html('');
+            });
+            isValid = false;
+        }
+
+        if ($('#status').val() == "") {
+            $('#status_err').html('Please select status.');
+            $('#status').focus();
+            $('#status').keyup(function () {
+                $('#status').parent().removeClass('has-error');
+                $('#status_err').html('');
+            });
+            isValid = false;
+        }
 
         $('.error').html('');
-
         var logo = $('#logo').prop('files')[0];
         var existingImage = $('input[name="hidden_logo"]').val();
         if (!logo && !existingImage) {

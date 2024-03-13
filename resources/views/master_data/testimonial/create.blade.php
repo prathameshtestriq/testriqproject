@@ -27,86 +27,90 @@
     }
 </style>
 @section('content')
-    <section>
-        <div class="content-body">
-            <div class="content-header row">
-                <div class="content-header-left col-md-9 col-12 mb-2">
-                    <div class="row breadcrumbs-top">
-                        <div class="col-12 d-flex">
-                            <h2 class="content-header-title float-start mb-0">Add User</h2>
-                        </div>
+<section>
+    <div class="content-body">
+        <div class="content-header row">
+            <div class="content-header-left col-md-9 col-12 mb-2">
+                <div class="row breadcrumbs-top">
+                    <div class="col-12 d-flex">
+                        <h2 class="content-header-title float-start mb-0">Add User</h2>
                     </div>
                 </div>
-                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
-                    <div class="mb-1 breadcrumb-right">
-                        <div class="breadcrumb-wrapper">
-                            <ol class="breadcrumb" style="justify-content: flex-end">
-                                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                <li class="breadcrumb-item"><a href="#">Users</a></li>
-                                <li class="breadcrumb-item active">Add User</li>
-                            </ol>
-                        </div>
+            </div>
+            <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                <div class="mb-1 breadcrumb-right">
+                    <div class="breadcrumb-wrapper">
+                        <ol class="breadcrumb" style="justify-content: flex-end">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item"><a href="#">Testimonial</a></li>
+                            <li class="breadcrumb-item active">Add Testimonial</li>
+                        </ol>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        @if ($message = Session::get('error'))
-            <div class="demo-spacing-0 mb-1">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <div class="alert-body">
-                        {{ $message }}
-                    </div>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
+    @if ($message = Session::get('error'))
+    <div class="demo-spacing-0 mb-1">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert-body">
+                {{ $message }}
             </div>
-        @endif
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    @endif
 
-        <div class="content-body">
-            <section id="multiple-column-form">
-                <div class="row justify-content-center">
-                    <div class="col-sm-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <form method="post" name="transfer" id="transfer" novalidate="novalidate"
-                                    enctype="multipart/form-data">
-                                    <input type="hidden" name="form_type" value="add_edit_testimonial">
-                                    {{ csrf_field() }}
+    <div class="content-body">
+        <section id="multiple-column-form">
+            <div class="row justify-content-center">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="post" name="transfer" id="transfer" novalidate="novalidate"
+                                enctype="multipart/form-data">
+                                <input type="hidden" name="form_type" value="add_edit_testimonial">
+                                {{ csrf_field() }}
 
-                                    <div class="row">
-                                        <div class="col-sm-6">
-                                            <div class="form-group mb-5">
-                                                <label for="user_id">User Name <span style="color:red">*</span></label>
-                                                <select name="user_id" id="user_id" class="form-control">
-                                                    <option value="">-- Select user name --</option>
-                                                    @foreach($users_master_array as $res)
-                                                        @php
-                                                            $selected = '';
-                                                            if (old('user_id', $user_id) == $res->id) {
-                                                                $selected = 'selected';
-                                                            }
-                                                        @endphp
-                                                        <option value="{{ $res->id }}" {{ $selected }}>{{ $res->firstname }}</option>
-                                                    @endforeach
-                                                </select>
-                                                <span class="error-message">@error('user_id'){{ $message }}@enderror</span>
-                                            </div>
-                                           
-                                            <div class="form-group mb-5">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group mb-5">
+                                            <label for="user_id">Testimonial Name <span style="color:red">*</span></label>
+                                            <select name="user_id" id="user_id" class="form-control">
+                                                <option value="">-- Select testimonial name --</option>
+                                                @foreach($users_master_array as $res)
+                                                @php
+                                                $selected = '';
+                                                if (old('user_id', $user_id) == $res->id) {
+                                                $selected = 'selected';
+                                                }
+                                                @endphp
+                                                <option value="{{ $res->id }}" {{ $selected }}>{{ $res->firstname }}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                            <span class="error-message">@error('user_id'){{ $message }}@enderror</span>
+                                        </div>
+
+                                        <div class="form-group mb-5">
                                             <label for="description">Comment <span style="color:red;">*</span></label>
-                                                <input type="text" id="description" class="form-control" placeholder="User Comment" name="description" autocomplete="off" value="{{ old('description', $description) }}" />
-                                                <span class="error-message">@error('description'){{ $message }}@enderror</span>
-                                            </div>
-                                            <!-- <div class="form-group mb-5">
+                                            <input type="text" id="description" class="form-control"
+                                                placeholder="Testimonial Comment" name="description" autocomplete="off"
+                                                value="{{ old('description', $description) }}" />
+                                            <span class="error-message">@error('description'){{ $message
+                                                }}@enderror</span>
+                                        </div>
+                                        <!-- <div class="form-group mb-5">
                                                 <label for="description">Comment <span style="color:red;">*</span></label>
                                                 <input type="text" id="description" class="form-control" placeholder="User Comment" name="description" autocomplete="off" value="{{ old('description', $description) }}" />
                                                 <span class="error-message">@error('description'){{ $message }}@enderror</span>
                                             </div> -->
-                                        </div>
+                                    </div>
 
-                                        <!-- <div class="col-sm-6">
+                                    <!-- <div class="col-sm-6">
                                             <div class="form-group mb-5">
                                             <label for="testimonial_img" class="form-label">Image <span style="color:red">*</span></label>
                                                 @if (!empty($testimonial_img))
@@ -117,7 +121,7 @@
                                                 <span class="error-message">@error('testimonial_img'){{ $message }}@enderror</span>
                                             </div> -->
 
-                                            <!-- <div class="col-6">
+                                    <!-- <div class="col-6">
                                             <div class="form-group mb-5">
                             <label for="testimonial_img" class="form-label">Image <span
                                     style="color:red">*</span></label>
@@ -149,68 +153,72 @@
 
 </div>
 </div> -->
-                                                <div class="col-6">
-                                                <div class="form-group mb-5">
-                                                <label for="subtitle">User Profile <span style="color:red;">*</span></label>
-                                                <input type="text" id="subtitle" class="form-control" placeholder="User Profile" name="subtitle" autocomplete="off" value="{{ old('subtitle', $subtitle) }}" />
-                                                <span class="error-message">@error('subtitle'){{ $message }}@enderror</span>
-                                               
-                                            </div>
-                                      
-                                            
-                                            <div class="form-group mb-5">
-                                                <label for="rating">Choose Rating <span style="color:red">*</span></label>
-                                                <select name="rating" id="rating" class="form-control">
-                                                    <option value="">-- Select User Rating --</option>
-                                                    <option value="1" {{ $rating == 1 ? 'selected' : '' }}>1</option>
-                                                    <option value="2" {{ $rating == 2 ? 'selected' : '' }}>2</option>
-                                                    <option value="3" {{ $rating == 3 ? 'selected' : '' }}>3</option>
-                                                    <option value="4" {{ $rating == 4 ? 'selected' : '' }}>4</option>
-                                                    <option value="5" {{ $rating == 5 ? 'selected' : '' }}>5</option>
-                                                </select>
-                                            </div>
-</div>
-                                            <div class="col-xs-12 col-md-12">
-                        <label class="col-sm-1 float-left" for="password_confirmation" style="margin-top:10px" >Status <span
-                                                style="color:red;">*</span></label>
-                        <div class="form-check mt-1 mb-2">
-                            <?php $activeValue = ''; // Initialize to empty string ?>
-                            <input class="form-check-input active1" type="radio" name="active" id="active1" value="active" style="cursor: pointer;"
-                                <?php if ($active == 1) {
-    echo 'checked';
-} ?>>
-                            <label class="form-check-label mr-4" for="active1">Active</label>
-                            <input class="form-check-input active1" type="radio" name="active" id="active2" value="inactive" style="cursor: pointer;"
-                                <?php if ($active == 0) {
-    echo 'checked';
-} ?>>
-                            <label class="form-check-label" for="active2">Inactive</label>
-                        </div>
-                        <h5><small class="text-danger" id="active_err"></small></h5>
-                        @error('active')
-                        <span class="error" style="color:red;">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
+                                    <div class="col-6">
+                                        <div class="form-group mb-5">
+                                            <label for="subtitle">Testimonial Profile <span style="color:red;">*</span></label>
+                                            <input type="text" id="subtitle" class="form-control"
+                                                placeholder="Testimonial Profile" name="subtitle" autocomplete="off"
+                                                value="{{ old('subtitle', $subtitle) }}" />
+                                            <span class="error-message">@error('subtitle'){{ $message }}@enderror</span>
 
-                <div class="col-12 text-center mt-1">
-                        <button type="submit" class="btn btn-primary mr-1" onClick="return validation()">Submit</button>
-                        <a href="{{ url('/testimonial') }}" type="reset" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </div>
-                </form>
-            </div>
-                           
+                                        </div>
+
+
+                                        <div class="form-group mb-5">
+                                            <label for="rating">Choose Rating <span style="color:red">*</span></label>
+                                            <select name="rating" id="rating" class="form-control">
+                                                <option value="">-- Select Testimonial Rating --</option>
+                                                <option value="1" {{ $rating==1 ? 'selected' : '' }}>1</option>
+                                                <option value="2" {{ $rating==2 ? 'selected' : '' }}>2</option>
+                                                <option value="3" {{ $rating==3 ? 'selected' : '' }}>3</option>
+                                                <option value="4" {{ $rating==4 ? 'selected' : '' }}>4</option>
+                                                <option value="5" {{ $rating==5 ? 'selected' : '' }}>5</option>
+                                            </select>
+                                            <span class="error-message">@error('rating'){{ $message }}@enderror</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-12 col-md-12">
+                                        <label class="col-sm-1 float-left" for="password_confirmation"
+                                            style="margin-top:10px">Status <span style="color:red;">*</span></label>
+                                        <div class="form-check mt-1 mb-2">
+                                            <?php $activeValue = ''; // Initialize to empty string ?>
+                                            <input class="form-check-input active1" type="radio" name="active"
+                                                id="active1" value="active" style="cursor: pointer;" <?php if
+                                                ($active==1) { echo 'checked' ; } ?>>
+                                            <label class="form-check-label mr-4" for="active1">Active</label>
+                                            <input class="form-check-input active1" type="radio" name="active"
+                                                id="active2" value="inactive" style="cursor: pointer;" <?php if
+                                                ($active==0) { echo 'checked' ; } ?>>
+                                            <label class="form-check-label" for="active2">Inactive</label>
+                                        </div>
+                                        <span class="error-message">@error('active'){{ $message }}@enderror</span>
+                                        {{-- <h5><small class="text-danger" id="active_err"></small></h5>
+                                        @error('active')
+                                        <span class="error" style="color:red;">{{ $message }}</span>
+                                        @enderror --}}
+                                    </div>
+                                </div>
+
+                                <div class="col-12 text-center mt-1">
+                                    <button type="submit" class="btn btn-primary mr-1"
+                                        onClick="return validation()">Submit</button>
+                                    <a href="{{ url('/testimonial') }}" type="reset"
+                                        class="btn btn-outline-secondary">Cancel</a>
+                                </div>
                         </div>
+                        </form>
                     </div>
+
                 </div>
-            </section>
-        </div>
-    </section>
-   
+            </div>
+    </div>
+</section>
+</div>
+</section>
+
 @endsection
 
-    <script>
+<script>
     function validation() {
         var isValid = true;
 
@@ -326,4 +334,3 @@
 
 
 </script>
-

@@ -128,7 +128,6 @@
                                     style="width:50px ;"
                                     src="{{ asset('uploads/testimonial_images/' . $val->testimonial_img) }}"></a>
                         </td> -->
-<<<<<<< HEAD
                                     <td class="text-center">
 
                                         <div class="custom-control custom-switch custom-switch-success">
@@ -181,65 +180,12 @@
 @endsection
 <script>
     function remove_testimonial(iId) {
-=======
-                        <td class="text-center">
-
-<div class="custom-control custom-switch custom-switch-success" >
-    <input type="checkbox" class="custom-control-input"  id="{{ $val->id }}" {{
-        $val->active ? 'checked' : '' }}
-    onclick="change_status(event.target, {{ $val->id }});" />
-
-    <label class="custom-control-label" style="cursor: pointer;" for="{{ $val->id }}">
-
-        <span class="switch-icon-left"></span>
-        <span class="switch-icon-right"></span>
-    </label>
-</div>
-</td>
-
-                                                
-
-                                                <td>
-                                                    <a href="{{ route('edit_testimonial', $val->id) }}"><i
-                                                            class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
-                                                    <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                        onclick="remove_testimonial({{ $val->id }})" title="delete"></i>
-                                                </td>
-                                            </tr>
-                                      <?php }
-                                    }else{?>
-                                        <tr>
-                                            <td colspan="8" style="text-align:center; color:red;">No Record Found</td>
-                                        </tr>
-                                  <?php }?>
-                                </tbody>
-                            </table>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-end">
-                                    {{ $Paginator }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-            <!-- Bordered table end -->
-        </div>
-
-
-    </section>
-
-@endsection
-<script>
-     function remove_testimonial(iId) {
->>>>>>> bc04005a288d82b5285e035b67b4e40fc17b30ff
         // alert(iId);
         var url = '<?php echo url('/testimonial/remove_testimonial') ?>';
 
         url = url + '/' + iId;
         // alert(url);
-        Confirmation = confirm('Are you sure you want to remove this vehicle');
+        Confirmation = confirm('Are you sure you want to remove this testimonial');
         if (Confirmation) {
 
             window.location.href = url;
@@ -276,8 +222,4 @@
         }
     }
   
-<<<<<<< HEAD
 </script>
-=======
-</script>
->>>>>>> bc04005a288d82b5285e035b67b4e40fc17b30ff

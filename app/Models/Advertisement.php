@@ -100,6 +100,12 @@ class Advertisement extends Model
    public static function add_advertisement($request)
    {
        $img_name = '';
+
+       if ($request->status == 'active') {
+            $status = 1;
+        } else {
+            $status = 0;
+        }
    
        if ($request->file('img')) {
            $path = public_path('uploads/images/');
@@ -119,11 +125,11 @@ class Advertisement extends Model
    
        $bindings = [
            'name' => $request->name,
-           'status' => $request->status,
+           'status' => $status,
            'url' => $request->url,
            'img' => $img_name
        ];
-   
+      
        $result = DB::insert($sql, $bindings);
    
        return $result;

@@ -64,8 +64,8 @@ class AdvertiseController extends Controller
             $rules = [
                  'name' => 'required',
                  'url' => 'required',
-                // 'staus' => 'required',
-                // 'image_name' => 'required',
+                'staus' => 'required',
+                'img' => 'required',
             ];
 
             if ($request->has('img')) {
@@ -81,17 +81,17 @@ class AdvertiseController extends Controller
 
             if ($iId > 0) {
                 $result =  Advertisement::update_advertisement($iId, $request);
-                $successMessage = 'banner updated successfully';
+                $successMessage = 'Advertisement updated successfully';
             } else {
 
                 $result =  Advertisement::add_advertisement($request);
-                $successMessage = 'banner added successfully';
+                $successMessage = 'advertisement added successfully';
             }
 
             return redirect('/advertisement')->with('success', $successMessage);
         } else {
             if ($iId > 0) {
-                $sql = 'SELECT name, img, url, status
+                $sql = 'SELECT id,name, img, url, status
                 FROM advertisement 
                 WHERE id = ?';
 
@@ -136,6 +136,6 @@ class AdvertiseController extends Controller
     public function delete_advertisement($iId)
     {
         Advertisement::remove_add($iId);
-        return redirect(url('/advertisement'))->with('success', 'add deleted successfully');
+        return redirect(url('/advertisement'))->with('success', 'advertisement deleted successfully');
     }
 }

@@ -125,22 +125,11 @@ class TestimonialController extends Controller
                 #UPDATE
                 $request->validate($Rules);
 
-                // if ($request->hasFile('testimonial_img')) {
-                //     // Upload the new image
-                //     $image_name = $request->file('testimonial_img')->getClientOriginalName();
-                //     $request->file('testimonial_img')->move(public_path('uploads/testimonial_images/'), $image_name);
-                // } else {
-                //     // If no new image is uploaded, retain the old image
-                //     $image_name = $hidden_testimonial_img;
-                // }
-
                 //dd($image_name);
                 // if (!empty($image_name)) {
                 $sSQL = 'UPDATE testimonial SET user_id = :user_id,subtitle = :subtitle ,description = :description, active = :active , rating = :rating WHERE id = :id';
                 // dd($sSQL);
 
-
-                //dd($sSQL);
                 $Bindings = array(
                     'user_id' => $user_id,
                     'subtitle' => $subtitle,
@@ -150,42 +139,20 @@ class TestimonialController extends Controller
                     'rating' => $rating,
                     'id' => $iId
                 );
-                //dd($Bindings);
-                // $Result = DB::update($sSQL, $Bindings);
-
-
-                //duplication
-          //      $sSQL1 = "SELECT count(id) AS rec_count FROM testimonial WHERE LOWER(user_id) = '" . strtolower($user_id) . "' and id != " . $iId . " and 1 = 1 ";
-                //   $sSQL1 = "SELECT count(id) AS rec_count FROM vehicle_master WHERE vehicle_name = '" . $vehicle_name . "' ";
-                // dd( $sSQL1);
-            //    $rResult = DB::select(($sSQL1));
-                //  dd($rResult);
-                // if (($rResult[0]->rec_count) == 1) {
-                //     $SuccessMessage = 'name already exist';
-                //     return redirect('/testimonial/add')->with('error', $SuccessMessage);
-                // } else {
-                    $Result = DB::update($sSQL, $Bindings);
-                    $SuccessMessage = 'testimonial  updated successfully';
-                // }
-                //  }
-                // dd($Result);
+               
+                $Result = DB::update($sSQL, $Bindings);
+                $SuccessMessage = 'testimonial  updated successfully';
+                
             } else {
-                // dd('aaa');
-                // dd($request->vehicle_image);
-
-                // if ((!empty($request->testimonial_img))) {
-                //     $image_name = $request->file('testimonial_img')->getClientOriginalName();
-                //     //    dd($image_name);
-                //     $file = $request->file('testimonial_img');
-                //     $url = env('APP_URL');
-                //     $final_url = $url . 'uploads/testimonial_images';
-                //     $file->move(public_path('uploads/testimonial_images/'), $final_url . '/' . $image_name);
-                // } else {
-                //     $image_name = '';
-                // }
-
+               
                 $request->validate($Rules);
                 #ADD
+                if ($request->active == 'active') {
+                    $active = 1;
+                }
+                if ($request->active == 'inactive') {
+                    $active = 0;
+                }
 
                 $sSQL = 'INSERT INTO testimonial(user_id,subtitle,description,active,rating) VALUES(:user_id,:subtitle,:description,:active,:rating)';
                 // dd($sSQL);
@@ -200,12 +167,6 @@ class TestimonialController extends Controller
                 );
                 //  dd($Bindings);
 
-                //duplication
-                // $sSQL1 = "SELECT count(id) AS rec_count FROM testimonial WHERE user_id = '" . $user_id . "' ";
-                // $rResult = DB::select(($sSQL1));
-                //    dd($rResult);
-
-             //   if (($rResult[0]->rec_count) == 0) {
                     $Result = DB::insert($sSQL, $Bindings);
                     $SuccessMessage = 'testimonial added successfully';
                 // } else {

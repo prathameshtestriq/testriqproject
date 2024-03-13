@@ -89,38 +89,39 @@ class TypeController extends Controller
         $aReturn['active'] = '';
         $aReturn['logo'] = '';
         $aReturn['type'] = '';
-    
-        // Fetch all types available
-       // Fetch all types available
-$allTypes = DB::select('SELECT *, (SELECT name FROM eTypes WHERE type_id = id) AS type_name FROM event_type WHERE 1=1');
+        $aReturn['id'] = '';
+            
+                // Fetch all types available
+            // Fetch all types available
+        $allTypes = DB::select('SELECT *, (SELECT name FROM eTypes WHERE type_id = id) AS type_name FROM event_type WHERE 1=1');
 
-// Initialize an associative array to keep track of selected types
-$selectedTypes = [];
+        // Initialize an associative array to keep track of selected types
+        $selectedTypes = [];
 
-foreach ($allTypes as $type) {
-    $result = DB::select("SELECT * FROM event_type WHERE type_id = ? AND event_id = ?", [$type->type_id, $iId]);
-    $isSelected = sizeof($result) > 0 ? 'selected' :'';
-   // $aReturn['allTypes'] = $allTypes;
-    // If the type is selected, add it to the selectedTypes array
-        $selectedTypes[$type->type_id] = $type;
-   
+        foreach ($allTypes as $type) {
+            $result = DB::select("SELECT * FROM event_type WHERE type_id = ? AND event_id = ?", [$type->type_id, $iId]);
+            $isSelected = sizeof($result) > 0 ? 'selected' :'';
+        // $aReturn['allTypes'] = $allTypes;
+            // If the type is selected, add it to the selectedTypes array
+                $selectedTypes[$type->type_id] = $type;
+        
 
-    $type->selected = $isSelected;
-}
-//dd($selectedTypes);
-// Remove duplicate selected types
-$allTypes = array_diff_key( $selectedTypes);
-//dd($allTypes);
-$aReturn['allTypes'] = $selectedTypes; // Pass $allTypes to the view
+            $type->selected = $isSelected;
+        }
+        //dd($selectedTypes);
+        // Remove duplicate selected types
+        $allTypes = array_diff_key( $selectedTypes);
+        //dd($allTypes);
+        $aReturn['allTypes'] = $selectedTypes; // Pass $allTypes to the view
 
-//dd($aReturn['allTypes']);
-    
+        //dd($aReturn['allTypes']);
+            
         if (isset($request->form_type) && $request->form_type == 'add_edit_type') {
             // Validation rules
            // dd($request->all());
             $Rules = [
                 'name' => 'required|string',
-                'active' => 'required|string',
+                'active' => 'required',
             ];
     
             // Retrieve data from request
@@ -128,57 +129,55 @@ $aReturn['allTypes'] = $selectedTypes; // Pass $allTypes to the view
             $active = $request->input('active', 1);
             $typeIds = $request->input('type_id', []);
 
-         if($iId>0){
-            if ($request->active == 'active') {
-                $active = 1;
-            }
-            if ($request->active == 'inactive') {
-                $active = 0;
-            }
-            // Determine if image update is required
-            $updateImage = $request->hasFile('logo');
-    
-            // Handle image update if necessary
-            $image_name = '';
-            if ($updateImage) {
-                $image_name = $request->file('logo')->getClientOriginalName();
-                $request->file('logo')->move(public_path('uploads/type_images/'), $image_name);
-            }
-    
-            // Update record
-            $Bindings = [
-                'name' => $name,
-                'active' => $active,
-                'id' => $iId
-            ];
-            $sSQL = 'UPDATE eTypes SET name = :name, active = :active';
-            if ($updateImage) {
-                $sSQL .= ', logo = :logo';
-                $Bindings['logo'] = $image_name;
-            }
-            $sSQL .= ' WHERE id = :id';
-    
-            $Result = DB::update($sSQL, $Bindings);
-    
-            // Handle success or failure
-            if ($Result !== false) {
-                $successMessage = 'Type updated successfully';
-
-                // Update event categories
-                DB::delete('DELETE FROM event_type WHERE event_id = ?', [$iId]); // Clear existing type entries
-
-                // Insert new type entries
-                foreach ($typeIds as $typeId) {
-                    DB::insert('INSERT INTO event_type (event_id, type_id) VALUES (?, ?)', [$iId, $typeId]);
+            if($iId>0){
+                if ($request->active == 'active') {
+                    $active = 1;
                 }
+                if ($request->active == 'inactive') {
+                    $active = 0;
+                }
+                // Determine if image update is required
+                $updateImage = $request->hasFile('logo');
+        
+                // Handle image update if necessary
+                $image_name = '';
+                if ($updateImage) {
+                    $image_name = $request->file('logo')->getClientOriginalName();
+                    $request->file('logo')->move(public_path('uploads/type_images/'), $image_name);
+                }
+        
+                // Update record
+                $Bindings = [
+                    'name' => $name,
+                    'active' => $active,
+                    'id' => $iId
+                ];
+                $sSQL = 'UPDATE eTypes SET name = :name, active = :active';
+                if ($updateImage) {
+                    $sSQL .= ', logo = :logo';
+                    $Bindings['logo'] = $image_name;
+                }
+                $sSQL .= ' WHERE id = :id';
+        
+                $Result = DB::update($sSQL, $Bindings);
+        
+                // Handle success or failure
+                if ($Result !== false) {
+                    $successMessage = 'Type updated successfully';
 
-                return redirect('/type')->with('success', $successMessage);
-            } else {
-                $errorMessage = 'Failed to update type';
-                return redirect('/type/add')->with('error', $errorMessage);
-            }
-    
-    
+                    // Update event categories
+                    DB::delete('DELETE FROM event_type WHERE event_id = ?', [$iId]); // Clear existing type entries
+
+                    // Insert new type entries
+                    foreach ($typeIds as $typeId) {
+                        DB::insert('INSERT INTO event_type (event_id, type_id) VALUES (?, ?)', [$iId, $typeId]);
+                    }
+
+                    return redirect('/type')->with('success', $successMessage);
+                } else {
+                    $errorMessage = 'Failed to update type';
+                    return redirect('/type/add')->with('error', $errorMessage);
+                }
              
                                
             } else {
@@ -194,6 +193,13 @@ $aReturn['allTypes'] = $selectedTypes; // Pass $allTypes to the view
                     $file->move(public_path('uploads/type_images/'), $final_url . '/' . $image_name);
                 } else {
                     $image_name = '';
+                }
+
+                if ($request->active == 'active') {
+                    $active = 1;
+                }
+                if ($request->active == 'inactive') {
+                    $active = 0;
                 }
 
                 $request->validate($Rules);
@@ -249,6 +255,7 @@ $aReturn['allTypes'] = $selectedTypes; // Pass $allTypes to the view
                 $sSQL = 'SELECT * FROM eTypes WHERE id=:id';
                 $Materials = DB::select($sSQL, array('id' => $iId));
                 $aReturn = (array) $Materials[0];
+
             }
         }
         $aReturn['allTypes'] = $allTypes; // Pass $allTypes to the view
