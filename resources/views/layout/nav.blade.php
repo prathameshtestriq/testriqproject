@@ -60,7 +60,7 @@
                                 User
                             </a>
                         </div>
-                    </li> 
+                    </li>
                     <li class="nav-item d-inline ">
                         <div class="btn-group">
                             <a class="btn btn-flat-primary <?php

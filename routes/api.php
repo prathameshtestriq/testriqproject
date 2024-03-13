@@ -10,9 +10,7 @@ use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MasterController;
-
 use App\Http\Controllers\EventTicketController;
-
 use App\Http\Controllers\UserEventDetailsController;
 
 /*
@@ -100,9 +98,9 @@ Route::controller(EventUserFollowController::class)->group(function () {
 
 Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_event_ticket', 'geteventticket');
-    Route::post('get_ticket_detail/{id}', 'getticketdetail');
+    Route::post('get_ticket_detail', 'getTicketDetail');
     Route::post('add_edit_event_ticket/{id?}', 'addediteventticket');
-    Route::post('delete_event_ticket/{id?}', 'EventTicketDelete');
+    Route::post('delete_event_ticket', 'EventTicketDelete');
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {

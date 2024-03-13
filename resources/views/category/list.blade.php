@@ -188,7 +188,7 @@
                     if (result == 1) {
                         console.log(result);
                         alert('Status changed successfully')
-                        //location.reload(); 
+                        //location.reload();
                     } else {
                         alert('Some error occured');
                         if (status)
