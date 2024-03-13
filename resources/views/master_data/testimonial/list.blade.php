@@ -72,7 +72,7 @@
                                 <div class="col-sm-8">
                                     <div class="row">
                                         <div class="col-sm-3">
-                                            <input type="text" id="user_id" class="form-control" placeholder="User Name"
+                                            <input type="text" id="user_id" class="form-control" placeholder="Testimonial Name"
                                                 name="user_id" value="{{ $search_name }}" autocomplete="off" />
                                         </div>
 

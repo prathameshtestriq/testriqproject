@@ -73,7 +73,7 @@
                                         <div class="row">
                                             <div class="col-sm-3">
                                                 <input type="text" id="name" class="form-control"
-                                                    placeholder="name" name="name" value="{{ $search_ad }}"
+                                                    placeholder="advertisement name" name="name" value="{{ $search_ad }}"
                                                     autocomplete="off" />
                                             </div>
 
