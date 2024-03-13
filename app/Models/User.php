@@ -61,12 +61,28 @@ class User extends Authenticatable
      * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
 
+    // protected function type(): Attribute
+    // {
+    //     return new Attribute(
+    //         get: fn($value) => ["superadmin", "admin", "user"][$value],
+    //     );
+    // }
+
+    // protected function type(): Attribute
+    // {
+    //     return new Attribute(
+    //         get: fn($value) => ["superadmin", "admin", "user"][$value],
+    //     );
+    // }
+    
     protected function type(): Attribute
     {
         return new Attribute(
-            get: fn($value) => ["superadmin", "admin", "user"][$value],
+            get: fn($value) => ["superadmin", "admin", "user"][($value % 3 + 3) % 3],
         );
     }
+
+
 
     public $timestamps = false;
 
@@ -78,19 +94,28 @@ class User extends Authenticatable
                 FROM users u WHERE 1=1';
 
         if (!empty($a_search['search_name'])) {
-            $s_sql .= ' AND (LOWER(u.firstname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-            $s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
+           $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
+            //$s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
+            // $s_sql .= ' AND (LOWER(u.firstname) LIKE :search_name';
+            // $s_sql .= ' OR LOWER(u.lastname) LIKE :search_name';
+            // $s_sql .= ' OR LOWER(CONCAT(u.firstname, " ", u.lastname)) LIKE :search_name)';
+            
+
             $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
         }
-
+        // dd($s_sql);
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
         }
-
+        // dd($s_sql);
         $a_return = DB::select($s_sql, array());
-
+        // dd($a_return);
         return $a_return;
     }
+
+
+
+
 
     public static function get_count($a_search = array())
     {

@@ -1,5 +1,9 @@
 @extends('layout.index')
-@section('title', 'User Create')
+@if (!empty($id))
+    @section('title', 'Edit Advertisement Details')
+@else
+    @section('title', 'Add Advertisement Details')
+@endif
 <!-- Dashboard Ecommerce start -->
 <style>
     * {
@@ -9,13 +13,18 @@
 {{-- {{ dd($a_return) }} --}}
 @section('content')
     <section>
-
         <div class="content-body">
             <div class="content-header row">
                 <div class="content-header-left col-md-9 col-12 mb-2">
                     <div class="row breadcrumbs-top">
                         <div class="col-12 d-flex">
-                            <h2 class="content-header-title float-start mb-0">Add Advertisement</h2>
+                            <h2 class="content-header-title float-start mb-0">
+                                @if (!empty($id))
+                                   Edit Advertisement Details
+                                @else
+                                   Add Advertisement Details
+                                @endif 
+                               </h2>
                         </div>
                     </div>
                 </div>
@@ -25,9 +34,14 @@
                             <ol class="breadcrumb" style="justify-content: flex-end">
                                 <li class="breadcrumb-item"><a href="#">Home</a>
                                 </li>
-                                <li class="breadcrumb-item"><a href="#">adds</a>
+                                <li class="breadcrumb-item"><a href="#">Advertisement</a>
                                 </li>
-                                <li class="breadcrumb-item active">Add advertisement
+                                <li class="breadcrumb-item active">
+                                    @if (!empty($id))
+                                        Edit Advertisement Details
+                                    @else
+                                        Add Advertisement Details
+                                    @endif 
                                 </li>
                             </ol>
                         </div>

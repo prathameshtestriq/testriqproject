@@ -160,7 +160,7 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex justify-content-end">
-                            {{ $Paginator }}
+                            {{ $Paginator->links() }}
                         </div>
                     </div>
                 </div>

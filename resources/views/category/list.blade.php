@@ -130,6 +130,11 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-end">
+                                    {{ $Paginator->links() }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

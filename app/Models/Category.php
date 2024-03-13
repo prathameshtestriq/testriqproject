@@ -71,23 +71,25 @@ class Category extends Model
     public $timestamps = false;
 
 
-    public static function get_all_category($search_category = null)
+    public static function get_all_category($limit, $a_search = array())
     {
-        $s_sql = 'SELECT id, name, logo, active FROM category WHERE 1=1';
-        if (!empty($search_category)) {
-            if (is_array($search_category)) {
-                $search_string = implode(' ', $search_category);
-            } else {
-                $search_string = $search_category;
-            }
-            
-            $s_sql .= " AND (name LIKE BINARY '%" . $search_string . "%')";
+        $a_return = [];
+
+        $s_sql = 'SELECT id, name, logo, active FROM category';
+
+        if (!empty($a_search['search_category'])) {
+            $s_sql .= ' WHERE LOWER(name) LIKE \'%' . strtolower($a_search['search_category']) . '%\'';
         }
-        // dd($s_sql);
         
+        if ($limit > 0) {
+            $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
+        }
+
         $a_return = DB::select($s_sql);
         return $a_return;
     }
+
+   
     
     
     public static function get_count($a_search = array())

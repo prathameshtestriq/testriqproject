@@ -56,7 +56,6 @@ Route::controller(LoginController::class)->group(function () {
 Route::controller(EventController::class)->group(function () {
     Route::post('get_data_location_wise', 'get_data_location_wise');
     Route::post('events', 'getEvents');
-
     Route::post('get_banner_events', 'get_banner_events');
     Route::post('create_event', 'createEventBasicInfo');
     Route::post('event_details', 'getEventDetails');
@@ -89,6 +88,9 @@ Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('/follow', 'Eventuserfollow');
 });
 
+    // Route::post('add_new_user','addnewuser');
+
+
 Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('event_user_follow', 'Eventuserfollow');
     Route::post('event_user_unfollow', 'Eventuserunfollow');
@@ -106,6 +108,8 @@ Route::controller(UserEventDetailsController::class)->group(function () {
     Route::get('get_all_events', 'getallEvents');
 });
 
+
+
 Route::controller(AdvertisementController::class)->group(function () {
     Route::Get('/get_advertisement', 'GetAdvertisement');
 });
@@ -113,6 +117,7 @@ Route::controller(AdvertisementController::class)->group(function () {
 Route::controller(TestimonialController::class)->group(function () {
     Route::Get('/get_testimonial', 'GetTestimonial');
 });
+
 
 Route::controller(OrganizerController::class)->group(function () {
     Route::Post('/get_organizer', 'GetOrganizer');

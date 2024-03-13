@@ -62,7 +62,6 @@ return [
 
 
     'per_page' => (!empty(env('PER_PAGE'))) ? env('PER_PAGE') : 30,
-
     'master_types' => [
         (object)[
             "id" => 1,

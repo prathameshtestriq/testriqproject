@@ -33,11 +33,13 @@ class CategoryController extends Controller
 
         $CountRows = Category::get_count($aReturn);
         $PageNo = request()->input('page', 1);
-
-        $aReturn["category_array"] = Category::get_all_category($aReturn);
         $Limit = config('custom.per_page');
+        // $Limit = 3;
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
+       
+        $aReturn["category_array"] = Category::get_all_category($Limit,$aReturn);
+       
         $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['category_array'], $CountRows, $Limit, $PageNo);
         $aReturn['Paginator']->setPath(request()->url());
 

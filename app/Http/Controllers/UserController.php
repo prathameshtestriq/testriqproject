@@ -2,17 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Libraries\Curlcall;
-use App\Libraries\Mysecurity;
-use App\Models\AdminModel;
-use App\Models\AdminUserRight;
-use App\Models\Master_farmer;
-use App\Models\Module;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
@@ -47,13 +40,15 @@ class UserController extends Controller
         $CountRows=User::get_count($aReturn);
         $PageNo = request()->input('page', 1);
         $Limit = config('custom.per_page');
+        // $Limit = 3;
+      
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
         $aReturn["user_array"] =User::get_all($Limit,$aReturn);
-
+        
         $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['user_array'], $CountRows, $Limit, $PageNo);
         $aReturn['Paginator']->setPath(request()->url());
-       //  dd($aReturn);
+        // dd($aReturn);
         return view('users.list',$aReturn);
     }
 
@@ -117,6 +112,7 @@ class UserController extends Controller
                 if ($user) {
                     $aReturn = $user->toArray();
                 }
+               
             }
     
             

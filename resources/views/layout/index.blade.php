@@ -42,14 +42,12 @@
     <link rel="stylesheet" type="text/css" href={{ asset('app-assets/css/plugins/forms/pickers/form-flat-pickr.css')}}>
     <link rel="stylesheet" type="text/css" href={{ asset('app-assets/css/plugins/forms/pickers/form-pickadate.css')}}>
      <!--Sortable -->
-
     <!-- END: Page CSS-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- BEGIN: Custom CSS-->
     <link rel="stylesheet" type="text/css" href={{ asset('assets/css/style.css')}}>
     <link rel="stylesheet" type="text/css" href={{ asset('app-assets/css/custom.css')}}>
     <!-- END: Custom CSS-->
-
     {{-- <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script> --}}
     {{-- <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script> --}}
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
@@ -63,7 +61,6 @@
 <!-- BEGIN: Body-->
 
 <body class="vertical-layout vertical-menu-modern  navbar-floating footer-static   menu-collapsed" data-open="click" data-menu="vertical-menu-modern" data-col="">
-
 
     <!-- BEGIN: Header-->
     @include('layout.nav')
@@ -80,7 +77,6 @@
         <div class="content-overlay"></div>
         <div class="header-navbar-shadow"></div>
         <div class="content-wrapper container-xxl p-0">
-
 
                 <!-- Table Hover Animation start -->
                 @section('content')
@@ -99,7 +95,6 @@
 
     <!-- BEGIN: Footer-->
     <footer class="footer footer-static footer-light">
-
     <div class="footerContainer">
         <!-- <p class="copyright text-center">© Cotton Connect MEL 2022</p> -->
         <p class="copyright text-center"></p>
@@ -114,7 +109,6 @@
     <!-- BEGIN Vendor JS-->
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 
-
     <!-- BEGIN: Page Vendor JS-->
     <script src={{ asset('app-assets/vendors/js/forms/wizard/bs-stepper.min.js')}}></script>
     <script src={{ asset('app-assets/vendors/js/forms/validation/jquery.validate.min.js')}}></script>
@@ -122,7 +116,6 @@
 
     <!-- BEGIN: Page Vendor JS-->
     {{-- <script src={{ asset('app-assets/vendors/js/charts/apexcharts.min.js')}}></script> --}}
-
     {{-- <script src={{ asset('app-assets/vendors/js/extensions/toastr.min.js')}}></script> --}}
     <!-- END: Page Vendor JS-->
 

@@ -11,7 +11,7 @@
     <meta name="author" content="PIXINVENT">
     <title>Wizard - Vuexy - Bootstrap HTML admin template</title>
     <link rel="apple-touch-icon" href="app-assets/images/ico/apple-icon-120.png">
-    <link rel="shortcut icon" type="image/x-icon" href={{ asset('app-assets/images/ico/favicon.ico')}}>
+    <link rel="shortcut icon" type="image/x-icon" href="app-assets/images/ico/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600" rel="stylesheet">
 
     <!-- BEGIN: Vendor CSS-->
@@ -40,7 +40,6 @@
     <link rel="stylesheet" type="text/css" href="app-assets/css/custom.css">
 
     <!-- END: Custom CSS-->
-
 </head>
 <!-- END: Head-->
 
@@ -84,7 +83,6 @@
                             </a>
                         </div>
                         </li>
-
                         <li class="nav-item d-inline">
                         <div class="btn-group">
                             <a class="btn btn-flat-primary" href="demo" type="button" >
@@ -167,7 +165,6 @@
 
 
 
-
     <!-- BEGIN: Content-->
     <div class="app-content content " style="margin-left: 0;">
         <div class="content-overlay"></div>
@@ -200,7 +197,6 @@
                                     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
                                 </div>
                                 <div class="card-body">
-
                                     <div class="py-2">
                                         <h4 class="pb-2">Upcoming events</h4>
                                         <p>No upcoming events found</p>
@@ -208,7 +204,6 @@
 
                                     <div>
                                         <h4 class="pb-2">Active events</h4>
-
                                         <div class="row mb-2">
                                             <div class="col-sm-3">
                                                 <div class="event-date">
@@ -226,7 +221,6 @@
                                                 <p class="m-0">100</p>
                                             </div>
                                         </div>
-
                                     </div>
 
                                     <div class="py-2">
@@ -239,7 +233,6 @@
                                 <div class="card-footer d-flex justify-content-center">
                                     <button type="button" class="btn btn-primary waves-effect waves-float waves-light" ><i data-feather='plus'></i> New Event</button>
                                 </div>
-
                               </div>
                     </div>
                 </div>
@@ -253,7 +246,6 @@
                 </div> -->
             </div>
             <div class="content-body">
-
 
                 <!-- Vertical Wizard -->
                 <section class="vertical-wizard">
@@ -328,7 +320,6 @@
                                         <label class="form-label" for="vertical-password">Password</label>
                                         <input type="password" id="vertical-password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
                                     </div>
-
                                 </div>
 
                                 <div class="row">
@@ -630,7 +621,6 @@
 
 <script>
     let isNavOpen = false;
-
     function toggleNav() {
       const sidenav = document.getElementById("mySidenav");
       if (isNavOpen) {

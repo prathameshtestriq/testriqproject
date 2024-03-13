@@ -64,9 +64,9 @@
                     <li class="nav-item d-inline ">
                         <div class="btn-group">
                             <a class="btn btn-flat-primary <?php
-                            // if ($uriSegment == 'category') {
-                            //     echo 'active';
-                            // }
+                            if ($uriSegment == 'category') {
+                                echo 'active';
+                            }
                             ?>" href="{{ url('/category') }}"
                                 type="button">
 
@@ -78,9 +78,9 @@
                     <li class="nav-item d-inline ">
                         <div class="btn-group">
                             <a class="btn btn-flat-primary <?php
-                            // if ($uriSegment == 'category') {
-                            //     echo 'active';
-                            // }
+                            if ($uriSegment == 'banner') {
+                                echo 'active';
+                            }
                             ?>" href="{{ url('/banner') }}"
                                 type="button">
 
@@ -92,9 +92,9 @@
                     <li class="nav-item d-inline ">
                         <div class="btn-group">
                             <a class="btn btn-flat-primary <?php
-                            // if ($uriSegment == 'category') {
-                            //     echo 'active';
-                            // }
+                            if ($uriSegment == 'advertisement') {
+                                echo 'active';
+                            }
                             ?>" href="{{ url('/advertisement') }}"
                                 type="button">
 
@@ -106,7 +106,7 @@
                     <li class="nav-item d-inline ">
                         <div class="btn-group">
                             <a class="btn btn-flat-primary <?php
-                            if ($uriSegment == 'events') {
+                            if ($uriSegment == 'event') {
                                 echo 'active';
                             }
                             ?>" href="{{ url('/event') }}"
@@ -186,8 +186,8 @@
                                 ?>
                             </div>
                             <span class="avatar"><img class="round"
-                                src="{{ asset('app-assets/images/logo/logo1.jpg')}}" alt="avatar" height="40"
-                                width="40"><span class="avatar-status-online"></span></span>
+                                    src="{{ asset('app-assets/images/logo/logo1.jpg')}}" alt="avatar" height="40"
+                                    width="40"><span class="avatar-status-online"></span></span>
                         </a>
                         <!-- <span class="avatar"><img class="round"
                                     src="{{ asset('assets/logo/ytcr-logo.png')}}" alt="avatar" height="40"

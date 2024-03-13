@@ -49,6 +49,7 @@ class BannerController extends Controller
         $CountRows = Banner::get_count($aReturn);
         $PageNo = request()->input('page', 1);
         $Limit = config('custom.per_page');
+        // $Limit = 3;
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
         $aReturn["banner_array"] = Banner::get_all($Limit, $aReturn);
@@ -96,6 +97,7 @@ class BannerController extends Controller
             $rules = [
                 'banner_name' => 'required',
                 'banner_url' => 'required',
+                'banner_image' => 'required',
                 'start_time' => 'required',
                 'end_time' => 'required',
                 'city' => 'required',
@@ -128,7 +130,7 @@ class BannerController extends Controller
         } else {
             if ($iId > 0) {
                 // #SHOW EXISTING DETAILS ON EDIT
-                $sql = 'SELECT banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
+                $sql = 'SELECT id,banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
                         FROM banner 
                         WHERE id = ?';
 

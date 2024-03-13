@@ -1,6 +1,11 @@
 @extends('layout.index')
-@section('title', 'User Create')
 <!-- Dashboard Ecommerce start -->
+@if (!empty($id))
+    @section('title', 'Edit User Details')
+@else
+    @section('title', 'Add User Details')
+@endif
+
 <style>
     *{
         font-size: 15px;
@@ -8,13 +13,18 @@
 </style>
 @section('content')
     <section>
-
         <div class="content-body">
             <div class="content-header row">
                 <div class="content-header-left col-md-9 col-12 mb-2">
                     <div class="row breadcrumbs-top">
                         <div class="col-12 d-flex">
-                            <h2 class="content-header-title float-start mb-0">Add User</h2>
+                            <h2 class="content-header-title float-start mb-0">
+                                @if (!empty($id))
+                                   Edit User Details
+                                @else
+                                    Add User Details
+                                @endif 
+                            </h2>
                         </div>
                     </div>
                 </div>
@@ -26,7 +36,12 @@
                                 </li>
                                 <li class="breadcrumb-item"><a href="#">Users</a>
                                 </li>
-                                <li class="breadcrumb-item active">Add User
+                                <li class="breadcrumb-item active">
+                                    @if (!empty($id))
+                                        Edit User 
+                                    @else
+                                        Add User 
+                                    @endif 
                                 </li>
                             </ol>
                         </div>
@@ -102,7 +117,7 @@
                                                         <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Last Number <span style="color:red;">*</span></label>
                                                         <input type="text" id="lastname" class="form-control col-sm-8 float-right" name="lastname"
                                                             placeholder="lastname" autocomplete="off" value="{{ old('lastname',$lastname) }}" />
-                                                            <h5><span class="text-danger" id="lastname_err"></span></h5>
+                                                            <h5><small class="text-danger" id="lastname_err"></small></h5>
                                                             @error('lastname')
                                                             <span class="error" style="color:red;">{{ $message }}</span>
                                                         @enderror
@@ -184,7 +199,7 @@
                                                         <span class="error" style="color:red;">{{ $message }}</span>
                                                     @enderror
                                                 </div> 
-                                            
+                                    
                                                 <div class="col-xs-12 col-md-12 ">
                                                 <div class="form-group mb-5">
                                             

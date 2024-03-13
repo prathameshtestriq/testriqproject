@@ -117,7 +117,7 @@
                                         <th class="text-left">end time</th>
                                         <th class="text-left">Country</th>
                                         <th class="text-left">state</th>
-                                        <th class="text-left">city</th>
+                                        <th class="text-left">City</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -146,9 +146,9 @@
                                             
                                                 <td class="text-left">{{ date('Y-m-d H:i:s',$val->start_time) }}</td>
                                                 <td class="text-left">{{ date('Y-m-d H:i:s',$val->end_time) }}</td>
-                                                <td class="text-left">{{ $val->city}}</td>
-                                                <td class="text-left">{{ $val->state}}</td> 
                                                 <td class="text-left">{{ $val->country}}</td>
+                                                <td class="text-left">{{ $val->state}}</td> 
+                                                <td class="text-left">{{ $val->city}}</td>
 
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success">
@@ -181,7 +181,7 @@
                             </table>
                             <div class="card-body">
                                 <div class="d-flex justify-content-end">
-                                    {{ $Paginator }}
+                                  {{  $Paginator->links()}}
                                 </div>
                             </div>
                         </div>
@@ -206,7 +206,7 @@
 //     }
 
 
-function delbanner(id) {
+    function delbanner(id) {
         // alert(id);
         var url = '<?php echo url('banner/delete'); ?>';
         url = url + '/' + id;
