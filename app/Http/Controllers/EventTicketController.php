@@ -118,16 +118,16 @@ class EventTicketController extends Controller
                             $flag = false;
                         }
                     }
-                    // if ($tickettype == 3) {
-                    //     if (!empty($aPost['minimum_donation_amount'])) {
-                    //         $aPost['ticket_price'] = 0;
-                    //         // $aPost['min_booking'] = 0;
-                    //         // $aPost['max_booking'] = 0;
-                    //     } else {
-                    //         $field = 'Min Donation Amount';
-                    //         $flag = false;
-                    //     }
-                    // }
+                    if ($tickettype == 3) {
+                        if (!empty($aPost['minimum_donation_amount'])) {
+                            $aPost['ticket_price'] = 0;
+                            // $aPost['min_booking'] = 0;
+                            // $aPost['max_booking'] = 0;
+                        } else {
+                            $field = 'Min Donation Amount';
+                            $flag = false;
+                        }
+                    }
 
 
                     // dd($flag);
@@ -165,6 +165,7 @@ class EventTicketController extends Controller
                                 'payment_to_you' => isset($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
                                 'ticket_sale_start_date' => $TicketStartTime,
                                 'ticket_sale_end_date' => $TicketEndTime,
+                                'advanced_settings' => isset($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
                                 'player_of_fee' => isset($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
                                 'player_of_gateway_fee' => isset($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
                                 'min_booking' => isset($aPost['min_booking']) ? $aPost['min_booking'] : 0,
@@ -175,7 +176,7 @@ class EventTicketController extends Controller
                                 'id' => $TicketId
                             );
                             // dd($Binding);
-                            $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_status = :ticket_status,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount WHERE id=:id';
+                            $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_status = :ticket_status,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,advanced_settings=:advanced_settings,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount WHERE id=:id';
                             DB::update($SQL, $Binding);
 
                             $ResposneCode = 200;
@@ -191,6 +192,7 @@ class EventTicketController extends Controller
                                 'payment_to_you' => isset($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
                                 'ticket_sale_start_date' => $TicketStartTime,
                                 'ticket_sale_end_date' => $TicketEndTime,
+                                'advanced_settings' => isset($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
                                 'player_of_fee' => isset($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
                                 'player_of_gateway_fee' => isset($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
                                 'min_booking' => isset($aPost['min_booking']) ? $aPost['min_booking'] : 0,
@@ -200,7 +202,7 @@ class EventTicketController extends Controller
                                 'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0
                             );
                             // dd($Binding);
-                            $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount)';
+                            $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,advanced_settings,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:advanced_settings,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount)';
 
                             DB::select($SQL2, $Binding);
 

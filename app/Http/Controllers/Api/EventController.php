@@ -701,7 +701,7 @@ class EventController extends Controller
                 $event->is_follow = !empty($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
 
                 #GET ALL TICKETS
-                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
+                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND ticket_status=1 AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
                 $Tickets = DB::select($SQL, array('event_id' => $event->id));
 
                 $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
@@ -725,6 +725,10 @@ class EventController extends Controller
             #Preview data array
             $ResponseData['PreviewEventDetails'] = array();
             // if (!empty($Events)) {
+
+                #GET ALL TICKETS
+                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND ticket_status=1 AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
+                $Tickets = DB::select($SQL, array('event_id' => $EventId));
             $ResponseData['PreviewEventDetails'] = array(
                 "banner_img" => (isset($Events[0]->banner_image) && !empty($Events[0]->banner_image)) ? $Events[0]->banner_image . '' : "",
                 "event_id" => isset($Events[0]->id) && !empty($Events[0]->id) ? $Events[0]->id : "",
@@ -733,7 +737,11 @@ class EventController extends Controller
                 "event_name" => (isset($Events[0]->name) && !empty($Events[0]->name)) ? $Events[0]->name : "",
                 "start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("M", $Events[0]->start_time) : gmdate("M", strtotime('today')),
                 "start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("d", $Events[0]->start_time) : gmdate("d", strtotime('today')),
-                "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('today'))
+                "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('today')),
+
+                "min_price" => (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0,
+                "max_price" => (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0,
+                "no_of_tickets" => (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0
             );
             // }
 
