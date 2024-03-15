@@ -715,6 +715,8 @@ class EventController extends Controller
 
                 //registration closing date
                 $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d M Y", $event->registration_end_time) : 0;
+
+
             }
             // dd($Events);
             $ResponseData['EventData'] = $Events;
@@ -759,12 +761,18 @@ class EventController extends Controller
             #EVENT TICKETS
             $sql = "SELECT * FROM event_tickets WHERE event_id=:event_id AND is_deleted = 0 AND active = 1";
             $EventTickets = DB::select($sql, array('event_id' => $EventId));
-            foreach ($EventTickets as $key => $ticket) {
+            foreach ($EventTickets as $ticket) {
                $ticket->ticket_sale_start_date = (!empty($ticket->ticket_sale_start_date)) ? date("d F Y", $ticket->ticket_sale_start_date) : 0;
                $ticket->ticket_sale_end_date = (!empty($ticket->ticket_sale_end_date)) ? date("d F Y", $ticket->ticket_sale_end_date) : 0;
 
             }
             $ResponseData['EventTickets'] = $EventTickets;
+
+
+            //
+            $ResponseData['YTCR_FEE_PERCENTAGE'] = config('custom.ytcr_fee_percent');
+            $ResponseData['PLATFORM_FEE_PERCENTAGE'] = config('custom.platform_fee_percent');
+            $ResponseData['PAYMENT_GATEWAY_FEE_PERCENTAGE'] = config('custom.payment_gateway_fee_percent');
 
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
