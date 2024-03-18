@@ -23,6 +23,8 @@ class EventController extends Controller
         $e = new Event();
         foreach ($Events as $event) {
             $event->name = !empty($event->name) ? ucwords($event->name) : "";
+            $event->display_name = !empty($event->name) ? ucwords(substr($event->name, 0, 40))."..." : "";
+
             $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
             $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
             $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
@@ -736,7 +738,7 @@ class EventController extends Controller
                 "event_id" => isset($Events[0]->id) && !empty($Events[0]->id) ? $Events[0]->id : "",
                 "start_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("F d, Y", $Events[0]->start_time) : 0,
                 "city" => (isset($Events[0]->city) && !empty($Events[0]->city)) ? $master->getCityName($Events[0]->city) : "",
-                "event_name" => (isset($Events[0]->name) && !empty($Events[0]->name)) ? $Events[0]->name : "",
+                "event_name" => (isset($Events[0]->name) && !empty($Events[0]->name)) ? ucwords(substr($Events[0]->name, 0, 55))."..." : "",
                 "start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("M", $Events[0]->start_time) : gmdate("M", strtotime('today')),
                 "start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("d", $Events[0]->start_time) : gmdate("d", strtotime('today')),
                 "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('today')),
