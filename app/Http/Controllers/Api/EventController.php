@@ -41,13 +41,13 @@ class EventController extends Controller
             $event->is_follow = !empty($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
 
             #GET ALL TICKETS
-            $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
+            $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price,max(early_bird) AS early_bird FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
             $Tickets = DB::select($SQL, array('event_id' => $event->id));
 
             $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
             $event->max_price = (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0;
             $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
-
+            $event->early_bird = (sizeof($Tickets) > 0) ? $Tickets[0]->early_bird : 0;
             //event start month
             $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : 0;
             //event start d
@@ -87,7 +87,7 @@ class EventController extends Controller
         // dd($aToken,$UserId);
 
         #GET EVENTS COUNTRY WISE
-        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
         // $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
@@ -146,7 +146,7 @@ class EventController extends Controller
             // $message = 'Few Suggestions';
             $FewSuggestionFlag = 1;
 
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
                 $Events = DB::select($EventSql);
@@ -161,7 +161,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
                 $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
@@ -170,7 +170,7 @@ class EventController extends Controller
         // dd($EventSql,$BannerSql,$Banners);
         $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
         if (Sizeof($Events) == 0) {
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
                 $Events = DB::select($EventSql);
@@ -184,7 +184,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
                 $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
@@ -267,9 +267,9 @@ class EventController extends Controller
             $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
         }
         if (empty($Category) && empty($EventId)) {
-            $EventSql .= " WHERE e.active=1 AND e.deleted=0";
+            $EventSql .= " WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         } else {
-            $EventSql .= " AND e.active=1 AND e.deleted=0";
+            $EventSql .= " AND e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         }
         if ($EventName != "") {
             $EventSql .= " AND e.name LIKE '%" . $EventName . "%' ";
@@ -382,9 +382,9 @@ class EventController extends Controller
         // dd($aToken,$UserId);
 
         #GET EVENTS COUNTRY WISE
-        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
-        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
 
         // $CountryCode = $request->country_code;
         $City = isset($request->city) ? $request->city : '';
@@ -420,7 +420,7 @@ class EventController extends Controller
 
         if (Sizeof($Events) == 0) {
             $FewSuggestionFlag = 1;
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
                 if (empty($ResponseData['StateId'])) {
@@ -440,7 +440,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
                 $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
@@ -450,7 +450,7 @@ class EventController extends Controller
         $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
         // dd($ResponseData['CountryId'],$NewCountry_id,$Events);
         if (Sizeof($Events) == 0) {
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
                 if (empty($ResponseData['CountryId'])) {
@@ -467,7 +467,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
                 $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
@@ -701,13 +701,13 @@ class EventController extends Controller
                 $event->is_follow = !empty($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
 
                 #GET ALL TICKETS
-                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND ticket_status=1 AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
+                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price,max(early_bird) AS early_bird FROM event_tickets WHERE event_id=:event_id AND ticket_status=1 AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
                 $Tickets = DB::select($SQL, array('event_id' => $event->id));
 
                 $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
                 $event->max_price = (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0;
                 $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
-
+                $event->early_bird = (sizeof($Tickets) > 0) ? $Tickets[0]->early_bird : 0;
                 //event start month
                 $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : 0;
                 //event start d

@@ -136,8 +136,8 @@ class EventTicketController extends Controller
                         $TicketId = isset($request->ticket_id) ? $request->ticket_id : 0;
 
                         $TicketStartTime = $TicketEndTime = 0;
-                        $StartDate = isset($request->start_date) ? $request->start_date : 0;
-                        $StartTime = isset($request->start_time) ? $request->start_time : 0;
+                        $StartDate = isset($request->start_date) && !empty($request->start_date) ? $request->start_date : 0;
+                        $StartTime = isset($request->start_time) && !empty($request->start_time) ? $request->start_time : 0;
                         if (!empty($StartDate) && !empty($StartTime)) {
                             $start_date_time_string = $StartDate . ' ' . $StartTime;
                             $TicketStartTime = strtotime($start_date_time_string);
@@ -145,13 +145,33 @@ class EventTicketController extends Controller
                             $TicketStartTime = strtotime($StartDate);
                         }
 
-                        $EndDate = isset($request->end_date) ? $request->end_date : 0;
-                        $EndTime = isset($request->end_time) ? $request->end_time : 0;
+                        $EndDate = isset($request->end_date) && !empty($request->end_date) ? $request->end_date : 0;
+                        $EndTime = isset($request->end_time) && !empty($request->end_time) ? $request->end_time : 0;
                         if (!empty($EndDate) && !empty($EndTime)) {
                             $end_date_time_string = $EndDate . ' ' . $EndTime;
                             $TicketEndTime = strtotime($end_date_time_string);
                         } else if (!empty($EndDate) && empty($EndTime)) {
                             $TicketEndTime = strtotime($EndDate);
+                        }
+
+                        //EARLY BIRD DATES
+                        $EBStartTime = $EBEndTime = 0;
+                        $EBStartDate = isset($request->eb_start_date) && !empty($request->eb_start_date) ? $request->eb_start_date : 0;
+                        $EBStartTime = isset($request->eb_start_time) && !empty($request->eb_start_time) ? $request->eb_start_time : 0;
+                        if (!empty($EBStartDate) && !empty($EBStartTime)) {
+                            $eb_start_date_time_string = $EBStartDate . ' ' . $EBStartTime;
+                            $EBStartTime = strtotime($eb_start_date_time_string);
+                        } else if (!empty($EBStartDate) && empty($EBStartTime)) {
+                            $EBStartTime = strtotime($EBStartDate);
+                        }
+
+                        $EBEndDate = isset($request->eb_end_date) && !empty($request->eb_end_date) ? $request->eb_end_date : 0;
+                        $EBEndTime = isset($request->eb_end_time) && !empty($request->eb_end_time) ? $request->eb_end_time : 0;
+                        if (!empty($EBEndDate) && !empty($EBEndTime)) {
+                            $eb_end_date_time_string = $EBEndDate . ' ' . $EBEndTime;
+                            $EBEndTime = strtotime($eb_end_date_time_string);
+                        } else if (!empty($EBEndDate) && empty($EBEndTime)) {
+                            $EBEndTime = strtotime($EBEndDate);
                         }
 
                         if (!empty($TicketId)) {
@@ -173,10 +193,19 @@ class EventTicketController extends Controller
                                 'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
                                 'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
                                 'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
+
+                                'early_bird'=>isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
+                                'no_of_tickets'=>isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
+                                'start_time' => $EBStartTime,
+                                'end_time' => $EBEndTime,
+                                'discount'=>isset($aPost['discount']) ? $aPost['discount'] : 0,
+                                'discount_value'=>isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
+
                                 'id' => $TicketId
                             );
+
                             // dd($Binding);
-                            $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_status = :ticket_status,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,advanced_settings=:advanced_settings,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount WHERE id=:id';
+                            $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_status = :ticket_status,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,advanced_settings=:advanced_settings,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount,early_bird=:early_bird,no_of_tickets=:no_of_tickets,start_time=:start_time,end_time=:end_time,discount=:discount,discount_value=:discount_value WHERE id=:id';
                             DB::update($SQL, $Binding);
 
                             $ResposneCode = 200;
@@ -199,10 +228,17 @@ class EventTicketController extends Controller
                                 'max_booking' => isset($aPost['max_booking']) ?$aPost['max_booking'] : 0,
                                 'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
                                 'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
-                                'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0
+                                'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
+
+                                'early_bird'=>isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
+                                'no_of_tickets'=>isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
+                                'start_time' => $EBStartTime,
+                                'end_time' => $EBEndTime,
+                                'discount'=>isset($aPost['discount']) ? $aPost['discount'] : 0,
+                                'discount_value'=>isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
                             );
                             // dd($Binding);
-                            $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,advanced_settings,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:advanced_settings,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount)';
+                            $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,advanced_settings,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount,early_bird,no_of_tickets,start_time,end_time,discount,discount_value) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:advanced_settings,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount,:early_bird,:no_of_tickets,:start_time,:end_time,:discount,:discount_value)';
 
                             DB::select($SQL2, $Binding);
 
@@ -298,11 +334,18 @@ class EventTicketController extends Controller
             );
 
             foreach ($Ticket as $key => $value) {
-                $value->start_date = !empty($value->ticket_sale_start_date) ? date("Y-m-d", $value->ticket_sale_start_date) : 0;
-                $value->start_time = (!empty($value->ticket_sale_start_date)) ? date("h:i", $value->ticket_sale_start_date) : 0;
+                $value->ticket_start_date = !empty($value->ticket_sale_start_date) ? date("Y-m-d", $value->ticket_sale_start_date) : 0;
+                $value->ticket_start_time = (!empty($value->ticket_sale_start_date)) ? date("h:i", $value->ticket_sale_start_date) : 0;
 
-                $value->end_date = !empty($value->ticket_sale_end_date) ? date("Y-m-d", $value->ticket_sale_end_date) : 0;
-                $value->end_time = (!empty($value->ticket_sale_end_date)) ? date("h:i", $value->ticket_sale_end_date) : 0;
+                $value->ticket_end_date = !empty($value->ticket_sale_end_date) ? date("Y-m-d", $value->ticket_sale_end_date) : 0;
+                $value->ticket_end_time = (!empty($value->ticket_sale_end_date)) ? date("h:i", $value->ticket_sale_end_date) : 0;
+
+                //EARLY BIRD
+                $value->eb_start_date = !empty($value->start_time) ? date("Y-m-d", $value->start_time) : 0;
+                $value->eb_start_time = (!empty($value->start_time)) ? date("h:i", $value->start_time) : 0;
+
+                $value->eb_end_date = !empty($value->end_time) ? date("Y-m-d", $value->end_time) : 0;
+                $value->eb_end_time = (!empty($value->end_time)) ? date("h:i", $value->end_time) : 0;
             }
             $ResponseData['Ticket'] = $Ticket;
             $ResposneCode = 200;

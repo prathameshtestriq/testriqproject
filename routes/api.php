@@ -88,9 +88,6 @@ Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('/follow', 'Eventuserfollow');
 });
 
-    // Route::post('add_new_user','addnewuser');
-
-
 Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('event_user_follow', 'Eventuserfollow');
     Route::post('event_user_unfollow', 'Eventuserunfollow');
