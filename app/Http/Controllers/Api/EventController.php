@@ -899,6 +899,28 @@ class EventController extends Controller
 
             if (!$empty) {
                 $EventId = $aPost['event_id'];
+
+                $event_description = '';
+                if (!empty($request->file('event_description'))) {
+                    $Path = public_path('uploads/event_description/');
+                    $logo_image = $request->file('event_description');
+                    $originalName = $logo_image->getClientOriginalName();
+                    // $event_description = time().'_'.$originalName;
+                    $event_description = strtotime('now').'_'.$originalName;
+
+                    // dd($event_description);
+                    $logo_image->move($Path, $event_description);
+
+                    $sql = 'UPDATE events SET event_description=:description WHERE id=:id';
+                    $bindings = [
+                        "description" => $event_description,
+                        "id" => $EventId
+                    ];
+                //    dd( $bindings);
+                    DB::update($sql, $bindings);
+                   
+                }
+
                 $Description = isset($request->event_description) ? $request->event_description : '';
                 $event_keywords = isset($request->event_keywords) ? $request->event_keywords : '';
 
@@ -1080,5 +1102,6 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
         // dd($CityArr);
     }
+   
 
 }
