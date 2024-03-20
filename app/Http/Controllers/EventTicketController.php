@@ -34,6 +34,9 @@ class EventTicketController extends Controller
                         'event_id' => $request->event_id
                     )
                 );
+                foreach ($ResponseData as $key => $value) {
+                   $value->count = 0;
+                }
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
