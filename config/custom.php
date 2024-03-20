@@ -3,6 +3,9 @@
 // use Illuminate\Support\Facades\Facade;
 
 return [
+    'ytcr_fee_percent' =>10,
+    'platform_fee_percent' => 10,
+    'payment_gateway_fee_percent' => 10,
 
     'max_size' => 2097152,
     'page_title' => 'Races2.0 - ',

@@ -41,11 +41,11 @@ class UserController extends Controller
         $PageNo = request()->input('page', 1);
         $Limit = config('custom.per_page');
         // $Limit = 3;
-      
+
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
         $aReturn["user_array"] =User::get_all($Limit,$aReturn);
-        
+
         $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['user_array'], $CountRows, $Limit, $PageNo);
         $aReturn['Paginator']->setPath(request()->url());
         // dd($aReturn);
@@ -54,7 +54,7 @@ class UserController extends Controller
 
     public function add_edit(Request $request, $iId = 0)
     {
-        
+
         $aReturn = [
             'id' => '',
             'firstname' => '',
@@ -64,12 +64,12 @@ class UserController extends Controller
             'username' => '',
             'password' => '',
             'is_active' => 1,
-            'type' => [] 
+            'type' => []
         ];
-    
-        
+
+
         if ($request->has('form_type') && $request->form_type == 'add_edit_user') {
-        
+
             $rules = [
                 'firstname' => 'required',
                 'lastname' => 'required',
@@ -77,8 +77,8 @@ class UserController extends Controller
                 'status' => 'required',
                 'type' => 'required'
             ];
-    
-            
+
+
             if ($iId > 0) {
                 $rules['email'] = 'required|email:rfc,dns';
                 $rules['password'] = 'nullable|confirmed|min:5';
@@ -86,44 +86,44 @@ class UserController extends Controller
                 $rules['email'] = 'required|email:rfc,dns|unique:users';
                 $rules['password'] = 'required|confirmed|min:5';
             }
-    
-            
+
+
             $validator = Validator::make($request->all(), $rules);
-    
-            
+
+
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();
             }
-    
+
             if ($iId > 0) {
                 $result = User::update_user($iId, $request);
                 $successMessage = 'User updated successfully';
             } else {
-                
+
                 $result = User::add_user($request);
                 $successMessage = 'User added successfully';
             }
-    
+
             return redirect('/users')->with('success', $successMessage);
         } else {
-           
+
             if ($iId > 0) {
                 $user = User::find($iId);
                 if ($user) {
                     $aReturn = $user->toArray();
                 }
-               
+
             }
-    
-            
+
+
             $userRoles = DB::table('master_roles')->get()->toArray(); // Convert collection to array
             $aReturn['type'] = $userRoles;
-    
+
             // Return the view with data
             return view('users.create', $aReturn);
         }
     }
-    
+
 
 
     // public function get_country_info(Request $request)
