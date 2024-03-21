@@ -997,10 +997,6 @@ class EventController extends Controller
                 }
                 $message = 'Event Details updated successfully';
                 $ResposneCode = 200;
-                // } else {
-                //     $ResposneCode = 400;
-                //     $message = 'Invalid description format';
-                // }
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
