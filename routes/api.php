@@ -98,6 +98,8 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('add_edit_event_ticket', 'addediteventticket');
     Route::post('delete_event_ticket', 'EventTicketDelete');
     Route::post('get_form_questions', 'getFormQuestions');
+    Route::post('book_tickets', 'BookTickets');
+
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {

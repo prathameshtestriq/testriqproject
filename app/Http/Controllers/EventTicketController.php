@@ -31,6 +31,11 @@ class EventTicketController extends Controller
                 $ResponseData = DB::select($sSQL, array('event_id' => $request->event_id));
                 foreach ($ResponseData as $value) {
                     $value->count = 0;
+
+                    $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                    $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
+
+                    $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset ($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
                 }
 
                 $ResposneCode = 200;
@@ -382,7 +387,9 @@ class EventTicketController extends Controller
 
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
-                $TotalAttendee = isset($request->total_attendee) && !empty($request->total_attendee) ? $request->total_attendee : 0;
+                $TotalAttendee = isset ($request->total_attendee) && !empty ($request->total_attendee) ? $request->total_attendee : 0;
+                $AllTickets = isset ($request->AllTickets) && !empty ($request->AllTickets) ? $request->AllTickets : [];
+                // dd($AllTickets);
 
                 $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1';
                 $FormQuestions = DB::select(
@@ -393,15 +400,163 @@ class EventTicketController extends Controller
                 );
                 foreach ($FormQuestions as $value) {
                     $value->ActualValue = "";
+                    $value->Error = "";
+                    $value->TicketId = 0;
                 }
 
-                if(!empty($TotalAttendee)){
-                    for($i=0;$i<$TotalAttendee;$i++){
-                        $FinalFormQuestions[$i] = $FormQuestions;
+                // if (!empty ($TotalAttendee)) {
+                //     for ($i = 0; $i < $TotalAttendee; $i++) {
+                //         $FinalFormQuestions[$i] = $FormQuestions;
+                //     }
+                // }
+
+                if (!empty ($AllTickets)) {
+                    foreach ($AllTickets as $ticket) {
+                        for ($i = 0; $i < $ticket['count']; $i++) {
+                            $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
+                        }
                     }
                 }
 
                 $ResponseData['FormQuestions'] = $FinalFormQuestions;
+
+
+                // $sql = "SELECT COUNT(id) FROM ticket_booking WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                // $ResponseData['TotalBookedTickets'] = $TotalBookedTickets;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function BookTickets(Request $request)
+    {
+        $ResponseData = $FinalFormQuestions = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($request->FormQuestions);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty ($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+            if (empty ($aPost['FormQuestions'])) {
+                $empty = true;
+                $field = 'Form Questions';
+            }
+
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventId = isset ($aPost['event_id']) && !empty ($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $TotalAttendee = isset ($request->total_attendees) && !empty ($request->total_attendees) ? $request->total_attendees : 0;
+                $FormQuestions = isset ($request->FormQuestions) && !empty ($request->FormQuestions) ? $request->FormQuestions : [];
+                $AllTickets = isset ($request->AllTickets) && !empty ($request->AllTickets) ? $request->AllTickets : [];
+                $TotalPrice = isset ($request->TotalPrice) && !empty ($request->TotalPrice) ? $request->TotalPrice : 0;
+                $TotalDiscount = isset ($request->TotalDiscount) && !empty ($request->TotalDiscount) ? $request->TotalDiscount : 0;
+                $UserId = $aToken["data"]->ID;
+                $TotalTickets = 0;
+
+                #event_booking
+                $Binding1 = array(
+                    "event_id" => $EventId,
+                    "user_id" => $UserId,
+                    "booking_date" => strtotime("now"),
+                    "total_amount" => $TotalPrice,
+                    "total_discount" => $TotalDiscount
+                );
+                $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount)";
+                DB::insert($Sql1, $Binding1);
+
+                #booking_details
+                $BookingDetailsIds = [];
+                foreach ($AllTickets as $key => $ticket) {
+                    $Binding2 = [];
+                    $Sql2 = "";
+                    $Binding2 = array(
+                        "event_id" => $EventId,
+                        "user_id" => $UserId,
+                        "ticket_id" => $ticket["id"],
+                        "quantity" => $ticket["count"],
+                        "ticket_amount" => $ticket["ticket_price"],
+                        "ticket_discount" => $ticket["ticket_discount"],
+
+                    );
+                    $Sql2 = "INSERT INTO booking_details (event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount) VALUES (:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount)";
+                    DB::insert($Sql2, $Binding2);
+                    #Get the last inserted id of booking_details
+                    $BookingDetailsId = DB::getPdo()->lastInsertId();
+
+                    $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
+                }
+
+                #attendee_details
+                foreach ($FormQuestions as $key1 => $Form) {
+                    $TotTickets = count($Form);
+                    $TotalTickets += $TotTickets;
+                    foreach ($Form as $key2 => $Question) {
+                        // echo "<pre>";print_r($Question);
+                        foreach ($Question as $key3 => $value) {
+                            // dd($BookingDetailsIds,$value['ticket_id']);
+                            $Binding3 = [];
+                            $Sql3 = "";
+                            if ($value['ActualValue'] !== "") {
+
+                                if ($value['question_form_type'] == "file") {
+                                    // $_FILES = $value['ActualValue'];
+                                    $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
+                                    $is_valid = false;
+                                    $filename = $address_proof_doc_upload = '';
+                                    if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
+                                        // Validate file extension
+                                        $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
+                                        $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
+                                        if (!in_array($address_proof_type, $allowedExts)) {
+                                            $filename = 'Address proof document';
+                                            $is_valid = true;
+                                        }
+
+                                        // Move uploaded file to destination
+                                        if (!$is_valid) {
+                                            $Path = public_path('uploads/user_documents/');
+                                            $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
+                                            move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
+                                        }
+                                    }
+                                }
+                                $Binding3 = array(
+                                    "booking_details_id" => isset ($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0,
+                                    "field_name" => $value['question_form_name'],
+                                    "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
+                                );
+
+                                $Sql3 = "INSERT INTO `attendee_details` (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
+                                DB::insert($Sql3, $Binding3);
+                            }
+
+                        }
+                    }
+                }
+
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
             } else {
@@ -422,3 +577,5 @@ class EventTicketController extends Controller
     }
 
 }
+
+
