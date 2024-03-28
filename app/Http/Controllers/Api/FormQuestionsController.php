@@ -373,12 +373,16 @@ class FormQuestionsController extends Controller
         if ($aToken['code'] == 200) {
             
             $EventInfoStatus = !empty($request->event_info_status) ? $request->event_info_status : 0;
+            $UserId          = !empty($request->user_id) ? $request->user_id : 0;
 
-            
             $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, vm.registration_end_time, vm.banner_image, vm.display_name, vm.active, vm.event_type, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country, vm.active FROM events AS vm WHERE vm.deleted = 0 ' ;
 
             if(!empty($EventInfoStatus)){
                 $sSQL .= ' and vm.event_info_status = '.$EventInfoStatus;
+            }
+
+            if(!empty($UserId)){
+                $sSQL .= ' and vm.created_by = '.$UserId;
             }
 
             $aResult = DB::select($sSQL);
@@ -404,65 +408,6 @@ class FormQuestionsController extends Controller
                 $new_array[] = $res;
             }
             //dd($new_array);
-
-            // $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0";
-            // $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
-            // // $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
-            // $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
-
-            // $CountryCode = $request->country_code;
-            // $City = isset($request->city) ? $request->city : '';
-            // $State = isset($request->state) ? $request->state : '';
-
-            // $city_id = isset($request->scity) ? $request->scity : 0;
-            // $state_id = isset($request->sstate) ? $request->sstate : 0;
-            // $country_id = isset($request->scountry) ? $request->scountry : 0;
-            // // dd($state_id);
-            // if (!empty($CountryCode)) {
-            //     $sSQL = 'SELECT id FROM countries WHERE LOWER(country_code) =:country_code';
-            //     $CountryId = DB::select($sSQL, array('country_code' => strtolower($CountryCode)));
-            //     // dd($CountryId);
-            //     if (sizeof($CountryId) > 0) {
-            //         $EventSql .= ' AND e.country=' . $CountryId[0]->id;
-            //         $BannerSql .= ' AND b.country=' . $CountryId[0]->id;
-            //         $UpcomingSql .= ' AND u.country=' . $CountryId[0]->id;
-            //         $ResponseData['CountryId'] = $CountryId[0]->id;
-            //     }
-            // }
-            // // dd($EventSql,$BannerSql);
-            // if (!empty($City)) {
-            //     $sSQL = 'SELECT id,name FROM cities WHERE LOWER(name) =:name';
-            //     $CityId = DB::select($sSQL, array('name' => strtolower($City)));
-            //     if (sizeof($CityId) > 0) {
-            //         $EventSql .= ' AND e.city=' . $CityId[0]->id;
-            //         $BannerSql .= ' AND b.city=' . $CityId[0]->id;
-            //         $UpcomingSql .= ' AND u.city=' . $CityId[0]->id;
-            //         $ResponseData['CityId'] = $CityId[0]->id;
-            //         $ResponseData['CityName'] = $CityId[0]->name;
-            //     }
-            // }
-            // if (!empty($State)) {
-            //     $sSQL = 'SELECT id FROM states WHERE LOWER(name) =:name';
-            //     $StateId = DB::select($sSQL, array('name' => strtolower($State)));
-            //     if (sizeof($StateId) > 0) {
-            //         $EventSql .= ' AND e.state=' . $StateId[0]->id;
-            //         $BannerSql .= ' AND b.state=' . $StateId[0]->id;
-            //         $UpcomingSql .= ' AND u.state=' . $StateId[0]->id;
-            //         $ResponseData['StateId'] = $StateId[0]->id;
-            //     }
-            // }
-
-            
-            // $Events = DB::select($EventSql);
-            // $Banners = DB::select($BannerSql);
-            // $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
-            
-            // $BannerImages = [];
-            // foreach ($Banners as $key => $banner) {
-                
-            // }
-
-            
 
             $response['data'] = $new_array;
             $response['message'] = 'Request processed successfully';
