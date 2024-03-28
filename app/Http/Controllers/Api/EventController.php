@@ -249,7 +249,7 @@ class EventController extends Controller
         if (!empty ($aToken)) {
             $UserId = $aToken->ID;
         }
-        // dd($aToken,$UserId);
+       // dd($aToken,$UserId);
 
         $EventId = isset ($request->event_id) ? $request->event_id : 0;//for view event (Event Details page)
         $EventName = isset ($request->event_name) ? $request->event_name : '';
@@ -715,9 +715,10 @@ class EventController extends Controller
                 $event->banner_image = !empty ($event->banner_image) ? url('/') . '/uploads/banner_image/' . $event->banner_image . '' : '';
                 $event->logo_image = !empty ($event->logo_image) ? url('/') . '/uploads/logo_image/' . $event->logo_image . '' : '';
                 $event->background_image = url('/') . '/uploads/images/banner-bg-2.jpg';
-                $event->city_name = !empty ($event->city) ? $master->getCityName($event->city) : "";
-                $event->state_name = !empty ($event->state) ? $master->getStateName($event->state) : "";
-                $event->country_name = !empty ($event->country) ? $master->getCountryName($event->country) : "";
+                $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
+                $event->state_name = !empty($event->state) ? $master->getStateName($event->state) : "";
+                $event->country_name = !empty($event->country) ? $master->getCountryName($event->country) : "";
+                $event->time_zone_name = !empty($event->country) ? $master->getTimeZoneName($event->time_zone) : "";
 
                 #FOLLOW(WISHLIST)
                 $event->is_follow = !empty ($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
