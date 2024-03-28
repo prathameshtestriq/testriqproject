@@ -79,7 +79,6 @@ Route::controller(UserController::class)->group(function () {
     Route::post('delete_profile', 'delete_profile');
     Route::post('update_profile_pic', 'update_profile_pic');
     Route::post('edit_user_medical', 'EditUserMedical');
-    #New Routes
     Route::post('personal_details', 'PersonalDetails');
     Route::post('general_details', 'GeneralDetails');
     Route::post('address_details', 'AddressDetails');
@@ -91,9 +90,6 @@ Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('/follow', 'Eventuserfollow');
 });
 
-    // Route::post('add_new_user','addnewuser');
-
-
 Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('event_user_follow', 'Eventuserfollow');
     Route::post('event_user_unfollow', 'Eventuserunfollow');
@@ -104,6 +100,9 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_ticket_detail', 'getTicketDetail');
     Route::post('add_edit_event_ticket', 'addediteventticket');
     Route::post('delete_event_ticket', 'EventTicketDelete');
+    Route::post('get_form_questions', 'getFormQuestions');
+    Route::post('book_tickets', 'BookTickets');
+
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {
@@ -111,19 +110,20 @@ Route::controller(UserEventDetailsController::class)->group(function () {
     Route::get('get_all_events', 'getallEvents');
 });
 
-
-
 Route::controller(AdvertisementController::class)->group(function () {
-    Route::Get('/get_advertisement', 'GetAdvertisement');
+    Route::get('/get_advertisement', 'GetAdvertisement');
 });
 
 Route::controller(TestimonialController::class)->group(function () {
-    Route::Get('/get_testimonial', 'GetTestimonial');
+    Route::get('/get_testimonial', 'GetTestimonial');
 });
 
-
 Route::controller(OrganizerController::class)->group(function () {
-    Route::Post('/get_organizer', 'GetOrganizer');
+    Route::post('/get_organizer', 'getOrganizerDetails');
+    Route::get('/get_roles', 'getRoles');
+    Route::get('/get_organizing_team', 'getOrganizingTeam');
+    Route::post('/add_edit_organizer', 'addEditOrganizer');
+
 });
 
 
