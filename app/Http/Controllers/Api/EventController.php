@@ -791,7 +791,6 @@ class EventController extends Controller
             }
             $ResponseData['EventTickets'] = $EventTickets;
 
-
             //
             $ResponseData['YTCR_FEE_PERCENTAGE'] = config('custom.ytcr_fee_percent');
             $ResponseData['PLATFORM_FEE_PERCENTAGE'] = config('custom.platform_fee_percent');
