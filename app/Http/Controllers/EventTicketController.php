@@ -486,22 +486,23 @@ class EventTicketController extends Controller
                 );
                 $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount)";
                 DB::insert($Sql1, $Binding1);
+                $BookingId = DB::getPdo()->lastInsertId();
 
                 #booking_details
                 $BookingDetailsIds = [];
-                foreach ($AllTickets as $key => $ticket) {
+                foreach ($AllTickets as $ticket) {
                     $Binding2 = [];
                     $Sql2 = "";
                     $Binding2 = array(
+                        "booking_id"=>$BookingId,
                         "event_id" => $EventId,
                         "user_id" => $UserId,
                         "ticket_id" => $ticket["id"],
                         "quantity" => $ticket["count"],
                         "ticket_amount" => $ticket["ticket_price"],
-                        "ticket_discount" => $ticket["ticket_discount"],
-
+                        "ticket_discount" => $ticket["ticket_discount"]
                     );
-                    $Sql2 = "INSERT INTO booking_details (event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount) VALUES (:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount)";
+                    $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount)";
                     DB::insert($Sql2, $Binding2);
                     #Get the last inserted id of booking_details
                     $BookingDetailsId = DB::getPdo()->lastInsertId();
@@ -510,12 +511,12 @@ class EventTicketController extends Controller
                 }
 
                 #attendee_details
-                foreach ($FormQuestions as $key1 => $Form) {
+                foreach ($FormQuestions as $Form) {
                     $TotTickets = count($Form);
                     $TotalTickets += $TotTickets;
-                    foreach ($Form as $key2 => $Question) {
+                    foreach ($Form as $Question) {
                         // echo "<pre>";print_r($Question);
-                        foreach ($Question as $key3 => $value) {
+                        foreach ($Question as $value) {
                             // dd($BookingDetailsIds,$value['ticket_id']);
                             $Binding3 = [];
                             $Sql3 = "";
@@ -549,7 +550,7 @@ class EventTicketController extends Controller
                                     "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
                                 );
 
-                                $Sql3 = "INSERT INTO `attendee_details` (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
+                                $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
                                 DB::insert($Sql3, $Binding3);
                             }
 
