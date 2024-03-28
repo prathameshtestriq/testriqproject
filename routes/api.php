@@ -13,6 +13,9 @@ use App\Http\Controllers\Api\MasterController;
 use App\Http\Controllers\EventTicketController;
 use App\Http\Controllers\UserEventDetailsController;
 
+//----------- added by prathmesh 
+use App\Http\Controllers\Api\FormQuestionsController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -143,4 +146,17 @@ Route::controller(OrganizerController::class)->group(function () {
 // });
 
 
+//--------------- addded by prathmesh on 19-03-24
 
+Route::controller(FormQuestionsController::class)->group(function () {
+   
+    Route::post('eventFormQuestions', 'event_form_questions'); 
+    Route::post('GeneralFormQuestions', 'general_form_questions'); 
+    Route::post('AddGeneralFormQuestions', 'add_general_form_questions'); 
+    Route::post('deleteEventFormQuestions', 'delete_event_form_questions'); 
+    Route::post('AddMaualeventFormQuestions', 'add_manual_event_form_questions'); 
+    Route::post('AddCustomFormQuestions', 'add_custom_form_questions'); 
+    Route::post('AddEventSetting', 'add_event_setting'); 
+    Route::post('AllEventDetails', 'all_event_details'); 
+    Route::post('EventDeleteChangeStatus', 'event_delete_change_status'); 
+});
