@@ -44,8 +44,8 @@ class EventTicketController extends Controller
                 $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
                 foreach ($EventData as $key => $event) {
                     $event->display_name = !empty($event->name) ? $event->name : "";
-                    $event->start_date = (!empty ($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
-                    $event->city_name = !empty ($event->city) ? $master->getCityName($event->city) : "";
+                    $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
+                    $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
                 }
                 $ResponseData['EventData'] = $EventData;
 
@@ -539,22 +539,22 @@ class EventTicketController extends Controller
                                     $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
                                     $is_valid = false;
                                     $filename = $address_proof_doc_upload = '';
-                                    if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
-                                        // Validate file extension
-                                        $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
-                                        $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
-                                        if (!in_array($address_proof_type, $allowedExts)) {
-                                            $filename = 'Address proof document';
-                                            $is_valid = true;
-                                        }
+                                    // if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
+                                    //     // Validate file extension
+                                    //     $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
+                                    //     $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
+                                    //     if (!in_array($address_proof_type, $allowedExts)) {
+                                    //         $filename = 'Address proof document';
+                                    //         $is_valid = true;
+                                    //     }
 
-                                        // Move uploaded file to destination
-                                        if (!$is_valid) {
-                                            $Path = public_path('uploads/user_documents/');
-                                            $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
-                                            move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
-                                        }
-                                    }
+                                    //     // Move uploaded file to destination
+                                    //     if (!$is_valid) {
+                                    //         $Path = public_path('uploads/user_documents/');
+                                    //         $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
+                                    //         move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
+                                    //     }
+                                    // }
                                 }
                                 $Binding3 = array(
                                     "booking_details_id" => isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0,
@@ -569,6 +569,58 @@ class EventTicketController extends Controller
                         }
                     }
                 }
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function GetBookings(Request $request)
+    {
+        $ResponseData = $FinalFormQuestions = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $UserId = $aToken['data']->ID;
+                $EventId = $aPost['event_id'];
+
+                $SQL = "SELECT e.id ,e.ticket_namebd.* FROM event_tickets AS e
+                -- LEFT JOIN event_booking AS eb ON eb.event_id=e.id
+                LEFT JOIN  booking_details AS bd ON bd.ticket_id=e.id
+                WHERE e.id=:event_id AND eb.user_id=:user_id";
+
+                $BookingData = DB::select($SQL, array('event_id' => $EventId, 'user_id' => $UserId));
+                $ResponseData['BookingData'] = $BookingData;
+
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
