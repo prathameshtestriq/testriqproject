@@ -73,7 +73,7 @@ class FormQuestionsController extends Controller
     // General Form Question
     public function general_form_questions(Request $request)
     {
-        // dd($request);
+         //dd($request);
         $response['data'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
@@ -91,7 +91,7 @@ class FormQuestionsController extends Controller
            
             //dd($EventId);
 
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') ';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') ';
             $aResult = DB::select($Sql);
             //dd($aResult);
             $general_form_array = [];
@@ -105,10 +105,30 @@ class FormQuestionsController extends Controller
                 }else{
                     $res->event_questions_flag = 0;
                 }
+
+                //---------------------
+                if($res->question_form_type == 'radio' || $res->question_form_type == 'select'){
+                    $res->question_form_option = !empty($res->question_form_option) ? json_decode($res->question_form_option) : [];
+                }else{ $res->question_form_option = []; }
+             
+                //--------- sub question arrray-----------
+                // if($res->question_form_option){
+                //     foreach($res->question_form_option as $res1){
+                //         $sub_question_id = isset($res1->child_question_id) ? $res1->child_question_id : 0;
+                        
+                //         if(!empty($sub_question_id)){
+                //             $Sql = 'SELECT question_form_option FROM general_form_question WHERE question_status = 1 and id = '.$sub_question_id.'  ';
+                //             $aResult1 = DB::select($Sql);
+                  
+                //             $res->sub_question_array[$res1->label] = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
+                //         }
+                //     }
+                // }else{ $res->sub_question_array = []; }
+
                 $general_form_array[] = $res;
             }
 
-            //dd($aResult);
+            //dd($general_form_array);
             if(!empty($aResult)){
                
                 $response['data']['form_question'] = $general_form_array;
@@ -130,7 +150,7 @@ class FormQuestionsController extends Controller
     // General Form Question
     public function add_general_form_questions(Request $request)
     {
-        //dd($request);
+       // dd($request);
         $response['data'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
@@ -141,6 +161,7 @@ class FormQuestionsController extends Controller
         if ($aToken['code'] == 200) {
 
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
+            $userId = !empty($request->user_id) ? $request->user_id : 0;
             $GeneralFormId = !empty($request->general_form_id) ? $request->general_form_id : 0;
             $QuestionMandatory = !empty($request->question_mandatory_status) ? $request->question_mandatory_status : 0;
             $DisplayLabel = !empty($request->display_label_name) ? $request->display_label_name : 0;
@@ -175,6 +196,90 @@ class FormQuestionsController extends Controller
                 'userFieldMapping' => $FieldMapping,
                 'limitLength' => $limit_length
             ));
+
+            //------------- Add new sub question ----------------
+
+               $SubQuestionFlag = !empty($request->sub_question_flag) && ($request->sub_question_flag) == true ? 1 : 0;
+               $QuestionType = !empty($request->question_type) ? $request->question_type : 0;
+               $SubQuestionTitle = !empty($request->sub_question_title) ? $request->sub_question_title : '';
+               $QuestionFormOptionArray = !empty($request->sub_question_array) ? array_filter($request->sub_question_array) : [];
+               $SubQuestionMandatory = !empty($request->sub_question_mandatory_status) ? $request->sub_question_mandatory_status : 0;
+               $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'select';
+
+               if($SubQuestionFlag == 1){
+                    
+                    //dd(json_encode($QuestionFormOptionArray)); 
+                    $new_array = [];
+                    $i = 1;
+                    if(!empty($QuestionFormOptionArray)){
+                        foreach($QuestionFormOptionArray as $key=>$res){
+                            //dd($res);
+                            $new_array[] = array("id" => $i, "label" => $res);
+                            $i++;
+                        }
+                    }
+                    $SubQuestionOptionArray = !empty($new_array) ? json_encode($new_array) : '';
+                   // dd($SubQuestionOptionArray);
+
+                    $Sql = 'SELECT id,question_form_option FROM general_form_question WHERE question_status = 1 and id = '.$GeneralFormId.'  ';
+                    $aResult1 = DB::select($Sql);
+                  
+                    $question_form_option_array = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
+                    
+                    $question_title_name = '';
+                    if($SubQuestionFormType == 'text'){
+                        if(!empty($question_form_option_array)){
+                            foreach($question_form_option_array as $key=>$res2){
+                                if($res2->id == (int)$QuestionType){
+                                    $question_title_name = $res2->label;
+                                }
+                            }
+                        }
+                    }
+                    
+                    //dd($question_title_name);
+                   
+                    $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion)';
+
+                    DB::insert($sSQL,array(
+                        'questionLabel'     => !empty($question_title_name) ? $question_title_name.' '.$SubQuestionTitle : $SubQuestionTitle,
+                        'formId'            => 1,
+                        'questionFormType'  => $SubQuestionFormType, // ex. t-shirt size
+                        'questionFormName'  => 'sub_question',
+                        'questionFormOption' => $SubQuestionOptionArray,
+                        'isManadatory'      => $SubQuestionMandatory,
+                        'questionStatus'    => 1,
+                        'createdBy'         => $userId,
+                        'isCustomForm'      => 1,
+                        "parentQusId"       => $GeneralFormId,
+                        "isSubquestion"     => $SubQuestionFlag
+                    ));
+
+                    $last_inserted_id = DB::getPdo()->lastInsertId();
+                    //dd($last_inserted_id);
+
+                    $old_question_form_option_array = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
+                    //dd($old_question_form_option_array);
+                    $subArray = [];
+                    if(!empty($old_question_form_option_array)){
+                        foreach($old_question_form_option_array as $res){
+                            if($res->id == $QuestionType){
+                                $res->child_question_id = $last_inserted_id;
+                            }
+                            $subArray[] = $res;
+                        }
+                    }
+                    //dd($subArray);  --- json updated for privous question 
+                    if(!empty($subArray)){
+                         $up_sSQL = 'UPDATE general_form_question SET `question_form_option` =:questionFormOption WHERE `id`=:generalFormId ';
+                         DB::update($up_sSQL,array(
+                            'questionFormOption' => json_encode($subArray),
+                            'generalFormId' => $GeneralFormId
+                        ));
+                    }
+            }
+
+            //------------------ end ----------------------------
 
             $response['data'] = [];
             $response['message'] = 'Question added successfully';
