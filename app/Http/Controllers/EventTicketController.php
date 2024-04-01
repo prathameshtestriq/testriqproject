@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
+use App\Models\Master;
 
 class EventTicketController extends Controller
 {
@@ -21,22 +22,33 @@ class EventTicketController extends Controller
             $aPost = $request->all();
             $Auth = new Authenticate();
             $Auth->apiLog($request);
-            if (empty ($aPost['event_id'])) {
+            if (empty($aPost['event_id'])) {
                 $empty = true;
                 $field = 'Event Id';
             }
-
+            $master = new Master();
             if (!$empty) {
                 $sSQL = 'SELECT * FROM event_tickets WHERE event_id =:event_id AND active = 1 AND is_deleted = 0';
-                $ResponseData = DB::select($sSQL, array('event_id' => $request->event_id));
-                foreach ($ResponseData as $value) {
+                $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $request->event_id));
+                foreach ($ResponseData['event_tickets'] as $value) {
                     $value->count = 0;
+                    $value->Error = "";
 
                     $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
                     $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
 
-                    $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset ($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
+                    $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
                 }
+
+                $Sql = "SELECT name,start_time,city FROM events WHERE id=:event_id";
+                $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
+                foreach ($EventData as $key => $event) {
+                    $event->display_name = !empty($event->name) ? $event->name : "";
+                    $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
+                    $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
+                }
+                $ResponseData['EventData'] = $EventData;
+
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -75,15 +87,15 @@ class EventTicketController extends Controller
             $Auth->apiLog($request);
 
             // foreach ($aPosts as $aPost) {
-            if (empty ($aPost['ticket_name'])) {
+            if (empty($aPost['ticket_name'])) {
                 $empty = true;
                 $field = 'Ticket Name';
             }
-            if (empty ($aPost['ticket_status'])) {
+            if (empty($aPost['ticket_status'])) {
                 $empty = true;
                 $field = 'Ticket Status';
             }
-            if (empty ($aPost['total_quantity'])) {
+            if (empty($aPost['total_quantity'])) {
                 $empty = true;
                 $field = 'Total Quantity';
             }
@@ -91,11 +103,11 @@ class EventTicketController extends Controller
             //     $empty = true;
             //     $field = 'Total Price';
             // }
-            if (empty ($aPost['start_date'])) {
+            if (empty($aPost['start_date'])) {
                 $empty = true;
                 $field = 'Ticket Sale Start Date';
             }
-            if (empty ($aPost['end_date'])) {
+            if (empty($aPost['end_date'])) {
                 $empty = true;
                 $field = 'Ticket Sale End Date';
             }
@@ -105,7 +117,7 @@ class EventTicketController extends Controller
                 //ticket_status=[1=>paid,2=>free,3=>donation]
                 $tickettype = $aPost['ticket_status'];
                 if ($tickettype == 1) {
-                    if (!empty ($aPost['ticket_price'])) {
+                    if (!empty($aPost['ticket_price'])) {
                         // $aPost['minimum_donation_amount'] = 0;
                     } else {
                         $field = 'Ticket Price';
@@ -113,7 +125,7 @@ class EventTicketController extends Controller
                     }
                 }
                 if ($tickettype == 2) {
-                    if (!empty ($aPost['min_booking']) && !empty ($aPost['max_booking'])) {
+                    if (!empty($aPost['min_booking']) && !empty($aPost['max_booking'])) {
                         $aPost['ticket_price'] = 0;
                         // $aPost['minimum_donation_amount'] = 0;
                     } else {
@@ -122,7 +134,7 @@ class EventTicketController extends Controller
                     }
                 }
                 if ($tickettype == 3) {
-                    if (!empty ($aPost['minimum_donation_amount'])) {
+                    if (!empty($aPost['minimum_donation_amount'])) {
                         $aPost['ticket_price'] = 0;
                         // $aPost['min_booking'] = 0;
                         // $aPost['max_booking'] = 0;
@@ -135,74 +147,74 @@ class EventTicketController extends Controller
 
                 // dd($flag);
                 if ($flag) {
-                    $EventId = isset ($request->event_id) ? $request->event_id : 0;
-                    $TicketId = isset ($request->ticket_id) ? $request->ticket_id : 0;
+                    $EventId = isset($request->event_id) ? $request->event_id : 0;
+                    $TicketId = isset($request->ticket_id) ? $request->ticket_id : 0;
 
                     $TicketStartTime = $TicketEndTime = 0;
-                    $StartDate = isset ($request->start_date) && !empty ($request->start_date) ? $request->start_date : 0;
-                    $StartTime = isset ($request->start_time) && !empty ($request->start_time) ? $request->start_time : 0;
-                    if (!empty ($StartDate) && !empty ($StartTime)) {
+                    $StartDate = isset($request->start_date) && !empty($request->start_date) ? $request->start_date : 0;
+                    $StartTime = isset($request->start_time) && !empty($request->start_time) ? $request->start_time : 0;
+                    if (!empty($StartDate) && !empty($StartTime)) {
                         $start_date_time_string = $StartDate . ' ' . $StartTime;
                         $TicketStartTime = strtotime($start_date_time_string);
-                    } else if (!empty ($StartDate) && empty ($StartTime)) {
+                    } else if (!empty($StartDate) && empty($StartTime)) {
                         $TicketStartTime = strtotime($StartDate);
                     }
 
-                    $EndDate = isset ($request->end_date) && !empty ($request->end_date) ? $request->end_date : 0;
-                    $EndTime = isset ($request->end_time) && !empty ($request->end_time) ? $request->end_time : 0;
-                    if (!empty ($EndDate) && !empty ($EndTime)) {
+                    $EndDate = isset($request->end_date) && !empty($request->end_date) ? $request->end_date : 0;
+                    $EndTime = isset($request->end_time) && !empty($request->end_time) ? $request->end_time : 0;
+                    if (!empty($EndDate) && !empty($EndTime)) {
                         $end_date_time_string = $EndDate . ' ' . $EndTime;
                         $TicketEndTime = strtotime($end_date_time_string);
-                    } else if (!empty ($EndDate) && empty ($EndTime)) {
+                    } else if (!empty($EndDate) && empty($EndTime)) {
                         $TicketEndTime = strtotime($EndDate);
                     }
 
                     //EARLY BIRD DATES
                     $EBStartTime = $EBEndTime = 0;
-                    $EBStartDate = isset ($request->eb_start_date) && !empty ($request->eb_start_date) ? $request->eb_start_date : 0;
-                    $EBStartTime = isset ($request->eb_start_time) && !empty ($request->eb_start_time) ? $request->eb_start_time : 0;
-                    if (!empty ($EBStartDate) && !empty ($EBStartTime)) {
+                    $EBStartDate = isset($request->eb_start_date) && !empty($request->eb_start_date) ? $request->eb_start_date : 0;
+                    $EBStartTime = isset($request->eb_start_time) && !empty($request->eb_start_time) ? $request->eb_start_time : 0;
+                    if (!empty($EBStartDate) && !empty($EBStartTime)) {
                         $eb_start_date_time_string = $EBStartDate . ' ' . $EBStartTime;
                         $EBStartTime = strtotime($eb_start_date_time_string);
-                    } else if (!empty ($EBStartDate) && empty ($EBStartTime)) {
+                    } else if (!empty($EBStartDate) && empty($EBStartTime)) {
                         $EBStartTime = strtotime($EBStartDate);
                     }
 
-                    $EBEndDate = isset ($request->eb_end_date) && !empty ($request->eb_end_date) ? $request->eb_end_date : 0;
-                    $EBEndTime = isset ($request->eb_end_time) && !empty ($request->eb_end_time) ? $request->eb_end_time : 0;
-                    if (!empty ($EBEndDate) && !empty ($EBEndTime)) {
+                    $EBEndDate = isset($request->eb_end_date) && !empty($request->eb_end_date) ? $request->eb_end_date : 0;
+                    $EBEndTime = isset($request->eb_end_time) && !empty($request->eb_end_time) ? $request->eb_end_time : 0;
+                    if (!empty($EBEndDate) && !empty($EBEndTime)) {
                         $eb_end_date_time_string = $EBEndDate . ' ' . $EBEndTime;
                         $EBEndTime = strtotime($eb_end_date_time_string);
-                    } else if (!empty ($EBEndDate) && empty ($EBEndTime)) {
+                    } else if (!empty($EBEndDate) && empty($EBEndTime)) {
                         $EBEndTime = strtotime($EBEndDate);
                     }
 
-                    if (!empty ($TicketId)) {
+                    if (!empty($TicketId)) {
                         // dd("here");
                         $Binding = array(
                             // 'event_id' => $aPost['event_id'],
-                            'ticket_name' => isset ($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
-                            'ticket_status' => isset ($aPost['ticket_status']) ? $aPost['ticket_status'] : 2,
-                            'total_quantity' => isset ($aPost['total_quantity']) ? $aPost['total_quantity'] : 0,
-                            'ticket_price' => isset ($aPost['ticket_price']) ? $aPost['ticket_price'] : 0,
-                            'payment_to_you' => isset ($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
+                            'ticket_name' => isset($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
+                            'ticket_status' => isset($aPost['ticket_status']) ? $aPost['ticket_status'] : 2,
+                            'total_quantity' => isset($aPost['total_quantity']) ? $aPost['total_quantity'] : 0,
+                            'ticket_price' => isset($aPost['ticket_price']) ? $aPost['ticket_price'] : 0,
+                            'payment_to_you' => isset($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
                             'ticket_sale_start_date' => $TicketStartTime,
                             'ticket_sale_end_date' => $TicketEndTime,
-                            'advanced_settings' => isset ($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
-                            'player_of_fee' => isset ($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
-                            'player_of_gateway_fee' => isset ($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
-                            'min_booking' => isset ($aPost['min_booking']) ? $aPost['min_booking'] : 0,
-                            'max_booking' => isset ($aPost['max_booking']) ? $aPost['max_booking'] : 0,
-                            'ticket_description' => isset ($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
-                            'msg_attendance' => isset ($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
-                            'minimum_donation_amount' => isset ($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
+                            'advanced_settings' => isset($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
+                            'player_of_fee' => isset($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
+                            'player_of_gateway_fee' => isset($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
+                            'min_booking' => isset($aPost['min_booking']) ? $aPost['min_booking'] : 0,
+                            'max_booking' => isset($aPost['max_booking']) ? $aPost['max_booking'] : 0,
+                            'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
+                            'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
+                            'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
 
-                            'early_bird' => isset ($aPost['early_bird']) ? $aPost['early_bird'] : 0,
-                            'no_of_tickets' => isset ($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
+                            'early_bird' => isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
+                            'no_of_tickets' => isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
                             'start_time' => $EBStartTime,
                             'end_time' => $EBEndTime,
-                            'discount' => isset ($aPost['discount']) ? $aPost['discount'] : 0,
-                            'discount_value' => isset ($aPost['discount_value']) ? $aPost['discount_value'] : 0,
+                            'discount' => isset($aPost['discount']) ? $aPost['discount'] : 0,
+                            'discount_value' => isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
 
                             'id' => $TicketId
                         );
@@ -217,28 +229,28 @@ class EventTicketController extends Controller
                     } else {
                         $Binding = array(
                             'event_id' => $EventId,
-                            'ticket_name' => isset ($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
-                            'ticket_status' => isset ($aPost['ticket_status']) ? $aPost['ticket_status'] : 2,
-                            'total_quantity' => isset ($aPost['total_quantity']) ? $aPost['total_quantity'] : 0,
-                            'ticket_price' => isset ($aPost['ticket_price']) ? $aPost['ticket_price'] : 0,
-                            'payment_to_you' => isset ($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
+                            'ticket_name' => isset($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
+                            'ticket_status' => isset($aPost['ticket_status']) ? $aPost['ticket_status'] : 2,
+                            'total_quantity' => isset($aPost['total_quantity']) ? $aPost['total_quantity'] : 0,
+                            'ticket_price' => isset($aPost['ticket_price']) ? $aPost['ticket_price'] : 0,
+                            'payment_to_you' => isset($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
                             'ticket_sale_start_date' => $TicketStartTime,
                             'ticket_sale_end_date' => $TicketEndTime,
-                            'advanced_settings' => isset ($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
-                            'player_of_fee' => isset ($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
-                            'player_of_gateway_fee' => isset ($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
-                            'min_booking' => isset ($aPost['min_booking']) ? $aPost['min_booking'] : 0,
-                            'max_booking' => isset ($aPost['max_booking']) ? $aPost['max_booking'] : 0,
-                            'ticket_description' => isset ($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
-                            'msg_attendance' => isset ($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
-                            'minimum_donation_amount' => isset ($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
+                            'advanced_settings' => isset($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
+                            'player_of_fee' => isset($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
+                            'player_of_gateway_fee' => isset($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
+                            'min_booking' => isset($aPost['min_booking']) ? $aPost['min_booking'] : 0,
+                            'max_booking' => isset($aPost['max_booking']) ? $aPost['max_booking'] : 0,
+                            'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
+                            'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
+                            'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
 
-                            'early_bird' => isset ($aPost['early_bird']) ? $aPost['early_bird'] : 0,
-                            'no_of_tickets' => isset ($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
+                            'early_bird' => isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
+                            'no_of_tickets' => isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
                             'start_time' => $EBStartTime,
                             'end_time' => $EBEndTime,
-                            'discount' => isset ($aPost['discount']) ? $aPost['discount'] : 0,
-                            'discount_value' => isset ($aPost['discount_value']) ? $aPost['discount_value'] : 0,
+                            'discount' => isset($aPost['discount']) ? $aPost['discount'] : 0,
+                            'discount_value' => isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
                         );
                         // dd($Binding);
                         $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,advanced_settings,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount,early_bird,no_of_tickets,start_time,end_time,discount,discount_value) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:advanced_settings,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount,:early_bird,:no_of_tickets,:start_time,:end_time,:discount,:discount_value)';
@@ -337,18 +349,18 @@ class EventTicketController extends Controller
             );
 
             foreach ($Ticket as $key => $value) {
-                $value->ticket_start_date = !empty ($value->ticket_sale_start_date) ? date("Y-m-d", $value->ticket_sale_start_date) : 0;
-                $value->ticket_start_time = (!empty ($value->ticket_sale_start_date)) ? date("h:i", $value->ticket_sale_start_date) : 0;
+                $value->ticket_start_date = !empty($value->ticket_sale_start_date) ? date("Y-m-d", $value->ticket_sale_start_date) : 0;
+                $value->ticket_start_time = (!empty($value->ticket_sale_start_date)) ? date("h:i", $value->ticket_sale_start_date) : 0;
 
-                $value->ticket_end_date = !empty ($value->ticket_sale_end_date) ? date("Y-m-d", $value->ticket_sale_end_date) : 0;
-                $value->ticket_end_time = (!empty ($value->ticket_sale_end_date)) ? date("h:i", $value->ticket_sale_end_date) : 0;
+                $value->ticket_end_date = !empty($value->ticket_sale_end_date) ? date("Y-m-d", $value->ticket_sale_end_date) : 0;
+                $value->ticket_end_time = (!empty($value->ticket_sale_end_date)) ? date("h:i", $value->ticket_sale_end_date) : 0;
 
                 //EARLY BIRD
-                $value->eb_start_date = !empty ($value->start_time) ? date("Y-m-d", $value->start_time) : 0;
-                $value->eb_start_time = (!empty ($value->start_time)) ? date("h:i", $value->start_time) : 0;
+                $value->eb_start_date = !empty($value->start_time) ? date("Y-m-d", $value->start_time) : 0;
+                $value->eb_start_time = (!empty($value->start_time)) ? date("h:i", $value->start_time) : 0;
 
-                $value->eb_end_date = !empty ($value->end_time) ? date("Y-m-d", $value->end_time) : 0;
-                $value->eb_end_time = (!empty ($value->end_time)) ? date("h:i", $value->end_time) : 0;
+                $value->eb_end_date = !empty($value->end_time) ? date("Y-m-d", $value->end_time) : 0;
+                $value->eb_end_time = (!empty($value->end_time)) ? date("h:i", $value->end_time) : 0;
             }
             $ResponseData['Ticket'] = $Ticket;
             $ResposneCode = 200;
@@ -378,7 +390,7 @@ class EventTicketController extends Controller
 
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
-            if (empty ($aPost['event_id'])) {
+            if (empty($aPost['event_id'])) {
                 $empty = true;
                 $field = 'Event Id';
             }
@@ -387,8 +399,8 @@ class EventTicketController extends Controller
 
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
-                $TotalAttendee = isset ($request->total_attendee) && !empty ($request->total_attendee) ? $request->total_attendee : 0;
-                $AllTickets = isset ($request->AllTickets) && !empty ($request->AllTickets) ? $request->AllTickets : [];
+                $TotalAttendee = isset($request->total_attendee) && !empty($request->total_attendee) ? $request->total_attendee : 0;
+                $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
                 // dd($AllTickets);
 
                 $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1';
@@ -410,7 +422,7 @@ class EventTicketController extends Controller
                 //     }
                 // }
 
-                if (!empty ($AllTickets)) {
+                if (!empty($AllTickets)) {
                     foreach ($AllTickets as $ticket) {
                         for ($i = 0; $i < $ticket['count']; $i++) {
                             $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
@@ -454,11 +466,11 @@ class EventTicketController extends Controller
 
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
-            if (empty ($aPost['event_id'])) {
+            if (empty($aPost['event_id'])) {
                 $empty = true;
                 $field = 'Event Id';
             }
-            if (empty ($aPost['FormQuestions'])) {
+            if (empty($aPost['FormQuestions'])) {
                 $empty = true;
                 $field = 'Form Questions';
             }
@@ -467,12 +479,12 @@ class EventTicketController extends Controller
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
 
-                $EventId = isset ($aPost['event_id']) && !empty ($aPost['event_id']) ? $aPost['event_id'] : 0;
-                $TotalAttendee = isset ($request->total_attendees) && !empty ($request->total_attendees) ? $request->total_attendees : 0;
-                $FormQuestions = isset ($request->FormQuestions) && !empty ($request->FormQuestions) ? $request->FormQuestions : [];
-                $AllTickets = isset ($request->AllTickets) && !empty ($request->AllTickets) ? $request->AllTickets : [];
-                $TotalPrice = isset ($request->TotalPrice) && !empty ($request->TotalPrice) ? $request->TotalPrice : 0;
-                $TotalDiscount = isset ($request->TotalDiscount) && !empty ($request->TotalDiscount) ? $request->TotalDiscount : 0;
+                $EventId = isset($aPost['event_id']) && !empty($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $TotalAttendee = isset($request->total_attendees) && !empty($request->total_attendees) ? $request->total_attendees : 0;
+                $FormQuestions = isset($request->FormQuestions) && !empty($request->FormQuestions) ? $request->FormQuestions : [];
+                $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
+                $TotalPrice = isset($request->TotalPrice) && !empty($request->TotalPrice) ? $request->TotalPrice : 0;
+                $TotalDiscount = isset($request->TotalDiscount) && !empty($request->TotalDiscount) ? $request->TotalDiscount : 0;
                 $UserId = $aToken["data"]->ID;
                 $TotalTickets = 0;
 
@@ -486,22 +498,23 @@ class EventTicketController extends Controller
                 );
                 $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount)";
                 DB::insert($Sql1, $Binding1);
+                $BookingId = DB::getPdo()->lastInsertId();
 
                 #booking_details
                 $BookingDetailsIds = [];
-                foreach ($AllTickets as $key => $ticket) {
+                foreach ($AllTickets as $ticket) {
                     $Binding2 = [];
                     $Sql2 = "";
                     $Binding2 = array(
+                        "booking_id" => $BookingId,
                         "event_id" => $EventId,
                         "user_id" => $UserId,
                         "ticket_id" => $ticket["id"],
                         "quantity" => $ticket["count"],
                         "ticket_amount" => $ticket["ticket_price"],
-                        "ticket_discount" => $ticket["ticket_discount"],
-
+                        "ticket_discount" => $ticket["ticket_discount"]
                     );
-                    $Sql2 = "INSERT INTO booking_details (event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount) VALUES (:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount)";
+                    $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount)";
                     DB::insert($Sql2, $Binding2);
                     #Get the last inserted id of booking_details
                     $BookingDetailsId = DB::getPdo()->lastInsertId();
@@ -510,12 +523,12 @@ class EventTicketController extends Controller
                 }
 
                 #attendee_details
-                foreach ($FormQuestions as $key1 => $Form) {
+                foreach ($FormQuestions as $Form) {
                     $TotTickets = count($Form);
                     $TotalTickets += $TotTickets;
-                    foreach ($Form as $key2 => $Question) {
+                    foreach ($Form as $Question) {
                         // echo "<pre>";print_r($Question);
-                        foreach ($Question as $key3 => $value) {
+                        foreach ($Question as $value) {
                             // dd($BookingDetailsIds,$value['ticket_id']);
                             $Binding3 = [];
                             $Sql3 = "";
@@ -526,36 +539,88 @@ class EventTicketController extends Controller
                                     $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
                                     $is_valid = false;
                                     $filename = $address_proof_doc_upload = '';
-                                    if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
-                                        // Validate file extension
-                                        $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
-                                        $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
-                                        if (!in_array($address_proof_type, $allowedExts)) {
-                                            $filename = 'Address proof document';
-                                            $is_valid = true;
-                                        }
+                                    // if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
+                                    //     // Validate file extension
+                                    //     $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
+                                    //     $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
+                                    //     if (!in_array($address_proof_type, $allowedExts)) {
+                                    //         $filename = 'Address proof document';
+                                    //         $is_valid = true;
+                                    //     }
 
-                                        // Move uploaded file to destination
-                                        if (!$is_valid) {
-                                            $Path = public_path('uploads/user_documents/');
-                                            $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
-                                            move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
-                                        }
-                                    }
+                                    //     // Move uploaded file to destination
+                                    //     if (!$is_valid) {
+                                    //         $Path = public_path('uploads/user_documents/');
+                                    //         $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
+                                    //         move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
+                                    //     }
+                                    // }
                                 }
                                 $Binding3 = array(
-                                    "booking_details_id" => isset ($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0,
+                                    "booking_details_id" => isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0,
                                     "field_name" => $value['question_form_name'],
                                     "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
                                 );
 
-                                $Sql3 = "INSERT INTO `attendee_details` (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
+                                $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
                                 DB::insert($Sql3, $Binding3);
                             }
 
                         }
                     }
                 }
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function GetBookings(Request $request)
+    {
+        $ResponseData = $FinalFormQuestions = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $UserId = $aToken['data']->ID;
+                $EventId = $aPost['event_id'];
+
+                $SQL = "SELECT e.id ,e.ticket_namebd.* FROM event_tickets AS e
+                -- LEFT JOIN event_booking AS eb ON eb.event_id=e.id
+                LEFT JOIN  booking_details AS bd ON bd.ticket_id=e.id
+                WHERE e.id=:event_id AND eb.user_id=:user_id";
+
+                $BookingData = DB::select($SQL, array('event_id' => $EventId, 'user_id' => $UserId));
+                $ResponseData['BookingData'] = $BookingData;
+
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';

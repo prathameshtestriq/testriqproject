@@ -24,7 +24,7 @@ class EventController extends Controller
         foreach ($Events as $event) {
             $event->name = !empty ($event->name) ? ucwords($event->name) : "";
             $event->display_name = !empty ($event->name) ? (strlen($event->name) > 40 ? ucwords(substr($event->name, 0, 40)) . "..." : ucwords($event->name)) : "";
-
+            $event->event_description = !empty($event->event_description) ? html_entity_decode(strip_tags($event->event_description)) : "";
 
             $event->start_date = (!empty ($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
             $event->start_time_event = (!empty ($event->start_time)) ? date("h:i A", $event->start_time) : "";
@@ -790,7 +790,6 @@ class EventController extends Controller
 
             }
             $ResponseData['EventTickets'] = $EventTickets;
-
 
             //
             $ResponseData['YTCR_FEE_PERCENTAGE'] = config('custom.ytcr_fee_percent');

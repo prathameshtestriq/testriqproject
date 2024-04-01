@@ -20,8 +20,6 @@ return [
     // 'season' =>  env('CURRENT_SEASON', 'default_season_value'),
     'season' => env('CURRENT_SEASON'),
 
-
-
     'filter' => [
         (object)[
             "id" => 1,
