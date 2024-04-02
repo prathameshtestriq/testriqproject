@@ -503,23 +503,26 @@ class EventTicketController extends Controller
                 #booking_details
                 $BookingDetailsIds = [];
                 foreach ($AllTickets as $ticket) {
-                    $Binding2 = [];
-                    $Sql2 = "";
-                    $Binding2 = array(
-                        "booking_id" => $BookingId,
-                        "event_id" => $EventId,
-                        "user_id" => $UserId,
-                        "ticket_id" => $ticket["id"],
-                        "quantity" => $ticket["count"],
-                        "ticket_amount" => $ticket["ticket_price"],
-                        "ticket_discount" => $ticket["ticket_discount"]
-                    );
-                    $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount)";
-                    DB::insert($Sql2, $Binding2);
-                    #Get the last inserted id of booking_details
-                    $BookingDetailsId = DB::getPdo()->lastInsertId();
+                    if (!empty($ticket["count"])) {
+                        $Binding2 = [];
+                        $Sql2 = "";
+                        $Binding2 = array(
+                            "booking_id" => $BookingId,
+                            "event_id" => $EventId,
+                            "user_id" => $UserId,
+                            "ticket_id" => $ticket["id"],
+                            "quantity" => $ticket["count"],
+                            "ticket_amount" => $ticket["ticket_price"],
+                            "ticket_discount" => $ticket["ticket_discount"],
+                            "booking_date" => strtotime("now"),
+                        );
+                        $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
+                        DB::insert($Sql2, $Binding2);
+                        #Get the last inserted id of booking_details
+                        $BookingDetailsId = DB::getPdo()->lastInsertId();
 
-                    $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
+                        $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
+                    }
                 }
 
                 #attendee_details
@@ -565,7 +568,6 @@ class EventTicketController extends Controller
                                 $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
                                 DB::insert($Sql3, $Binding3);
                             }
-
                         }
                     }
                 }
@@ -595,9 +597,82 @@ class EventTicketController extends Controller
         $response['message'] = "";
         $ResposneCode = 400;
         $empty = false;
+        $field = '';
+        // $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            // if (empty($aPost['event_id'])) {
+            //     $empty = true;
+            //     $field = 'Event Id';
+            // }
+
+            if (!$empty) {
+                $master = new Master();
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] :
+
+                    $UserId = 20;//$aToken['data']->ID;
+
+                // $SQL = "SELECT eb.*,";
+                // if(!empty($EventId)) $SQL .= "COUNT(eb.id) AS TotalCount,";
+                // $SQL .= "(SELECT name FROM events WHERE id=eb.event_id) AS EventName,
+                // (SELECT start_time FROM events WHERE id=eb.event_id) AS EventStartTime,
+                // (SELECT city FROM events WHERE id=eb.event_id) AS EventCity
+                //     FROM event_booking AS eb
+                //     WHERE user_id=:user_id";
+                // if(!empty($EventId)) $SQL .= " GROUP BY eb.event_id";
+
+                $SQL = "SELECT eb.*,COUNT(eb.id) AS TotalCount,
+                (SELECT name FROM events WHERE id=eb.event_id) AS EventName,
+                (SELECT start_time FROM events WHERE id=eb.event_id) AS EventStartTime,
+                (SELECT city FROM events WHERE id=eb.event_id) AS EventCity
+
+                    FROM event_booking AS eb
+                    WHERE user_id=:user_id
+                    GROUP BY eb.event_id";
+                $BookingData = DB::select($SQL, array('user_id' => $UserId));
+
+                foreach ($BookingData as $event) {
+                    $event->name = !empty($event->EventName) ? ucwords($event->EventName) : "";
+                    $event->display_name = !empty($event->EventName) ? (strlen($event->EventName) > 40 ? ucwords(substr($event->EventName, 0, 40)) . "..." : ucwords($event->EventName)) : "";
+                    $event->start_date = (!empty($event->EventStartTime)) ? gmdate("d M Y", $event->EventStartTime) : 0;
+                    $event->start_time_event = (!empty($event->EventStartTime)) ? date("h:i A", $event->EventStartTime) : "";
+                    $event->city_name = !empty($event->EventCity) ? $master->getCityName($event->EventCity) : "";
+                }
+                $ResponseData['BookingData'] = $BookingData;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function GetEventBookingTickets(Request $request)
+    {
+        $ResponseData = $FinalFormQuestions = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($aToken);
-
+        // $aToken['code'] = 200;
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
             if (empty($aPost['event_id'])) {
@@ -606,21 +681,107 @@ class EventTicketController extends Controller
             }
 
             if (!$empty) {
-
+                $master = new Master();
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
+                $TicketBookingArr = [];
 
-                $UserId = $aToken['data']->ID;
-                $EventId = $aPost['event_id'];
+                // "EventName": "Summer",48
+                //"EventName": "Startify Edition 2.0",50
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $UserId = $aToken['data']->ID ? $aToken['data']->ID : 20;
+                // return $UserId;
 
-                $SQL = "SELECT e.id ,e.ticket_namebd.* FROM event_tickets AS e
-                -- LEFT JOIN event_booking AS eb ON eb.event_id=e.id
-                LEFT JOIN  booking_details AS bd ON bd.ticket_id=e.id
-                WHERE e.id=:event_id AND eb.user_id=:user_id";
+                // $SQL = "SELECT *,
+                //     (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName
+                //     FROM booking_details AS bd
+                //     WHERE user_id=:user_id AND event_id=:event_id";
+                // $BookingData = DB::select($SQL, array('user_id' => $UserId, 'event_id' => $EventId));
+                // $key = 0;
+                // foreach ($BookingData as $ticket) {
+                //     // dd($ticket->quantity);
+                //     $attendee_names = [];
+                //     for ($i = 1; $i <= $ticket->quantity; $i++) {
+                //         $sql1 = "SELECT field_value FROM attendee_details WHERE booking_details_id = :booking_details_id AND (field_name = 'first_name') LIMIT :start, :end";
+                //         $FirstName = DB::select($sql1, array('booking_details_id' => $ticket->id, 'start' => $i - 1, 'end' => $i));
+                //         $sql2 = "SELECT field_value FROM attendee_details WHERE booking_details_id = :booking_details_id AND (field_name = 'last_name') LIMIT :start, :end";
+                //         $LastName = DB::select($sql2, array('booking_details_id' => $ticket->id, 'start' => $i - 1, 'end' => $i));
 
-                $BookingData = DB::select($SQL, array('event_id' => $EventId, 'user_id' => $UserId));
-                $ResponseData['BookingData'] = $BookingData;
+                //         // echo $i; echo "<pre>";echo ($FirstName[0]->field_value);
+                //         // $ticket->attendee_name ="";
+                //         // $ticket->attendee_name = (sizeof($FirstName) > 0) ? ((sizeof($LastName)>0) ? $FirstName[0]->field_value." ".$LastName[0]->field_value : $FirstName[0]->field_value ): "";
 
+                //         // // echo $key;echo "<pre>";print_r($ticket);
+                //         // $TicketBookingArr[$key] = $ticket;
+
+                //         $attendee_names[] = (sizeof($FirstName) > 0) ? ((sizeof($LastName) > 0) ? $FirstName[0]->field_value . " " . $LastName[0]->field_value : $FirstName[0]->field_value) : ""; // Add attendee
+                //         // $ticket->i_val = $i;
+                //         $ticket->attendee_name = (sizeof($attendee_names) > 0) ? $attendee_names : [];
+
+                //         $TicketBookingArr[$key] = $ticket;
+                //         $key++;
+                //     }
+
+
+                //     //
+                // }
+                // echo "<pre>";
+                // print_r($TicketBookingArr);
+                // die;
+
+
+                $SQL = "SELECT *,
+                (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName
+                FROM booking_details AS bd
+                WHERE user_id=:user_id AND event_id=:event_id";
+                $BookingData = DB::select($SQL, array('user_id' => $UserId, 'event_id' => $EventId));
+                $TicketBookingArr = [];
+                foreach ($BookingData as $ticket) {
+                    if ($ticket->quantity > 1) {
+                        for ($j = 0; $j < $ticket->quantity; $j++) {
+                            $ticketCopy = clone $ticket;
+                            $attendee_names = "";
+                            $sql1 = "SELECT field_value FROM attendee_details WHERE booking_details_id = :booking_details_id AND (field_name = 'first_name') LIMIT :start, :end";
+                            $FirstName = DB::select($sql1, array('booking_details_id' => $ticket->id, 'start' => $j, 'end' => 1));
+                            $sql2 = "SELECT field_value FROM attendee_details WHERE booking_details_id = :booking_details_id AND (field_name = 'last_name') LIMIT :start, :end";
+                            $LastName = DB::select($sql2, array('booking_details_id' => $ticket->id, 'start' => $j, 'end' => 1));
+
+                            $attendee_name = (sizeof($FirstName) > 0) ? ((sizeof($LastName) > 0) ? $FirstName[0]->field_value . " " . $LastName[0]->field_value : $FirstName[0]->field_value) : ""; // Add attendee
+
+                            if (!empty($attendee_name)) {
+                                if (!empty($attendee_names)) {
+                                    $attendee_names .= ", ";
+                                }
+                                $attendee_names .= $attendee_name;
+                            }
+
+                            $ticketCopy->attendee_name = $attendee_names;
+                            $TicketBookingArr[] = $ticketCopy;
+                        }
+                    } else {
+                        $attendee_names = "";
+                        $sql1 = "SELECT field_value FROM attendee_details WHERE booking_details_id = :booking_details_id AND (field_name = 'first_name') LIMIT :start, :end";
+                        $FirstName = DB::select($sql1, array('booking_details_id' => $ticket->id, 'start' => 0, 'end' => 1));
+                        $sql2 = "SELECT field_value FROM attendee_details WHERE booking_details_id = :booking_details_id AND (field_name = 'last_name') LIMIT :start, :end";
+                        $LastName = DB::select($sql2, array('booking_details_id' => $ticket->id, 'start' => 0, 'end' => 1));
+
+                        $attendee_name = (sizeof($FirstName) > 0) ? ((sizeof($LastName) > 0) ? $FirstName[0]->field_value . " " . $LastName[0]->field_value : $FirstName[0]->field_value) : ""; // Add attendee
+
+                        if (!empty($attendee_name)) {
+                            $ticket->attendee_name = $attendee_name;
+                        }
+
+                        $TicketBookingArr[] = $ticket;
+                    }
+                }
+
+
+                foreach ($TicketBookingArr as $event) {
+                    $event->booking_start_date = (!empty($event->booking_date)) ? gmdate("d M Y", $event->booking_date) : 0;
+                    $event->booking_time = (!empty($event->booking_date)) ? date("h:i A", $event->booking_date) : "";
+                }
+                // dd($BookingData);
+                $ResponseData['BookingData'] = $TicketBookingArr;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
