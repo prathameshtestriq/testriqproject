@@ -1,0 +1,18 @@
+<html>
+    <body>
+        <h3>Event IFrame</h3>
+        <div id="evId"></div>
+    </body>
+</html>
+
+<script>
+    // var param1 = getParamValue('initial_name');
+    // console.log(param1);
+
+    var loc = window.location.toString(),
+    params = loc.split('?')[1],
+    iframe = document.getElementById('ts-iframe');
+    var myPElement = document.getElementById("evId");
+    myPElement.innerHTML = params;
+    //console.log(params);
+</script>

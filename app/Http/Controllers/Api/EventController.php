@@ -760,9 +760,9 @@ class EventController extends Controller
                 "start_date" => (isset ($Events[0]->start_time) && (!empty ($Events[0]->start_time))) ? date("F d, Y", $Events[0]->start_time) : 0,
                 "city" => (isset ($Events[0]->city) && !empty ($Events[0]->city)) ? $master->getCityName($Events[0]->city) : "",
                 "event_name" => (isset ($Events[0]->name) && !empty ($Events[0]->name)) ? (strlen($Events[0]->name) > 40 ? ucwords(substr($Events[0]->name, 0, 40)) . "..." : ucwords($Events[0]->name)) : "",
-                "start_event_month" => (isset ($Events[0]->start_time) && (!empty ($Events[0]->start_time))) ? gmdate("M", $Events[0]->start_time) : gmdate("M", strtotime('today')),
-                "start_event_date" => (isset ($Events[0]->start_time) && (!empty ($Events[0]->start_time))) ? gmdate("d", $Events[0]->start_time) : gmdate("d", strtotime('today')),
-                "registration_end_date" => (isset ($Events[0]->registration_end_time) && !empty ($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('today')),
+                "start_event_month" => (isset ($Events[0]->start_time) && (!empty ($Events[0]->start_time))) ? gmdate("M", $Events[0]->start_time) : gmdate("M", strtotime('now')),
+                "start_event_date" => (isset ($Events[0]->start_time) && (!empty ($Events[0]->start_time))) ? gmdate("d", $Events[0]->start_time) : gmdate("d", strtotime('now')),
+                "registration_end_date" => (isset ($Events[0]->registration_end_time) && !empty ($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('now')),
 
                 "min_price" => (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0,
                 "max_price" => (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0,
@@ -892,12 +892,12 @@ class EventController extends Controller
                 state=:state,
                 city=:city,
                 address=:address
-             WHERE id=:id';
+                WHERE id=:id';
                 DB::update($sql, $Bindings);
 
                 $ResponseData['event_id'] = $EventId;
                 $ResposneCode = 200;
-                $message = "Event Duration added successfully";
+                $message = "Event Duration updated successfully";
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
@@ -937,8 +937,8 @@ class EventController extends Controller
 
             if (!$empty) {
                 $EventId = $aPost['event_id'];
-                $Description = isset ($request->event_description) ? $request->event_description : '';
-                $event_keywords = isset ($request->event_keywords) ? $request->event_keywords : '';
+                $Description    = !empty($request->event_description) ? $request->event_description : '';
+                $event_keywords = !empty ($request->event_keywords) ? $request->event_keywords : '';
 
                 // if (preg_match("/^[a-zA-Z-']*$/", $Description)) {
                 $banner_image = '';
