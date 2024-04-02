@@ -87,11 +87,11 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'],'/category', [CategoryController::class, 'index_category'])->name('index_category');
     Route::match(['get', 'post'],'/category/add_edit/{id?}', [CategoryController::class,'add_edit_category'])->name('add_edit_category');
     //Route::match(['get', 'post'],'get_country_info', [CategoryController::class,'get_country_info'])->name('get_country_info');
-    Route::match(['get','post'],'category/change_status', [CategoryController::class,'change_active_status_category'])->name('change_status_user');
+    Route::match(['get','post'],'category/change_status', [CategoryController::class,'change_active_status_category'])->name('change_status_category');
     Route::match(['get'],'category/delete/{id}', [CategoryController::class,'delete_category'])->name('delete_category');
-    Route::get('category/clear_search', [CategoryController::class,'clear_search'])->name('clear_search_user');
+    Route::get('category/clear_search', [CategoryController::class,'clear_search'])->name('clear_search_category');
 
-    // BannerController 
+    // BannerController
     Route::match(['get', 'post'],'/banner', [BannerController::class, 'index_banner'])->name('index_banner');
     Route::match(['get', 'post'],'/banner/add_edit/{id?}', [BannerController::class,'add_edit_banner'])->name('add_edit_banner');
     //Route::match(['get', 'post'],'get_country_info', [CategoryController::class,'get_country_info'])->name('get_country_info');
@@ -108,8 +108,8 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get','post'],'advertisement/change_status', [AdvertiseController::class,'change_status']);
     Route::match(['get'],'advertisement/delete/{id}', [AdvertiseController::class,'delete_advertisement'])->name('delete_Advertisement');
     Route::get('advertisement/clear_search', [AdvertiseController::class,'clear_search']);
-    
-    
+
+
 
 });
 

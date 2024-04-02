@@ -182,7 +182,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-       // Barryvdh\DomPDF\ServiceProvider::class,
+       Barryvdh\DomPDF\ServiceProvider::class,
 
         /*
          * Package Service Providers...
@@ -212,8 +212,10 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         'GoogleTranslate' => Stichozo\Example\Example::class,
-        //'PDF' => Barryvdh\DomPDF\Facade::class,
+        'PDF' => Barryvdh\DomPDF\Facade::class,
+        // 'PDF' => Elibyy\TCPDF\Facades\TCPDF::class,
 
     ])->toArray(),
+    // 'PDF' => Elibyy\TCPDF\Facades\TCPDF::class,
 
 ];

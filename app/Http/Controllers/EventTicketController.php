@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use App\Models\Master;
+use Barryvdh\DomPDF\Facade as PDF;
+use App\Services\PdfService;
+use Mpdf\Mpdf;
+use Elibyy\TCPDF\Facades\TCPDF as TCPDF;
+
 
 class EventTicketController extends Controller
 {
@@ -17,11 +22,12 @@ class EventTicketController extends Controller
         $empty = false;
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($aToken);
-
+        // $aToken['code'] = 200;
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
             $Auth = new Authenticate();
             $Auth->apiLog($request);
+            // $aPost['event_id'] = 48;
             if (empty($aPost['event_id'])) {
                 $empty = true;
                 $field = 'Event Id';
@@ -29,7 +35,7 @@ class EventTicketController extends Controller
             $master = new Master();
             if (!$empty) {
                 $sSQL = 'SELECT * FROM event_tickets WHERE event_id =:event_id AND active = 1 AND is_deleted = 0';
-                $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $request->event_id));
+                $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $aPost['event_id']));
                 foreach ($ResponseData['event_tickets'] as $value) {
                     $value->count = 0;
                     $value->Error = "";
@@ -38,7 +44,22 @@ class EventTicketController extends Controller
                     $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
 
                     $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
+
+                    $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
+
+                    $discount_ticket_price = 0;
+                    $total_discount = 0;
+                    if ($value->discount === 1) { //percentage
+                        $total_discount = ($value->ticket_price * ($value->discount_value / 100));
+                        $discount_ticket_price = $value->ticket_price - $total_discount;
+                    } else if ($value->discount === 2) { //amount
+                        $total_discount = $value->discount_value;
+                        $discount_ticket_price = $value->ticket_price - $value->discount_value;
+                    }
+                    $value->discount_ticket_price = $discount_ticket_price;
+                    $value->total_discount = $total_discount;
                 }
+
 
                 $Sql = "SELECT name,start_time,city FROM events WHERE id=:event_id";
                 $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
@@ -775,7 +796,6 @@ class EventTicketController extends Controller
                     }
                 }
 
-
                 foreach ($TicketBookingArr as $event) {
                     $event->booking_start_date = (!empty($event->booking_date)) ? gmdate("d M Y", $event->booking_date) : 0;
                     $event->booking_time = (!empty($event->booking_date)) ? date("h:i A", $event->booking_date) : "";
@@ -802,6 +822,54 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function generatePDF()
+    {
+        $data = [
+            'title' => 'Welcome to Laravel PDF!',
+            'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
+        ];
+
+        $pdf = PDF::loadView('pdf_template', $data);
+        return $pdf->download('example.pdf');
+    }
+
+    // public function generatePDF(Request $request, PdfService $pdfService)
+    // {
+    //     $filename = 'demo.pdf';
+
+    //     $data = [
+    //         'title' => 'Generate PDF using Laravel TCPDF - ItSolutionStuff.com!'
+    //     ];
+
+    //     $html = view()->make('pdf_template', $data)->render();
+
+    //     $pdf = new TCPDF;
+
+    //     $pdf::SetTitle('Hello World');
+    //     $pdf::AddPage();
+    //     $pdf::writeHTML($html, true, false, true, false, '');
+
+    //     $pdf::Output(public_path($filename), 'F');
+
+    //     return response()->download(public_path($filename));
+    // }
+
+    // public function generatePDF()
+    // {
+    //     $data = [
+    //         'title' => 'Welcome to Laravel PDF!',
+    //         'content' => 'This is a sample PDF generated using Laravel and mPDF.'
+    //     ];
+
+    //     // Initialize mPDF object
+    //     $mpdf = new Mpdf();
+
+    //     // Add content to PDF
+    //     $mpdf->WriteHTML(view('pdf_template', $data));
+
+    //     // Output PDF
+    //     $mpdf->Output('example.pdf', 'D');
+    // }
 }
 
 
