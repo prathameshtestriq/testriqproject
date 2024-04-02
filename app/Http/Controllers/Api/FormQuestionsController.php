@@ -99,18 +99,34 @@ class FormQuestionsController extends Controller
 
                 $Sql = 'SELECT id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$res->id.'  ';
                 $aResult1 = DB::select($Sql);
-
+                //dd($aResult1);
                 if(!empty($aResult1)){
                     $res->event_questions_flag = 1;
                 }else{
                     $res->event_questions_flag = 0;
+                    $event_question_form_option = [];
                 }
 
                 //---------------------
                 if($res->question_form_type == 'radio' || $res->question_form_type == 'select'){
                     $res->question_form_option = !empty($res->question_form_option) ? json_decode($res->question_form_option) : [];
-                }else{ $res->question_form_option = []; }
-             
+                    $que_option_json_count = count($res->question_form_option);
+                }else{ $res->question_form_option = []; $que_option_json_count = 0; }
+                
+                //-------- sub question
+                $Sql1 = 'SELECT count(id) as tot_count FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and parent_question_id = '.$res->id.'  ';
+                $aResult2 = DB::select($Sql1);
+
+                if(!empty($aResult2) && !empty($aResult2[0]->tot_count)){
+                   
+                    if($que_option_json_count == $aResult2[0]->tot_count){
+                        $res->sub_question_json_tick_count = 1;
+                    }else{
+                        $res->sub_question_json_tick_count = 0;
+                    }
+                }else{ $res->sub_question_json_tick_count = 0;}
+                
+              
                 //--------- sub question arrray-----------
                 // if($res->question_form_option){
                 //     foreach($res->question_form_option as $res1){
@@ -126,7 +142,7 @@ class FormQuestionsController extends Controller
                 // }else{ $res->sub_question_array = []; }
 
                 $general_form_array[] = $res;
-            }
+            }//die;
 
             //dd($general_form_array);
             if(!empty($aResult)){
@@ -180,23 +196,29 @@ class FormQuestionsController extends Controller
                 $limit_length = '{"max_length" : '.$MaxLength.'}';
             }
             //dd($limit_length);
-           
-            $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, limit_check, user_field_mapping, limit_length)';
-                
-            $sSQL .= 'SELECT :eventId, id, :questionLabel, form_id, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, :limitCheck, :userFieldMapping, :limitLength
-                FROM general_form_question
-                WHERE `id`=:generalFormId AND question_status = 1 ';
-            //dd($sSQL);
-            DB::insert($sSQL,array(
-                'eventId' => $EventId,
-                'questionLabel' => $DisplayLabel,
-                'isManadatory'  => $QuestionMandatory,
-                'generalFormId' => $GeneralFormId,
-                'limitCheck'    => $LimitLengthCheck,
-                'userFieldMapping' => $FieldMapping,
-                'limitLength' => $limit_length
-            ));
-
+            //--------- check duplication
+            $Sql5 = 'SELECT count(id) as tot_count FROM event_form_question WHERE question_status = 1 and general_form_id = '.$GeneralFormId.'  and event_id = '.$EventId.' ';
+            $aResult5 = DB::select($Sql5);
+            //dd($aResult5);
+            if(!empty($aResult5) && $aResult5[0]->tot_count == 0)
+            {
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length)';
+                    
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, form_id, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength
+                    FROM general_form_question
+                    WHERE `id`=:generalFormId AND question_status = 1 ';
+                //dd($sSQL);
+                DB::insert($sSQL,array(
+                    'eventId' => $EventId,
+                    'questionLabel' => $DisplayLabel,
+                    'isManadatory'  => $QuestionMandatory,
+                    'generalFormId' => $GeneralFormId,
+                    'limitCheck'    => $LimitLengthCheck,
+                    'userFieldMapping' => $FieldMapping,
+                    'limitLength' => $limit_length
+                ));
+            }
+            
             //------------- Add new sub question ----------------
 
                $SubQuestionFlag = !empty($request->sub_question_flag) && ($request->sub_question_flag) == true ? 1 : 0;
@@ -238,44 +260,54 @@ class FormQuestionsController extends Controller
                     }
                     
                     //dd($question_title_name);
-                   
-                    $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion)';
 
-                    DB::insert($sSQL,array(
-                        'questionLabel'     => !empty($question_title_name) ? $question_title_name.' '.$SubQuestionTitle : $SubQuestionTitle,
-                        'formId'            => 1,
-                        'questionFormType'  => $SubQuestionFormType, // ex. t-shirt size
-                        'questionFormName'  => 'sub_question',
-                        'questionFormOption' => $SubQuestionOptionArray,
-                        'isManadatory'      => $SubQuestionMandatory,
-                        'questionStatus'    => 1,
-                        'createdBy'         => $userId,
-                        'isCustomForm'      => 1,
-                        "parentQusId"       => $GeneralFormId,
-                        "isSubquestion"     => $SubQuestionFlag
-                    ));
+                    if($SubQuestionTitle != '')
+                    {
+                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion)';
 
-                    $last_inserted_id = DB::getPdo()->lastInsertId();
-                    //dd($last_inserted_id);
-
-                    $old_question_form_option_array = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
-                    //dd($old_question_form_option_array);
-                    $subArray = [];
-                    if(!empty($old_question_form_option_array)){
-                        foreach($old_question_form_option_array as $res){
-                            if($res->id == $QuestionType){
-                                $res->child_question_id = $last_inserted_id;
-                            }
-                            $subArray[] = $res;
-                        }
-                    }
-                    //dd($subArray);  --- json updated for privous question 
-                    if(!empty($subArray)){
-                         $up_sSQL = 'UPDATE general_form_question SET `question_form_option` =:questionFormOption WHERE `id`=:generalFormId ';
-                         DB::update($up_sSQL,array(
-                            'questionFormOption' => json_encode($subArray),
-                            'generalFormId' => $GeneralFormId
+                        DB::insert($sSQL,array(
+                            'questionLabel'     => !empty($question_title_name) ? $question_title_name.' '.$SubQuestionTitle : $SubQuestionTitle,
+                            'formId'            => 1,
+                            'questionFormType'  => $SubQuestionFormType, // ex. t-shirt size
+                            'questionFormName'  => 'sub_question',
+                            'questionFormOption' => $SubQuestionOptionArray,
+                            'isManadatory'      => $SubQuestionMandatory,
+                            'questionStatus'    => 1,
+                            'createdBy'         => $userId,
+                            'isCustomForm'      => 1,
+                            "parentQusId"       => $GeneralFormId,
+                            "isSubquestion"     => $SubQuestionFlag
                         ));
+
+                        $last_inserted_id = DB::getPdo()->lastInsertId();
+                        //dd($last_inserted_id);
+
+                        $old_question_form_option_array = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
+                        //dd($old_question_form_option_array);
+                        $subArray = [];
+                        if(!empty($old_question_form_option_array)){
+                            foreach($old_question_form_option_array as $res){
+                                if($res->id == $QuestionType){
+                                    $res->child_question_id = $last_inserted_id;
+                                }
+                                $subArray[] = $res;
+                            }
+                        }
+                        //dd($subArray);  --- json updated for privous question 
+                        if(!empty($subArray)){
+                            $up_sSQL = 'UPDATE general_form_question SET `question_form_option` =:questionFormOption WHERE `id`=:generalFormId ';
+                            DB::update($up_sSQL,array(
+                                'questionFormOption' => json_encode($subArray),
+                                'generalFormId' => $GeneralFormId
+                            ));
+
+                            $up_sSQL1 = 'UPDATE event_form_question SET `question_form_option` =:evtQuestionFormOption WHERE `event_id`=:eventId and `general_form_id`=:generalFormId ';
+                            DB::update($up_sSQL1,array(
+                                'evtQuestionFormOption' => json_encode($subArray),
+                                'eventId' => $EventId,
+                                'generalFormId' => $GeneralFormId
+                            ));
+                        }
                     }
             }
 
@@ -386,7 +418,10 @@ class FormQuestionsController extends Controller
             $questionFormType = !empty($request->question_form_type) ? $request->question_form_type : '';
             $isManadatory = !empty($request->is_manadatory) ? $request->is_manadatory : 0;
             $questionFormOption = !empty($request->question_form_option) ? array_filter($request->question_form_option) : 0;
-
+            
+            $question_name = strtolower($questionLabel);
+            $question_name = str_replace(' ', '_', $question_name);
+            //dd($question_name);
                 //dd(json_encode($questionFormOption)); 
             $new_array = [];
             $i = 1;
@@ -407,7 +442,7 @@ class FormQuestionsController extends Controller
                 'questionLabel'     => $questionLabel,
                 'formId'            => 1,
                 'questionFormType'  => $questionFormType,
-                'questionFormName'  => '',
+                'questionFormName'  => $question_name,
                 'questionFormOption' => $questionFormOptionArray,
                 'isManadatory'      => $isManadatory,
                 'questionStatus'    => 1,
