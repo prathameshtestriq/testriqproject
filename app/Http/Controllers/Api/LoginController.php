@@ -115,19 +115,19 @@ class LoginController extends Controller
 
                                         $lastInsertedId = DB::getPdo()->lastInsertId();
 
-                                        $otp = rand(1000, 9999);
-                                        if (!empty($otp)) {
-                                            $data = DB::table('users')->where('id', $lastInsertedId)->update(['otp' => $otp]);
+                                        // $otp = rand(1000, 9999);
+                                        // if (!empty($otp)) {
+                                        //     $data = DB::table('users')->where('id', $lastInsertedId)->update(['otp' => $otp]);
 
-                                            #SEND OTP MESSAGE
-                                            $SmsObj = new SmsApis();
-                                            $SmsObj->post_sms($aPost['mobile'], $otp);
+                                        //     #SEND OTP MESSAGE
+                                        //     $SmsObj = new SmsApis();
+                                        //     $SmsObj->post_sms($aPost['mobile'], $otp);
 
-                                            #SEND OTP MAIL
-                                            $Email = new Emails();
-                                            $Email->post_email($aPost['email'], $otp);
-                                            // Error: Class &quot;SendGrid\Mail\Mail&quot; not found in file /var/www/html/RacesWeb/app/Libraries/Emails.php on line 11
-                                        }
+                                        //     #SEND OTP MAIL
+                                        //     $Email = new Emails();
+                                        //     $Email->post_email($aPost['email'], $otp);
+                                        //     // Error: Class &quot;SendGrid\Mail\Mail&quot; not found in file /var/www/html/RacesWeb/app/Libraries/Emails.php on line 11
+                                        // }
 
                                         $SQL3 = 'SELECT * FROM users WHERE id =:id';
                                         $aResult = DB::select($SQL3, array('id' => $lastInsertedId));

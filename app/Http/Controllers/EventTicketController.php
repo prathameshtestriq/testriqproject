@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use App\Models\Master;
+
 // use Barryvdh\DomPDF\Facade as PDF;
 // use App\Services\PdfService;
 // use Mpdf\Mpdf;
@@ -619,9 +620,9 @@ class EventTicketController extends Controller
         $ResposneCode = 400;
         $empty = false;
         $field = '';
-        // $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($aToken);
-        $aToken['code'] = 200;
+        // $aToken['code'] = 200;
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
             // if (empty($aPost['event_id'])) {
@@ -633,9 +634,9 @@ class EventTicketController extends Controller
                 $master = new Master();
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
-                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] :
+                // $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
 
-                    $UserId = 20;//$aToken['data']->ID;
+                $UserId = $aToken['data']->ID;
 
                 // $SQL = "SELECT eb.*,";
                 // if(!empty($EventId)) $SQL .= "COUNT(eb.id) AS TotalCount,";
