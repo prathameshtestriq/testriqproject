@@ -114,7 +114,7 @@ class FormQuestionsController extends Controller
                 }else{ $res->question_form_option = []; $que_option_json_count = 0; }
                 
                 //-------- sub question
-                $Sql1 = 'SELECT count(id) as tot_count FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and parent_question_id = '.$res->id.'  ';
+                $Sql1 = 'SELECT count(id) as tot_count FROM general_form_question WHERE question_status = 1 and created_byyy = '.$UserId.' and parent_question_id = '.$res->id.'  ';
                 $aResult2 = DB::select($Sql1);
 
                 if(!empty($aResult2) && !empty($aResult2[0]->tot_count)){
@@ -126,7 +126,6 @@ class FormQuestionsController extends Controller
                     }
                 }else{ $res->sub_question_json_tick_count = 0;}
                 
-              
                 //--------- sub question arrray-----------
                 // if($res->question_form_option){
                 //     foreach($res->question_form_option as $res1){
