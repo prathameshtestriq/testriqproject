@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use App\Models\Master;
-use Barryvdh\DomPDF\Facade as PDF;
-use App\Services\PdfService;
-use Mpdf\Mpdf;
-use Elibyy\TCPDF\Facades\TCPDF as TCPDF;
+// use Barryvdh\DomPDF\Facade as PDF;
+// use App\Services\PdfService;
+// use Mpdf\Mpdf;
+// use Elibyy\TCPDF\Facades\TCPDF as TCPDF;
 
 
 class EventTicketController extends Controller
@@ -822,16 +822,16 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    public function generatePDF()
-    {
-        $data = [
-            'title' => 'Welcome to Laravel PDF!',
-            'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
-        ];
+    // public function generatePDF()
+    // {
+    //     $data = [
+    //         'title' => 'Welcome to Laravel PDF!',
+    //         'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
+    //     ];
 
-        $pdf = PDF::loadView('pdf_template', $data);
-        return $pdf->download('example.pdf');
-    }
+    //     $pdf = PDF::loadView('pdf_template', $data);
+    //     return $pdf->download('example.pdf');
+    // }
 
     // public function generatePDF(Request $request, PdfService $pdfService)
     // {
