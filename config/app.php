@@ -212,7 +212,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         'GoogleTranslate' => Stichozo\Example\Example::class,
-        'PDF' => Barryvdh\DomPDF\Facade::class,
+        // 'PDF' => Barryvdh\DomPDF\Facade::class,
         // 'PDF' => Elibyy\TCPDF\Facades\TCPDF::class,
 
     ])->toArray(),
