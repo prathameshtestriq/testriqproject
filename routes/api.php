@@ -59,6 +59,7 @@ Route::controller(LoginController::class)->group(function () {
 Route::controller(EventController::class)->group(function () {
     Route::post('get_data_location_wise', 'get_data_location_wise');
     Route::post('events', 'getEvents');
+    Route::post('event_details_page', 'EventDetailsPage');
     Route::post('get_banner_events', 'get_banner_events');
     Route::post('create_event', 'createEventBasicInfo');
     Route::post('event_details', 'getEventDetails');
