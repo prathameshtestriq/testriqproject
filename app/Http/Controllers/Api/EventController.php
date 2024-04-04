@@ -364,12 +364,8 @@ class EventController extends Controller
         $ResponseData = [];
         $Events = [];
         $ResposneCode = 200;
-        $empty = false;
         $message = 'Success';
-        $field = '';
         $FewSuggestionFlag = 0;
-        $aData = array();
-        $aPost = $request->all();
         $UserId = 0;
         $Auth = new Authenticate();
         $Auth->apiLog($request);
@@ -389,7 +385,7 @@ class EventController extends Controller
         $EventId = isset($request->event_id) ? $request->event_id : 0;//for view event (Event Details page)
 
         if (!empty($EventId)) {
-            $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id" . $EventId;
+            $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id";
             $Events = DB::select($EventSql,array('event_id'=>$EventId));
         }
 

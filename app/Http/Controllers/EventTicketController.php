@@ -615,7 +615,7 @@ class EventTicketController extends Controller
 
     function GetBookings(Request $request)
     {
-        $ResponseData = $FinalFormQuestions = [];
+        $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
         $empty = false;
@@ -625,33 +625,20 @@ class EventTicketController extends Controller
         // $aToken['code'] = 200;
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
-            // if (empty($aPost['event_id'])) {
-            //     $empty = true;
-            //     $field = 'Event Id';
-            // }
 
             if (!$empty) {
                 $master = new Master();
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
-                // $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
 
                 $UserId = $aToken['data']->ID;
 
-                // $SQL = "SELECT eb.*,";
-                // if(!empty($EventId)) $SQL .= "COUNT(eb.id) AS TotalCount,";
-                // $SQL .= "(SELECT name FROM events WHERE id=eb.event_id) AS EventName,
-                // (SELECT start_time FROM events WHERE id=eb.event_id) AS EventStartTime,
-                // (SELECT city FROM events WHERE id=eb.event_id) AS EventCity
-                //     FROM event_booking AS eb
-                //     WHERE user_id=:user_id";
-                // if(!empty($EventId)) $SQL .= " GROUP BY eb.event_id";
-
-                $SQL = "SELECT eb.*,COUNT(eb.id) AS TotalCount,
+                $SQL = "SELECT eb.*,
+                (SELECT SUM(quantity) FROM booking_details WHERE user_id=eb.user_id AND event_id=eb.event_id) AS TotalCount,
                 (SELECT name FROM events WHERE id=eb.event_id) AS EventName,
                 (SELECT start_time FROM events WHERE id=eb.event_id) AS EventStartTime,
-                (SELECT city FROM events WHERE id=eb.event_id) AS EventCity
-
+                (SELECT city FROM events WHERE id=eb.event_id) AS EventCity,
+                (SELECT banner_image FROM events WHERE id=eb.event_id) AS banner_image
                     FROM event_booking AS eb
                     WHERE user_id=:user_id
                     GROUP BY eb.event_id";
@@ -663,6 +650,7 @@ class EventTicketController extends Controller
                     $event->start_date = (!empty($event->EventStartTime)) ? gmdate("d M Y", $event->EventStartTime) : 0;
                     $event->start_time_event = (!empty($event->EventStartTime)) ? date("h:i A", $event->EventStartTime) : "";
                     $event->city_name = !empty($event->EventCity) ? $master->getCityName($event->EventCity) : "";
+                    $event->banner_image = !empty($event->banner_image) ? url('/') . '/uploads/banner_image/' . $event->banner_image . '' : '';
                 }
                 $ResponseData['BookingData'] = $BookingData;
 
@@ -708,8 +696,6 @@ class EventTicketController extends Controller
                 $Auth->apiLog($request);
                 $TicketBookingArr = [];
 
-                // "EventName": "Summer",48
-                //"EventName": "Startify Edition 2.0",50
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 20;
                 // return $UserId;
@@ -753,9 +739,12 @@ class EventTicketController extends Controller
 
 
                 $SQL = "SELECT *,
-                (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName
+                (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName,
+                (SELECT name FROM events WHERE id=bd.event_id) AS EventName,
+                (SELECT banner_image FROM events WHERE id=bd.event_id) AS banner_image
+
                 FROM booking_details AS bd
-                WHERE user_id=:user_id AND event_id=:event_id";
+                WHERE bd.user_id=:user_id AND bd.event_id=:event_id";
                 $BookingData = DB::select($SQL, array('user_id' => $UserId, 'event_id' => $EventId));
                 $TicketBookingArr = [];
                 foreach ($BookingData as $ticket) {
@@ -800,6 +789,19 @@ class EventTicketController extends Controller
                 foreach ($TicketBookingArr as $event) {
                     $event->booking_start_date = (!empty($event->booking_date)) ? gmdate("d M Y", $event->booking_date) : 0;
                     $event->booking_time = (!empty($event->booking_date)) ? date("h:i A", $event->booking_date) : "";
+
+                    // $event->strike_out_price = 0;
+                    $event->strike_out_price = ($event->ticket_discount != 0) ? ($event->ticket_amount - $event->ticket_discount) : $event->ticket_amount;
+
+                    $event->name = !empty($event->EventName) ? ucwords($event->EventName) : "";
+                    $event->display_name = !empty($event->EventName) ? (strlen($event->EventName) > 40 ? ucwords(substr($event->EventName, 0, 40)) . "..." : ucwords($event->EventName)) : "";
+                    $event->banner_image = !empty($event->banner_image) ? url('/') . '/uploads/banner_image/' . $event->banner_image . '' : '';
+
+                    // ticket registration number. generate it using -> (event_id + booking_id + timestamp)
+                    $uniqueId = 0;
+                    $uniqueId = $EventId . $event->id . $event->booking_date;
+                    $event->unique_ticket_id = $uniqueId;
+
                 }
                 // dd($BookingData);
                 $ResponseData['BookingData'] = $TicketBookingArr;
