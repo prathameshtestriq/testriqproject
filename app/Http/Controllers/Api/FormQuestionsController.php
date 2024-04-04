@@ -114,7 +114,7 @@ class FormQuestionsController extends Controller
                 }else{ $res->question_form_option = []; $que_option_json_count = 0; }
                 
                 //-------- sub question
-                $Sql1 = 'SELECT count(id) as tot_count FROM general_form_question WHERE question_status = 1 and created_byyy = '.$UserId.' and parent_question_id = '.$res->id.'  ';
+                $Sql1 = 'SELECT count(id) as tot_count FROM general_form_question WHERE question_status = 1 and created_by = '.$UserId.' and parent_question_id = '.$res->id.'  ';
                 $aResult2 = DB::select($Sql1);
 
                 if(!empty($aResult2) && !empty($aResult2[0]->tot_count)){
