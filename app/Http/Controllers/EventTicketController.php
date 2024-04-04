@@ -230,19 +230,18 @@ class EventTicketController extends Controller
                             'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
                             'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
                             'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
-
                             'early_bird' => isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
                             'no_of_tickets' => isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
                             'start_time' => $EBStartTime,
                             'end_time' => $EBEndTime,
                             'discount' => isset($aPost['discount']) ? $aPost['discount'] : 0,
                             'discount_value' => isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
-
+                            'category' => isset($aPost['category']) ? $aPost['category'] : 0,
                             'id' => $TicketId
                         );
 
                         // dd($Binding);
-                        $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_status = :ticket_status,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,advanced_settings=:advanced_settings,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount,early_bird=:early_bird,no_of_tickets=:no_of_tickets,start_time=:start_time,end_time=:end_time,discount=:discount,discount_value=:discount_value WHERE id=:id';
+                        $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_status = :ticket_status,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,advanced_settings=:advanced_settings,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount,early_bird=:early_bird,no_of_tickets=:no_of_tickets,start_time=:start_time,end_time=:end_time,discount=:discount,discount_value=:discount_value,category=:category WHERE id=:id';
                         DB::update($SQL, $Binding);
 
                         $ResposneCode = 200;
@@ -266,16 +265,16 @@ class EventTicketController extends Controller
                             'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
                             'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
                             'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
-
                             'early_bird' => isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
                             'no_of_tickets' => isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
                             'start_time' => $EBStartTime,
                             'end_time' => $EBEndTime,
                             'discount' => isset($aPost['discount']) ? $aPost['discount'] : 0,
                             'discount_value' => isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
+                            'category' => isset($aPost['category']) ? $aPost['category'] : 0,
                         );
                         // dd($Binding);
-                        $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,advanced_settings,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount,early_bird,no_of_tickets,start_time,end_time,discount,discount_value) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:advanced_settings,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount,:early_bird,:no_of_tickets,:start_time,:end_time,:discount,:discount_value)';
+                        $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,advanced_settings,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount,early_bird,no_of_tickets,start_time,end_time,discount,discount_value,category) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:advanced_settings,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount,:early_bird,:no_of_tickets,:start_time,:end_time,:discount,:discount_value,:category)';
 
                         DB::select($SQL2, $Binding);
 

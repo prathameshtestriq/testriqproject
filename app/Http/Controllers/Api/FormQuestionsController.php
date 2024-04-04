@@ -359,46 +359,46 @@ class FormQuestionsController extends Controller
     }
 
     // Add Manual Event Form Questions
-    public function add_manual_event_form_questions(Request $request)
-    {
-        $response['data'] = [];
-        $response['message'] = '';
-        $ResposneCode = 400;
-        $empty = false;
+    // public function add_manual_event_form_questions(Request $request)
+    // {
+    //     $response['data'] = [];
+    //     $response['message'] = '';
+    //     $ResposneCode = 400;
+    //     $empty = false;
 
-        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-        //dd($aToken);
-        if ($aToken['code'] == 200) {
+    //     $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+    //     //dd($aToken);
+    //     if ($aToken['code'] == 200) {
             
-            $EventId = !empty($request->event_id) ? $request->event_id : 0;
+    //         $EventId = !empty($request->event_id) ? $request->event_id : 0;
              
-            $sel_sSQL = 'SELECT id,event_id FROM event_form_question WHERE `event_id` =:eventId limit 1';
-            $aResult =  DB::select($sel_sSQL,array('eventId' => $EventId));
-            //dd($aResult);
+    //         $sel_sSQL = 'SELECT id,event_id FROM event_form_question WHERE `event_id` =:eventId limit 1';
+    //         $aResult =  DB::select($sel_sSQL,array('eventId' => $EventId));
+    //         //dd($aResult);
 
-            if(empty($aResult)){
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_compulsory)';
+    //         if(empty($aResult)){
+    //             $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_compulsory)';
                 
-                $sSQL .= 'SELECT :eventId, id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_compulsory
-                    FROM general_form_question
-                    WHERE question_status = 1 AND is_compulsory = 1';
+    //             $sSQL .= 'SELECT :eventId, id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_compulsory
+    //                 FROM general_form_question
+    //                 WHERE question_status = 1 AND is_compulsory = 1';
                
-                DB::insert($sSQL,array(
-                    'eventId' => $EventId,
-                ));
-            }
+    //             DB::insert($sSQL,array(
+    //                 'eventId' => $EventId,
+    //             ));
+    //         }
           
-            $response['data'] = [];
-            $response['message'] = 'Question added successfully';
-            $ResposneCode = 200;
+    //         $response['data'] = [];
+    //         $response['message'] = 'Question added successfully';
+    //         $ResposneCode = 200;
 
-        }else{
-            $ResposneCode = $aToken['code'];
-            $response['message'] = $aToken['message'];
-        }
+    //     }else{
+    //         $ResposneCode = $aToken['code'];
+    //         $response['message'] = $aToken['message'];
+    //     }
      
-        return response()->json($response, $ResposneCode);
-    }
+    //     return response()->json($response, $ResposneCode);
+    // }
 
     // Add Custom Form Questions
     public function add_custom_form_questions(Request $request)
@@ -514,7 +514,7 @@ class FormQuestionsController extends Controller
             $EventInfoStatus = !empty($request->event_info_status) ? $request->event_info_status : 0;
             $UserId          = !empty($request->user_id) ? $request->user_id : 0;
 
-            $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, vm.registration_end_time, vm.banner_image, vm.display_name, vm.active, vm.event_type, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country, vm.active FROM events AS vm WHERE vm.deleted = 0 ' ;
+            $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, vm.registration_end_time, vm.banner_image, vm.display_name, vm.active, vm.event_type, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country,(select CONCAT(`firstname`, " ", `lastname`) as user_name from users where id = '.$UserId.') as user_name,(select created_at from users where id = '.$UserId.') as user_created_date, (select about_you from users where id = '.$UserId.') as user_about, vm.active FROM events AS vm WHERE vm.deleted = 0 ' ;
 
             if(!empty($EventInfoStatus)){
                 $sSQL .= ' and vm.event_info_status = '.$EventInfoStatus;
@@ -543,6 +543,7 @@ class FormQuestionsController extends Controller
                 $res->min_price = !empty($Tickets) && !empty($Tickets[0]->min_price) ? $Tickets[0]->min_price : 0;
                 $res->max_price = !empty($Tickets) && !empty($Tickets[0]->max_price) ? $Tickets[0]->max_price : 0;
                 $res->banner_image = !empty($res->banner_image) ? url('/') . '/uploads/banner_image/' . $res->banner_image . '' : '';
+                $res->user_join_date = !empty($res->user_created_date) ? date('M d, Y',$res->user_created_date) : 0;
 
                 $new_array[] = $res;
             }
