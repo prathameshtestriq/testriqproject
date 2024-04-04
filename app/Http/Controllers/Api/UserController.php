@@ -84,7 +84,6 @@ class UserController extends Controller
     function profileCompletionPercentage($UserId)
     {
         $TotalPercentage = 0.00;
-        // $SQL = "SELECT * FROM users WHERE id=:user_id";
         $SQL = 'SELECT users.*, user_details.* FROM users LEFT JOIN user_details ON users.id = user_details.user_id WHERE users.id=:user_id';
         $UserDetails = DB::select($SQL, ['user_id' => $UserId]);
         $oUserDetails = $UserDetails[0];
@@ -110,8 +109,8 @@ class UserController extends Controller
                     $completed_personal_details++;
             }
         }
-        // dd($completed_personal_details,($completed_personal_details / $total_personal_details) * 16);
-        $personal_details_percentage = ($completed_personal_details / $total_personal_details) * 16;
+        // dd($completed_personal_details,($completed_personal_details / $total_personal_details) * 20);
+        $personal_details_percentage = ($completed_personal_details / $total_personal_details) * 20;
         $TotalPercentage += $personal_details_percentage;
 
 
@@ -135,8 +134,8 @@ class UserController extends Controller
                     $completed_general_details++;
             }
         }
-        // dd($completed_general_details,($completed_general_details / $total_general_details) * 16);
-        $general_details_percentage = ($completed_general_details / $total_general_details) * 16;
+        // dd($completed_general_details,($completed_general_details / $total_general_details) * 20);
+        $general_details_percentage = ($completed_general_details / $total_general_details) * 20;
         $TotalPercentage += $general_details_percentage;
 
         #ADDRESS DETAILS
@@ -168,8 +167,8 @@ class UserController extends Controller
                     $completed_address++;
             }
         }
-        // dd($completed_address,($completed_address / $total_address) * 16);
-        $address_percentage = ($completed_address / $total_address) * 16;
+        // dd($completed_address,($completed_address / $total_address) * 20);
+        $address_percentage = ($completed_address / $total_address) * 20;
         $TotalPercentage += $address_percentage;
 
 
@@ -189,29 +188,29 @@ class UserController extends Controller
                     $completed_social_media_accounts++;
             }
         }
-        // dd($completed_social_media_accounts,($completed_social_media_accounts / $total_social_media_accounts) * 16);
-        $social_media_accounts_percentage = ($completed_social_media_accounts / $total_social_media_accounts) * 16;
+        // dd($completed_social_media_accounts,($completed_social_media_accounts / $total_social_media_accounts) * 20);
+        $social_media_accounts_percentage = ($completed_social_media_accounts / $total_social_media_accounts) * 20;
         $TotalPercentage += $social_media_accounts_percentage;
 
         #COMMUNICATION SETTINGS
-        $communication_settings = [
-            'email_notification_frequency',
-            'support_email_id',
-            'support_mobile'
-        ];
-        $total_communication_settings = count($communication_settings);
-        $completed_communication_settings = 0;
+        // $communication_settings = [
+        //     'email_notification_frequency',
+        //     'support_email_id',
+        //     'support_mobile'
+        // ];
+        // $total_communication_settings = count($communication_settings);
+        // $completed_communication_settings = 0;
 
-        foreach ($communication_settings as $field) {
-            // dd($field);
-            if ((!empty ($field))) {
-                if (!empty ($oUserDetails->$field))
-                    $completed_communication_settings++;
-            }
-        }
-        // dd($completed_communication_settings,($completed_communication_settings / $total_communication_settings) * 16);
-        $communication_settings_percentage = ($completed_communication_settings / $total_communication_settings) * 16;
-        $TotalPercentage += $communication_settings_percentage;
+        // foreach ($communication_settings as $field) {
+        //     // dd($field);
+        //     if ((!empty ($field))) {
+        //         if (!empty ($oUserDetails->$field))
+        //             $completed_communication_settings++;
+        //     }
+        // }
+        // // dd($completed_communication_settings,($completed_communication_settings / $total_communication_settings) * 16);
+        // $communication_settings_percentage = ($completed_communication_settings / $total_communication_settings) * 16;
+        // $TotalPercentage += $communication_settings_percentage;
 
         #HEALTH DETAILS
         $health_details = [
@@ -872,7 +871,6 @@ class UserController extends Controller
                                     $SQL2 = 'SELECT id FROM users WHERE (mobile=:mobile OR
                                         email=:email) AND NOT id =:id';
                                     $Exist = DB::select($SQL2, array('mobile' => $mobile, 'email' => $email, 'id' => $UserId));
-
                                     // dd(sizeof($Exist));
 
                                     if (sizeof($Exist) == 0) {
