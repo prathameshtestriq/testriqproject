@@ -1,17 +1,13 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-
 use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use App\Models\Master;
 use App\Models\Event;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
-use Config;
 
 class EventController extends Controller
 {
@@ -63,6 +59,21 @@ class EventController extends Controller
             //registration closing date
             $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : 0;
             $event->registration_end_date_time = (!empty($event->registration_end_time)) ? date("h:i A", $event->registration_end_time) : "";
+
+            #GETTING EVENT IMAGES
+            $ImageQry = "SELECT * FROM event_images WHERE event_id=:event_id";
+            $EventImg = DB::select($ImageQry, array('event_id' => $event->id));
+            $EventImgArr = [];
+            if (sizeof($EventImg) > 0) {
+                foreach ($EventImg as $value) {
+                    $EventImgArr[] = !empty($value->image) ? url('/') . '/uploads/event_images/' . $value->image : "";
+                }
+            }
+            $event->event_images = $EventImgArr;
+
+            #EVENT CATEGORIES
+            $event->category = $e->getCategoryDetails($event->id);
+            $event->types = $e->getTypeDetails($event->id);
         }
         // dd($Events);
         return $Events;
@@ -391,11 +402,19 @@ class EventController extends Controller
 
         if (!empty($EventId)) {
             $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id";
-            $Events = DB::select($EventSql,array('event_id'=>$EventId));
+            $Events = DB::select($EventSql, array('event_id' => $EventId));
         }
 
         // dd($Events);
         $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
+
+        #ORGANISER
+        $ResponseData['OrganiserName'] = "";
+        if (!empty($UserId)) {
+            $sql = "SELECT name FROM organizer AS o LEFT JOIN event_users AS u ON o.user_id=u.user_id WHERE o.user_id=:user_id AND u.user_id=:user AND u.event_id=:event_id";
+            $Organiser = DB::select($sql, array('user_id' => $UserId,'user' => $UserId, 'event_id' => $EventId));
+            $ResponseData['OrganiserName'] = (sizeof($Organiser) > 0) ? ucwords($Organiser[0]->name) : "";
+        }
         $response = [
             'status' => 200,
             'data' => $ResponseData,
@@ -1034,6 +1053,11 @@ class EventController extends Controller
                             $originalName = strtotime('now') . '_' . $uploadedFile->getClientOriginalName();
                             $event_image = $originalName;
                             $uploadedFile->move($Path, $event_image);
+
+                            // $originalName = $uploadedFile->getClientOriginalName(); // Get the original file name
+                            // $extension = $uploadedFile->getClientOriginalExtension(); // Get the file extension
+                            // $uniqueFileName = time() . '_' . uniqid() . '.' . $extension;
+                            // $uploadedFile->move($Path, $uniqueFileName);
 
                             $sSQL = 'INSERT INTO event_images (event_id, image, created_by) VALUES(:event_id, :image, :created_by)';
                             $bindings = array(

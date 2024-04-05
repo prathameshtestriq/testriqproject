@@ -453,7 +453,6 @@ class EventTicketController extends Controller
 
                 $ResponseData['FormQuestions'] = $FinalFormQuestions;
 
-
                 // $sql = "SELECT COUNT(id) FROM ticket_booking WHERE event_id=:event_id AND ticket_id=:ticket_id";
                 // $ResponseData['TotalBookedTickets'] = $TotalBookedTickets;
 
