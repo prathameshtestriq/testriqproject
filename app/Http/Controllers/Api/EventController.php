@@ -56,8 +56,13 @@ class EventController extends Controller
             //event start d
             $event->start_event_date = (!empty($event->start_time)) ? gmdate("d", $event->start_time) : 0;
 
+            //registration starting date
+            $event->registration_start_date = (!empty($event->registration_start_time)) ? gmdate("d F Y", $event->registration_start_time) : 0;
+            $event->registration_start_date_time = (!empty($event->registration_start_time)) ? date("h:i A", $event->registration_start_time) : "";
+
             //registration closing date
             $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : 0;
+            $event->registration_end_date_time = (!empty($event->registration_end_time)) ? date("h:i A", $event->registration_end_time) : "";
         }
         // dd($Events);
         return $Events;
