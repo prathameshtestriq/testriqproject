@@ -89,6 +89,7 @@ Route::controller(UserController::class)->group(function () {
 
 Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('/follow', 'Eventuserfollow');
+    Route::post('/organizer_follow', 'OrgEventuserfollow');
 });
 
 Route::controller(EventUserFollowController::class)->group(function () {
