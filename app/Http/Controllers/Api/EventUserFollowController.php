@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
@@ -88,35 +89,34 @@ class EventUserFollowController extends Controller
             $Auth = new Authenticate();
             $Auth->apiLog($request);
 
-                $UserId = $aToken['data']->ID;
-                $OrgId = $aPost['org_id'];
+            $UserId = $aToken['data']->ID;
+            $OrgId = $aPost['org_id'];
 
-                if (!empty($OrgId)) { //is_follow == 0 then need to follow means add entry in table
-                    $sSQL = 'INSERT INTO organizers_follow(
+            if (empty($aPost['is_follow'])) { //is_follow == 0 then need to follow means add entry in table
+                $sSQL = 'INSERT INTO organizers_follow(
                     organizer_id,user_id,created_at) VALUES (:orgId,:userId,:created_at)';
 
-                    $Bindings = array(
-                        'orgId' => $OrgId,
-                        'userId' => $UserId,
-                        'created_at' => strtotime('now')
-                    );
-                    $ResponseData = DB::insert($sSQL, $Bindings);
-                    $message = 'Organizer Event wishlisted successfully';
+                $Bindings = array(
+                    'orgId' => $OrgId,
+                    'userId' => $UserId,
+                    'created_at' => strtotime('now')
+                );
+                $ResponseData = DB::insert($sSQL, $Bindings);
+                $message = 'Organizer wishlisted successfully';
 
-                }
-                //  else { //is_follow == 1 then need to unfollow means delete the entry form table
-                //     $sSQL = 'DELETE FROM event_user_follow WHERE event_id=:event_id AND user_id=:user_id';
-                //     $ResponseData = DB::delete(
-                //         $sSQL,
-                //         array(
-                //             'event_id' => $EventId,
-                //             'user_id' => $UserId
-                //         )
-                //     );
-                //     $message = 'Event remove from wishlisted successfully';
-                // }
-                $ResposneCode = 200;
-          //  } 
+            } else { //is_follow == 1 then need to unfollow means delete the entry form table
+                $sSQL = 'DELETE FROM organizers_follow WHERE organizer_id=:orgId AND user_id=:user_id';
+                $ResponseData = DB::delete(
+                    $sSQL,
+                    array(
+                        'orgId' => $OrgId,
+                        'user_id' => $UserId
+                    )
+                );
+                $message = 'Organizer remove from wishlisted successfully';
+            }
+            $ResposneCode = 200;
+            //  }
         } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];

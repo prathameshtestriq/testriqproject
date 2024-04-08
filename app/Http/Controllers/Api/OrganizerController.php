@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\Authenticate;
 use App\Models\Master;
+use App\Models\Event;
+use App\Libraries\Emails;
 
 class OrganizerController extends Controller
 {
@@ -363,25 +365,28 @@ class OrganizerController extends Controller
         //dd($aToken);
         if ($aToken['code'] == 200) {
 
-            // $UserId = !empty($request->user_id) ? $request->user_id : 0;
-            $UserId = $aToken['data']->ID;
+            $UserId = !empty($request->user_id) ? $request->user_id : 0;
+            $LoggedUserId = $aToken['data']->ID;
+            // dd($LoggedUserId);
             $NowTime = strtotime('now');
-
+            $e = new Event();
             $sSQL2 = 'SELECT * FROM organizer AS o WHERE o.user_id=:user_id';
             $Organizer = DB::select($sSQL2, array('user_id' => $UserId));
-            foreach ($Organizer as $key => $value) {
+            foreach ($Organizer as $value) {
+                // dd($value->id);
+                $value->is_follow = !empty($LoggedUserId) ? $e->isOrgFollowed($value->id, $LoggedUserId) : 0;
                 $value->join_on = !empty($value->created_at) ? gmdate("F d, Y", $value->created_at) : 0;
             }
             $ResponseData['Organizer'] = $Organizer;
 
             #UPCOMING EVETNS
             $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.created_by=:user_id AND u.start_time >=:start_time";
-            $UpcomingEvents = DB::select($UpcomingSql, array('user_id' => $UserId,'start_time' => $NowTime));
+            $UpcomingEvents = DB::select($UpcomingSql, array('user_id' => $UserId, 'start_time' => $NowTime));
             $ResponseData['UpcomingEvents'] = app('App\Http\Controllers\Api\EventController')->ManipulateEvents($UpcomingEvents, $UserId);
 
             #PAST EVENTS
             $PastSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.created_by=:user_id AND u.start_time < :start_time";
-            $PastEvents = DB::select($PastSql, array('user_id' => $UserId,'start_time' => $NowTime));
+            $PastEvents = DB::select($PastSql, array('user_id' => $UserId, 'start_time' => $NowTime));
             $ResponseData['PastEvents'] = app('App\Http\Controllers\Api\EventController')->ManipulateEvents($PastEvents, $UserId);
 
             $message = 'Request processed successfully';
@@ -393,6 +398,58 @@ class OrganizerController extends Controller
         }
 
         $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function sendOrgMail(Request $request)
+    {
+        $ResponseData = [];
+        $message = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        $aPost = $request->all();
+        if (empty($aPost['fullname'])) {
+            $empty = true;
+            $field = 'Fullname';
+        }
+        if (empty($aPost['email'])) {
+            $empty = true;
+            $field = 'Email';
+        }
+        if (empty($aPost['contact_no'])) {
+            $empty = true;
+            $field = 'Contact No';
+        }
+        if (empty($aPost['message'])) {
+            $empty = true;
+            $field = 'Message';
+        }
+        if (!$empty) {
+            if ($aToken['code'] == 200) {
+                $UserId = $aToken['data']->ID;
+
+                $Email = new Emails();
+                $Email->send_org_notification($aPost['fullname'], $aPost['email'],$aPost['contact_no'],$aPost['message']);
+                $message = 'Mail send successfully';
+                $ResposneCode = 200;
+
+            } else {
+                $ResposneCode = $aToken['code'];
+                $message = $aToken['message'];
+            }
+        } else {
+            $ResposneCode = 400;
+            $message = $field . ' is empty';
+        }
+        $response = [
+            'status' => $ResposneCode,
             'data' => $ResponseData,
             'message' => $message
         ];
