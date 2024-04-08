@@ -135,7 +135,7 @@ class OrganizerController extends Controller
                     } else {
                         #INSERT CODE OF ORGANISER
                         DB::table('organizer')->insert([
-                            'user_id'=>$UserId,
+                            'user_id' => $UserId,
                             'name' => $name,
                             'email' => $email,
                             'about' => $about,
@@ -164,7 +164,7 @@ class OrganizerController extends Controller
                         DB::table('organizer')
                             ->where('id', $organiserId)
                             ->update([
-                                'user_id'=>$UserId,
+                                'user_id' => $UserId,
                                 'name' => $name,
                                 'email' => $email,
                                 'about' => $about,
@@ -174,8 +174,8 @@ class OrganizerController extends Controller
                                 'contact_person' => $contactPerson,
                                 'contact_no' => $contactNumber
                             ]);
-                            $ResposneCode = 200;
-                            $message = 'Organizer updated successfully';
+                        $ResposneCode = 200;
+                        $message = 'Organizer updated successfully';
                     }
                 }
 
@@ -352,6 +352,53 @@ class OrganizerController extends Controller
 
     //     return response()->json($response, $ResposneCode);
     // }
+
+
+    public function allOrganizerData(Request $request)
+    {
+        $ResponseData = [];
+        $message = "";
+        $ResposneCode = 400;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            // $UserId = !empty($request->user_id) ? $request->user_id : 0;
+            $UserId = $aToken['data']->ID;
+            $NowTime = strtotime('now');
+
+            $sSQL2 = 'SELECT * FROM organizer AS o WHERE o.user_id=:user_id';
+            $Organizer = DB::select($sSQL2, array('user_id' => $UserId));
+            foreach ($Organizer as $key => $value) {
+                $value->join_on = !empty($value->created_at) ? gmdate("F d, Y", $value->created_at) : 0;
+            }
+            $ResponseData['Organizer'] = $Organizer;
+
+            #UPCOMING EVETNS
+            $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.created_by=:user_id AND u.start_time >=:start_time";
+            $UpcomingEvents = DB::select($UpcomingSql, array('user_id' => $UserId,'start_time' => $NowTime));
+            $ResponseData['UpcomingEvents'] = app('App\Http\Controllers\Api\EventController')->ManipulateEvents($UpcomingEvents, $UserId);
+
+            #PAST EVENTS
+            $PastSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.created_by=:user_id AND u.start_time < :start_time";
+            $PastEvents = DB::select($PastSql, array('user_id' => $UserId,'start_time' => $NowTime));
+            $ResponseData['PastEvents'] = app('App\Http\Controllers\Api\EventController')->ManipulateEvents($PastEvents, $UserId);
+
+            $message = 'Request processed successfully';
+            $ResposneCode = 200;
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
 
 
 }

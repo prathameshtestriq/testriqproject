@@ -127,6 +127,7 @@ Route::controller(OrganizerController::class)->group(function () {
     Route::get('/get_roles', 'getRoles');
     Route::get('/get_organizing_team', 'getOrganizingTeam');
     Route::post('/add_edit_organizer', 'addEditOrganizer');
+    Route::post('/organizer_details', 'allOrganizerData');
 
 });
 

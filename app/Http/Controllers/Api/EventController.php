@@ -43,10 +43,10 @@ class EventController extends Controller
             $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price,max(early_bird) AS early_bird FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
             $Tickets = DB::select($SQL, array('event_id' => $event->id));
 
-            $event->min_price = (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0;
-            $event->max_price = (sizeof($Tickets) > 0) ? $Tickets[0]->max_price : 0;
-            $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
-            $event->early_bird = (sizeof($Tickets) > 0) ? $Tickets[0]->early_bird : 0;
+            $event->min_price = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->min_price) ? $Tickets[0]->min_price : 0) : 0;
+            $event->max_price = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->max_price) ? $Tickets[0]->max_price : 0) : 0;
+            $event->no_of_tickets = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->no_of_tickets) ? $Tickets[0]->no_of_tickets : 0) : 0;
+            $event->early_bird = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->early_bird) ? $Tickets[0]->early_bird : 0) : 0;
             //event start month
             $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : 0;
             //event start d
@@ -409,11 +409,13 @@ class EventController extends Controller
         $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
 
         #ORGANISER
-        $ResponseData['OrganiserName'] = "";
-        if (!empty($UserId)) {
-            $sql = "SELECT name FROM organizer AS o LEFT JOIN event_users AS u ON o.user_id=u.user_id WHERE o.user_id=:user_id AND u.user_id=:user AND u.event_id=:event_id";
-            $Organiser = DB::select($sql, array('user_id' => $UserId,'user' => $UserId, 'event_id' => $EventId));
+        $ResponseData['OrganiserName'] = $ResponseData['OrganiserId'] = $ResponseData['UserId'] = "";
+        if (!empty($Events[0]->created_by)) {
+            $sql = "SELECT id,name FROM organizer WHERE user_id=:user_id";
+            $Organiser = DB::select($sql, array('user_id' => $Events[0]->created_by));
             $ResponseData['OrganiserName'] = (sizeof($Organiser) > 0) ? ucwords($Organiser[0]->name) : "";
+            $ResponseData['OrganiserId'] = (sizeof($Organiser) > 0) ? $Organiser[0]->id : 0;
+            $ResponseData['UserId'] = $Events[0]->created_by;
         }
         $response = [
             'status' => 200,
@@ -801,12 +803,12 @@ class EventController extends Controller
                 $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
                 $event->early_bird = (sizeof($Tickets) > 0) ? $Tickets[0]->early_bird : 0;
                 //event start month
-                $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : 0;
+                $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : "";
                 //event start d
-                $event->start_event_date = (!empty($event->start_time)) ? gmdate("d", $event->start_time) : 0;
+                $event->start_event_date = (!empty($event->start_time)) ? gmdate("d", $event->start_time) : "";
 
                 //registration closing date
-                $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d M Y", $event->registration_end_time) : 0;
+                $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d M Y", $event->registration_end_time) : "";
 
 
             }

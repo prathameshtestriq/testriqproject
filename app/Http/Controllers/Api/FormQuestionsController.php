@@ -22,7 +22,7 @@ class FormQuestionsController extends Controller
         $response['message'] = '';
         $ResposneCode = 400;
         $empty = false;
-       
+
         // $Auth = new Authenticate();
         // $aToken = $Auth->decode_token($request->header('Authorization'));
 
@@ -34,7 +34,7 @@ class FormQuestionsController extends Controller
             if (!empty($aToken)) {
                 $UserId = $aToken['data']->ID;
             }
-           
+
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             // $Sql = "SELECT question_label,question_form_type,question_form_name,is_manadatory FROM event_form_question WHERE question_status = 1";
             // $aResult = DB::select($Sql);
@@ -45,15 +45,15 @@ class FormQuestionsController extends Controller
             //dd($aResult);
             if(!empty($aResult)){
                 $new_array = [];
-               
+
                 foreach($aResult as $res){
-                    if($res->question_form_type == 'radio' || $res->question_form_type == 'select' || $res->question_form_type == 'checkbox'){ 
+                    if($res->question_form_type == 'radio' || $res->question_form_type == 'select' || $res->question_form_type == 'checkbox'){
                         $res->question_form_option = json_decode($res->question_form_option);
                     }
 
                     $new_array[] = $res;
                 }
-                
+
                 $response['data']['form_question'] = $new_array;
                 $response['message'] = 'Request processed successfully';
                 $ResposneCode = 200;
@@ -66,7 +66,7 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-     
+
         return response()->json($response, $ResposneCode);
     }
 
@@ -78,17 +78,17 @@ class FormQuestionsController extends Controller
         $response['message'] = '';
         $ResposneCode = 400;
         $empty = false;
-       
+
         // $Auth = new Authenticate();
         // $aToken = $Auth->decode_token($request->header('Authorization'));
 
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-            
+
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $UserId = !empty($request->user_id) ? $request->user_id : 0;
-           
+
             //dd($EventId);
 
             $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') ';
@@ -112,29 +112,29 @@ class FormQuestionsController extends Controller
                     $res->question_form_option = !empty($res->question_form_option) ? json_decode($res->question_form_option) : [];
                     $que_option_json_count = count($res->question_form_option);
                 }else{ $res->question_form_option = []; $que_option_json_count = 0; }
-                
+
                 //-------- sub question
                 $Sql1 = 'SELECT count(id) as tot_count FROM general_form_question WHERE question_status = 1 and created_by = '.$UserId.' and parent_question_id = '.$res->id.'  ';
                 $aResult2 = DB::select($Sql1);
 
                 if(!empty($aResult2) && !empty($aResult2[0]->tot_count)){
-                   
+
                     if($que_option_json_count == $aResult2[0]->tot_count){
                         $res->sub_question_json_tick_count = 1;
                     }else{
                         $res->sub_question_json_tick_count = 0;
                     }
                 }else{ $res->sub_question_json_tick_count = 0;}
-                
+
                 //--------- sub question arrray-----------
                 // if($res->question_form_option){
                 //     foreach($res->question_form_option as $res1){
                 //         $sub_question_id = isset($res1->child_question_id) ? $res1->child_question_id : 0;
-                        
+
                 //         if(!empty($sub_question_id)){
                 //             $Sql = 'SELECT question_form_option FROM general_form_question WHERE question_status = 1 and id = '.$sub_question_id.'  ';
                 //             $aResult1 = DB::select($Sql);
-                  
+
                 //             $res->sub_question_array[$res1->label] = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
                 //         }
                 //     }
@@ -145,7 +145,7 @@ class FormQuestionsController extends Controller
 
             //dd($general_form_array);
             if(!empty($aResult)){
-               
+
                 $response['data']['form_question'] = $general_form_array;
                 $response['message'] = 'Request processed successfully';
                 $ResposneCode = 200;
@@ -158,7 +158,7 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-     
+
         return response()->json($response, $ResposneCode);
     }
 
@@ -202,7 +202,7 @@ class FormQuestionsController extends Controller
             if(!empty($aResult5) && $aResult5[0]->tot_count == 0)
             {
                 $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length)';
-                    
+
                 $sSQL .= 'SELECT :eventId, id, :questionLabel, form_id, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
@@ -217,7 +217,7 @@ class FormQuestionsController extends Controller
                     'limitLength' => $limit_length
                 ));
             }
-            
+
             //------------- Add new sub question ----------------
 
                $SubQuestionFlag = !empty($request->sub_question_flag) && ($request->sub_question_flag) == true ? 1 : 0;
@@ -228,8 +228,8 @@ class FormQuestionsController extends Controller
                $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'select';
 
                if($SubQuestionFlag == 1){
-                    
-                    //dd(json_encode($QuestionFormOptionArray)); 
+
+                    //dd(json_encode($QuestionFormOptionArray));
                     $new_array = [];
                     $i = 1;
                     if(!empty($QuestionFormOptionArray)){
@@ -244,9 +244,9 @@ class FormQuestionsController extends Controller
 
                     $Sql = 'SELECT id,question_form_option FROM general_form_question WHERE question_status = 1 and id = '.$GeneralFormId.'  ';
                     $aResult1 = DB::select($Sql);
-                  
+
                     $question_form_option_array = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
-                    
+
                     $question_title_name = '';
                     if($SubQuestionFormType == 'text'){
                         if(!empty($question_form_option_array)){
@@ -257,7 +257,7 @@ class FormQuestionsController extends Controller
                             }
                         }
                     }
-                    
+
                     //dd($question_title_name);
 
                     if($SubQuestionTitle != '')
@@ -292,7 +292,7 @@ class FormQuestionsController extends Controller
                                 $subArray[] = $res;
                             }
                         }
-                        //dd($subArray);  --- json updated for privous question 
+                        //dd($subArray);  --- json updated for privous question
                         if(!empty($subArray)){
                             $up_sSQL = 'UPDATE general_form_question SET `question_form_option` =:questionFormOption WHERE `id`=:generalFormId ';
                             DB::update($up_sSQL,array(
@@ -320,10 +320,10 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-     
+
         return response()->json($response, $ResposneCode);
     }
-    
+
     // Delete Event Form Questions
     public function delete_event_form_questions(Request $request)
     {
@@ -335,12 +335,12 @@ class FormQuestionsController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-            
+
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $GeneralFormId = !empty($request->general_form_id) ? $request->general_form_id : 0;
-            
+
             $del_sSQL = 'DELETE FROM event_form_question WHERE `event_id`=:eventId AND `general_form_id`=:generalFormId ';
-           
+
             DB::delete($del_sSQL,array(
                 'eventId' => $EventId,
                 'generalFormId' => $GeneralFormId
@@ -354,7 +354,7 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-     
+
         return response()->json($response, $ResposneCode);
     }
 
@@ -369,25 +369,25 @@ class FormQuestionsController extends Controller
     //     $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
     //     //dd($aToken);
     //     if ($aToken['code'] == 200) {
-            
+
     //         $EventId = !empty($request->event_id) ? $request->event_id : 0;
-             
+
     //         $sel_sSQL = 'SELECT id,event_id FROM event_form_question WHERE `event_id` =:eventId limit 1';
     //         $aResult =  DB::select($sel_sSQL,array('eventId' => $EventId));
     //         //dd($aResult);
 
     //         if(empty($aResult)){
     //             $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_compulsory)';
-                
+
     //             $sSQL .= 'SELECT :eventId, id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_compulsory
     //                 FROM general_form_question
     //                 WHERE question_status = 1 AND is_compulsory = 1';
-               
+
     //             DB::insert($sSQL,array(
     //                 'eventId' => $EventId,
     //             ));
     //         }
-          
+
     //         $response['data'] = [];
     //         $response['message'] = 'Question added successfully';
     //         $ResposneCode = 200;
@@ -396,7 +396,7 @@ class FormQuestionsController extends Controller
     //         $ResposneCode = $aToken['code'];
     //         $response['message'] = $aToken['message'];
     //     }
-     
+
     //     return response()->json($response, $ResposneCode);
     // }
 
@@ -411,17 +411,17 @@ class FormQuestionsController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-            
+
             $userId = !empty($request->user_id) ? $request->user_id : 0;
             $questionLabel = !empty($request->question_label) ? $request->question_label : '';
             $questionFormType = !empty($request->question_form_type) ? $request->question_form_type : '';
             $isManadatory = !empty($request->is_manadatory) ? $request->is_manadatory : 0;
             $questionFormOption = !empty($request->question_form_option) ? array_filter($request->question_form_option) : 0;
-            
+
             $question_name = strtolower($questionLabel);
             $question_name = str_replace(' ', '_', $question_name);
             //dd($question_name);
-                //dd(json_encode($questionFormOption)); 
+                //dd(json_encode($questionFormOption));
             $new_array = [];
             $i = 1;
             if(!empty($questionFormOption)){
@@ -434,7 +434,7 @@ class FormQuestionsController extends Controller
 
             $questionFormOptionArray = !empty($new_array) ? json_encode($new_array) : '';
             // dd($questionFormOptionArray);
-             
+
             $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm)';
 
             DB::insert($sSQL,array(
@@ -448,7 +448,7 @@ class FormQuestionsController extends Controller
                 'createdBy'         => $userId,
                 'isCustomForm'      => 1
             ));
-      
+
             $response['data'] = [];
             $response['message'] = 'Question added successfully';
             $ResposneCode = 200;
@@ -457,7 +457,7 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-     
+
         return response()->json($response, $ResposneCode);
     }
 
@@ -472,7 +472,7 @@ class FormQuestionsController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-            
+
             $EventId   = !empty($request->event_id) ? $request->event_id : 0;
             $EventType = !empty($request->event_type) ? $request->event_type : 0;
             $gstCharge = !empty($request->gst_charges) ? $request->gst_charges : 0;
@@ -495,7 +495,7 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-     
+
         return response()->json($response, $ResposneCode);
     }
 
@@ -510,7 +510,7 @@ class FormQuestionsController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-            
+
             $EventInfoStatus = !empty($request->event_info_status) ? $request->event_info_status : 0;
             $UserId          = !empty($request->user_id) ? $request->user_id : 0;
 
@@ -525,10 +525,10 @@ class FormQuestionsController extends Controller
             }
 
             $aResult = DB::select($sSQL);
-            
+
             $new_array = [];
             foreach ($aResult as $res) {
-                
+
                 $res->event_status   = !empty($res->active) ? true : false;
                 $res->event_name   = !empty($res->name) && $res->name != null ? ucfirst($res->name) : '';
                 $res->display_name = !empty($res->display_name) && $res->display_name != null ? ucfirst($res->display_name) : '';
@@ -557,7 +557,7 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-     
+
         return response()->json($response, $ResposneCode);
     }
 
@@ -571,7 +571,7 @@ class FormQuestionsController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-            
+
             $EventId     = !empty($request->event_id) ? $request->event_id : 0;
             $EventStatus = 0;
             if(!empty($request->event_status)){
@@ -581,7 +581,7 @@ class FormQuestionsController extends Controller
                     $EventStatus = 0;
                 }
             }
-          
+
             //dd($EventStatus);
             $ActionFlag  = !empty($request->action_flag) ? $request->action_flag : '';
             $msg = '';
@@ -601,7 +601,7 @@ class FormQuestionsController extends Controller
                 ));
                 $msg = 'Event delete successfully';
             }
-           
+
             $response['data'] = [];
             $response['message'] = $msg;
             $ResposneCode = 200;
@@ -610,7 +610,7 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-     
+
         return response()->json($response, $ResposneCode);
     }
 
