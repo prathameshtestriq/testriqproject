@@ -67,6 +67,7 @@ Route::controller(EventController::class)->group(function () {
     Route::post('event_description', 'addEventDescription');
     Route::post('userfollowevent', 'UserFollowEvent');
     Route::get('popular_cities', 'PopularCity');
+    Route::post('event_setting', 'addEventSetting');
 
     Route::post('duplicate_events', 'DuplicateEvents');
     Route::post('delete_event/{id}', 'EventDelete');

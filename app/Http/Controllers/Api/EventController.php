@@ -862,7 +862,16 @@ class EventController extends Controller
             }
             $ResponseData['EventTickets'] = $EventTickets;
 
-            //
+            //------ setting tab get info
+            $sql = "SELECT es.*,(select ytcr_base_price from events where id = ".$EventId.") as ytcr_base_price FROM event_settings as es WHERE event_id =:event_id";
+            $SettingInfoDetails = DB::select($sql, array('event_id' => $EventId));
+            //dd($SettingInfoDetails);
+            if(!empty($SettingInfoDetails)){
+                $ResponseData['event_setting_details'] = $SettingInfoDetails;
+            }else{
+                $ResponseData['event_setting_details'] = [];
+            }
+          
             $ResponseData['YTCR_FEE_PERCENTAGE'] = config('custom.ytcr_fee_percent');
             $ResponseData['PLATFORM_FEE_PERCENTAGE'] = config('custom.platform_fee_percent');
             $ResponseData['PAYMENT_GATEWAY_FEE_PERCENTAGE'] = config('custom.payment_gateway_fee_percent');
@@ -1189,6 +1198,113 @@ class EventController extends Controller
         ];
         return response()->json($response, $ResposneCode);
         // dd($CityArr);
+    }
+    
+    //---------- Added by prathmesh on 08-04-24
+    public function addEventSetting(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $EventId = $aPost['event_id'];
+                $UserId  = $aPost['user_id'];
+                
+                $NoOfPreviousConducts  = !empty($request->no_of_previous_conducts) ? $request->no_of_previous_conducts : 0;
+                $NoOfRunnersEstimate   = !empty($request->no_of_runners_estimate) ? $request->no_of_runners_estimate : 0;
+                $NoOfEventYear         = !empty($request->no_of_event_year) ? $request->no_of_event_year : 0;
+                
+                $ContractOfFiveYear    = !empty($request->contract_of_five_year) && $request->contract_of_five_year == true ? 1 : 0;
+                $BackendSupport        = !empty($request->backend_support) && $request->backend_support == true ? 1 : 0;
+                $BulkRegistration      = !empty($request->bulk_registration) && $request->bulk_registration == true ? 1 : 0;
+                $CheckValidEntries     = !empty($request->check_valid_entries) && $request->check_valid_entries == true ? 1 : 0;
+              
+                $YtcrBasePrice         = !empty($request->ytcr_base_price) ? $request->ytcr_base_price : "0.00";
+                $EventSettingId        = !empty($request->event_setting_id) ? $request->event_setting_id : 0;
+                
+                $SQL = "SELECT id FROM event_settings WHERE event_id =:event_id";
+                $IsExist = DB::select($SQL, array('event_id' => $EventId));
+
+                if (empty($IsExist)) {
+                    
+                    $Bindings = array(
+                        "event_id" => $EventId,
+                        "no_of_previous_conducts"   => $NoOfPreviousConducts,
+                        "no_of_runners_estimate"    => $NoOfRunnersEstimate,
+                        "no_of_event_year"          => $NoOfEventYear,
+                        "contract_of_five_year"     => $ContractOfFiveYear,
+                        "backend_support"           => $BackendSupport,
+                        "bulk_registration"         => $BulkRegistration,
+                        "check_valid_entries"       => $CheckValidEntries,
+                        "ticket_ytcr_base_price"    => $YtcrBasePrice,
+                        "created_by"                => $UserId,
+                    );
+
+                    $insert_SQL = "INSERT INTO event_settings (event_id,no_of_previous_conducts,no_of_runners_estimate,no_of_event_year,contract_of_five_year,backend_support,bulk_registration,check_valid_entries,ticket_ytcr_base_price,created_by) VALUES(:event_id,:no_of_previous_conducts,:no_of_runners_estimate,:no_of_event_year,:contract_of_five_year,:backend_support,:bulk_registration,:check_valid_entries,:ticket_ytcr_base_price,:created_by)";
+                    DB::insert($insert_SQL, $Bindings);
+                    
+                    $ResposneCode = 200;
+                    $message = "Event Setting added successfully";
+
+                } else {
+
+                    $Bindings = array(
+                        "no_of_previous_conducts"   => $NoOfPreviousConducts,
+                        "no_of_runners_estimate"    => $NoOfRunnersEstimate,
+                        "no_of_event_year"          => $NoOfEventYear,
+                        "contract_of_five_year"     => $ContractOfFiveYear,
+                        "backend_support"           => $BackendSupport,
+                        "bulk_registration"         => $BulkRegistration,
+                        "check_valid_entries"       => $CheckValidEntries,
+                        "ticket_ytcr_base_price"    => $YtcrBasePrice,
+                        "id"                        => $EventSettingId
+                    );
+
+                    $sql = 'UPDATE event_settings SET
+                    no_of_previous_conducts =:no_of_previous_conducts,
+                    no_of_runners_estimate  =:no_of_runners_estimate,
+                    no_of_event_year        =:no_of_event_year,
+                    contract_of_five_year   =:contract_of_five_year,
+                    backend_support         =:backend_support,
+                    bulk_registration       =:bulk_registration,
+                    check_valid_entries     =:check_valid_entries,
+                    ticket_ytcr_base_price  =:ticket_ytcr_base_price,
+                    WHERE id = :id';
+                    DB::update($sql, $Bindings);
+
+                    $ResposneCode = 200;
+                    $message = "Event Setting updated successfully";
+                }
+               
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
     }
 
 }
