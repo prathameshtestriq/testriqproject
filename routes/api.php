@@ -67,7 +67,6 @@ Route::controller(EventController::class)->group(function () {
     Route::post('event_description', 'addEventDescription');
     Route::post('userfollowevent', 'UserFollowEvent');
     Route::get('popular_cities', 'PopularCity');
-
     Route::post('duplicate_events', 'DuplicateEvents');
     Route::post('delete_event/{id}', 'EventDelete');
     Route::post('event_status', 'EventStatus');
@@ -128,6 +127,7 @@ Route::controller(OrganizerController::class)->group(function () {
     Route::get('/get_organizing_team', 'getOrganizingTeam');
     Route::post('/add_edit_organizer', 'addEditOrganizer');
     Route::post('/organizer_details', 'allOrganizerData');
+    Route::post('/send_notification_org', 'sendOrgMail');
 
 });
 
