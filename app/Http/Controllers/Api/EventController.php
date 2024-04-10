@@ -399,10 +399,14 @@ class EventController extends Controller
         // dd($aToken,$UserId);
 
         $EventId = isset($request->event_id) ? $request->event_id : 0;//for view event (Event Details page)
-
+        $EventName = isset($request->event_name) ?  $request->event_name : '';//for share event link
         if (!empty($EventId)) {
             $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id";
             $Events = DB::select($EventSql, array('event_id' => $EventId));
+        }
+        if($EventName !== ""){
+            $EventSql = "SELECT * FROM events AS e WHERE e.name=:event_name";
+            $Events = DB::select($EventSql, array('event_name' => $EventName));
         }
 
         // dd($Events);
@@ -871,7 +875,7 @@ class EventController extends Controller
             }else{
                 $ResponseData['event_setting_details'] = [];
             }
-          
+
             $ResponseData['YTCR_FEE_PERCENTAGE'] = config('custom.ytcr_fee_percent');
             $ResponseData['PLATFORM_FEE_PERCENTAGE'] = config('custom.platform_fee_percent');
             $ResponseData['PAYMENT_GATEWAY_FEE_PERCENTAGE'] = config('custom.payment_gateway_fee_percent');
@@ -1123,7 +1127,6 @@ class EventController extends Controller
                 $ResponseData['userfollowevent'] = $this->ManipulateEvents($userfollowevent, $UserId);
             }
 
-
             $ResposneCode = 200;
             $message = 'Request processed successfully';
 
@@ -1199,7 +1202,7 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
         // dd($CityArr);
     }
-    
+
     //---------- Added by prathmesh on 08-04-24
     public function addEventSetting(Request $request)
     {
@@ -1224,24 +1227,24 @@ class EventController extends Controller
             if (!$empty) {
                 $EventId = $aPost['event_id'];
                 $UserId  = $aPost['user_id'];
-                
+
                 $NoOfPreviousConducts  = !empty($request->no_of_previous_conducts) ? $request->no_of_previous_conducts : 0;
                 $NoOfRunnersEstimate   = !empty($request->no_of_runners_estimate) ? $request->no_of_runners_estimate : 0;
                 $NoOfEventYear         = !empty($request->no_of_event_year) ? $request->no_of_event_year : 0;
-                
+
                 $ContractOfFiveYear    = !empty($request->contract_of_five_year) && $request->contract_of_five_year == true ? 1 : 0;
                 $BackendSupport        = !empty($request->backend_support) && $request->backend_support == true ? 1 : 0;
                 $BulkRegistration      = !empty($request->bulk_registration) && $request->bulk_registration == true ? 1 : 0;
                 $CheckValidEntries     = !empty($request->check_valid_entries) && $request->check_valid_entries == true ? 1 : 0;
-              
+
                 $YtcrBasePrice         = !empty($request->ytcr_base_price) ? $request->ytcr_base_price : "0.00";
                 $EventSettingId        = !empty($request->event_setting_id) ? $request->event_setting_id : 0;
-                
+
                 $SQL = "SELECT id FROM event_settings WHERE event_id =:event_id";
                 $IsExist = DB::select($SQL, array('event_id' => $EventId));
 
                 if (empty($IsExist)) {
-                    
+
                     $Bindings = array(
                         "event_id" => $EventId,
                         "no_of_previous_conducts"   => $NoOfPreviousConducts,
@@ -1257,7 +1260,7 @@ class EventController extends Controller
 
                     $insert_SQL = "INSERT INTO event_settings (event_id,no_of_previous_conducts,no_of_runners_estimate,no_of_event_year,contract_of_five_year,backend_support,bulk_registration,check_valid_entries,ticket_ytcr_base_price,created_by) VALUES(:event_id,:no_of_previous_conducts,:no_of_runners_estimate,:no_of_event_year,:contract_of_five_year,:backend_support,:bulk_registration,:check_valid_entries,:ticket_ytcr_base_price,:created_by)";
                     DB::insert($insert_SQL, $Bindings);
-                    
+
                     $ResposneCode = 200;
                     $message = "Event Setting added successfully";
 
@@ -1290,7 +1293,7 @@ class EventController extends Controller
                     $ResposneCode = 200;
                     $message = "Event Setting updated successfully";
                 }
-               
+
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
