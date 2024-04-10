@@ -106,7 +106,7 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('book_tickets', 'BookTickets');
     Route::post('get_bookings', 'GetBookings');
     Route::post('get_event_booking_tickets', 'GetEventBookingTickets');
-    // Route::get('ticket_pdf', 'generatePDF');
+    Route::post('ticket_pdf', 'generatePDF');
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {

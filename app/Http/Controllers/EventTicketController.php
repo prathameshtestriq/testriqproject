@@ -7,7 +7,8 @@ use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use App\Models\Master;
 
-// use Barryvdh\DomPDF\Facade as PDF;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+
 // use App\Services\PdfService;
 // use Mpdf\Mpdf;
 // use Elibyy\TCPDF\Facades\TCPDF as TCPDF;
@@ -642,6 +643,8 @@ class EventTicketController extends Controller
                     GROUP BY eb.event_id";
                 $BookingData = DB::select($SQL, array('user_id' => $UserId));
 
+                // dd($BookingData);
+
                 foreach ($BookingData as $event) {
                     $event->name = !empty($event->EventName) ? ucwords($event->EventName) : "";
                     $event->display_name = !empty($event->EventName) ? (strlen($event->EventName) > 40 ? ucwords(substr($event->EventName, 0, 40)) . "..." : ucwords($event->EventName)) : "";
@@ -823,37 +826,90 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    // public function generatePDF()
+    // public function generatePDF(Request $request)
     // {
+    //     $EventId = isset($request->event_id) ? $request->event_id : 0;
+    //     $TicketId = isset($request->ticket_id) ? $request->ticket_id : 0;
+    //     $AttenddeeName = isset($request->attendee_name) ? $request->attendee_name : "";
+    //     $BookingDetailId = isset($request->booking_detail_id) ? $request->booking_detail_id : 0;
+
     //     $data = [
-    //         'title' => 'Welcome to Laravel PDF!',
+    //         'title' => "Booking Detail Id : " . $BookingDetailId,
     //         'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
     //     ];
 
     //     $pdf = PDF::loadView('pdf_template', $data);
-    //     return $pdf->download('example.pdf');
+
+    //     $PdfName = $EventId . $TicketId . $BookingDetailId . time() . '.pdf';
+    //     // dd($PdfName);
+    //     // $pdf->download($PdfName);
+    //     $pdf->save(public_path('ticket_pdf/' . $PdfName));
+
+    //     $PdfPath = url('/') . "/ticket_pdf/" . $PdfName;
+    //     // dd($PdfPath);
+    //     return response()->json(['success' => true, 'pdf_name' => $PdfPath]);
+    //     // return $PdfPath;
+
     // }
 
-    // public function generatePDF(Request $request, PdfService $pdfService)
-    // {
-    //     $filename = 'demo.pdf';
+    public function generatePDF(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
 
-    //     $data = [
-    //         'title' => 'Generate PDF using Laravel TCPDF - ItSolutionStuff.com!'
-    //     ];
+            if (!$empty) {
+                $master = new Master();
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
 
-    //     $html = view()->make('pdf_template', $data)->render();
+                $UserId = $aToken['data']->ID;
 
-    //     $pdf = new TCPDF;
+                $EventId = isset($request->event_id) ? $request->event_id : 0;
+                $TicketId = isset($request->ticket_id) ? $request->ticket_id : 0;
+                $AttenddeeName = isset($request->attendee_name) ? $request->attendee_name : "";
+                $BookingDetailId = isset($request->booking_detail_id) ? $request->booking_detail_id : 0;
 
-    //     $pdf::SetTitle('Hello World');
-    //     $pdf::AddPage();
-    //     $pdf::writeHTML($html, true, false, true, false, '');
+                $data = [
+                    'title' => "Booking Detail Id : " . $BookingDetailId,
+                    'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
+                ];
 
-    //     $pdf::Output(public_path($filename), 'F');
+                $pdf = PDF::loadView('pdf_template', $data);
 
-    //     return response()->download(public_path($filename));
-    // }
+                $PdfName = $EventId . $TicketId . $BookingDetailId . time() . '.pdf';
+                // dd($PdfName);
+                // $pdf->download($PdfName);
+                $pdf->save(public_path('ticket_pdf/' . $PdfName));
+
+                $PdfPath = url('/') . "/ticket_pdf/" . $PdfName;
+                $ResponseData['pdf_link'] = $PdfPath;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
 
     // public function generatePDF()
     // {

@@ -152,7 +152,7 @@ class Event extends Model
     function getEventCount($CityId)
     {
         $EventCount = 0;
-        $sql = 'SELECT COUNT(id) AS count FROM events WHERE city=:city';
+        $sql = 'SELECT COUNT(id) AS count FROM events WHERE city=:city AND active=1 AND deleted=0 AND event_info_status=1';
         $Count = DB::select($sql, array('city' => $CityId));
         if (sizeof($Count) > 0) {
             $EventCount = isset($Count[0]->count) ? $Count[0]->count : 0;
