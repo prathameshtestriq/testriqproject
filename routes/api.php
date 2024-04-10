@@ -165,4 +165,5 @@ Route::controller(FormQuestionsController::class)->group(function () {
     Route::post('AddEventSetting', 'add_event_setting');
     Route::post('AllEventDetails', 'all_event_details');
     Route::post('EventDeleteChangeStatus', 'event_delete_change_status');
+    Route::post('ViewSubquestionsTree', 'view_sub_question_tree');
 });

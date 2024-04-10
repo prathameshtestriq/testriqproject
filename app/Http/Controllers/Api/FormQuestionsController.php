@@ -614,5 +614,113 @@ class FormQuestionsController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function view_sub_question_tree(Request $request)
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $questionId     = !empty($request->question_id) ? $request->question_id : 0;
+            
+            $SQL = "SELECT * FROM general_form_question WHERE id = :qus_id ";
+            $questionsObj = DB::select($SQL, array('qus_id' => $questionId));
+            $questionArray = array();
+            $parent_question_array = array();
+            
+
+            foreach($questionsObj as $data){
+                $question_form_option = isset($data->question_form_option) ? json_decode($data->question_form_option) : [];
+                //dd($question_form_option);
+                $parent_question_array[] = $data;
+                if(!empty($question_form_option) && isset($question_form_option)){
+                    foreach($question_form_option as $res){
+                        // dd($res->child_question_id);
+                        //$data->questionArray[$res->label] = $res;
+                        $data->sub_question_array[$res->label] = isset($res->child_question_id) ? $this->get_child_questions($res->child_question_id, $questionId, $questionArray) : [];
+                    }
+                }else{
+                    $data->sub_question_array = [];
+                }
+            }
+
+            
+            //dd($parent_question_array);
+
+          //  $response['data']['ques_cat'] = $this->get_child_questions($request->question_id, $questionId, $questionArray);
+
+            //dd($response);
+            $response['data'] = $parent_question_array;
+            $response['message'] = 'Request processed successfully';
+            $ResposneCode = 200;
+
+        }else{
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function get_child_questions($child_question_id, $questionId, $questionArray) {
+        //dd($questionId);
+
+        $SQL = "SELECT * FROM general_form_question WHERE id = :qus_id AND is_subquestion = 1";
+        $questionArray1 = DB::select($SQL, array('qus_id' => $child_question_id));
+        //dd($questionCatArray);
+        
+       $questionCatArray = array();
+        if (!empty($questionArray1)) {
+           
+            foreach($questionArray1 as $data){
+                     
+                    $SubQuestionsArray[] = $data;
+                    $questionCatArray = isset($data->question_form_option) ? json_decode($data->question_form_option) : [];
+                    //dd($questionCatArray);
+                    if(!empty($questionCatArray) && isset($questionCatArray)){
+
+                        foreach($questionCatArray as $res){
+                  
+                        $tempArr = $this->get_child_questions($res->child_question_id, $questionId, $questionArray);
+                            $questionsObj = array();
+                        
+                        $data->ChildQuestionArray[] = isset($tempArr) ? $tempArr : [];
+
+                            // if (!$tempArr) {
+                            //     // if (array_key_exists($res->id, $questionArray)) {
+                            //     //     $questionsObj = $questionArray[$res->id];
+                            //     // }
+
+                            //     $data->ChildQuestionArray[$res->child_question_id] =[
+                            //         //"id" => $res->id,
+                            //         "child_questions" => $res
+                            //     ]; 
+
+                            // }else{
+                            //      $data->ChildQuestionArray[$res->child_question_id] =[
+                            //        // "id" => $res->id,
+                            //          "child_questions" => $res
+                            //     ]; 
+                            // }
+                        }
+
+                    }
+                    
+            }
+            
+
+            //dd($SubQuesionArray);
+
+            return empty($SubQuestionsArray)? array() : $SubQuestionsArray;
+        }
+
+    }
+
+
+
 
 }
