@@ -91,7 +91,7 @@ class FormQuestionsController extends Controller
 
             //dd($EventId);
 
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') ';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  '; // 
             $aResult = DB::select($Sql);
             //dd($aResult);
             $general_form_array = [];
@@ -225,7 +225,7 @@ class FormQuestionsController extends Controller
                $SubQuestionTitle = !empty($request->sub_question_title) ? $request->sub_question_title : '';
                $QuestionFormOptionArray = !empty($request->sub_question_array) ? array_filter($request->sub_question_array) : [];
                $SubQuestionMandatory = !empty($request->sub_question_mandatory_status) ? $request->sub_question_mandatory_status : 0;
-               $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'select';
+               $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'text';
 
                if($SubQuestionFlag == 1){
 
@@ -248,7 +248,7 @@ class FormQuestionsController extends Controller
                     $question_form_option_array = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
 
                     $question_title_name = '';
-                    if($SubQuestionFormType == 'text'){
+                   // if($SubQuestionFormType == 'text'){
                         if(!empty($question_form_option_array)){
                             foreach($question_form_option_array as $key=>$res2){
                                 if($res2->id == (int)$QuestionType){
@@ -256,7 +256,7 @@ class FormQuestionsController extends Controller
                                 }
                             }
                         }
-                    }
+                    //}
 
                     //dd($question_title_name);
 
@@ -632,7 +632,6 @@ class FormQuestionsController extends Controller
             $questionArray = array();
             $parent_question_array = array();
             
-
             foreach($questionsObj as $data){
                 $question_form_option = isset($data->question_form_option) ? json_decode($data->question_form_option) : [];
                 //dd($question_form_option);
@@ -641,19 +640,13 @@ class FormQuestionsController extends Controller
                     foreach($question_form_option as $res){
                         // dd($res->child_question_id);
                         //$data->questionArray[$res->label] = $res;
-                        $data->sub_question_array[$res->label] = isset($res->child_question_id) ? $this->get_child_questions($res->child_question_id, $questionId, $questionArray) : [];
+                        $questionArray[] = isset($res->child_question_id) ? $this->get_child_questions($res->child_question_id, $questionId, $questionArray) : []; // $res->label
+                        $data->ChildQuestionArray = !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : [];
                     }
-                }else{
-                    $data->sub_question_array = [];
                 }
             }
+           // dd($parent_question_array);
 
-            
-            //dd($parent_question_array);
-
-          //  $response['data']['ques_cat'] = $this->get_child_questions($request->question_id, $questionId, $questionArray);
-
-            //dd($response);
             $response['data'] = $parent_question_array;
             $response['message'] = 'Request processed successfully';
             $ResposneCode = 200;
@@ -677,44 +670,25 @@ class FormQuestionsController extends Controller
         if (!empty($questionArray1)) {
            
             foreach($questionArray1 as $data){
-                     
+                     // $i = 1;
                     $SubQuestionsArray[] = $data;
                     $questionCatArray = isset($data->question_form_option) ? json_decode($data->question_form_option) : [];
                     //dd($questionCatArray);
                     if(!empty($questionCatArray) && isset($questionCatArray)){
-
-                        foreach($questionCatArray as $res){
-                  
-                        $tempArr = $this->get_child_questions($res->child_question_id, $questionId, $questionArray);
-                            $questionsObj = array();
-                        
-                        $data->ChildQuestionArray[] = isset($tempArr) ? $tempArr : [];
-
-                            // if (!$tempArr) {
-                            //     // if (array_key_exists($res->id, $questionArray)) {
-                            //     //     $questionsObj = $questionArray[$res->id];
-                            //     // }
-
-                            //     $data->ChildQuestionArray[$res->child_question_id] =[
-                            //         //"id" => $res->id,
-                            //         "child_questions" => $res
-                            //     ]; 
-
-                            // }else{
-                            //      $data->ChildQuestionArray[$res->child_question_id] =[
-                            //        // "id" => $res->id,
-                            //          "child_questions" => $res
-                            //     ]; 
-                            // }
+                        if($data->is_subquestion == 1){
+                            foreach($questionCatArray as $res){
+                               
+                                if(isset($res->child_question_id)){
+                                    $tempArr = $this->get_child_questions($res->child_question_id, $questionId, $questionArray);
+                                    $data->ChildQuestionArray[] = isset($tempArr) && !empty(count($tempArr) > 0) ? $tempArr[0] : []; //$res->label
+                                }
+                              
+                            }
                         }
-
                     }
                     
             }
             
-
-            //dd($SubQuesionArray);
-
             return empty($SubQuestionsArray)? array() : $SubQuestionsArray;
         }
 

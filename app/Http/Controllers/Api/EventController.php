@@ -429,8 +429,8 @@ class EventController extends Controller
         ];
 
         return response()->json($response, $ResposneCode);
-
     }
+
     public function get_data_location_wise(Request $request)
     {
         // dd($request);
@@ -1330,6 +1330,8 @@ class EventController extends Controller
             'message' => $message
         ];
         return response()->json($response, $ResposneCode);
-    }
+     }
+
+   }
 
 }
