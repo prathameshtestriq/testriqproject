@@ -366,12 +366,15 @@ class OrganizerController extends Controller
         if ($aToken['code'] == 200) {
 
             $UserId = !empty($request->user_id) ? $request->user_id : 0;
+            $OrganiserName = isset($request->organiser_name) ? str_replace("_"," ",$request->organiser_name) : '';
+
             $LoggedUserId = $aToken['data']->ID;
             // dd($LoggedUserId);
             $NowTime = strtotime('now');
             $e = new Event();
-            $sSQL2 = 'SELECT * FROM organizer AS o WHERE o.user_id=:user_id';
-            $Organizer = DB::select($sSQL2, array('user_id' => $UserId));
+
+            $sSQL2 = 'SELECT * FROM organizer AS o WHERE o.user_id=:user_id AND name=:organiser_name';
+            $Organizer = DB::select($sSQL2, array('user_id' => $UserId, 'organiser_name'=>$OrganiserName));
             foreach ($Organizer as $value) {
                 // dd($value->id);
                 $value->is_follow = !empty($LoggedUserId) ? $e->isOrgFollowed($value->id, $LoggedUserId) : 0;

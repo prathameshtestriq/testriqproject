@@ -6,13 +6,7 @@ use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use App\Models\Master;
-
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
-
-// use App\Services\PdfService;
-// use Mpdf\Mpdf;
-// use Elibyy\TCPDF\Facades\TCPDF as TCPDF;
-
 
 class EventTicketController extends Controller
 {
@@ -826,32 +820,6 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    // public function generatePDF(Request $request)
-    // {
-    //     $EventId = isset($request->event_id) ? $request->event_id : 0;
-    //     $TicketId = isset($request->ticket_id) ? $request->ticket_id : 0;
-    //     $AttenddeeName = isset($request->attendee_name) ? $request->attendee_name : "";
-    //     $BookingDetailId = isset($request->booking_detail_id) ? $request->booking_detail_id : 0;
-
-    //     $data = [
-    //         'title' => "Booking Detail Id : " . $BookingDetailId,
-    //         'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
-    //     ];
-
-    //     $pdf = PDF::loadView('pdf_template', $data);
-
-    //     $PdfName = $EventId . $TicketId . $BookingDetailId . time() . '.pdf';
-    //     // dd($PdfName);
-    //     // $pdf->download($PdfName);
-    //     $pdf->save(public_path('ticket_pdf/' . $PdfName));
-
-    //     $PdfPath = url('/') . "/ticket_pdf/" . $PdfName;
-    //     // dd($PdfPath);
-    //     return response()->json(['success' => true, 'pdf_name' => $PdfPath]);
-    //     // return $PdfPath;
-
-    // }
-
     public function generatePDF(Request $request)
     {
         $ResponseData = [];
@@ -911,22 +879,6 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    // public function generatePDF()
-    // {
-    //     $data = [
-    //         'title' => 'Welcome to Laravel PDF!',
-    //         'content' => 'This is a sample PDF generated using Laravel and mPDF.'
-    //     ];
-
-    //     // Initialize mPDF object
-    //     $mpdf = new Mpdf();
-
-    //     // Add content to PDF
-    //     $mpdf->WriteHTML(view('pdf_template', $data));
-
-    //     // Output PDF
-    //     $mpdf->Output('example.pdf', 'D');
-    // }
 }
 
 
