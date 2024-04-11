@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MasterController;
 use App\Http\Controllers\EventTicketController;
 use App\Http\Controllers\UserEventDetailsController;
-
+use App\Http\Controllers\Api\GoogleLoginController;
 //----------- added by prathmesh
 use App\Http\Controllers\Api\FormQuestionsController;
 
@@ -132,7 +132,8 @@ Route::controller(OrganizerController::class)->group(function () {
 
 });
 
-
+// Route::get('auth/google', [GoogleLoginController::class, 'redirectToGoogle']);
+// Route::get('google_success', [GoogleLoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 #Download Database and Project
 // Route::get('/database_backup', function () {
