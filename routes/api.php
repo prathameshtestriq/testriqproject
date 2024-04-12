@@ -32,6 +32,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
+Route::get('auth/google', [GoogleLoginController::class, 'redirectToGoogle']);
+Route::get('google_success', [GoogleLoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
+
 Route::controller(MasterController::class)->group(function () {
     Route::post('country', 'getCountry');
     Route::post('state', 'getState');
@@ -40,9 +44,7 @@ Route::controller(MasterController::class)->group(function () {
     Route::get('types', 'getTypes');
     Route::post('timezone', 'getTimezone');
     Route::get('get_distance', 'getDistanceOfEvents');
-
 });
-//
 
 Route::controller(LoginController::class)->group(function () {
     Route::post('signup', 'signup');
@@ -132,8 +134,7 @@ Route::controller(OrganizerController::class)->group(function () {
 
 });
 
-// Route::get('auth/google', [GoogleLoginController::class, 'redirectToGoogle']);
-// Route::get('google_success', [GoogleLoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
 
 #Download Database and Project
 // Route::get('/database_backup', function () {
@@ -156,7 +157,6 @@ Route::controller(OrganizerController::class)->group(function () {
 //--------------- addded by prathmesh on 19-03-24
 
 Route::controller(FormQuestionsController::class)->group(function () {
-
     Route::post('eventFormQuestions', 'event_form_questions');
     Route::post('GeneralFormQuestions', 'general_form_questions');
     Route::post('AddGeneralFormQuestions', 'add_general_form_questions');
