@@ -1250,6 +1250,7 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
         // dd($CityArr);
     }
+   
 
     //---------- Added by prathmesh on 08-04-24
     public function addEventSetting(Request $request)
