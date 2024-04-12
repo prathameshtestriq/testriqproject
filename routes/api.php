@@ -12,6 +12,9 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MasterController;
 use App\Http\Controllers\EventTicketController;
 use App\Http\Controllers\UserEventDetailsController;
+use App\Http\Controllers\Api\GoogleLoginController;
+//----------- added by prathmesh
+use App\Http\Controllers\Api\FormQuestionsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +59,7 @@ Route::controller(LoginController::class)->group(function () {
 Route::controller(EventController::class)->group(function () {
     Route::post('get_data_location_wise', 'get_data_location_wise');
     Route::post('events', 'getEvents');
+    Route::post('event_details_page', 'EventDetailsPage');
     Route::post('get_banner_events', 'get_banner_events');
     Route::post('create_event', 'createEventBasicInfo');
     Route::post('event_details', 'getEventDetails');
@@ -63,7 +67,7 @@ Route::controller(EventController::class)->group(function () {
     Route::post('event_description', 'addEventDescription');
     Route::post('userfollowevent', 'UserFollowEvent');
     Route::get('popular_cities', 'PopularCity');
-
+    Route::post('event_setting', 'addEventSetting');
     Route::post('duplicate_events', 'DuplicateEvents');
     Route::post('delete_event/{id}', 'EventDelete');
     Route::post('event_status', 'EventStatus');
@@ -85,6 +89,7 @@ Route::controller(UserController::class)->group(function () {
 
 Route::controller(EventUserFollowController::class)->group(function () {
     Route::post('/follow', 'Eventuserfollow');
+    Route::post('/organizer_follow', 'OrgEventuserfollow');
 });
 
 Route::controller(EventUserFollowController::class)->group(function () {
@@ -97,6 +102,11 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_ticket_detail', 'getTicketDetail');
     Route::post('add_edit_event_ticket', 'addediteventticket');
     Route::post('delete_event_ticket', 'EventTicketDelete');
+    Route::post('get_form_questions', 'getFormQuestions');
+    Route::post('book_tickets', 'BookTickets');
+    Route::post('get_bookings', 'GetBookings');
+    Route::post('get_event_booking_tickets', 'GetEventBookingTickets');
+    Route::post('ticket_pdf', 'generatePDF');
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {
@@ -117,10 +127,13 @@ Route::controller(OrganizerController::class)->group(function () {
     Route::get('/get_roles', 'getRoles');
     Route::get('/get_organizing_team', 'getOrganizingTeam');
     Route::post('/add_edit_organizer', 'addEditOrganizer');
+    Route::post('/organizer_details', 'allOrganizerData');
+    Route::post('/send_notification_org', 'sendOrgMail');
 
 });
 
-
+// Route::get('auth/google', [GoogleLoginController::class, 'redirectToGoogle']);
+// Route::get('google_success', [GoogleLoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 #Download Database and Project
 // Route::get('/database_backup', function () {
@@ -140,4 +153,18 @@ Route::controller(OrganizerController::class)->group(function () {
 // });
 
 
+//--------------- addded by prathmesh on 19-03-24
 
+Route::controller(FormQuestionsController::class)->group(function () {
+
+    Route::post('eventFormQuestions', 'event_form_questions');
+    Route::post('GeneralFormQuestions', 'general_form_questions');
+    Route::post('AddGeneralFormQuestions', 'add_general_form_questions');
+    Route::post('deleteEventFormQuestions', 'delete_event_form_questions');
+    Route::post('AddMaualeventFormQuestions', 'add_manual_event_form_questions');
+    Route::post('AddCustomFormQuestions', 'add_custom_form_questions');
+    Route::post('AddEventSetting', 'add_event_setting');
+    Route::post('AllEventDetails', 'all_event_details');
+    Route::post('EventDeleteChangeStatus', 'event_delete_change_status');
+    Route::post('ViewSubquestionsTree', 'view_sub_question_tree');
+});

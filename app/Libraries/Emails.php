@@ -61,5 +61,24 @@ class Emails{
 			echo 'Caught exception: '. $e->getMessage() ."\n";
 		}
 	}
+
+    public function send_org_notification($fullname,$email,$contact_no,$message)
+	{
+		$email = new \SendGrid\Mail\Mail();
+		$email->setFrom("test@example.com", "YTCR Athlete");
+		$email->setSubject("YTCRun password");
+		$email->addTo($email, "Reset Your Password");
+		$email->addContent("text/plain", "Dear Organiser, ");
+		$email->addContent(
+			"text/html", "".$message."<br><p>Thank you,<br>YTCRUN</p>"
+		);
+
+		$sendgrid = new \SendGrid(env('SENDGRID_API_KEY'));
+		try {
+			$response = $sendgrid->send($email);
+		} catch (Exception $e) {
+			echo 'Caught exception: '. $e->getMessage() ."\n";
+		}
+	}
 }
 

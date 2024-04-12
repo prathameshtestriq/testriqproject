@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\Authenticate;
 use App\Models\Master;
+use App\Models\Event;
+use App\Libraries\Emails;
 
 class OrganizerController extends Controller
 {
@@ -21,50 +23,47 @@ class OrganizerController extends Controller
             $aPost = $request->all();
             $Auth = new Authenticate();
             $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
 
-            $sSQL = 'SELECT * FROM organizers ';
-            if ($request->has('id')) {
-                $organizerId = $aPost['id'];
-                $sSQL .= 'WHERE id = ' . $organizerId;
-            }
-            $organizerData = DB::select($sSQL);
+            $sSQL = 'SELECT * FROM organizer WHERE user_id=:user_id';
+            $organizerData = DB::select($sSQL, array('user_id' => $UserId));
 
-            foreach ($organizerData as $value) {
-                $value->organizer_banner_img = (!empty ($value->organizer_banner_img)) ? env('ORGANIZER_BANNER_PATH') . $value->organizer_banner_img . '' : '';
-                $value->organizer_logo_img = (!empty ($value->organizer_logo_img)) ? env('ORGANIZER_LOGO_PATH') . $value->organizer_logo_img . '' : '';
-            }
+            // foreach ($organizerData as $value) {
+            //     $value->organizer_banner_img = (!empty ($value->organizer_banner_img)) ? env('ORGANIZER_BANNER_PATH') . $value->organizer_banner_img . '' : '';
+            //     $value->organizer_logo_img = (!empty ($value->organizer_logo_img)) ? env('ORGANIZER_LOGO_PATH') . $value->organizer_logo_img . '' : '';
+            // }
             $ResponseData['organizerData'] = $organizerData;
 
-            $sSQL = 'SELECT * FROM organizer_users';
-            if ($request->has('id')) {
-                $organizerId = $aPost['id'];
-                $sSQL .= ' WHERE organizer_id = ' . $organizerId;
+            // $sSQL = 'SELECT * FROM organizer_users';
+            // if ($request->has('id')) {
+            //     $organizerId = $aPost['id'];
+            //     $sSQL .= ' WHERE organizer_id = ' . $organizerId;
 
-            }
-            $ResponseData['organizer_users'] = DB::select($sSQL);
+            // }
+            // $ResponseData['organizer_users'] = DB::select($sSQL);
 
-            $sSQL = 'SELECT * FROM organizer_events';
-            if ($request->has('id')) {
-                $organizerId = $aPost['id'];
-                $sSQL .= ' WHERE organizer_id = ' . $organizerId;
+            // $sSQL = 'SELECT * FROM organizer_events';
+            // if ($request->has('id')) {
+            //     $organizerId = $aPost['id'];
+            //     $sSQL .= ' WHERE organizer_id = ' . $organizerId;
 
-            }
-            $ResponseData['organizer_events'] = DB::select($sSQL);
+            // }
+            // $ResponseData['organizer_events'] = DB::select($sSQL);
 
-            $sSQL = 'SELECT * FROM organizer_roles';
-            if ($request->has('id')) {
-                $organizerId = $aPost['id'];
-                $sSQL .= ' WHERE organizer_id = ' . $organizerId;
+            // $sSQL = 'SELECT * FROM organizer_roles';
+            // if ($request->has('id')) {
+            //     $organizerId = $aPost['id'];
+            //     $sSQL .= ' WHERE organizer_id = ' . $organizerId;
 
-            }
-            $ResponseData['organizer_roles'] = DB::select($sSQL);
+            // }
+            // $ResponseData['organizer_roles'] = DB::select($sSQL);
 
-            $sSQL = 'SELECT * FROM organizers_follow';
-            if ($request->has('id')) {
-                $organizerId = $aPost['id'];
-                $sSQL .= ' WHERE organizer_id = ' . $organizerId;
-            }
-            $ResponseData['organizers_follow'] = DB::select($sSQL);
+            // $sSQL = 'SELECT * FROM organizers_follow';
+            // if ($request->has('id')) {
+            //     $organizerId = $aPost['id'];
+            //     $sSQL .= ' WHERE organizer_id = ' . $organizerId;
+            // }
+            // $ResponseData['organizers_follow'] = DB::select($sSQL);
 
 
             $ResposneCode = 200;
@@ -82,6 +81,121 @@ class OrganizerController extends Controller
 
         return response()->json($response, $ResposneCode);
 
+    }
+
+    public function addEditOrganizer(Request $request)
+    {
+        $empty = false;
+        $ResponseData = [];
+        $message = "";
+        $ResposneCode = 400;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['name'])) {
+                $empty = true;
+                $field = 'Name';
+            }
+            if (empty($aPost['email'])) {
+                $empty = true;
+                $field = 'Email Id';
+            }
+            if (empty($aPost['about'])) {
+                $empty = true;
+                $field = 'About';
+            }
+
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $organiserId = $aPost['oragniser_id'];
+                $name = $aPost['name'];
+                $email = $aPost['email'];
+                $about = $aPost['about'];
+                $gst = $aPost['gst'];
+                $gstNo = isset($aPost['gst_number']) ? $aPost['gst_number'] : "";
+                $gstPercent = isset($aPost['gst_percentage']) ? $aPost['gst_percentage'] : "";
+                $contactPerson = isset($aPost['contact_person']) ? $aPost['contact_person'] : "";
+                $contactNumber = isset($aPost['contact_no']) ? $aPost['contact_no'] : "";
+
+                if (empty($organiserId)) {
+                    #ADD ORGANISER
+                    #CHECK SAME ORGANISER NAME EXIST OR NOT
+                    $SQL = "SELECT name FROM organizer WHERE name=:name";
+                    $IsExist = DB::select($SQL, array('name' => strtolower($aPost['name'])));
+
+                    if (count($IsExist) > 0) {
+                        $ResposneCode = 400;
+                        $message = "Organiser with same name is already exists, please use another name.";
+                    } else {
+                        #INSERT CODE OF ORGANISER
+                        DB::table('organizer')->insert([
+                            'user_id' => $UserId,
+                            'name' => $name,
+                            'email' => $email,
+                            'about' => $about,
+                            'gst' => $gst,
+                            'gst_number' => $gstNo,
+                            'gst_percentage' => $gstPercent,
+                            'contact_person' => $contactPerson,
+                            'contact_no' => $contactNumber
+                        ]);
+                        $ResposneCode = 200;
+                        $message = 'Organizer inserted successfully';
+
+                    }
+
+                } else {
+                    #UPDATE ORGANISER
+                    #CHECK SAME ORGANISER NAME EXIST OR NOT
+                    $SQL = "SELECT name FROM organizer WHERE name=:name AND id !=:id";
+                    $IsExist = DB::select($SQL, array('name' => strtolower($aPost['name']), 'id' => $organiserId));
+
+                    if (count($IsExist) > 0) {
+                        $ResposneCode = 400;
+                        $message = "Organiser with same name is already exists, please use another name.";
+                    } else {
+                        #UPDATE CODE OF ORGANISER
+                        DB::table('organizer')
+                            ->where('id', $organiserId)
+                            ->update([
+                                'user_id' => $UserId,
+                                'name' => $name,
+                                'email' => $email,
+                                'about' => $about,
+                                'gst' => $gst,
+                                'gst_number' => $gstNo,
+                                'gst_percentage' => $gstPercent,
+                                'contact_person' => $contactPerson,
+                                'contact_no' => $contactNumber
+                            ]);
+                        $ResposneCode = 200;
+                        $message = 'Organizer updated successfully';
+                    }
+                }
+
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
     }
 
     // public function getRoles(Request $request)
@@ -147,8 +261,8 @@ class OrganizerController extends Controller
             $master = new Master();
             foreach ($Events as $event) {
                 $event->checked = 0;
-                $event->start_date = (!empty ($event->start_time)) ? gmdate("d-m-Y", $event->start_time) : 0;
-                $event->city_name = !empty ($event->city) ? $master->getCityName($event->city) : "";
+                $event->start_date = (!empty($event->start_time)) ? gmdate("d-m-Y", $event->start_time) : 0;
+                $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
             }
             $ResponseData['events'] = $Events;
             #ROLES
@@ -177,57 +291,110 @@ class OrganizerController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    public function addEditOrganizer(Request $request)
+    // public function addEditOrganizer(Request $request)
+    // {
+    //     $ResponseData = [];
+    //     $message = "";
+    //     $ResposneCode = 400;
+    //     $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+
+    //     if ($aToken['code'] == 200) {
+    //         $aPost = $request->all();
+    //         $Auth = new Authenticate();
+    //         $Auth->apiLog($request);
+
+    //         $UserId = $aToken['data']->ID;
+
+    //         if (empty ($aPost['name'])) {
+    //             $empty = true;
+    //             $field = 'Name';
+    //         }
+    //         if (empty ($aPost['email'])) {
+    //             $empty = true;
+    //             $field = 'Email Id';
+    //         }
+    //         if (empty ($aPost['roles'])) {
+    //             $empty = true;
+    //             $field = 'Roles';
+    //         }
+    //         if (empty ($aPost['events'])) {
+    //             $empty = true;
+    //             $field = 'Events';
+    //         }
+    //         if (!$empty) {
+    //             $Auth = new Authenticate();
+    //             $Auth->apiLog($request);
+
+    //             #CHECK USER IS EXIST OR NOT
+    //             $SQL = "SELECT email FROM users WHERE email=:email";
+    //             $IsExist = DB::select($SQL, array('email' => $aPost['email']));
+
+    //             if (count($IsExist) === 0) {
+
+    //                 // $ResponseData['organizers'] = $Organizers;
+    //                 $ResposneCode = 200;
+    //                 $message = 'Data getting successfully';
+    //             } else {
+    //                 $ResposneCode = 400;
+    //                 $message = 'Organizer is exist';
+    //             }
+    //         } else {
+    //             $ResposneCode = 400;
+    //             $message = $field . ' is empty';
+    //         }
+    //     } else {
+    //         $ResposneCode = $aToken['code'];
+    //         $message = $aToken['message'];
+    //     }
+
+    //     $response = [
+    //         'data' => $ResponseData,
+    //         'message' => $message
+    //     ];
+
+    //     return response()->json($response, $ResposneCode);
+    // }
+
+
+    public function allOrganizerData(Request $request)
     {
         $ResponseData = [];
         $message = "";
         $ResposneCode = 400;
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-
+        //dd($aToken);
         if ($aToken['code'] == 200) {
-            $aPost = $request->all();
-            $Auth = new Authenticate();
-            $Auth->apiLog($request);
 
-            $UserId = $aToken['data']->ID;
+            $UserId = !empty($request->user_id) ? $request->user_id : 0;
+            $OrganiserName = isset($request->organiser_name) ? str_replace("_"," ",$request->organiser_name) : '';
 
-            if (empty ($aPost['name'])) {
-                $empty = true;
-                $field = 'Name';
-            }
-            if (empty ($aPost['email'])) {
-                $empty = true;
-                $field = 'Email Id';
-            }
-            if (empty ($aPost['roles'])) {
-                $empty = true;
-                $field = 'Roles';
-            }
-            if (empty ($aPost['events'])) {
-                $empty = true;
-                $field = 'Events';
-            }
-            if (!$empty) {
-                $Auth = new Authenticate();
-                $Auth->apiLog($request);
+            $LoggedUserId = $aToken['data']->ID;
+            // dd($LoggedUserId);
+            $NowTime = strtotime('now');
+            $e = new Event();
 
-                #CHECK USER IS EXIST OR NOT
-                $SQL = "SELECT email FROM users WHERE email=:email";
-                $IsExist = DB::select($SQL, array('email' => $aPost['email']));
-
-                if (count($IsExist) === 0) {
-
-                    // $ResponseData['organizers'] = $Organizers;
-                    $ResposneCode = 200;
-                    $message = 'Data getting successfully';
-                } else {
-                    $ResposneCode = 400;
-                    $message = 'Organizer is exist';
-                }
-            } else {
-                $ResposneCode = 400;
-                $message = $field . ' is empty';
+            $sSQL2 = 'SELECT * FROM organizer AS o WHERE o.user_id=:user_id AND name=:organiser_name';
+            $Organizer = DB::select($sSQL2, array('user_id' => $UserId, 'organiser_name'=>$OrganiserName));
+            foreach ($Organizer as $value) {
+                // dd($value->id);
+                $value->is_follow = !empty($LoggedUserId) ? $e->isOrgFollowed($value->id, $LoggedUserId) : 0;
+                $value->join_on = !empty($value->created_at) ? gmdate("F d, Y", $value->created_at) : 0;
             }
+            $ResponseData['Organizer'] = $Organizer;
+
+            #UPCOMING EVETNS
+            $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.created_by=:user_id AND u.start_time >=:start_time";
+            $UpcomingEvents = DB::select($UpcomingSql, array('user_id' => $UserId, 'start_time' => $NowTime));
+            $ResponseData['UpcomingEvents'] = app('App\Http\Controllers\Api\EventController')->ManipulateEvents($UpcomingEvents, $UserId);
+
+            #PAST EVENTS
+            $PastSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.created_by=:user_id AND u.start_time < :start_time";
+            $PastEvents = DB::select($PastSql, array('user_id' => $UserId, 'start_time' => $NowTime));
+            $ResponseData['PastEvents'] = app('App\Http\Controllers\Api\EventController')->ManipulateEvents($PastEvents, $UserId);
+
+            $message = 'Request processed successfully';
+            $ResposneCode = 200;
+
         } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];
@@ -240,4 +407,58 @@ class OrganizerController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+
+    function sendOrgMail(Request $request)
+    {
+        $ResponseData = [];
+        $message = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        $aPost = $request->all();
+        if (empty($aPost['fullname'])) {
+            $empty = true;
+            $field = 'Fullname';
+        }
+        if (empty($aPost['email'])) {
+            $empty = true;
+            $field = 'Email';
+        }
+        if (empty($aPost['contact_no'])) {
+            $empty = true;
+            $field = 'Contact No';
+        }
+        if (empty($aPost['message'])) {
+            $empty = true;
+            $field = 'Message';
+        }
+        if (!$empty) {
+            if ($aToken['code'] == 200) {
+                $UserId = $aToken['data']->ID;
+
+                $Email = new Emails();
+                $Email->send_org_notification($aPost['fullname'], $aPost['email'],$aPost['contact_no'],$aPost['message']);
+                $message = 'Mail send successfully';
+                $ResposneCode = 200;
+
+            } else {
+                $ResposneCode = $aToken['code'];
+                $message = $aToken['message'];
+            }
+        } else {
+            $ResposneCode = 400;
+            $message = $field . ' is empty';
+        }
+        $response = [
+            'status' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+
 }

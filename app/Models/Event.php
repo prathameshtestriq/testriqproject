@@ -36,6 +36,22 @@ class Event extends Model
         return $Follow;
     }
 
+    public function isOrgFollowed($OrgId, $UserId)
+    {
+        // dd($OrgId,$UserId);
+        $Follow = 0;
+        if (!empty($OrgId) && !empty($UserId)) {
+            // dd($EventId,$UserId);
+            $sql = "SELECT id FROM organizers_follow WHERE organizer_id=:organizer_id AND user_id=:user_id";
+            $Result = DB::select($sql, array('organizer_id' => $OrgId, 'user_id' => $UserId));
+            // dd($Result);
+            if (count($Result) > 0)
+                $Follow = 1;
+        }
+        return $Follow;
+    }
+
+
     // public function getCategory($EventId)
     // {
     //     // dd($EventId,$UserId);
@@ -128,16 +144,17 @@ class Event extends Model
         $Result = DB::select($sql, array('event_id' => $EventId));
         // dd($Result);
         foreach ($Result as $item) {
-            $item->image = !empty($item->image) ? url('/').'/uploads/event_images/'.$item->image : "";
+            $item->image = !empty($item->image) ? url('/') . '/uploads/event_images/' . $item->image : "";
         }
         return $Result;
     }
 
-    function getEventCount($CityId){
+    function getEventCount($CityId)
+    {
         $EventCount = 0;
-        $sql = 'SELECT COUNT(id) AS count FROM events WHERE city=:city';
-        $Count = DB::select($sql,array('city'=> $CityId));
-        if(sizeof($Count) > 0){
+        $sql = 'SELECT COUNT(id) AS count FROM events WHERE city=:city AND active=1 AND deleted=0 AND event_info_status=1';
+        $Count = DB::select($sql, array('city' => $CityId));
+        if (sizeof($Count) > 0) {
             $EventCount = isset($Count[0]->count) ? $Count[0]->count : 0;
         }
         // dd($Count);

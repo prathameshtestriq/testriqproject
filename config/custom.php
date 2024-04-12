@@ -4,7 +4,7 @@
 
 return [
     'ytcr_fee_percent' =>10,
-    'platform_fee_percent' => 10,
+    'platform_fee_percent' => 18, // previos 10 per set
     'payment_gateway_fee_percent' => 10,
 
     'max_size' => 2097152,
@@ -19,8 +19,6 @@ return [
 
     // 'season' =>  env('CURRENT_SEASON', 'default_season_value'),
     'season' => env('CURRENT_SEASON'),
-
-
 
     'filter' => [
         (object)[

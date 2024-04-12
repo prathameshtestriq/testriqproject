@@ -59,4 +59,14 @@ class Master extends Model
         }
         return $CountryName;
     }
+
+    public function getTimeZoneName($TimeZoneId){
+        $TimeZoneName = "";
+        if($TimeZoneId){
+            $sql = "SELECT area FROM master_timezones WHERE id=:id";
+            $timezone = DB::select($sql,array('id' => $TimeZoneId));
+            $TimeZoneName = isset($timezone[0]->area) ? $timezone[0]->area : "";
+        }
+        return $TimeZoneName;
+    }
 }
