@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Laravel\Socialite\Facades\Socialite;
 use GuzzleHttp\Client;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
