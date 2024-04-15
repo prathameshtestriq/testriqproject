@@ -782,6 +782,8 @@ class EventTicketController extends Controller
                 }
 
                 foreach ($TicketBookingArr as $event) {
+                    // $event->TicketName =
+                    $event->TicketName = !empty($event->TicketName) ? (strlen($event->TicketName) > 40 ? ucwords(substr($event->TicketName, 0, 40)) . "..." : ucwords($event->TicketName)) : "";
                     $event->booking_start_date = (!empty($event->booking_date)) ? gmdate("d M Y", $event->booking_date) : 0;
                     $event->booking_time = (!empty($event->booking_date)) ? date("h:i A", $event->booking_date) : "";
 
@@ -794,7 +796,7 @@ class EventTicketController extends Controller
 
                     // ticket registration number. generate it using -> (event_id + booking_id + timestamp)
                     $uniqueId = 0;
-                    $uniqueId = $EventId . $event->id . $event->booking_date;
+                    $uniqueId = $EventId ."-". $event->id ."-". $event->booking_date;
                     $event->unique_ticket_id = $uniqueId;
 
                 }
