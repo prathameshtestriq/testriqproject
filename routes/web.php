@@ -113,8 +113,6 @@ Route::group(['middleware' => ['checkLogin']], function () {
 
 });
 
-// Route::middleware([GoogleSignInHeadersMiddleware::class])->group(function () {
-    Route::get('auth/google', [GoogleLoginController::class, 'redirectToGoogle']);
-    Route::get('google_success', [GoogleLoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
-// });
+// Route::get('auth/google', [GoogleLoginController::class, 'redirectToGoogle']);
+// Route::get('google_success', [GoogleLoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
