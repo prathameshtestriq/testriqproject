@@ -108,7 +108,7 @@ class FormQuestionsController extends Controller
                 }
 
                 //---------------------
-                if($res->question_form_type == 'radio' || $res->question_form_type == 'select'){
+                if($res->question_form_type == 'radio' || $res->question_form_type == 'select' || $res->question_form_type == 'checkbox' || $res->question_form_type == 'select_amount'){
                     $res->question_form_option = !empty($res->question_form_option) ? json_decode($res->question_form_option) : [];
                     $que_option_json_count = count($res->question_form_option);
                 }else{ $res->question_form_option = []; $que_option_json_count = 0; }
@@ -624,10 +624,11 @@ class FormQuestionsController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-
+            
+            $EventId     = !empty($request->event_id) ? $request->event_id : 0;
             $questionId     = !empty($request->question_id) ? $request->question_id : 0;
             
-            $SQL = "SELECT * FROM general_form_question WHERE id = :qus_id ";
+            $SQL = "SELECT id,question_form_option,question_label,form_id,question_form_type,question_form_name FROM general_form_question WHERE id = :qus_id ";
             $questionsObj = DB::select($SQL, array('qus_id' => $questionId));
             $questionArray = array();
             $parent_question_array = array();
@@ -635,13 +636,36 @@ class FormQuestionsController extends Controller
             foreach($questionsObj as $data){
                 $question_form_option = isset($data->question_form_option) ? json_decode($data->question_form_option) : [];
                 //dd($question_form_option);
+                $data->question_form_option = !empty($question_form_option) ? $question_form_option : [];
                 $parent_question_array[] = $data;
+
+                //---------------- check event table added form question entry or not
+                $Sql = 'SELECT id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$data->id.'  ';
+                $aResult1 = DB::select($Sql);
+                //dd($aResult1);
+                if(!empty($aResult1)){
+                    $data->event_questions_flag = 1;
+                }else{
+                    $data->event_questions_flag = 0;
+                }
+
+                //----------------------
                 if(!empty($question_form_option) && isset($question_form_option)){
                     foreach($question_form_option as $res){
                         // dd($res->child_question_id);
-                        //$data->questionArray[$res->label] = $res;
-                        $questionArray[] = isset($res->child_question_id) ? $this->get_child_questions($res->child_question_id, $questionId, $questionArray) : []; // $res->label
-                        $data->ChildQuestionArray = !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : [];
+                        $questionArray[] = isset($res->child_question_id) ? $this->get_child_questions($res->child_question_id, $questionId, $questionArray, $EventId) : []; // $res->label
+                       // $data->ChildQuestionArray = !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : [];
+
+                        $data->ChildQuestionArray = array( array(
+                                                            "id" => $data->id+11,
+                                                            "question_form_option" => !empty($question_form_option) ? $question_form_option : [],
+                                                            "question_label" => isset($res->child_question_id) ? $res->label : 'Yes',
+                                                            "form_id" => $data->form_id,
+                                                            "question_form_type" => $data->question_form_type,
+                                                            "question_form_name" => $data->question_form_name,
+                                                            "event_questions_flag" => 1,
+                                                            "ChildQuestionArray" => !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : []
+                                                        ) );
                     }
                 }
             }
@@ -659,7 +683,7 @@ class FormQuestionsController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function get_child_questions($child_question_id, $questionId, $questionArray) {
+    function get_child_questions($child_question_id, $questionId, $questionArray, $EventId) {
         //dd($questionId);
 
         $SQL = "SELECT * FROM general_form_question WHERE id = :qus_id AND is_subquestion = 1";
@@ -674,12 +698,24 @@ class FormQuestionsController extends Controller
                     $SubQuestionsArray[] = $data;
                     $questionCatArray = isset($data->question_form_option) ? json_decode($data->question_form_option) : [];
                     //dd($questionCatArray);
+
+                    //---------------- check event table added form question entry or not
+                    $Sql = 'SELECT id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$data->id.'  ';
+                    $aResult1 = DB::select($Sql);
+                    //dd($aResult1);
+                    if(!empty($aResult1)){
+                        $data->event_questions_flag = 1;
+                    }else{
+                        $data->event_questions_flag = 0;
+                    }
+
+                    $data->question_form_option = !empty($questionCatArray) ? $questionCatArray : [];
                     if(!empty($questionCatArray) && isset($questionCatArray)){
                         if($data->is_subquestion == 1){
                             foreach($questionCatArray as $res){
                                
                                 if(isset($res->child_question_id)){
-                                    $tempArr = $this->get_child_questions($res->child_question_id, $questionId, $questionArray);
+                                    $tempArr = $this->get_child_questions($res->child_question_id, $questionId, $questionArray, $EventId);
                                     $data->ChildQuestionArray[] = isset($tempArr) && !empty(count($tempArr) > 0) ? $tempArr[0] : []; //$res->label
                                 }
                               
