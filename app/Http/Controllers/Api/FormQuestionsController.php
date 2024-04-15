@@ -251,7 +251,7 @@ class FormQuestionsController extends Controller
                    // if($SubQuestionFormType == 'text'){
                         if(!empty($question_form_option_array)){
                             foreach($question_form_option_array as $key=>$res2){
-                                if($res2->id == (int)$QuestionType){
+                                if(isset($res2->child_question_id) && $res2->id == (int)$QuestionType){
                                     $question_title_name = $res2->label;
                                 }
                             }
@@ -655,17 +655,23 @@ class FormQuestionsController extends Controller
                         // dd($res->child_question_id);
                         $questionArray[] = isset($res->child_question_id) ? $this->get_child_questions($res->child_question_id, $questionId, $questionArray, $EventId) : []; // $res->label
                        // $data->ChildQuestionArray = !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : [];
-
-                        $data->ChildQuestionArray = array( array(
+                       // dd($res->child_question_id);
+                        if(isset($res->child_question_id)){
+                            $data->ChildQuestionArray = array( array(
                                                             "id" => $data->id+11,
                                                             "question_form_option" => !empty($question_form_option) ? $question_form_option : [],
-                                                            "question_label" => isset($res->child_question_id) ? $res->label : 'Yes',
+                                                            "question_label" => isset($res->child_question_id) ? $res->label : '',
                                                             "form_id" => $data->form_id,
                                                             "question_form_type" => $data->question_form_type,
                                                             "question_form_name" => $data->question_form_name,
                                                             "event_questions_flag" => 1,
                                                             "ChildQuestionArray" => !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : []
                                                         ) );
+                        }
+                        // else{
+                        //     $data->ChildQuestionArray = !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : [];
+                        // }
+                        
                     }
                 }
             }
