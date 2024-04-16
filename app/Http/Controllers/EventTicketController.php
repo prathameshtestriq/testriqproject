@@ -419,18 +419,30 @@ class EventTicketController extends Controller
                 $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
                 // dd($AllTickets);
 
-                $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1';
-                $FormQuestions = DB::select(
-                    $sSQL,
-                    array(
-                        'event_id' => $aPost['event_id']
-                    )
-                );
+                $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
+                $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+
+
                 foreach ($FormQuestions as $value) {
                     $value->ActualValue = "";
                     $value->Error = "";
                     $value->TicketId = 0;
+
+                    if (empty($value->parent_question_id)) {
+                        $value->IsParent = true;
+                    } else {
+                        $value->IsParent = false;
+                    }
+
+                    if (!empty($value->question_form_option)) {
+                        $value->IsJsonFlag = 1;
+                    } else {
+                        $value->IsJsonFlag = 0;
+                    }
+
+
                 }
+                // dd($FormQuestions);
 
                 // if (!empty ($TotalAttendee)) {
                 //     for ($i = 0; $i < $TotalAttendee; $i++) {
@@ -445,6 +457,7 @@ class EventTicketController extends Controller
                         }
                     }
                 }
+                // dd($FinalFormQuestions);
 
                 $ResponseData['FormQuestions'] = $FinalFormQuestions;
 
@@ -550,6 +563,7 @@ class EventTicketController extends Controller
                             // dd($BookingDetailsIds,$value['ticket_id']);
                             $Binding3 = [];
                             $Sql3 = "";
+                            $IdBookingDetails = 0;
                             if ($value['ActualValue'] !== "") {
 
                                 if ($value['question_form_type'] == "file") {
@@ -574,14 +588,17 @@ class EventTicketController extends Controller
                                     //     }
                                     // }
                                 }
-                                $Binding3 = array(
-                                    "booking_details_id" => isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0,
-                                    "field_name" => $value['question_form_name'],
-                                    "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
-                                );
+                                $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
+                                if (!empty($IdBookingDetails)) {
+                                    $Binding3 = array(
+                                        "booking_details_id" => $IdBookingDetails,
+                                        "field_name" => $value['question_form_name'],
+                                        "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
+                                    );
 
-                                $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
-                                DB::insert($Sql3, $Binding3);
+                                    $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
+                                    DB::insert($Sql3, $Binding3);
+                                }
                             }
                         }
                     }
@@ -796,7 +813,7 @@ class EventTicketController extends Controller
 
                     // ticket registration number. generate it using -> (event_id + booking_id + timestamp)
                     $uniqueId = 0;
-                    $uniqueId = $EventId ."-". $event->id ."-". $event->booking_date;
+                    $uniqueId = $EventId . "-" . $event->id . "-" . $event->booking_date;
                     $event->unique_ticket_id = $uniqueId;
 
                 }
