@@ -433,6 +433,7 @@ class EventController extends Controller
 
         // dd($Events);
         $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
+        $ResponseData['EventDetailId'] = sizeof($Events)>0 ? $Events[0]->id : 0;
 
         #ORGANISER
         $ResponseData['OrganiserName'] = $ResponseData['OrganiserId'] = $ResponseData['UserId'] = "";
@@ -1254,7 +1255,7 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
         // dd($CityArr);
     }
-   
+
 
     //---------- Added by prathmesh on 08-04-24
     public function addEventSetting(Request $request)
@@ -1364,6 +1365,7 @@ class EventController extends Controller
         ];
         return response()->json($response, $ResposneCode);
     }
+
 
 
 }
