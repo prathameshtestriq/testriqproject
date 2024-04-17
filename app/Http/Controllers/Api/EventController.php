@@ -916,16 +916,21 @@ class EventController extends Controller
                 $ResponseData['event_setting_details'] = [];
             }
 
-            $sql = "SELECT gst_percentage FROM organizer WHERE user_id = :user_id";
+            $sql = "SELECT gst_percentage,gst FROM organizer WHERE user_id = :user_id";
             $OrganizerInfoDetails = DB::select($sql, array('user_id' => $UserId));
 
-            $ResponseData['GST_PERCENTAGE'] = !empty($OrganizerInfoDetails) && !empty($OrganizerInfoDetails[0]->gst_percentage) ?
-                $OrganizerInfoDetails[0]->gst_percentage : config('custom.platform_fee_percent');
+            $ResponseData['GST_PERCENTAGE'] = !empty($OrganizerInfoDetails) && !empty($OrganizerInfoDetails[0]->gst_percentage) && 
+            $OrganizerInfoDetails[0]->gst == 1 ? $OrganizerInfoDetails[0]->gst_percentage : 0;
 
             $ResponseData['YTCR_FEE_PERCENTAGE'] = !empty($SettingInfoDetails) && !empty($SettingInfoDetails[0]->ticket_ytcr_base_price) ?
                 $SettingInfoDetails[0]->ticket_ytcr_base_price : config('custom.ytcr_fee_percent');
 
             $ResponseData['PAYMENT_GATEWAY_FEE_PERCENTAGE'] = config('custom.payment_gateway_fee_percent');
+            
+            //----------
+            $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "Races2.0_Web" AND TABLE_NAME = "users" ';
+            $ResponseData['field_mapping_details'] = DB::select($sSQL, array());
+            //dd($FieldMppedDetails);
 
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
@@ -1292,20 +1297,7 @@ class EventController extends Controller
                 $SQL = "SELECT id FROM event_settings WHERE event_id =:event_id";
                 $IsExist = DB::select($SQL, array('event_id' => $EventId));
 
-                if (empty($IsExist) && empty($EventSettingId)) {
-
-                    $ContractOfFiveYear = !empty($request->contract_of_five_year) && $request->contract_of_five_year == true ? 1 : 0;
-                    $BackendSupport = !empty($request->backend_support) && $request->backend_support == true ? 1 : 0;
-                    $BulkRegistration = !empty($request->bulk_registration) && $request->bulk_registration == true ? 1 : 0;
-                    $CheckValidEntries = !empty($request->check_valid_entries) && $request->check_valid_entries == true ? 1 : 0;
-
-                    $YtcrBasePrice = !empty($request->ytcr_base_price) ? $request->ytcr_base_price : "0.00";
-                    $EventSettingId = !empty($request->event_setting_id) ? $request->event_setting_id : 0;
-
-                    $SQL = "SELECT id FROM event_settings WHERE event_id =:event_id";
-                    $IsExist = DB::select($SQL, array('event_id' => $EventId));
-
-                    if (empty($IsExist)) {
+                    if (empty($IsExist) && empty($EventSettingId)) {
 
                         $Bindings = array(
                             "event_id" => $EventId,
@@ -1356,29 +1348,23 @@ class EventController extends Controller
                         $message = "Event Setting updated successfully";
                     }
 
-                } else {
-                    $ResposneCode = 400;
-                    $message = $field . ' is empty';
-                }
-            } else {
-                $ResposneCode = $aToken['code'];
-                $message = $aToken['message'];
+            }else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
             }
-            $response = [
-                'success' => $ResposneCode,
-                'data' => $ResponseData,
-                'message' => $message
-            ];
-            return response()->json($response, $ResposneCode);
-        }
 
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
         $response = [
             'success' => $ResposneCode,
             'data' => $ResponseData,
             'message' => $message
         ];
         return response()->json($response, $ResposneCode);
-     }
+    }
 
-   }
+
+}
 

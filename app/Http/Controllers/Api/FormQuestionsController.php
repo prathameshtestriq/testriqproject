@@ -165,7 +165,7 @@ class FormQuestionsController extends Controller
     // General Form Question
     public function add_general_form_questions(Request $request)
     {
-       // dd($request);
+        // dd($request);
         $response['data'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
@@ -199,6 +199,7 @@ class FormQuestionsController extends Controller
             $Sql5 = 'SELECT count(id) as tot_count FROM event_form_question WHERE question_status = 1 and general_form_id = '.$GeneralFormId.'  and event_id = '.$EventId.' ';
             $aResult5 = DB::select($Sql5);
             //dd($aResult5);
+          
             if(!empty($aResult5) && $aResult5[0]->tot_count == 0)
             {
                 $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length)';
@@ -220,27 +221,49 @@ class FormQuestionsController extends Controller
 
             //------------- Add new sub question ----------------
 
-               $SubQuestionFlag = !empty($request->sub_question_flag) && ($request->sub_question_flag) == true ? 1 : 0;
-               $QuestionType = !empty($request->question_type) ? $request->question_type : 0;
-               $SubQuestionTitle = !empty($request->sub_question_title) ? $request->sub_question_title : '';
-               $QuestionFormOptionArray = !empty($request->sub_question_array) ? array_filter($request->sub_question_array) : [];
-               $SubQuestionMandatory = !empty($request->sub_question_mandatory_status) ? $request->sub_question_mandatory_status : 0;
-               $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'text';
+                $SubQuestionFlag = !empty($request->sub_question_flag) ? 1 : 0;
+                $QuestionType = !empty($request->question_type) ? $request->question_type : 0;
+                $SubQuestionTitle = !empty($request->sub_question_title) ? $request->sub_question_title : '';
+                $QuestionFormOptionArray = !empty($request->sub_question_array) ? array_filter($request->sub_question_array) : [];
+                $SubQuestionMandatory = !empty($request->sub_question_mandatory_status) ? $request->sub_question_mandatory_status : 0;
+                $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'text';
+               
+                $SubQuestionPriceFlag = !empty($request->sub_question_price_flag) ? 1 : 0;
+                $SubQuestionCountFlag = !empty($request->sub_question_count_flag)  ? 1 : 0;
+                $SubQuestionOtherAmountFlag = !empty($request->sub_question_other_amount) ? 1 : 0;
 
-               if($SubQuestionFlag == 1){
+                if($SubQuestionFlag == 1){
 
-                    //dd(json_encode($QuestionFormOptionArray));
+                   //dd($QuestionFormOptionArray);
                     $new_array = [];
                     $i = 1;
                     if(!empty($QuestionFormOptionArray)){
                         foreach($QuestionFormOptionArray as $key=>$res){
-                            //dd($res);
-                            $new_array[] = array("id" => $i, "label" => $res);
+                           //dd($res['id']);
+                  
+                            if(!empty($res['label']) && empty($res['price']) && empty($res['count'])){
+                                $new_array[] = array("id" => $i, "label" => $res['label']);
+                            }else if(!empty($res['label']) && empty($res['count']) && $SubQuestionPriceFlag == 1){
+                                $new_array[] = array("id" => $i, "label" => $res['label'], "price" => !empty($res['price']) ? $res['price'] : 0 );
+                            }else if(!empty($res['label']) && empty($res['price']) && $SubQuestionPriceFlag == 1){
+                                $new_array[] = array("id" => $i, "label" => $res['label'], "price" => !empty($res['price']) ? $res['price'] : 0 );
+                            }
+                            else if(!empty($res['label']) && !empty($res['price']) && !empty($res['count']) && $SubQuestionPriceFlag == 1 && $SubQuestionCountFlag == 1){
+                                $new_array[] = array("id" => $i, "label" => $res['label'], "price" => !empty($res['price']) ? $res['price'] : 0, "count" => !empty($res['count']) ? $res['count'] : '');
+                            }
                             $i++;
                         }
                     }
+                    
+                    //dd($i);
+                    if($SubQuestionOtherAmountFlag == 1 && !empty($QuestionFormOptionArray)){
+                        $other_amt_array = array(array("id" => $i, "label" => "Other Amount", "price" => 0, "count" => ''));
+                        $new_array = array_merge($new_array, $other_amt_array);
+                    }
+                    // dd($new_array);
+
                     $SubQuestionOptionArray = !empty($new_array) ? json_encode($new_array) : '';
-                   // dd($SubQuestionOptionArray);
+                    //dd($SubQuestionOptionArray);
 
                     $Sql = 'SELECT id,question_form_option FROM general_form_question WHERE question_status = 1 and id = '.$GeneralFormId.'  ';
                     $aResult1 = DB::select($Sql);
@@ -258,14 +281,15 @@ class FormQuestionsController extends Controller
                         }
                     //}
 
-                    //dd($question_title_name);
+                    // dd($question_title_name);
 
                     if($SubQuestionTitle != '')
                     {
-                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion)';
+                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount)';
 
                         DB::insert($sSQL,array(
-                            'questionLabel'     => !empty($question_title_name) ? $question_title_name.' '.$SubQuestionTitle : $SubQuestionTitle,
+                            //'questionLabel'     => !empty($question_title_name) ? $question_title_name.' '.$SubQuestionTitle : $SubQuestionTitle,
+                            'questionLabel'     => $SubQuestionTitle,
                             'formId'            => 1,
                             'questionFormType'  => $SubQuestionFormType, // ex. t-shirt size
                             'questionFormName'  => 'sub_question',
@@ -275,7 +299,10 @@ class FormQuestionsController extends Controller
                             'createdBy'         => $userId,
                             'isCustomForm'      => 1,
                             "parentQusId"       => $GeneralFormId,
-                            "isSubquestion"     => $SubQuestionFlag
+                            "isSubquestion"     => $SubQuestionFlag,
+                            "subQuePrice"       => $SubQuestionPriceFlag,
+                            "subQueCount"       => $SubQuestionCountFlag,
+                            "subQueOtherAmount" => $SubQuestionOtherAmountFlag,
                         ));
 
                         $last_inserted_id = DB::getPdo()->lastInsertId();
