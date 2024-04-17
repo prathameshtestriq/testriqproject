@@ -854,7 +854,12 @@ class EventController extends Controller
 
                 //registration closing date
                 $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d M Y", $event->registration_end_time) : "";
+               
+                $event->diplay_registration_start_date = (!empty($event->registration_start_time)) ? date("Y-m-d", $event->registration_start_time) : 0;
+                $event->diplay_registration_start_time = (!empty($event->registration_start_time)) ? date("h:i", $event->registration_start_time) : 0;
 
+                $event->diplay_registration_end_date = (!empty($event->registration_end_time)) ? date("Y-m-d", $event->registration_end_time) : 0;
+                $event->diplay_registration_end_time = (!empty($event->registration_end_time)) ? date("h:i", $event->registration_end_time) : 0;
 
             }
             // dd($Events);
@@ -876,8 +881,8 @@ class EventController extends Controller
                 "start_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("F d, Y", $Events[0]->start_time) : 0,
                 "city" => (isset($Events[0]->city) && !empty($Events[0]->city)) ? $master->getCityName($Events[0]->city) : "",
                 "event_name" => (isset($Events[0]->name) && !empty($Events[0]->name)) ? (strlen($Events[0]->name) > 40 ? ucwords(substr($Events[0]->name, 0, 40)) . "..." : ucwords($Events[0]->name)) : "",
-                "start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("M", $Events[0]->start_time) : gmdate("M", strtotime('now')),
-                "start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("d", $Events[0]->start_time) : gmdate("d", strtotime('now')),
+                "start_event_month" => (isset($Events[0]->registration_end_time) && (!empty($Events[0]->registration_end_time))) ? gmdate("M", $Events[0]->registration_end_time) : gmdate("M", strtotime('now')),
+                "start_event_date" => (isset($Events[0]->registration_end_time) && (!empty($Events[0]->registration_end_time))) ? gmdate("d", $Events[0]->registration_end_time) : gmdate("d", strtotime('now')),
                 "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('now')),
 
                 "min_price" => (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0,
@@ -1003,6 +1008,25 @@ class EventController extends Controller
                 $CityId = isset($request->city_id) ? $request->city_id : 0;
                 $Address = isset($request->address) ? $request->address : "";
 
+                $FinalRegistrationStartTime = $FinalRegistrationEndTime = 0;
+                $RegistrationStartDate = isset($request->registration_start_date) ? $request->registration_start_date : 0;
+                $RegistrationStartTime = isset($request->registration_start_time) ? $request->registration_start_time : 0;
+                if (!empty($RegistrationStartDate) && !empty($RegistrationStartTime)) {
+                    $start_date_time_string1 = $RegistrationStartDate . ' ' . $RegistrationStartTime;
+                    $FinalRegistrationStartTime = strtotime($start_date_time_string1);
+                } else if (!empty($RegistrationStartDate) && empty($RegistrationStartTime)) {
+                    $FinalRegistrationStartTime = strtotime($RegistrationStartDate);
+                }
+
+                $RegistrationEndDate = isset($request->registration_end_date) ? $request->registration_end_date : 0;
+                $RegistrationEndTime = isset($request->registration_end_time) ? $request->registration_end_time : 0;
+                if (!empty($RegistrationEndDate) && !empty($RegistrationEndTime)) {
+                    $end_date_time_string1 = $RegistrationEndDate . ' ' . $RegistrationEndTime;
+                    $FinalRegistrationEndTime = strtotime($end_date_time_string1);
+                } else if (!empty($RegistrationEndDate) && empty($RegistrationEndTime)) {
+                    $FinalRegistrationEndTime = strtotime($RegistrationEndDate);
+                }
+
                 $Bindings = array(
                     "timezone_id" => $Timezone,
                     "start_time" => $EventStartTime,
@@ -1015,6 +1039,8 @@ class EventController extends Controller
                     "state" => $StateId,
                     "city" => $CityId,
                     "address" => $Address,
+                    "registration_start_time" => $FinalRegistrationStartTime,
+                    "registration_end_time"   => $FinalRegistrationEndTime,
                     "id" => $EventId
                 );
                 $sql = 'UPDATE events SET
@@ -1028,7 +1054,9 @@ class EventController extends Controller
                 country=:country,
                 state=:state,
                 city=:city,
-                address=:address
+                address=:address,
+                registration_start_time=:registration_start_time,
+                registration_end_time=:registration_end_time
                 WHERE id=:id';
                 DB::update($sql, $Bindings);
 
