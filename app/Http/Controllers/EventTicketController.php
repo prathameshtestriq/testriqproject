@@ -530,6 +530,7 @@ class EventTicketController extends Controller
 
                 #booking_details
                 $BookingDetailsIds = [];
+                $PayableAmount = 0;
                 foreach ($AllTickets as $ticket) {
                     if (!empty($ticket["count"])) {
                         $Binding2 = [];
@@ -550,9 +551,11 @@ class EventTicketController extends Controller
                         $BookingDetailsId = DB::getPdo()->lastInsertId();
 
                         $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
+
+                        $PayableAmount += $ticket["count"] * ($ticket["ticket_price"] - $ticket["ticket_discount"]);
                     }
                 }
-
+                $RemainingAmount = $TotalPrice - $PayableAmount;
                 #attendee_details
                 foreach ($FormQuestions as $Form) {
                     $TotTickets = count($Form);
