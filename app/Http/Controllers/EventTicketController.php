@@ -513,6 +513,8 @@ class EventTicketController extends Controller
                 $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
                 $TotalPrice = isset($request->TotalPrice) && !empty($request->TotalPrice) ? $request->TotalPrice : 0;
                 $TotalDiscount = isset($request->TotalDiscount) && !empty($request->TotalDiscount) ? $request->TotalDiscount : 0;
+                $ExtraPricing = isset($request->ExtraPricing) && !empty($request->ExtraPricing) ? $request->ExtraPricing : [];
+
                 $UserId = $aToken["data"]->ID;
                 $TotalTickets = 0;
 
@@ -530,7 +532,7 @@ class EventTicketController extends Controller
 
                 #booking_details
                 $BookingDetailsIds = [];
-                $PayableAmount = 0;
+
                 foreach ($AllTickets as $ticket) {
                     if (!empty($ticket["count"])) {
                         $Binding2 = [];
@@ -551,11 +553,27 @@ class EventTicketController extends Controller
                         $BookingDetailsId = DB::getPdo()->lastInsertId();
 
                         $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
-
-                        $PayableAmount += $ticket["count"] * ($ticket["ticket_price"] - $ticket["ticket_discount"]);
                     }
                 }
-                $RemainingAmount = $TotalPrice - $PayableAmount;
+                #ADD EXTRA AMOUNT FOR PAYABLE FOR USER
+                if (!empty($ExtraPricing)) {
+                    foreach ($ExtraPricing as $value) {
+                        $Binding3 = [];
+                        $Sql3 = "";
+                        $Binding3 = array(
+                            "booking_id" => $BookingId,
+                            "event_id" => $EventId,
+                            "user_id" => $UserId,
+                            "ticket_id" => $value["ticket_id"],
+                            "quantity" => 0,
+                            "ticket_amount" => $value["value"],
+                            "ticket_discount" => 0,
+                            "booking_date" => strtotime("now"),
+                        );
+                        $Sql3 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
+                        DB::insert($Sql3, $Binding3);
+                    }
+                }
                 #attendee_details
                 foreach ($FormQuestions as $Form) {
                     $TotTickets = count($Form);
