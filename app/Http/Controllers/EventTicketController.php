@@ -513,100 +513,121 @@ class EventTicketController extends Controller
                 $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
                 $TotalPrice = isset($request->TotalPrice) && !empty($request->TotalPrice) ? $request->TotalPrice : 0;
                 $TotalDiscount = isset($request->TotalDiscount) && !empty($request->TotalDiscount) ? $request->TotalDiscount : 0;
+                $ExtraPricing = isset($request->ExtraPricing) && !empty($request->ExtraPricing) ? $request->ExtraPricing : [];
+
                 $UserId = $aToken["data"]->ID;
                 $TotalTickets = 0;
 
-                #event_booking
-                $Binding1 = array(
-                    "event_id" => $EventId,
-                    "user_id" => $UserId,
-                    "booking_date" => strtotime("now"),
-                    "total_amount" => $TotalPrice,
-                    "total_discount" => $TotalDiscount
-                );
-                $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount)";
-                DB::insert($Sql1, $Binding1);
-                $BookingId = DB::getPdo()->lastInsertId();
+                if (!empty($TotalPrice)) {
+                    #event_booking
+                    $Binding1 = array(
+                        "event_id" => $EventId,
+                        "user_id" => $UserId,
+                        "booking_date" => strtotime("now"),
+                        "total_amount" => $TotalPrice,
+                        "total_discount" => $TotalDiscount
+                    );
+                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount)";
+                    DB::insert($Sql1, $Binding1);
+                    $BookingId = DB::getPdo()->lastInsertId();
 
-                #booking_details
-                $BookingDetailsIds = [];
-                $PayableAmount = 0;
-                foreach ($AllTickets as $ticket) {
-                    if (!empty($ticket["count"])) {
-                        $Binding2 = [];
-                        $Sql2 = "";
-                        $Binding2 = array(
-                            "booking_id" => $BookingId,
-                            "event_id" => $EventId,
-                            "user_id" => $UserId,
-                            "ticket_id" => $ticket["id"],
-                            "quantity" => $ticket["count"],
-                            "ticket_amount" => $ticket["ticket_price"],
-                            "ticket_discount" => $ticket["ticket_discount"],
-                            "booking_date" => strtotime("now"),
-                        );
-                        $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
-                        DB::insert($Sql2, $Binding2);
-                        #Get the last inserted id of booking_details
-                        $BookingDetailsId = DB::getPdo()->lastInsertId();
+                    #booking_details
+                    $BookingDetailsIds = [];
 
-                        $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
+                    foreach ($AllTickets as $ticket) {
+                        if (!empty($ticket["count"])) {
+                            $Binding2 = [];
+                            $Sql2 = "";
+                            $Binding2 = array(
+                                "booking_id" => $BookingId,
+                                "event_id" => $EventId,
+                                "user_id" => $UserId,
+                                "ticket_id" => $ticket["id"],
+                                "quantity" => $ticket["count"],
+                                "ticket_amount" => $ticket["ticket_price"],
+                                "ticket_discount" => $ticket["ticket_discount"],
+                                "booking_date" => strtotime("now"),
+                            );
+                            $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
+                            DB::insert($Sql2, $Binding2);
+                            #Get the last inserted id of booking_details
+                            $BookingDetailsId = DB::getPdo()->lastInsertId();
 
-                        $PayableAmount += $ticket["count"] * ($ticket["ticket_price"] - $ticket["ticket_discount"]);
+                            $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
+                        }
                     }
-                }
-                $RemainingAmount = $TotalPrice - $PayableAmount;
-                #attendee_details
-                foreach ($FormQuestions as $Form) {
-                    $TotTickets = count($Form);
-                    $TotalTickets += $TotTickets;
-                    foreach ($Form as $Question) {
-                        // echo "<pre>";print_r($Question);
-                        foreach ($Question as $value) {
-                            // dd($BookingDetailsIds,$value['ticket_id']);
+                    #ADD EXTRA AMOUNT FOR PAYABLE FOR USER
+                    if (!empty($ExtraPricing)) {
+                        foreach ($ExtraPricing as $value) {
                             $Binding3 = [];
                             $Sql3 = "";
-                            $IdBookingDetails = 0;
-                            if ($value['ActualValue'] !== "") {
+                            $Binding3 = array(
+                                "booking_id" => $BookingId,
+                                "event_id" => $EventId,
+                                "user_id" => $UserId,
+                                "ticket_id" => $value["ticket_id"],
+                                "quantity" => 0,
+                                "ticket_amount" => $value["value"],
+                                "ticket_discount" => 0,
+                                "booking_date" => strtotime("now"),
+                                "question_id"=>$value["question_id"],
+                                "attendee_number"=>$value["aNumber"]
+                            );
+                            $Sql3 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date,question_id,attendee_number) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date,:question_id,:attendee_number)";
+                            DB::insert($Sql3, $Binding3);
+                        }
+                    }
+                    #ATTENDEE DETAILS
+                    foreach ($FormQuestions as $Form) {
+                        $TotTickets = count($Form);
+                        $TotalTickets += $TotTickets;
+                        foreach ($Form as $Question) {
+                            // echo "<pre>";print_r($Question);
+                            foreach ($Question as $value) {
+                                // dd($BookingDetailsIds,$value['ticket_id']);
+                                $Binding3 = [];
+                                $Sql3 = "";
+                                $IdBookingDetails = 0;
+                                if ($value['ActualValue'] !== "") {
 
-                                if ($value['question_form_type'] == "file") {
-                                    // $_FILES = $value['ActualValue'];
-                                    $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
-                                    $is_valid = false;
-                                    $filename = $address_proof_doc_upload = '';
-                                    // if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
-                                    //     // Validate file extension
-                                    //     $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
-                                    //     $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
-                                    //     if (!in_array($address_proof_type, $allowedExts)) {
-                                    //         $filename = 'Address proof document';
-                                    //         $is_valid = true;
-                                    //     }
+                                    if ($value['question_form_type'] == "file") {
+                                        // $_FILES = $value['ActualValue'];
+                                        $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
+                                        $is_valid = false;
+                                        $filename = $address_proof_doc_upload = '';
+                                        // if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
+                                        //     // Validate file extension
+                                        //     $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
+                                        //     $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
+                                        //     if (!in_array($address_proof_type, $allowedExts)) {
+                                        //         $filename = 'Address proof document';
+                                        //         $is_valid = true;
+                                        //     }
 
-                                    //     // Move uploaded file to destination
-                                    //     if (!$is_valid) {
-                                    //         $Path = public_path('uploads/user_documents/');
-                                    //         $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
-                                    //         move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
-                                    //     }
-                                    // }
-                                }
-                                $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
-                                if (!empty($IdBookingDetails)) {
-                                    $Binding3 = array(
-                                        "booking_details_id" => $IdBookingDetails,
-                                        "field_name" => $value['question_form_name'],
-                                        "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
-                                    );
+                                        //     // Move uploaded file to destination
+                                        //     if (!$is_valid) {
+                                        //         $Path = public_path('uploads/user_documents/');
+                                        //         $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
+                                        //         move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
+                                        //     }
+                                        // }
+                                    }
+                                    $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
+                                    if (!empty($IdBookingDetails)) {
+                                        $Binding3 = array(
+                                            "booking_details_id" => $IdBookingDetails,
+                                            "field_name" => $value['question_form_name'],
+                                            "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
+                                        );
 
-                                    $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
-                                    DB::insert($Sql3, $Binding3);
+                                        $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
+                                        DB::insert($Sql3, $Binding3);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
             } else {
