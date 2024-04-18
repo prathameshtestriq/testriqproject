@@ -937,6 +937,12 @@ class EventController extends Controller
             $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "Races2.0_Web" AND TABLE_NAME = "users" ';
             $ResponseData['field_mapping_details'] = DB::select($sSQL, array());
             //dd($FieldMppedDetails);
+            
+            // ---------- get communication tab details
+            $sql1 = "SELECT id,subject_name,message_content  FROM event_communication WHERE event_id=:event_id AND user_id=:user_id ";
+            $CommResult = DB::select($sql1, array('event_id' => $EventId,'user_id' => $UserId));
+            //dd($CommResult);
+            $ResponseData['communication_details'] = !empty($CommResult) ? $CommResult : [];
 
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
@@ -1394,6 +1400,159 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function addCommunication(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $EventId = $aPost['event_id'];
+                $UserId = $aPost['user_id'];
+
+                $SubjectName = !empty($request->subject_name) ? $request->subject_name : 0;
+                $MessageContent = !empty($request->message_content) ? $request->message_content : 0;
+                $EventCommunicationId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+
+                // $SQL = "SELECT id FROM event_communication WHERE event_id =:event_id";
+                // $IsExist = DB::select($SQL, array('event_id' => $EventId));
+
+                    if (empty($EventCommunicationId)) {
+
+                        $Bindings = array(
+                            "event_id" => $EventId,
+                            "user_id" => $UserId,
+                            "subject_name" => $SubjectName,
+                            "message_content" => $MessageContent
+                        );
+
+                        $insert_SQL = "INSERT INTO event_communication (event_id,user_id,subject_name,message_content) VALUES(:event_id,:user_id,:subject_name,:message_content)";
+                        DB::insert($insert_SQL, $Bindings);
+
+                        $ResposneCode = 200;
+                        $message = "Communication added successfully";
+
+                    } else {
+
+                        $Bindings = array(
+                            "subject_name" => $SubjectName,
+                            "message_content" => $MessageContent,
+                            "event_comm_id" => $EventCommunicationId
+                        );
+
+                        $sql = 'UPDATE event_communication SET subject_name = :subject_name, message_content  = :message_content WHERE id = :event_comm_id';
+                        // dd($sql);
+                        DB::update($sql, $Bindings);
+
+                        $ResposneCode = 200;
+                        $message = "Communication updated successfully";
+                    }
+
+            }else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+    }
+
+    
+    // Delete Communication and FAQ
+    public function deleteEventCommFqa(Request $request)
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $EventId = !empty($request->event_id) ? $request->event_id : 0;
+            $EventCommId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+
+            $del_sSQL = 'DELETE FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
+
+            DB::delete($del_sSQL,array(
+                'eventId' => $EventId,
+                'event_comm_id' => $EventCommId
+            ));
+
+            $response['data'] = [];
+            $response['message'] = 'Record removed successfully';
+            $ResposneCode = 200;
+
+        }else{
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    // Featch Edit Communication and FAQ
+    public function editEventCommFqa(Request $request)
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+           
+            $aResult = [];
+
+            $EventId = !empty($request->event_id) ? $request->event_id : 0;
+            $EventCommId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+            $EventEditFlag = !empty($request->event_edit_flag) ? $request->event_edit_flag : '';
+            
+            if($EventEditFlag == 'communication_edit'){
+               
+                $Sql = 'SELECT id,subject_name,message_content FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id  '; 
+                $aResult['communication_edit_details'] = DB::select($Sql,array(
+                    'eventId' => $EventId,
+                    'event_comm_id' => $EventCommId
+                ));
+
+            }
+           
+            $response['data'] = $aResult;
+            $response['message'] = 'Request processed successfully';
+            $ResposneCode = 200;
+
+        }else{
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
 
 
 }

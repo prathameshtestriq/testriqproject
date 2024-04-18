@@ -202,9 +202,9 @@ class FormQuestionsController extends Controller
           
             if(!empty($aResult5) && $aResult5[0]->tot_count == 0)
             {
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length)';
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids)';
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, form_id, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, form_id, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -231,6 +231,7 @@ class FormQuestionsController extends Controller
                 $SubQuestionPriceFlag = !empty($request->sub_question_price_flag) ? 1 : 0;
                 $SubQuestionCountFlag = !empty($request->sub_question_count_flag)  ? 1 : 0;
                 $SubQuestionOtherAmountFlag = !empty($request->sub_question_other_amount) ? 1 : 0;
+                $ParentGeneralFormId = !empty($request->parent_general_form_id) ? $request->parent_general_form_id : 0;
 
                 if($SubQuestionFlag == 1){
 
@@ -265,7 +266,7 @@ class FormQuestionsController extends Controller
                     $SubQuestionOptionArray = !empty($new_array) ? json_encode($new_array) : '';
                     //dd($SubQuestionOptionArray);
 
-                    $Sql = 'SELECT id,question_form_option FROM general_form_question WHERE question_status = 1 and id = '.$GeneralFormId.'  ';
+                    $Sql = 'SELECT id,question_form_option,child_question_ids FROM general_form_question WHERE question_status = 1 and id = '.$GeneralFormId.'  ';
                     $aResult1 = DB::select($Sql);
 
                     $question_form_option_array = !empty($aResult1[0]->question_form_option) ? json_decode($aResult1[0]->question_form_option) : [];
@@ -319,22 +320,56 @@ class FormQuestionsController extends Controller
                                 $subArray[] = $res;
                             }
                         }
+
+                        $child_ques_ids = !empty($aResult1) && $aResult1[0]->child_question_ids ? $aResult1[0]->child_question_ids : $last_inserted_id;
+
                         //dd($subArray);  --- json updated for privous question
                         if(!empty($subArray)){
-                            $up_sSQL = 'UPDATE general_form_question SET `question_form_option` =:questionFormOption WHERE `id`=:generalFormId ';
+                            $up_sSQL = 'UPDATE general_form_question SET `question_form_option` =:questionFormOption, `child_question_ids` =:childQuestionIds WHERE `id`=:generalFormId ';
                             DB::update($up_sSQL,array(
                                 'questionFormOption' => json_encode($subArray),
-                                'generalFormId' => $GeneralFormId
+                                'generalFormId' => $GeneralFormId,
+                                'childQuestionIds' => $child_ques_ids
                             ));
 
-                            $up_sSQL1 = 'UPDATE event_form_question SET `question_form_option` =:evtQuestionFormOption WHERE `event_id`=:eventId and `general_form_id`=:generalFormId ';
+                            $up_sSQL1 = 'UPDATE event_form_question SET `question_form_option` =:evtQuestionFormOption, `child_question_ids` =:childQuestionIds WHERE `event_id`=:eventId and `general_form_id`=:generalFormId ';
                             DB::update($up_sSQL1,array(
                                 'evtQuestionFormOption' => json_encode($subArray),
                                 'eventId' => $EventId,
-                                'generalFormId' => $GeneralFormId
+                                'generalFormId' => $GeneralFormId,
+                                'childQuestionIds' => $child_ques_ids
                             ));
                         }
+
+                        //-------------
+                        $Sql1 = 'SELECT id,child_question_ids FROM general_form_question WHERE question_status = 1 and id = '.$ParentGeneralFormId.'  ';
+                        $aResult2 = DB::select($Sql1);
+                        $child_ques_ids1 = !empty($aResult2) && $aResult2[0]->child_question_ids ? $aResult2[0]->child_question_ids.','.$last_inserted_id : $last_inserted_id;
+
+                        $up_sSQL = 'UPDATE general_form_question SET `child_question_ids` =:childQuestionIds WHERE `id`=:generalFormId ';
+                        DB::update($up_sSQL,array(
+                            'childQuestionIds' => $child_ques_ids1,
+                            'generalFormId' => $ParentGeneralFormId
+                        ));
+
+                        // $up_sSQL1 = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `event_id`=:eventId and `general_form_id`=:generalFormId ';
+                        // DB::update($up_sSQL1,array(
+                        //     'childQuestionIds' => $child_ques_ids,
+                        //     'eventId' => $EventId,
+                        //     'generalFormId' => $ParentGeneralFormId
+                        // ));
+
                     }
+            }else{
+                $Sql1 = 'SELECT id,child_question_ids FROM general_form_question WHERE question_status = 1 and id = '.$ParentGeneralFormId.'  ';
+                $aResult2 = DB::select($Sql1);
+
+                $up_sSQL1 = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `event_id`=:eventId and `general_form_id`=:generalFormId ';
+                DB::update($up_sSQL1,array(
+                    'childQuestionIds' => !empty($aResult2) && $aResult2[0]->child_question_ids ? $aResult2[0]->child_question_ids : '',
+                    'eventId' => $EventId,
+                    'generalFormId' => $ParentGeneralFormId
+                ));
             }
 
             //------------------ end ----------------------------
