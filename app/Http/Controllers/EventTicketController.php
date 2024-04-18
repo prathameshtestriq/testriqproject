@@ -571,13 +571,13 @@ class EventTicketController extends Controller
                                 "ticket_discount" => 0,
                                 "booking_date" => strtotime("now"),
                                 "question_id"=>$value["question_id"],
-                                "attendee_number"=>$value["attendee_number"]
+                                "attendee_number"=>$value["aNumber"]
                             );
                             $Sql3 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date,question_id,attendee_number) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date,:question_id,:attendee_number)";
                             DB::insert($Sql3, $Binding3);
                         }
                     }
-                    #attendee_details
+                    #ATTENDEE DETAILS
                     foreach ($FormQuestions as $Form) {
                         $TotTickets = count($Form);
                         $TotalTickets += $TotTickets;
