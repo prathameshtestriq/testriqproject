@@ -944,6 +944,18 @@ class EventController extends Controller
             //dd($CommResult);
             $ResponseData['communication_details'] = !empty($CommResult) ? $CommResult : [];
 
+            // ---------- get FAQ tab details
+            $sql1 = "SELECT id,question,answer  FROM event_FAQ WHERE event_id=:event_id AND user_id=:user_id ";
+            $FAQResult = DB::select($sql1, array('event_id' => $EventId,'user_id' => $UserId));
+            //dd($CommResult);
+            $ResponseData['faq_details'] = !empty($FAQResult) ? $FAQResult : [];
+
+            // ---------- get Tickets details
+            $sql1 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id";
+            $TicketResult = DB::select($sql1, array('event_id' => $EventId));
+            //dd($CommResult);
+            $ResponseData['tickets_details'] = !empty($TicketResult) ? $TicketResult[0] : [];
+
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
         } else {
@@ -1479,6 +1491,85 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function addFAQ(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $EventId = $aPost['event_id'];
+                $UserId = $aPost['user_id'];
+
+                $QuestionName = !empty($request->quetion_name) ? $request->quetion_name : 0;
+                $Answer = !empty($request->answer) ? $request->answer : 0;
+                $EventCommunicationId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+
+                // $SQL = "SELECT id FROM event_communication WHERE event_id =:event_id";
+                // $IsExist = DB::select($SQL, array('event_id' => $EventId));
+
+                    if (empty($EventCommunicationId)) {
+
+                        $Bindings = array(
+                            "event_id" => $EventId,
+                            "user_id"  => $UserId,
+                            "question" => $QuestionName,
+                            "answer"   => $Answer
+                        );
+
+                        $insert_SQL = "INSERT INTO event_FAQ (event_id,user_id,question,answer) VALUES(:event_id,:user_id,:question,:answer)";
+                        DB::insert($insert_SQL, $Bindings);
+
+                        $ResposneCode = 200;
+                        $message = "FAQ added successfully";
+
+                    } else {
+
+                        $Bindings = array(
+                            "question" => $QuestionName,
+                            "answer"   => $Answer,
+                            "event_comm_id" => $EventCommunicationId
+                        );
+
+                        $sql = 'UPDATE event_FAQ SET question = :question, answer  = :answer WHERE id = :event_comm_id';
+                        // dd($sql);
+                        DB::update($sql, $Bindings);
+
+                        $ResposneCode = 200;
+                        $message = "FAQ updated successfully";
+                    }
+
+            }else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+    }
+
     
     // Delete Communication and FAQ
     public function deleteEventCommFqa(Request $request)
@@ -1494,14 +1585,22 @@ class EventController extends Controller
 
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $EventCommId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
-
-            $del_sSQL = 'DELETE FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
-
-            DB::delete($del_sSQL,array(
-                'eventId' => $EventId,
-                'event_comm_id' => $EventCommId
-            ));
-
+            $CommonFlag = !empty($request->common_flag) ? $request->common_flag : '';
+            
+            if(isset($request->common_flag) && $CommonFlag == 'faq_delete'){
+                    $del_sSQL = 'DELETE FROM event_FAQ WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
+                    DB::delete($del_sSQL,array(
+                        'eventId' => $EventId,
+                        'event_comm_id' => $EventCommId
+                    ));
+            }else{
+                    $del_sSQL1 = 'DELETE FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
+                    DB::delete($del_sSQL1,array(
+                        'eventId' => $EventId,
+                        'event_comm_id' => $EventCommId
+                    ));
+            }
+            
             $response['data'] = [];
             $response['message'] = 'Record removed successfully';
             $ResposneCode = 200;
@@ -1536,6 +1635,14 @@ class EventController extends Controller
                
                 $Sql = 'SELECT id,subject_name,message_content FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id  '; 
                 $aResult['communication_edit_details'] = DB::select($Sql,array(
+                    'eventId' => $EventId,
+                    'event_comm_id' => $EventCommId
+                ));
+
+            }else if($EventEditFlag == 'faq_edit'){
+               
+                $Sql = 'SELECT id,question,answer FROM event_FAQ WHERE `event_id`=:eventId AND `id`=:event_comm_id  '; 
+                $aResult['faq_edit_details'] = DB::select($Sql,array(
                     'eventId' => $EventId,
                     'event_comm_id' => $EventCommId
                 ));

@@ -73,6 +73,7 @@ Route::controller(EventController::class)->group(function () {
     Route::post('event_communication', 'addCommunication');
     Route::post('delete_event_comm_faq', 'deleteEventCommFqa');
     Route::post('edit_event_comm_faq', 'editEventCommFqa');
+    Route::post('event_faq', 'addFAQ');
     Route::post('duplicate_events', 'DuplicateEvents');
     Route::post('delete_event/{id}', 'EventDelete');
     Route::post('event_status', 'EventStatus');
