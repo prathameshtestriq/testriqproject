@@ -854,7 +854,7 @@ class EventController extends Controller
 
                 //registration closing date
                 $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d M Y", $event->registration_end_time) : "";
-               
+
                 $event->diplay_registration_start_date = (!empty($event->registration_start_time)) ? date("Y-m-d", $event->registration_start_time) : 0;
                 $event->diplay_registration_start_time = (!empty($event->registration_start_time)) ? date("h:i", $event->registration_start_time) : 0;
 
@@ -925,19 +925,19 @@ class EventController extends Controller
             $sql = "SELECT gst_percentage,gst FROM organizer WHERE user_id = :user_id";
             $OrganizerInfoDetails = DB::select($sql, array('user_id' => $UserId));
 
-            $ResponseData['GST_PERCENTAGE'] = !empty($OrganizerInfoDetails) && !empty($OrganizerInfoDetails[0]->gst_percentage) && 
+            $ResponseData['GST_PERCENTAGE'] = !empty($OrganizerInfoDetails) && !empty($OrganizerInfoDetails[0]->gst_percentage) &&
             $OrganizerInfoDetails[0]->gst == 1 ? $OrganizerInfoDetails[0]->gst_percentage : 0;
 
             $ResponseData['YTCR_FEE_PERCENTAGE'] = !empty($SettingInfoDetails) && !empty($SettingInfoDetails[0]->ticket_ytcr_base_price) ?
                 $SettingInfoDetails[0]->ticket_ytcr_base_price : config('custom.ytcr_fee_percent');
 
             $ResponseData['PAYMENT_GATEWAY_FEE_PERCENTAGE'] = config('custom.payment_gateway_fee_percent');
-            
+
             //----------
             $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "Races2.0_Web" AND TABLE_NAME = "users" ';
             $ResponseData['field_mapping_details'] = DB::select($sSQL, array());
             //dd($FieldMppedDetails);
-            
+
             // ---------- get communication tab details
             $sql1 = "SELECT id,subject_name,message_content  FROM event_communication WHERE event_id=:event_id AND user_id=:user_id ";
             $CommResult = DB::select($sql1, array('event_id' => $EventId,'user_id' => $UserId));
@@ -1044,9 +1044,11 @@ class EventController extends Controller
                 } else if (!empty($RegistrationEndDate) && empty($RegistrationEndTime)) {
                     $FinalRegistrationEndTime = strtotime($RegistrationEndDate);
                 }
+                $PinCode = isset($request->pincode) ? $request->pincode : "";
 
                 $Bindings = array(
                     "timezone_id" => $Timezone,
+                    "pincode"=> $PinCode,
                     "start_time" => $EventStartTime,
                     "end_time" => $EventEndTime,
                     "is_repeat" => $IsRepeatEvent,
@@ -1063,6 +1065,7 @@ class EventController extends Controller
                 );
                 $sql = 'UPDATE events SET
                 time_zone=:timezone_id,
+                pincode=:pincode,
                 start_time=:start_time,
                 end_time=:end_time,
                 is_repeat=:is_repeat,
@@ -1570,7 +1573,6 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    
     // Delete Communication and FAQ
     public function deleteEventCommFqa(Request $request)
     {
@@ -1624,16 +1626,16 @@ class EventController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-           
+
             $aResult = [];
 
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $EventCommId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
             $EventEditFlag = !empty($request->event_edit_flag) ? $request->event_edit_flag : '';
-            
+
             if($EventEditFlag == 'communication_edit'){
-               
-                $Sql = 'SELECT id,subject_name,message_content FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id  '; 
+
+                $Sql = 'SELECT id,subject_name,message_content FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
                 $aResult['communication_edit_details'] = DB::select($Sql,array(
                     'eventId' => $EventId,
                     'event_comm_id' => $EventCommId
@@ -1648,7 +1650,7 @@ class EventController extends Controller
                 ));
 
             }
-           
+
             $response['data'] = $aResult;
             $response['message'] = 'Request processed successfully';
             $ResposneCode = 200;

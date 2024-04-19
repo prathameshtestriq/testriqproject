@@ -44,6 +44,7 @@ Route::controller(MasterController::class)->group(function () {
     Route::get('types', 'getTypes');
     Route::post('timezone', 'getTimezone');
     Route::get('get_distance', 'getDistanceOfEvents');
+    Route::post('get_location', 'getLocationData');
 });
 
 Route::controller(LoginController::class)->group(function () {

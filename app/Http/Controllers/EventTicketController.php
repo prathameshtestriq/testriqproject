@@ -428,30 +428,38 @@ class EventTicketController extends Controller
                     $value->Error = "";
                     $value->TicketId = 0;
 
-                    if (empty($value->parent_question_id)) {
-                        $value->IsParent = true;
-                    } else {
-                        $value->IsParent = false;
+                    if ($value->id == 170) {
+                        // dd(($value->question_form_option));
                     }
-
                     if (!empty($value->question_form_option)) {
-                        $value->IsJsonFlag = 1;
-                    } else {
-                        $value->IsJsonFlag = 0;
+                        $jsonString = $value->question_form_option;
+                        $array = json_decode($jsonString, true);
+
+                        foreach ($array as &$item) { // Note the "&" before $item to modify it directly
+                            if (isset($item['count']) && !empty($item["count"])) {
+                                $sql = "SELECT current_count FROM extra_pricing_booking WHERE question_id=:question_id AND option_id=:option_id";
+                                $SoldItems = DB::select($sql, array("question_id" => $value->id, "option_id" => $item["id"]));
+                                if (count($SoldItems) > 0) {
+                                    $currentCount = $SoldItems[0]->current_count;
+                                    // Adding current_count to the $item array
+                                    $item['current_count'] = $currentCount;
+                                }
+                            }
+                        }
+                        // Unset $item to avoid potential conflicts with other loops
+                        unset($item);
+
+                        $updatedJsonString = json_encode($array);
+
+                        // Assign the updated JSON string back to $value->question_form_option
+                        $value->question_form_option = $updatedJsonString;
                     }
-
-
                 }
                 // dd($FormQuestions);
 
-                // if (!empty ($TotalAttendee)) {
-                //     for ($i = 0; $i < $TotalAttendee; $i++) {
-                //         $FinalFormQuestions[$i] = $FormQuestions;
-                //     }
-                // }
-
                 if (!empty($AllTickets)) {
                     foreach ($AllTickets as $ticket) {
+                        // dd($ticket);
                         for ($i = 0; $i < $ticket['count']; $i++) {
                             $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
                         }
@@ -556,12 +564,12 @@ class EventTicketController extends Controller
                             $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
                         }
                     }
-                    #ADD EXTRA AMOUNT FOR PAYABLE FOR USER
+                    #ADD EXTRA AMOUNT FOR PAYABLE FOR USER in booking_details
                     if (!empty($ExtraPricing)) {
                         foreach ($ExtraPricing as $value) {
-                            $Binding3 = [];
-                            $Sql3 = "";
-                            $Binding3 = array(
+                            $Binding4 = [];
+                            $Sql4 = "";
+                            $Binding4 = array(
                                 "booking_id" => $BookingId,
                                 "event_id" => $EventId,
                                 "user_id" => $UserId,
@@ -570,11 +578,72 @@ class EventTicketController extends Controller
                                 "ticket_amount" => $value["value"],
                                 "ticket_discount" => 0,
                                 "booking_date" => strtotime("now"),
-                                "question_id"=>$value["question_id"],
-                                "attendee_number"=>$value["aNumber"]
+                                "question_id" => $value["question_id"],
+                                "attendee_number" => $value["aNumber"]
                             );
-                            $Sql3 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date,question_id,attendee_number) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date,:question_id,:attendee_number)";
-                            DB::insert($Sql3, $Binding3);
+                            $Sql4 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date,question_id,attendee_number) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date,:question_id,:attendee_number)";
+                            DB::insert($Sql4, $Binding4);
+
+                            #ADD COUNT IN extra_pricing_booking TABLE
+                            $Binding5 = [];
+                            $Sql5 = "";
+                            $CurrentSoldCount = 0;
+
+                            #Check If Question Id & Option Id Exists In extra_pricing_booking Table Or Not. If Yes Then Get The Current Count
+                            if (!empty($value["count"])) {
+                                $SqlExist = "SELECT id,current_count,option_id FROM extra_pricing_booking WHERE question_id =:question_id AND option_id=:option_id";
+                                $Exist = DB::select($SqlExist, array("question_id" => $value["question_id"], "option_id" => $value["option_id"]));
+
+                                if (sizeof($Exist) > 0) {
+                                    #UPDATE THE RECORD GET CURRENT COUNT FROM SAME TABLE
+                                    $ExistId = $Exist[0]->id;
+                                    $SoldCount = $Exist[0]->current_count;
+                                    $CurrentSoldCount = $SoldCount + 1;
+
+                                    if ($value["count"] >= $CurrentSoldCount) {
+                                        $Binding5 = array(
+                                            "event_id" => $EventId,
+                                            "booking_id" => $BookingId,
+                                            "user_id" => $UserId,
+                                            "ticket_id" => $value["ticket_id"],
+                                            "total_count" => $value["count"],
+                                            "current_count" => $CurrentSoldCount,
+                                            "last_booked_date" => strtotime('now'),
+                                            "id" => $ExistId
+                                        );
+                                        $Sql5 = "UPDATE extra_pricing_booking SET
+                                                event_id = :event_id,
+                                                booking_id = :booking_id,
+                                                user_id = :user_id,
+                                                ticket_id = :ticket_id,
+                                                total_count = :total_count,
+                                                current_count = :current_count,
+                                                last_booked_date = :last_booked_date
+                                                WHERE id = :id";
+                                        DB::update($Sql5, $Binding5);
+                                    } else {
+                                        // $ResposneCode = 400;
+                                        // $message = 'The ' . $value["question_label"] . ' you want to add is out of stock.';
+                                    }
+                                } else {
+                                    #ADD A NEW RECORD TO THE TABLE
+                                    $CurrentSoldCount = 1;
+                                    $Binding5 = array(
+                                        "event_id" => $EventId,
+                                        "booking_id" => $BookingId,
+                                        "user_id" => $UserId,
+                                        "ticket_id" => $value["ticket_id"],
+                                        "question_id" => $value["question_id"],
+                                        "option_id" => $value["option_id"],
+                                        "total_count" => $value["count"],
+                                        "current_count" => $CurrentSoldCount,
+                                        "first_booked_date" => strtotime('now')
+                                    );
+                                    $Sql5 = "INSERT INTO extra_pricing_booking (event_id,booking_id,user_id,ticket_id,question_id,option_id,total_count,current_count,first_booked_date) VALUES (:event_id,:booking_id,:user_id,:ticket_id,:question_id,:option_id,:total_count,:current_count,:first_booked_date)";
+                                    DB::insert($Sql5, $Binding5);
+                                }
+                            }
+
                         }
                     }
                     #ATTENDEE DETAILS
