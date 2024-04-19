@@ -198,5 +198,61 @@ class MasterController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    function getLocationData(Request $request)
+    {
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = '';
+
+        #GET STATE WISE
+        $CityName = isset($request->city_name) ? $request->city_name : "";
+        $StateName = isset($request->state_name) ? $request->state_name : "";
+        $CountryName = isset($request->country_name) ? $request->country_name : "";
+
+        $CityId = $StateId = $CountryId = 0;
+        $NewCityName = $NewStateName = $NewCountryName = "";
+        #CITY
+        if (!empty($CityName)) {
+            // dd($CityName);
+            $sql1 = "SELECT c.*,s.name AS s_name,co.name AS co_name FROM cities AS c
+                LEFT JOIN states as s ON c.state_id=s.id
+                LEFT JOIN countries as co ON co.id=s.country_id
+
+             WHERE c.show_flag=1 AND s.flag=1 AND co.flag=1";
+            $CityText = strtolower($CityName);
+            $StateText = strtolower($StateName);
+            $CountryText = strtolower($CountryName);
+
+            $sql1 .= " AND LOWER(c.name) =:city_name AND LOWER(s.name) =:state_name AND LOWER(co.name) =:country_name";
+            // dd($sql1);
+            $City = DB::select($sql1,array("city_name"=>$CityText,"state_name"=>$StateText,"country_name"=>$CountryText));
+            // dd($City);
+            if (count($City) > 0) {
+                $CityId = $City[0]->id;
+                $NewCityName = $City[0]->name;
+                $StateId = $City[0]->state_id;
+                $NewStateName = $City[0]->s_name;
+                $CountryId = $City[0]->country_id;
+                $NewCountryName = $City[0]->co_name;
+            }
+        }
+        $ResponseData['CityId'] = $CityId;
+        $ResponseData['NewCityName'] = $NewCityName;
+        $ResponseData['StateId'] = $StateId;
+        $ResponseData['NewStateName'] = $NewStateName;
+        $ResponseData['CountryId'] = $CountryId;
+        $ResponseData['NewCountryName'] = $NewCountryName;
+        // dd($sql1,$City);
+        $response = [
+            'status' => 200,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
 
 }
