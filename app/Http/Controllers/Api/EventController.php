@@ -814,7 +814,7 @@ class EventController extends Controller
                 $sql .= " AND id=" . $EventId;
                 $Events = DB::select($sql);
             }
-
+               
             // dd($Events);
             $master = new Master();
             $e = new Event();
@@ -928,8 +928,12 @@ class EventController extends Controller
             $ResponseData['GST_PERCENTAGE'] = !empty($OrganizerInfoDetails) && !empty($OrganizerInfoDetails[0]->gst_percentage) &&
             $OrganizerInfoDetails[0]->gst == 1 ? $OrganizerInfoDetails[0]->gst_percentage : 0;
 
+            //$ResponseData['YTCR_FEE_PERCENTAGE'] = !empty($SettingInfoDetails) && !empty($SettingInfoDetails[0]->ticket_ytcr_base_price) ?
+            //   $SettingInfoDetails[0]->ticket_ytcr_base_price : config('custom.ytcr_fee_percent');
+           
+            $ytcr_base_price = !empty($Events) && $Events[0]->ytcr_base_price ? $Events[0]->ytcr_base_price : 0;
             $ResponseData['YTCR_FEE_PERCENTAGE'] = !empty($SettingInfoDetails) && !empty($SettingInfoDetails[0]->ticket_ytcr_base_price) ?
-                $SettingInfoDetails[0]->ticket_ytcr_base_price : config('custom.ytcr_fee_percent');
+                $SettingInfoDetails[0]->ticket_ytcr_base_price : $ytcr_base_price;
 
             $ResponseData['PAYMENT_GATEWAY_FEE_PERCENTAGE'] = config('custom.payment_gateway_fee_percent');
 
@@ -954,7 +958,12 @@ class EventController extends Controller
             $sql1 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id";
             $TicketResult = DB::select($sql1, array('event_id' => $EventId));
             //dd($CommResult);
-            $ResponseData['tickets_details'] = !empty($TicketResult) ? $TicketResult[0] : [];
+            if(!empty($TicketResult)){
+                foreach($TicketResult as $res){
+                    $res->checked = false;
+                }
+            }
+            $ResponseData['tickets_details'] = !empty($TicketResult) ? $TicketResult : [];
 
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
@@ -1662,6 +1671,105 @@ class EventController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+
+    
+    public function addEditCoupon(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+               
+                $EventId = $aPost['event_id'];
+                $UserId = $aPost['user_id'];
+
+                $DiscountType = !empty($request->discount_type) ? $request->discount_type : 1;
+                $DiscountName = !empty($request->discount_name) ? $request->discount_name : '';
+                //$EventCommunicationId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+                $DiscountAmount = !empty($request->discount_amount) ? $request->discount_amount : 0;
+                $DiscountPercentage = !empty($request->discount_percentage) ? $request->discount_percentage : 0;
+                $CodeType = !empty($request->code_type) ? $request->code_type : 1;
+                $NoOfDiscount = !empty($request->no_of_discount) ? $request->no_of_discount : 0;
+                $DiscountCode = !empty($request->discount_code) ? $request->discount_code : '';
+                $PrefixCode = !empty($request->prefix_code) ? $request->prefix_code : '';
+                
+                $discount_from_date = !empty($request->discount_from_date) ? $request->discount_from_date : 0;
+                $discount_from_time = !empty($request->discount_from_time) ? $request->discount_from_time : 0;
+                $discount_to_date = !empty($request->discount_to_date) ? $request->discount_to_date : 0;
+                $discount_to_time = !empty($request->discount_to_time) ? $request->discount_to_time : 0;
+
+                $HaveListCodes = !empty($request->have_list_codes) ? $request->have_list_codes : 0;
+                $ApplyTicket = !empty($request->apply_ticket) ? $request->apply_ticket : 1;
+                $TicketSelectedData = !empty($request->ticket_selected_data) ? $request->ticket_selected_data : '';
+                
+                $UploadedCsv = !empty($request->upload_csv) ? $request->upload_csv : '';
+
+
+
+
+                    //if (empty($EventCommunicationId)) {
+
+                        // $Bindings = array(
+                        //     "event_id" => $EventId,
+                        //     "user_id"  => $UserId,
+                        //     "question" => $QuestionName,
+                        //     "answer"   => $Answer
+                        // );
+
+                        // $insert_SQL = "INSERT INTO event_FAQ (event_id,user_id,question,answer) VALUES(:event_id,:user_id,:question,:answer)";
+                        // DB::insert($insert_SQL, $Bindings);
+
+                        // $ResposneCode = 200;
+                        // $message = "FAQ added successfully";
+
+                    // } else {
+
+                    //     $Bindings = array(
+                    //         "question" => $QuestionName,
+                    //         "answer"   => $Answer,
+                    //         "event_comm_id" => $EventCommunicationId
+                    //     );
+
+                    //     $sql = 'UPDATE event_FAQ SET question = :question, answer  = :answer WHERE id = :event_comm_id';
+                    //     // dd($sql);
+                    //     DB::update($sql, $Bindings);
+
+                    //     $ResposneCode = 200;
+                    //     $message = "FAQ updated successfully";
+                    // }
+
+            }else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+    }
+
 
 
 }

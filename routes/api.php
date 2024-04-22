@@ -78,6 +78,7 @@ Route::controller(EventController::class)->group(function () {
     Route::post('duplicate_events', 'DuplicateEvents');
     Route::post('delete_event/{id}', 'EventDelete');
     Route::post('event_status', 'EventStatus');
+    Route::post('add_edit_coupon', 'addEditCoupon');
 });
 
 Route::controller(UserController::class)->group(function () {
