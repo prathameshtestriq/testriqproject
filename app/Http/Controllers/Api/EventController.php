@@ -1020,6 +1020,27 @@ class EventController extends Controller
             }
             $ResponseData['tickets_details'] = !empty($TicketResult) ? $TicketResult : [];
 
+            // ---------- get Coupons Details
+            $sql1 = "SELECT id,discount_type,discount_name,coupon_status FROM event_coupon WHERE is_deleted = 0 AND event_id=:event_id";
+            $CouponResult = DB::select($sql1, array('event_id' => $EventId));
+
+            if(!empty($CouponResult)){
+                foreach($CouponResult as $res){
+                    $sql2 = "SELECT * FROM event_coupon_details WHERE event_id=:event_id AND event_coupon_id=:event_coupon_id ";
+                    $CouponDetailsResult = DB::select($sql2, array('event_id' => $EventId, 'event_coupon_id' => $res->id));
+
+                    $res->no_of_discount =  !empty($CouponDetailsResult[0]->no_of_discount) ? $CouponDetailsResult[0]->no_of_discount : '';
+                    $res->discount_amt_per_type =  !empty($CouponDetailsResult[0]->discount_amt_per_type) ? $CouponDetailsResult[0]->discount_amt_per_type : '';
+                    $res->discount_amount =  !empty($CouponDetailsResult[0]->discount_amount) ? $CouponDetailsResult[0]->discount_amount : '';
+                    $res->discount_percentage =  !empty($CouponDetailsResult[0]->discount_percentage) ? $CouponDetailsResult[0]->discount_percentage : '';
+                    $res->expired_date =  !empty($CouponDetailsResult[0]->discount_to_datetime) ? date('d-m-Y',$CouponDetailsResult[0]->discount_to_datetime) : '';
+                    $res->discount_code =  !empty($CouponDetailsResult[0]->discount_code) ? $CouponDetailsResult[0]->discount_code : '';
+                    $res->coupon_status =  !empty($res->coupon_status) ? true : false;
+                }
+            }
+            //dd($CouponResult);
+            $ResponseData['coupon_details'] = !empty($CouponResult) ? $CouponResult : [];
+
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
         } else {
@@ -1653,20 +1674,32 @@ class EventController extends Controller
             $EventCommId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
             $CommonFlag = !empty($request->common_flag) ? $request->common_flag : '';
 
-            if (isset($request->common_flag) && $CommonFlag == 'faq_delete') {
-                $del_sSQL = 'DELETE FROM event_FAQ WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
-                DB::delete($del_sSQL, array(
-                    'eventId' => $EventId,
-                    'event_comm_id' => $EventCommId
-                )
-                );
-            } else {
-                $del_sSQL1 = 'DELETE FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
-                DB::delete($del_sSQL1, array(
-                    'eventId' => $EventId,
-                    'event_comm_id' => $EventCommId
-                )
-                );
+            if(isset($request->common_flag) && $CommonFlag == 'faq_delete'){
+                    $del_sSQL = 'DELETE FROM event_FAQ WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
+                    DB::delete($del_sSQL,array(
+                        'eventId' => $EventId,
+                        'event_comm_id' => $EventCommId
+                    ));
+            }else if(isset($request->common_flag) && $CommonFlag == 'coupon_delete'){
+
+                    $Bindings = array(
+                            "is_deleted" => 1,
+                            'event_comm_id' => $EventCommId
+                    );
+                    $sql = 'UPDATE event_coupon SET is_deleted = :is_deleted WHERE id = :event_comm_id';
+                    DB::update($sql, $Bindings);
+
+                    $del_sSQL = 'DELETE FROM event_coupon_details WHERE `event_id`=:eventId AND `event_coupon_id`=:event_comm_id ';
+                    DB::delete($del_sSQL,array(
+                        'eventId' => $EventId,
+                        'event_comm_id' => $EventCommId
+                    ));
+            }else{
+                    $del_sSQL1 = 'DELETE FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
+                    DB::delete($del_sSQL1,array(
+                        'eventId' => $EventId,
+                        'event_comm_id' => $EventCommId
+                    ));
             }
 
             $response['data'] = [];
@@ -1717,6 +1750,56 @@ class EventController extends Controller
                 )
                 );
 
+            }else if($EventEditFlag == 'coupon_edit'){
+
+                $Sql = 'SELECT id,discount_type,discount_name FROM event_coupon WHERE `event_id`=:eventId AND `id`=:event_comm_id';
+                $CouponResult = DB::select($Sql,array(
+                    'eventId' => $EventId,
+                    'event_comm_id' => $EventCommId
+                ));
+                //dd($CouponResult);
+
+                if(!empty($CouponResult)){
+                    foreach($CouponResult as $res){
+                        $sql2 = "SELECT * FROM event_coupon_details WHERE event_id=:event_id AND event_coupon_id=:event_coupon_id ";
+                        $CouponDetailsResult = DB::select($sql2, array('event_id' => $EventId, 'event_coupon_id' => $res->id));
+
+                        $res->discount_amt_per_type =  !empty($CouponDetailsResult[0]->discount_amt_per_type) ? (string)$CouponDetailsResult[0]->discount_amt_per_type : '';
+                        $res->discount_amount =  !empty($CouponDetailsResult[0]->discount_amount) ? $CouponDetailsResult[0]->discount_amount : '';
+                        $res->discount_percentage =  !empty($CouponDetailsResult[0]->discount_percentage) ? $CouponDetailsResult[0]->discount_percentage : '';
+                        $res->code_type =  !empty($CouponDetailsResult[0]->code_type) ? (string)$CouponDetailsResult[0]->code_type : '';
+                        $res->no_of_discount =  !empty($CouponDetailsResult[0]->no_of_discount) ? $CouponDetailsResult[0]->no_of_discount : '';
+                        $res->discount_code =  !empty($CouponDetailsResult[0]->discount_code) ? $CouponDetailsResult[0]->discount_code : '';
+                        $res->prefix_code =  !empty($CouponDetailsResult[0]->prefix_code) ? $CouponDetailsResult[0]->prefix_code : '';
+                        $res->discount_from_date =  !empty($CouponDetailsResult[0]->discount_from_datetime) ? date('Y-m-d',$CouponDetailsResult[0]->discount_from_datetime) : '';
+                        $res->discount_from_time =  !empty($CouponDetailsResult[0]->discount_from_datetime) ? date('h:i',$CouponDetailsResult[0]->discount_from_datetime) : '';
+                        $res->discount_to_date =  !empty($CouponDetailsResult[0]->discount_to_datetime) ? date('Y-m-d',$CouponDetailsResult[0]->discount_to_datetime) : '';
+                        $res->discount_to_time =  !empty($CouponDetailsResult[0]->discount_to_datetime) ? date('h:i',$CouponDetailsResult[0]->discount_to_datetime) : '';
+                        $res->apply_ticket =  !empty($CouponDetailsResult[0]->apply_ticket) ? $CouponDetailsResult[0]->apply_ticket : 1;
+
+                        $ticket_details_id = !empty($CouponDetailsResult[0]->ticket_details) ? $CouponDetailsResult[0]->ticket_details : '';
+                        $new_array = explode(",",$ticket_details_id);
+                        $Sql = 'SELECT id,ticket_name FROM event_tickets WHERE `event_id`=:eventId';
+                        $TicketArray = DB::select($Sql,array(
+                            'eventId' => $EventId
+                        ));
+
+                        if(!empty($TicketArray)){
+                            foreach($TicketArray as $res1){
+                                if (in_array($res1->id,$new_array)){
+                                    $res1->checked = true;
+                                }else{
+                                    $res1->checked = false;
+                                }
+                            }
+                        }
+
+                        $res->edit_ticket_details = !empty($TicketArray) ? $TicketArray : [];
+                    }
+                }
+                $aResult['coupon_edit_details'] = !empty($CouponResult) ? $CouponResult : [];
+               // dd($CouponResult);
+
             }
 
             $response['data'] = $aResult;
@@ -1739,6 +1822,7 @@ class EventController extends Controller
         $response['message'] = "";
         $ResposneCode = 400;
         $empty = false;
+        $flag = 0;
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken['data']->ID);
 
@@ -1774,8 +1858,8 @@ class EventController extends Controller
                 $discount_to_date = !empty($request->discount_to_date) ? $request->discount_to_date : 0;
                 $discount_to_time = !empty($request->discount_to_time) ? $request->discount_to_time : 0;
 
-                $final_discount_from_datetime = !empty($discount_from_date) && !empty($discount_from_time) ? strtotime($discount_from_date . ' ' . $discount_from_time) : '';
-                $final_discount_to_datetime = !empty($discount_to_date) && !empty($discount_to_time) ? strtotime($discount_to_date . ' ' . $discount_to_time) : '';
+                $final_discount_from_datetime = !empty($discount_from_date) && !empty($discount_from_time) ? strtotime($discount_from_date.' '.$discount_from_time) : '';
+                $final_discount_to_datetime   = !empty($discount_to_date) && !empty($discount_to_time) ? strtotime($discount_to_date.' '.$discount_to_time) : '';
                 //dd($final_discount_to_datetime);
 
                 $HaveListCodes = !empty($request->have_list_codes) ? $request->have_list_codes : 0;
@@ -1783,133 +1867,235 @@ class EventController extends Controller
                 $TicketSelectedData = !empty($request->ticket_selected_data) ? json_decode($request->ticket_selected_data) : '';
 
                 $UploadedCsv = !empty($request->upload_csv) ? $request->file('upload_csv') : '';
-                // return $request->ticket_selected_data;
-                //dd($UploadedCsv);
-                // for ($i=0; $i < count($NewCouponArray) ; $i++) {
-                //     dd($NewCouponArray['code']);
-                // }
-                // dd($TicketSelectedData);
 
-                $Bindings = array(
-                    "event_id" => $EventId,
-                    "discount_type" => $DiscountType,
-                    "discount_name" => $DiscountName,
-                    "created_by" => $UserId,
-                    "created_date" => time()
-                );
-
-                $insert_SQL = "INSERT INTO event_coupon (event_id,discount_type,discount_name,created_by,created_date) VALUES(:event_id,:discount_type,:discount_name,:created_by,:created_date)";
-                DB::insert($insert_SQL, $Bindings);
-                $last_inserted_id = DB::getPdo()->lastInsertId();
-                //dd($last_inserted_id);
+                $EditCouponId = !empty($request->edit_coupon_id) ? $request->edit_coupon_id : '';
 
                 //---------- all ticket apply -----------
                 $ticket_ids = '';
-                if ($ApplyTicket == 1) {
+                if($ApplyTicket == 1){
                     $Sql = 'SELECT id FROM event_tickets WHERE `event_id`=:eventId ';
-                    $ticket_aResult = DB::select($Sql, array(
+                    $ticket_aResult = DB::select($Sql,array(
                         'eventId' => $EventId
-                    )
-                    );
+                    ));
                     //dd($ticket_aResult);
-                    $ticket_id_array = !empty($ticket_aResult) ? array_column($ticket_aResult, 'id') : '';
+                    $ticket_id_array = !empty($ticket_aResult) ? array_column($ticket_aResult , 'id') : '';
                     $ticket_ids = !empty($ticket_id_array) ? implode(",", $ticket_id_array) : '';
-                } else {
+                }else{
                     $ticket_id_array = [];
-                    if (!empty($TicketSelectedData)) {
-                        foreach ($TicketSelectedData as $res) {
-                            if (isset($res->checked) && $res->checked == true)
-                                $ticket_id_array[] = $res->id;
+                    if(!empty($TicketSelectedData)){
+                        foreach($TicketSelectedData as $res){
+                            if(isset($res->checked) && $res->checked == true)
+                               $ticket_id_array[] = $res->id;
                         }
                     }
                     $ticket_ids = !empty($ticket_id_array) ? implode(",", $ticket_id_array) : '';
                 }
 
-                if ($CodeType == 1) {
 
-                    if (!empty($last_inserted_id)) {
+                if(empty($EditCouponId)){     // data insert
 
-                        $Bindings1 = array(
-                            "event_coupon_id" => $last_inserted_id,
-                            "event_id" => $EventId,
-                            "discount_type" => $DiscountType,
-                            "discount_amt_per_type" => $DiscountAmtPerType,
-                            "discount_amount" => $DiscountAmount,
-                            "discount_percentage" => $DiscountPercentage,
-                            "code_type" => $CodeType,
-                            "no_of_discount" => $NoOfDiscount,
-                            "discount_code" => $DiscountCode,
-                            "prefix_code" => $PrefixCode,
-                            "discount_from_datetime" => $final_discount_from_datetime,
-                            "discount_to_datetime" => $final_discount_to_datetime,
-                            "have_list_codes" => $HaveListCodes,
-                            "apply_ticket" => $ApplyTicket,
-                            "ticket_details" => $ticket_ids
-                        );
-                        $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details)";
-                        //dd($insert_SQL1);
-                        DB::insert($insert_SQL1, $Bindings1);
-                    }
+                    $SQL = "SELECT discount_name FROM event_coupon WHERE LOWER(discount_name) = :discount_name AND event_id = :event_id";
+                    $IsExist = DB::select($SQL, array('discount_name' => strtolower($DiscountName), "event_id" => $EventId));
+                   // dd($IsExist);
 
-                } else {
+                    $SQL1 = "SELECT discount_code FROM event_coupon_details WHERE LOWER(discount_code) = :discount_code AND event_id = :event_id";
+                    $IsCouponExist = DB::select($SQL1, array('discount_code' => strtolower($DiscountCode), "event_id" => $EventId));
+                    //dd($IsCouponExist);
 
-                    if (!empty($UploadedCsv)) {
-                        // Read CSV file
-                        $csv = Reader::createFromPath($UploadedCsv->getPathname(), 'r');
-                        $records = $csv->getRecords();
-                        // $header = array_shift($records);
-                        $NewCouponArray = [];
-                        // Iterate over records and convert them to arrays
-                        foreach ($records as $record) {
-                            foreach ($record as $res) {
-                                $NewCouponArray[] = array("code" => $res);
+                    if (!empty($IsExist) ) {
+                        $ResposneCode = 200;
+                        $message = "Discount name is already exists, please use another name.";
+                        $flag = 1;
+                        $ResponseData = $flag;
+                    }else if (!empty($IsCouponExist) ) {
+                        $ResposneCode = 200;
+                        $message = "Discount code is already exists, please use another code.";
+                        $flag = 2;
+                        $ResponseData = $flag;
+                    }else{
+
+                        $Bindings = array(
+                                    "event_id" => $EventId,
+                                    "discount_type" => $DiscountType,
+                                    "discount_name" => $DiscountName,
+                                    "created_by"    => $UserId,
+                                    "created_date"  => time()
+                                );
+
+                        $insert_SQL = "INSERT INTO event_coupon (event_id,discount_type,discount_name,created_by,created_date) VALUES(:event_id,:discount_type,:discount_name,:created_by,:created_date)";
+                            DB::insert($insert_SQL, $Bindings);
+                        $last_inserted_id = DB::getPdo()->lastInsertId();
+                        //dd($last_inserted_id);
+
+
+                        if($CodeType == 1){
+
+                            if(!empty($last_inserted_id)){
+
+                                $Bindings1 = array(
+                                    "event_coupon_id" => $last_inserted_id,
+                                    "event_id"        => $EventId,
+                                    "discount_type"   => $DiscountType,
+                                    "discount_amt_per_type" => $DiscountAmtPerType,
+                                    "discount_amount" => $DiscountAmount,
+                                    "discount_percentage" => $DiscountPercentage,
+                                    "code_type" => $CodeType,
+                                    "no_of_discount" => $NoOfDiscount,
+                                    "discount_code" => $DiscountCode,
+                                    "prefix_code" => $PrefixCode,
+                                    "discount_from_datetime" => $final_discount_from_datetime,
+                                    "discount_to_datetime" => $final_discount_to_datetime,
+                                    "have_list_codes" => $HaveListCodes,
+                                    "apply_ticket" => $ApplyTicket,
+                                    "ticket_details" => $ticket_ids
+                                );
+                                $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details)";
+                                //dd($insert_SQL1);
+                                DB::insert($insert_SQL1, $Bindings1);
                             }
-                        }
 
-                        if (!empty($NewCouponArray)) {
-                            $indexSpam = array_search('DISCOUNT_CODE', $NewCouponArray);
-                            unset($NewCouponArray[$indexSpam]);
-                        }
+                        }else{
 
-                        if ($HaveListCodes == 1) {
+                            if(!empty($UploadedCsv)){
+                                // Read CSV file
+                                $csv = Reader::createFromPath($UploadedCsv->getPathname(), 'r');
+                                $records = $csv->getRecords();
+                                // $header = array_shift($records);
+                                $NewCouponArray = [];
+                                // Iterate over records and convert them to arrays
+                                foreach ($records as $record) {
+                                    foreach($record as $key=>$res){
+                                            $NewCouponArray[] = $res;
 
-                            if (!empty($NewCouponArray)) {
-                                foreach ($NewCouponArray as $res) {
-
-                                    $Bindings1 = array(
-                                        "event_coupon_id" => $last_inserted_id,
-                                        "event_id" => $EventId,
-                                        "discount_type" => $DiscountType,
-                                        "discount_amt_per_type" => $DiscountAmtPerType,
-                                        "discount_amount" => $DiscountAmount,
-                                        "discount_percentage" => $DiscountPercentage,
-                                        "code_type" => $CodeType,
-                                        "no_of_discount" => $NoOfDiscount,
-                                        "discount_code" => $res['code'],
-                                        "prefix_code" => $PrefixCode,
-                                        "discount_from_datetime" => $final_discount_from_datetime,
-                                        "discount_to_datetime" => $final_discount_to_datetime,
-                                        "have_list_codes" => $HaveListCodes,
-                                        "apply_ticket" => $ApplyTicket,
-                                        "ticket_details" => $ticket_ids
-                                    );
-                                    $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details)";
-                                    //dd($insert_SQL1);
-                                    DB::insert($insert_SQL1, $Bindings1);
-
+                                    }
                                 }
+
+
+                                if(!empty($NewCouponArray)){
+                                    $indexSpam = array_search('DISCOUNT_CODE', $NewCouponArray);
+                                    unset($NewCouponArray[$indexSpam]);
+                                }
+                                $NewCouponArray = array_unique($NewCouponArray);
+                                //dd($NewCouponArray);
+                                //if($HaveListCodes == 1){
+
+                                    if(!empty($NewCouponArray)){
+                                        foreach ($NewCouponArray as $res) {
+
+                                            $Bindings1 = array(
+                                                "event_coupon_id" => $last_inserted_id,
+                                                "event_id"        => $EventId,
+                                                "discount_type"   => $DiscountType,
+                                                "discount_amt_per_type" => $DiscountAmtPerType,
+                                                "discount_amount" => $DiscountAmount,
+                                                "discount_percentage" => $DiscountPercentage,
+                                                "code_type" => $CodeType,
+                                                "no_of_discount" => $NoOfDiscount,
+                                                "discount_code" => $res,
+                                                "prefix_code" => $PrefixCode,
+                                                "discount_from_datetime" => $final_discount_from_datetime,
+                                                "discount_to_datetime" => $final_discount_to_datetime,
+                                                "have_list_codes" => $HaveListCodes,
+                                                "apply_ticket" => $ApplyTicket,
+                                                "ticket_details" => $ticket_ids
+                                            );
+                                            $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details)";
+                                            //dd($insert_SQL1);
+                                            DB::insert($insert_SQL1, $Bindings1);
+
+                                        }
+                                    }
+                                //}
                             }
                         }
 
+                        $message = 'Coupon added successfully';
+                        $ResposneCode = 200;
                     }
 
+                }else{                       // data update
+                    // dd($EditCouponId);
+
+                    $SQL = "SELECT discount_name FROM event_coupon WHERE LOWER(discount_name) = :discount_name AND event_id = :event_id AND id != :edit_id";
+                    $IsExist = DB::select($SQL, array('discount_name' => strtolower($DiscountName), "event_id" => $EventId, "edit_id" => $EditCouponId));
+                   // dd($IsExist);
+                    $SQL1 = "SELECT discount_code FROM event_coupon_details WHERE LOWER(discount_code) = :discount_code AND event_id = :event_id AND event_coupon_id != :edit_id";
+                    $IsCouponExist = DB::select($SQL1, array('discount_code' => strtolower($DiscountCode), "event_id" => $EventId, "edit_id" => $EditCouponId));
+
+                    if (!empty($IsExist) ) {
+                        $ResposneCode = 200;
+                        $message = "Discount name is already exists, please use another name.";
+                        $flag = 1;
+                        $ResponseData = $flag;
+                    }else if (!empty($IsCouponExist) ) {
+                        $ResposneCode = 200;
+                        $message = "Discount code is already exists, please use another code.";
+                        $flag = 2;
+                        $ResponseData = $flag;
+                    }else{
+
+
+                        $Bindings = array(
+                                "discount_type" => $DiscountType,
+                                "discount_name" => $DiscountName,
+                                "event_id"      => $EventId,
+                                'edit_id'       => $EditCouponId
+                        );
+                        $edit_sql = 'UPDATE event_coupon SET discount_type = :discount_type, discount_name = :discount_name WHERE event_id = :event_id AND id = :edit_id';
+                        DB::update($edit_sql, $Bindings);
+
+                        $cond = $arr_cond = '';
+                        if($CodeType == '1'){
+                            $cond = ', discount_code = :discount_code';
+                        }
+
+                        //coupon details update
+                        if($CodeType == '1'){
+                            $Bindings1 = array(
+                                            "discount_type"         => $DiscountType,
+                                            "discount_amt_per_type" => $DiscountAmtPerType,
+                                            "discount_amount"       => $DiscountAmount,
+                                            "discount_percentage"   => $DiscountPercentage,
+                                            "code_type"             => $CodeType,
+                                            "no_of_discount"        => $NoOfDiscount,
+                                            "prefix_code"           => $PrefixCode,
+                                            "discount_from_datetime" => $final_discount_from_datetime,
+                                            "discount_to_datetime"  => $final_discount_to_datetime,
+                                            "apply_ticket"          => $ApplyTicket,
+                                            "ticket_details"        => $ticket_ids,
+                                            "discount_code"         => $DiscountCode,
+                                            "event_id"              => $EventId,
+                                            'edit_id'               => $EditCouponId
+                                        );
+                        }else{
+                             $Bindings1 = array(
+                                            "discount_type"         => $DiscountType,
+                                            "discount_amt_per_type" => $DiscountAmtPerType,
+                                            "discount_amount"       => $DiscountAmount,
+                                            "discount_percentage"   => $DiscountPercentage,
+                                            "code_type"             => $CodeType,
+                                            "no_of_discount"        => $NoOfDiscount,
+                                            "prefix_code"           => $PrefixCode,
+                                            "discount_from_datetime" => $final_discount_from_datetime,
+                                            "discount_to_datetime"  => $final_discount_to_datetime,
+                                            "apply_ticket"          => $ApplyTicket,
+                                            "ticket_details"        => $ticket_ids,
+                                            "event_id"              => $EventId,
+                                            'edit_id'               => $EditCouponId
+                                        );
+                        }
+
+                        $edit_sql1 = 'UPDATE event_coupon_details SET discount_type = :discount_type, discount_amt_per_type = :discount_amt_per_type, discount_amount = :discount_amount, discount_percentage = :discount_percentage, code_type = :code_type, no_of_discount = :no_of_discount, prefix_code = :prefix_code, discount_from_datetime = :discount_from_datetime, discount_to_datetime = :discount_to_datetime, apply_ticket = :apply_ticket, ticket_details = :ticket_details '.$cond.' WHERE event_id = :event_id AND event_coupon_id = :edit_id';
+                        DB::update($edit_sql1, $Bindings1);
+
+                        $message = 'Coupon updated successfully';
+                        $ResposneCode = 200;
+                    }
                 }
-
-                $message = 'Coupon added successfully';
-                $ResposneCode = 200;
+                ////
 
 
-            } else {
+            }else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
             }
@@ -1926,6 +2112,48 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function StatusCoupon(Request $request)
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+            //return $request;
+            $CouponId     = !empty($request->coupon_id) ? $request->coupon_id : 0;
+           // $CouponStatus = 0;
+            //if(isset($request->coupon_status)){
+                if($request->coupon_status == "true"){
+                    $CouponStatus = 0;
+                }else if($request->coupon_status == "false"){
+                    $CouponStatus = 1;
+                }
+            //}
+
+            $ActionFlag  = !empty($request->action_flag) ? $request->action_flag : '';
+            $msg = '';
+
+                $status_sSQL = 'UPDATE event_coupon SET `coupon_status` =:coupon_status WHERE `id`=:coupon_id ';
+                DB::update($status_sSQL,array(
+                    'coupon_id' => $CouponId,
+                    'coupon_status' => $CouponStatus
+                ));
+                $msg = 'Coupon status change successfully';
+
+            $response['data'] = [];
+            $response['message'] = $msg;
+            $ResposneCode = 200;
+
+        }else{
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
 
 
 }
