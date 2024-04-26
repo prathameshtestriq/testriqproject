@@ -28,10 +28,10 @@ class OrganizerController extends Controller
             $sSQL = 'SELECT * FROM organizer WHERE user_id=:user_id';
             $organizerData = DB::select($sSQL, array('user_id' => $UserId));
 
-            // foreach ($organizerData as $value) {
-            //     $value->organizer_banner_img = (!empty ($value->organizer_banner_img)) ? env('ORGANIZER_BANNER_PATH') . $value->organizer_banner_img . '' : '';
-            //     $value->organizer_logo_img = (!empty ($value->organizer_logo_img)) ? env('ORGANIZER_LOGO_PATH') . $value->organizer_logo_img . '' : '';
-            // }
+            foreach ($organizerData as $value) {
+                $value->banner_image = (!empty ($value->banner_image)) ? url('/')."/organiser/banner_image/" . $value->banner_image . '' : '';
+                $value->logo_image = (!empty ($value->logo_image)) ? url('/')."/organiser/logo_image/" . $value->logo_image . '' : '';
+            }
             $ResponseData['organizerData'] = $organizerData;
 
             // $sSQL = 'SELECT * FROM organizer_users';
@@ -125,6 +125,7 @@ class OrganizerController extends Controller
                 $contactPerson = isset($aPost['contact_person']) ? $aPost['contact_person'] : "";
                 $contactNumber = isset($aPost['contact_no']) ? $aPost['contact_no'] : "";
 
+
                 if (empty($organiserId)) {
                     #ADD ORGANISER
                     #CHECK SAME ORGANISER NAME EXIST OR NOT
@@ -135,6 +136,8 @@ class OrganizerController extends Controller
                         $ResposneCode = 400;
                         $message = "Organiser with same name is already exists, please use another name.";
                     } else {
+                        $banner_image = isset($aPost['banner_image']) ? $aPost['banner_image'] : '';
+                        $logo_image = isset($aPost['logo_image']) ? $aPost['logo_image'] : '';
                         #INSERT CODE OF ORGANISER
                         DB::table('organizer')->insert([
                             'user_id' => $UserId,
@@ -147,9 +150,33 @@ class OrganizerController extends Controller
                             'contact_person' => $contactPerson,
                             'contact_no' => $contactNumber
                         ]);
+                        $organiserId = DB::getPdo()->lastInsertId();
+
+                        #INSERT BANNER IMAGE INTO FOLDER
+                        if (!empty($request->file('banner_image'))) {
+                            $Path = public_path('organiser/banner_image/');
+                            $new_banner_image = $request->file('banner_image');
+                            $originalName = $new_banner_image->getClientOriginalName() . "_" . $organiserId;
+                            $banner_image = $originalName;
+                            $new_banner_image->move($Path, $banner_image);
+
+                            $sSQLImg = 'UPDATE organizer SET banner_image = :banner_image WHERE id=:id';
+                            DB::update($sSQLImg, ['banner_image' => $banner_image, 'id' => $organiserId]);
+                        }
+
+                        #INSERT LOGO IMAGE INTO FOLDER
+                        if (!empty($request->file('logo_image'))) {
+                            $Path = public_path('organiser/logo_image/');
+                            $new_logo_image = $request->file('logo_image');
+                            $originalName = $new_logo_image->getClientOriginalName() . "_" . $organiserId;
+                            $logo_image = $originalName;
+                            $new_logo_image->move($Path, $logo_image);
+
+                            $sSQLImg = 'UPDATE organizer SET logo_image = :logo_image WHERE id=:id';
+                            DB::update($sSQLImg, ['logo_image' => $logo_image, 'id' => $organiserId]);
+                        }
                         $ResposneCode = 200;
                         $message = 'Organizer inserted successfully';
-
                     }
 
                 } else {
@@ -162,6 +189,36 @@ class OrganizerController extends Controller
                         $ResposneCode = 400;
                         $message = "Organiser with same name is already exists, please use another name.";
                     } else {
+                        // $SQL = "SELECT banner_image,logo_image FROM organizer WHERE id =:id";
+                        // $Org = DB::select($SQL, array('id' => $organiserId));
+
+                        // $banner_image = (isset($aPost['banner_image']) && !empty($aPost['banner_image'])) ? $aPost['banner_image'] : $Org[0]->banner_image;
+                        // $logo_image = (isset($aPost['logo_image']) && !empty($aPost['logo_image'])) ? $aPost['logo_image'] : $Org[0]->logo_image;
+
+                        #UPDATE BANNER IMAGE INTO FOLDER
+                        if (!empty($request->file('banner_image'))) {
+                            $Path = public_path('organiser/banner_image/');
+                            $new_banner_image = $request->file('banner_image');
+                            $originalName = $new_banner_image->getClientOriginalName() . "_" . $organiserId;
+                            $banner_image = $originalName;
+                            $new_banner_image->move($Path, $banner_image);
+
+                            $sSQLImg = 'UPDATE organizer SET banner_image = :banner_image WHERE id=:id';
+                            DB::update($sSQLImg, ['banner_image' => $banner_image, 'id' => $organiserId]);
+                        }
+
+                        #UPDATE LOGO IMAGE INTO FOLDER
+                        if (!empty($request->file('logo_image'))) {
+                            $Path = public_path('organiser/logo_image/');
+                            $new_logo_image = $request->file('logo_image');
+                            $originalName = $new_logo_image->getClientOriginalName() . "_" . $organiserId;
+                            $logo_image = $originalName;
+                            $new_logo_image->move($Path, $logo_image);
+
+                            $sSQLImg = 'UPDATE organizer SET logo_image = :logo_image WHERE id=:id';
+                            DB::update($sSQLImg, ['logo_image' => $logo_image, 'id' => $organiserId]);
+                        }
+
                         #UPDATE CODE OF ORGANISER
                         DB::table('organizer')
                             ->where('id', $organiserId)
@@ -366,7 +423,7 @@ class OrganizerController extends Controller
         if ($aToken['code'] == 200) {
 
             $UserId = !empty($request->user_id) ? $request->user_id : 0;
-            $OrganiserName = isset($request->organiser_name) ? str_replace("_"," ",$request->organiser_name) : '';
+            $OrganiserName = isset($request->organiser_name) ? str_replace("_", " ", $request->organiser_name) : '';
 
             $LoggedUserId = $aToken['data']->ID;
             // dd($LoggedUserId);
@@ -374,11 +431,13 @@ class OrganizerController extends Controller
             $e = new Event();
 
             $sSQL2 = 'SELECT * FROM organizer AS o WHERE o.user_id=:user_id AND name=:organiser_name';
-            $Organizer = DB::select($sSQL2, array('user_id' => $UserId, 'organiser_name'=>$OrganiserName));
+            $Organizer = DB::select($sSQL2, array('user_id' => $UserId, 'organiser_name' => $OrganiserName));
             foreach ($Organizer as $value) {
                 // dd($value->id);
                 $value->is_follow = !empty($LoggedUserId) ? $e->isOrgFollowed($value->id, $LoggedUserId) : 0;
                 $value->join_on = !empty($value->created_at) ? gmdate("F d, Y", $value->created_at) : 0;
+                $value->banner_image = (!empty ($value->banner_image)) ? url('/')."/organiser/banner_image/" . $value->banner_image . '' : '';
+                $value->logo_image = (!empty ($value->logo_image)) ? url('/')."/organiser/logo_image/" . $value->logo_image . '' : '';
             }
             $ResponseData['Organizer'] = $Organizer;
 
@@ -439,7 +498,7 @@ class OrganizerController extends Controller
                 $UserId = $aToken['data']->ID;
 
                 $Email = new Emails();
-                $Email->send_org_notification($aPost['fullname'], $aPost['email'],$aPost['contact_no'],$aPost['message']);
+                // $Email->send_org_notification($aPost['fullname'], $aPost['email'], $aPost['contact_no'], $aPost['message']);
                 $message = 'Mail send successfully';
                 $ResposneCode = 200;
 

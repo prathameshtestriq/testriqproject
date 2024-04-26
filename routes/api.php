@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdvertisementController;
+use App\Http\Controllers\Api\EventDetailsController;
 use App\Http\Controllers\Api\EventUserFollowController;
 use App\Http\Controllers\Api\OrganizerController;
 use App\Http\Controllers\Api\TestimonialController;
@@ -140,6 +141,10 @@ Route::controller(OrganizerController::class)->group(function () {
     Route::post('/organizer_details', 'allOrganizerData');
     Route::post('/send_notification_org', 'sendOrgMail');
 
+});
+
+Route::controller(EventDetailsController::class)->group(function () {
+    Route::post('/get_event_faq', 'getEventFaq');
 });
 
 
