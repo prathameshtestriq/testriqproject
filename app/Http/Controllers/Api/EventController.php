@@ -90,7 +90,7 @@ class EventController extends Controller
         $empty = false;
         $message = 'Success';
         $field = '';
-        $Events = $Banners = $UpcomingEvents = [];
+        $Events = $Banners = $UpcomingEvents = $RegistrationEvents = [];
         $ResponseData['CityName'] = '';
         $ResponseData['CountryId'] = $ResponseData['StateId'] = $ResponseData['CityId'] = 0;
         $FewSuggestionFlag = 0;
@@ -112,7 +112,7 @@ class EventController extends Controller
         #GET EVENTS COUNTRY WISE
         $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
-        // $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
+        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
 
         $CountryCode = $request->country_code;
@@ -131,6 +131,7 @@ class EventController extends Controller
                 $EventSql .= ' AND e.country=' . $CountryId[0]->id;
                 $BannerSql .= ' AND b.country=' . $CountryId[0]->id;
                 $UpcomingSql .= ' AND u.country=' . $CountryId[0]->id;
+                $RegistrationSql .= ' AND r.country=' . $CountryId[0]->id;
                 $ResponseData['CountryId'] = $CountryId[0]->id;
             }
         }
@@ -142,6 +143,7 @@ class EventController extends Controller
                 $EventSql .= ' AND e.city=' . $CityId[0]->id;
                 $BannerSql .= ' AND b.city=' . $CityId[0]->id;
                 $UpcomingSql .= ' AND u.city=' . $CityId[0]->id;
+                $RegistrationSql .= ' AND r.city=' . $CityId[0]->id;
                 $ResponseData['CityId'] = $CityId[0]->id;
                 $ResponseData['CityName'] = $CityId[0]->name;
             }
@@ -153,17 +155,20 @@ class EventController extends Controller
                 $EventSql .= ' AND e.state=' . $StateId[0]->id;
                 $BannerSql .= ' AND b.state=' . $StateId[0]->id;
                 $UpcomingSql .= ' AND u.state=' . $StateId[0]->id;
+                $RegistrationSql .= ' AND r.state=' . $StateId[0]->id;
                 $ResponseData['StateId'] = $StateId[0]->id;
             }
         }
 
         // dd($EventSql,$BannerSql);
-        if(!empty($HomeFlag)){
+        if (!empty($HomeFlag)) {
             $EventSql .= ' Limit 8';
+            $RegistrationSql .= ' Limit 8';
         }
         $Events = DB::select($EventSql);
         $Banners = DB::select($BannerSql);
-        if(!empty($HomeFlag)){
+        $RegistrationEvents = DB::select($RegistrationSql, array('registration_start_time' => $NowTime));
+        if (!empty($HomeFlag)) {
             $UpcomingSql .= ' Limit 8';
         }
         $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
@@ -178,7 +183,7 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
-                if(!empty($HomeFlag)){
+                if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
                 }
                 $Events = DB::select($EventSql);
@@ -196,19 +201,31 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
-                if(!empty($HomeFlag)){
+                if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
                 $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
             }
         }
+        if (Sizeof($RegistrationEvents) == 0) {
+            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
+            if (!empty($NewState_id)) {
+                $RegistrationSql .= ' AND r.state=' . $NewState_id;
+                if (!empty($HomeFlag)) {
+                    $RegistrationSql .= ' Limit 8';
+                }
+                $RegistrationEvents = DB::select($RegistrationSql, array('registration_start_time' => $NowTime));
+            }
+        }
+
+
         // dd($EventSql,$BannerSql,$Banners);
         $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
         if (Sizeof($Events) == 0) {
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
-                if(!empty($HomeFlag)){
+                if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
                 }
                 $Events = DB::select($EventSql);
@@ -225,10 +242,21 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
-                if(!empty($HomeFlag)){
+                if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
                 $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+            }
+        }
+
+        if (Sizeof($RegistrationEvents) == 0) {
+            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
+            if (!empty($NewState_id)) {
+                $RegistrationSql .= ' AND r.country=' . $NewCountry_id;
+                if (!empty($HomeFlag)) {
+                    $RegistrationSql .= ' Limit 8';
+                }
+                $RegistrationEvents = DB::select($RegistrationSql, array('registration_start_time' => $NowTime));
             }
         }
 
@@ -244,6 +272,7 @@ class EventController extends Controller
         // dd($Events,$Banners);
 
         $ResponseData['eventData'] = $this->ManipulateEvents($Events, $UserId);
+        $ResponseData['RegistrationEventData'] = $this->ManipulateEvents($RegistrationEvents, $UserId);
         $ResponseData['BannerImages'] = $BannerImages;
 
         #UPCOMING EVENTS
@@ -421,7 +450,7 @@ class EventController extends Controller
         // dd($aToken,$UserId);
 
         $EventId = isset($request->event_id) ? $request->event_id : 0;//for view event (Event Details page)
-        $EventName = isset($request->event_name) ? str_replace("_"," ",$request->event_name) : '';//for share event link
+        $EventName = isset($request->event_name) ? str_replace("_", " ", $request->event_name) : '';//for share event link
         // dd($EventName);
         if (!empty($EventId)) {
             $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id";
@@ -434,7 +463,7 @@ class EventController extends Controller
 
         // dd($Events);
         $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
-        $ResponseData['EventDetailId'] = sizeof($Events)>0 ? $Events[0]->id : 0;
+        $ResponseData['EventDetailId'] = sizeof($Events) > 0 ? $Events[0]->id : 0;
 
         #ORGANISER
         $ResponseData['OrganiserName'] = $ResponseData['OrganiserId'] = $ResponseData['UserId'] = "";
@@ -463,7 +492,7 @@ class EventController extends Controller
         $empty = false;
         $message = 'Success';
         $field = '';
-        $Events = $Banners = $UpcomingEvents = [];
+        $Events = $Banners = $UpcomingEvents = $RegistrationEvents = [];
         $ResponseData['CityName'] = '';
         $ResponseData['CountryId'] = $ResponseData['StateId'] = $ResponseData['CityId'] = 0;
         $FewSuggestionFlag = 0;
@@ -486,7 +515,7 @@ class EventController extends Controller
         $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
         $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
-
+        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time";
         // $CountryCode = $request->country_code;
         $City = isset($request->city) ? $request->city : '';
         // $State = isset($request->state) ? $request->state : '';
@@ -501,6 +530,7 @@ class EventController extends Controller
             $EventSql .= ' AND e.city=' . $City;
             $BannerSql .= ' AND b.city=' . $City;
             $UpcomingSql .= ' AND u.city=' . $City;
+            $RegistrationSql .= ' AND r.city=' . $City;
 
             if (sizeof($CityId) > 0) {
                 $ResponseData['CityName'] = $CityId[0]->name;
@@ -508,13 +538,16 @@ class EventController extends Controller
                 $ResponseData['StateId'] = $CityId[0]->state_id;
                 $ResponseData['CityId'] = $CityId[0]->id;
             }
-            if(!empty($HomeFlag)){
+            if (!empty($HomeFlag)) {
                 $EventSql .= ' Limit 8';
+                $RegistrationSql .= ' Limit 8';
             }
             $Events = DB::select($EventSql);
+            $RegistrationEvents = DB::select($RegistrationSql, array('registration_start_time' => $NowTime));
+
             // dd($EventSql,$Events);
             $Banners = DB::select($BannerSql);
-            if(!empty($HomeFlag)){
+            if (!empty($HomeFlag)) {
                 $UpcomingSql .= ' Limit 8';
             }
             $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
@@ -534,7 +567,7 @@ class EventController extends Controller
                     // dd($ResponseData,$NewState_id);
                     $ResponseData['StateId'] = $NewState_id;
                 }
-                if(!empty($HomeFlag)){
+                if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
                 }
                 $Events = DB::select($EventSql);
@@ -552,10 +585,20 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
-                if(!empty($HomeFlag)){
+                if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
                 $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+            }
+        }
+        if (Sizeof($RegistrationEvents) == 0) {
+            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
+            if (!empty($NewState_id)) {
+                $RegistrationSql .= ' AND r.state=' . $NewState_id;
+                if (!empty($HomeFlag)) {
+                    $RegistrationSql .= ' Limit 8';
+                }
+                $RegistrationEvents = DB::select($RegistrationSql, array('registration_start_time' => $NowTime));
             }
         }
 
@@ -568,7 +611,7 @@ class EventController extends Controller
                 if (empty($ResponseData['CountryId'])) {
                     $ResponseData['CountryId'] = $NewCountry_id;
                 }
-                if(!empty($HomeFlag)){
+                if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
                 }
                 $Events = DB::select($EventSql);
@@ -585,10 +628,20 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
-                if(!empty($HomeFlag)){
+                if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
                 $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+            }
+        }
+        if (Sizeof($RegistrationEvents) == 0) {
+            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
+            if (!empty($NewState_id)) {
+                $RegistrationSql .= ' AND r.country=' . $NewCountry_id;
+                if (!empty($HomeFlag)) {
+                    $RegistrationSql .= ' Limit 8';
+                }
+                $RegistrationEvents = DB::select($RegistrationSql, array('registration_start_time' => $NowTime));
             }
         }
 
@@ -603,6 +656,7 @@ class EventController extends Controller
         }
         // dd($Events,$Banners);
         $ResponseData['eventData'] = $this->ManipulateEvents($Events, $UserId);
+        $ResponseData['RegistrationEventData'] = $this->ManipulateEvents($RegistrationEvents, $UserId);
         $ResponseData['BannerImages'] = $BannerImages;
 
         #UPCOMING EVENTS
@@ -815,7 +869,7 @@ class EventController extends Controller
                 $sql .= " AND id=" . $EventId;
                 $Events = DB::select($sql);
             }
-               
+
             // dd($Events);
             $master = new Master();
             $e = new Event();
@@ -927,11 +981,11 @@ class EventController extends Controller
             $OrganizerInfoDetails = DB::select($sql, array('user_id' => $UserId));
 
             $ResponseData['GST_PERCENTAGE'] = !empty($OrganizerInfoDetails) && !empty($OrganizerInfoDetails[0]->gst_percentage) &&
-            $OrganizerInfoDetails[0]->gst == 1 ? $OrganizerInfoDetails[0]->gst_percentage : 0;
+                $OrganizerInfoDetails[0]->gst == 1 ? $OrganizerInfoDetails[0]->gst_percentage : 0;
 
             //$ResponseData['YTCR_FEE_PERCENTAGE'] = !empty($SettingInfoDetails) && !empty($SettingInfoDetails[0]->ticket_ytcr_base_price) ?
             //   $SettingInfoDetails[0]->ticket_ytcr_base_price : config('custom.ytcr_fee_percent');
-           
+
             $ytcr_base_price = !empty($Events) && $Events[0]->ytcr_base_price ? $Events[0]->ytcr_base_price : 0;
             $ResponseData['YTCR_FEE_PERCENTAGE'] = !empty($SettingInfoDetails) && !empty($SettingInfoDetails[0]->ticket_ytcr_base_price) ?
                 $SettingInfoDetails[0]->ticket_ytcr_base_price : $ytcr_base_price;
@@ -945,22 +999,32 @@ class EventController extends Controller
 
             // ---------- get communication tab details
             $sql1 = "SELECT id,subject_name,message_content  FROM event_communication WHERE event_id=:event_id AND user_id=:user_id ";
-            $CommResult = DB::select($sql1, array('event_id' => $EventId,'user_id' => $UserId));
+            $CommResult = DB::select($sql1, array('event_id' => $EventId, 'user_id' => $UserId));
             //dd($CommResult);
             $ResponseData['communication_details'] = !empty($CommResult) ? $CommResult : [];
 
             // ---------- get FAQ tab details
-            $sql1 = "SELECT id,question,answer  FROM event_FAQ WHERE event_id=:event_id AND user_id=:user_id ";
-            $FAQResult = DB::select($sql1, array('event_id' => $EventId,'user_id' => $UserId));
+            $sql1 = "SELECT id,question,answer,status FROM event_FAQ WHERE event_id=:event_id AND user_id=:user_id ";
+            $FAQResult = DB::select($sql1, array('event_id' => $EventId, 'user_id' => $UserId));
             //dd($CommResult);
+            if (!empty($FAQResult)) {
+                foreach ($FAQResult as $res) {
+                    if($res->status == 1){
+                       $res->status = true;
+                    }else{
+                       $res->status = false;
+                    }
+                }
+            }
+
             $ResponseData['faq_details'] = !empty($FAQResult) ? $FAQResult : [];
 
             // ---------- get Tickets details
             $sql1 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id";
             $TicketResult = DB::select($sql1, array('event_id' => $EventId));
             //dd($CommResult);
-            if(!empty($TicketResult)){
-                foreach($TicketResult as $res){
+            if (!empty($TicketResult)) {
+                foreach ($TicketResult as $res) {
                     $res->checked = false;
                 }
             }
@@ -974,7 +1038,7 @@ class EventController extends Controller
                 foreach($CouponResult as $res){
                     $sql2 = "SELECT * FROM event_coupon_details WHERE event_id=:event_id AND event_coupon_id=:event_coupon_id ";
                     $CouponDetailsResult = DB::select($sql2, array('event_id' => $EventId, 'event_coupon_id' => $res->id));
-                   
+
                     $res->no_of_discount =  !empty($CouponDetailsResult[0]->no_of_discount) ? $CouponDetailsResult[0]->no_of_discount : '';
                     $res->discount_amt_per_type =  !empty($CouponDetailsResult[0]->discount_amt_per_type) ? $CouponDetailsResult[0]->discount_amt_per_type : '';
                     $res->discount_amount =  !empty($CouponDetailsResult[0]->discount_amount) ? $CouponDetailsResult[0]->discount_amount : '';
@@ -986,6 +1050,29 @@ class EventController extends Controller
             }
             //dd($CouponResult);
             $ResponseData['coupon_details'] = !empty($CouponResult) ? $CouponResult : [];
+
+            //-------- age criteria dropdown -----
+            $new_array = [];
+            for ($i=1; $i <= 100; $i++) { 
+                // code...
+                $ResponseData['age_details'][] = array("id"=>$i,"name"=>$i);
+            }
+            //dd($new_array);
+
+            // ---------- get Age Criteria
+            $sql1 = "SELECT id,distance_category,age_category,status   FROM age_criteria WHERE event_id=:event_id";
+            $ageCriteriaResult = DB::select($sql1, array('event_id' => $EventId));
+            //dd($CommResult);
+            if (!empty($ageCriteriaResult)) {
+                foreach ($ageCriteriaResult as $res) {
+                    if($res->status == 1){
+                       $res->status = true;
+                    }else{
+                       $res->status = false;
+                    }
+                }
+            }
+            $ResponseData['age_criteria_details'] = !empty($ageCriteriaResult) ? $ageCriteriaResult : [];
 
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
@@ -1079,7 +1166,7 @@ class EventController extends Controller
 
                 $Bindings = array(
                     "timezone_id" => $Timezone,
-                    "pincode"=> $PinCode,
+                    "pincode" => $PinCode,
                     "start_time" => $EventStartTime,
                     "end_time" => $EventEndTime,
                     "is_repeat" => $IsRepeatEvent,
@@ -1091,7 +1178,7 @@ class EventController extends Controller
                     "city" => $CityId,
                     "address" => $Address,
                     "registration_start_time" => $FinalRegistrationStartTime,
-                    "registration_end_time"   => $FinalRegistrationEndTime,
+                    "registration_end_time" => $FinalRegistrationEndTime,
                     "id" => $EventId
                 );
                 $sql = 'UPDATE events SET
@@ -1378,58 +1465,58 @@ class EventController extends Controller
                 $SQL = "SELECT id FROM event_settings WHERE event_id =:event_id";
                 $IsExist = DB::select($SQL, array('event_id' => $EventId));
 
-                    if (empty($IsExist) && empty($EventSettingId)) {
+                if (empty($IsExist) && empty($EventSettingId)) {
 
-                        $Bindings = array(
-                            "event_id" => $EventId,
-                            "no_of_previous_conducts" => $NoOfPreviousConducts,
-                            "no_of_runners_estimate" => $NoOfRunnersEstimate,
-                            "no_of_event_year" => $NoOfEventYear,
-                            "contract_of_five_year" => $ContractOfFiveYear,
-                            "backend_support" => $BackendSupport,
-                            "bulk_registration" => $BulkRegistration,
-                            "check_valid_entries" => $CheckValidEntries,
-                            "ticket_ytcr_base_price" => $YtcrBasePrice,
-                            "created_by" => $UserId,
-                        );
+                    $Bindings = array(
+                        "event_id" => $EventId,
+                        "no_of_previous_conducts" => $NoOfPreviousConducts,
+                        "no_of_runners_estimate" => $NoOfRunnersEstimate,
+                        "no_of_event_year" => $NoOfEventYear,
+                        "contract_of_five_year" => $ContractOfFiveYear,
+                        "backend_support" => $BackendSupport,
+                        "bulk_registration" => $BulkRegistration,
+                        "check_valid_entries" => $CheckValidEntries,
+                        "ticket_ytcr_base_price" => $YtcrBasePrice,
+                        "created_by" => $UserId,
+                    );
 
-                        $insert_SQL = "INSERT INTO event_settings (event_id,no_of_previous_conducts,no_of_runners_estimate,no_of_event_year,contract_of_five_year,backend_support,bulk_registration,check_valid_entries,ticket_ytcr_base_price,created_by) VALUES(:event_id,:no_of_previous_conducts,:no_of_runners_estimate,:no_of_event_year,:contract_of_five_year,:backend_support,:bulk_registration,:check_valid_entries,:ticket_ytcr_base_price,:created_by)";
-                        DB::insert($insert_SQL, $Bindings);
+                    $insert_SQL = "INSERT INTO event_settings (event_id,no_of_previous_conducts,no_of_runners_estimate,no_of_event_year,contract_of_five_year,backend_support,bulk_registration,check_valid_entries,ticket_ytcr_base_price,created_by) VALUES(:event_id,:no_of_previous_conducts,:no_of_runners_estimate,:no_of_event_year,:contract_of_five_year,:backend_support,:bulk_registration,:check_valid_entries,:ticket_ytcr_base_price,:created_by)";
+                    DB::insert($insert_SQL, $Bindings);
 
-                        $up_sql = 'UPDATE events SET ytcr_base_price = :ytcr_base_price WHERE id = :id';
-                        $bindings = ["ytcr_base_price" => $EditYtcrBasePrice, "id" => $EventId];
-                        DB::update($up_sql, $bindings);
+                    $up_sql = 'UPDATE events SET ytcr_base_price = :ytcr_base_price WHERE id = :id';
+                    $bindings = ["ytcr_base_price" => $EditYtcrBasePrice, "id" => $EventId];
+                    DB::update($up_sql, $bindings);
 
-                        $ResposneCode = 200;
-                        $message = "Event Setting added successfully";
+                    $ResposneCode = 200;
+                    $message = "Event Setting added successfully";
 
-                    } else {
+                } else {
 
-                        $Bindings = array(
-                            "no_of_previous_conducts" => $NoOfPreviousConducts,
-                            "no_of_runners_estimate" => $NoOfRunnersEstimate,
-                            "no_of_event_year" => $NoOfEventYear,
-                            "contract_of_five_year" => $ContractOfFiveYear,
-                            "backend_support" => $BackendSupport,
-                            "bulk_registration" => $BulkRegistration,
-                            "check_valid_entries" => $CheckValidEntries,
-                            "ticket_ytcr_base_price" => $YtcrBasePrice,
-                            "event_setting_id" => $EventSettingId
-                        );
+                    $Bindings = array(
+                        "no_of_previous_conducts" => $NoOfPreviousConducts,
+                        "no_of_runners_estimate" => $NoOfRunnersEstimate,
+                        "no_of_event_year" => $NoOfEventYear,
+                        "contract_of_five_year" => $ContractOfFiveYear,
+                        "backend_support" => $BackendSupport,
+                        "bulk_registration" => $BulkRegistration,
+                        "check_valid_entries" => $CheckValidEntries,
+                        "ticket_ytcr_base_price" => $YtcrBasePrice,
+                        "event_setting_id" => $EventSettingId
+                    );
 
-                        $sql = 'UPDATE event_settings SET no_of_previous_conducts = :no_of_previous_conducts, no_of_runners_estimate  = :no_of_runners_estimate, no_of_event_year = :no_of_event_year, contract_of_five_year = :contract_of_five_year, backend_support = :backend_support, bulk_registration = :bulk_registration, check_valid_entries = :check_valid_entries, ticket_ytcr_base_price  = :ticket_ytcr_base_price WHERE id = :event_setting_id';
-                        // dd($sql);
-                        DB::update($sql, $Bindings);
+                    $sql = 'UPDATE event_settings SET no_of_previous_conducts = :no_of_previous_conducts, no_of_runners_estimate  = :no_of_runners_estimate, no_of_event_year = :no_of_event_year, contract_of_five_year = :contract_of_five_year, backend_support = :backend_support, bulk_registration = :bulk_registration, check_valid_entries = :check_valid_entries, ticket_ytcr_base_price  = :ticket_ytcr_base_price WHERE id = :event_setting_id';
+                    // dd($sql);
+                    DB::update($sql, $Bindings);
 
-                        $up_sql = 'UPDATE events SET ytcr_base_price = :ytcr_base_price WHERE id = :id';
-                        $bindings = ["ytcr_base_price" => $EditYtcrBasePrice, "id" => $EventId];
-                        DB::update($up_sql, $bindings);
+                    $up_sql = 'UPDATE events SET ytcr_base_price = :ytcr_base_price WHERE id = :id';
+                    $bindings = ["ytcr_base_price" => $EditYtcrBasePrice, "id" => $EventId];
+                    DB::update($up_sql, $bindings);
 
-                        $ResposneCode = 200;
-                        $message = "Event Setting updated successfully";
-                    }
+                    $ResposneCode = 200;
+                    $message = "Event Setting updated successfully";
+                }
 
-            }else {
+            } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
             }
@@ -1477,38 +1564,38 @@ class EventController extends Controller
                 // $SQL = "SELECT id FROM event_communication WHERE event_id =:event_id";
                 // $IsExist = DB::select($SQL, array('event_id' => $EventId));
 
-                    if (empty($EventCommunicationId)) {
+                if (empty($EventCommunicationId)) {
 
-                        $Bindings = array(
-                            "event_id" => $EventId,
-                            "user_id" => $UserId,
-                            "subject_name" => $SubjectName,
-                            "message_content" => $MessageContent
-                        );
+                    $Bindings = array(
+                        "event_id" => $EventId,
+                        "user_id" => $UserId,
+                        "subject_name" => $SubjectName,
+                        "message_content" => $MessageContent
+                    );
 
-                        $insert_SQL = "INSERT INTO event_communication (event_id,user_id,subject_name,message_content) VALUES(:event_id,:user_id,:subject_name,:message_content)";
-                        DB::insert($insert_SQL, $Bindings);
+                    $insert_SQL = "INSERT INTO event_communication (event_id,user_id,subject_name,message_content) VALUES(:event_id,:user_id,:subject_name,:message_content)";
+                    DB::insert($insert_SQL, $Bindings);
 
-                        $ResposneCode = 200;
-                        $message = "Communication added successfully";
+                    $ResposneCode = 200;
+                    $message = "Communication added successfully";
 
-                    } else {
+                } else {
 
-                        $Bindings = array(
-                            "subject_name" => $SubjectName,
-                            "message_content" => $MessageContent,
-                            "event_comm_id" => $EventCommunicationId
-                        );
+                    $Bindings = array(
+                        "subject_name" => $SubjectName,
+                        "message_content" => $MessageContent,
+                        "event_comm_id" => $EventCommunicationId
+                    );
 
-                        $sql = 'UPDATE event_communication SET subject_name = :subject_name, message_content  = :message_content WHERE id = :event_comm_id';
-                        // dd($sql);
-                        DB::update($sql, $Bindings);
+                    $sql = 'UPDATE event_communication SET subject_name = :subject_name, message_content  = :message_content WHERE id = :event_comm_id';
+                    // dd($sql);
+                    DB::update($sql, $Bindings);
 
-                        $ResposneCode = 200;
-                        $message = "Communication updated successfully";
-                    }
+                    $ResposneCode = 200;
+                    $message = "Communication updated successfully";
+                }
 
-            }else {
+            } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
             }
@@ -1556,38 +1643,38 @@ class EventController extends Controller
                 // $SQL = "SELECT id FROM event_communication WHERE event_id =:event_id";
                 // $IsExist = DB::select($SQL, array('event_id' => $EventId));
 
-                    if (empty($EventCommunicationId)) {
+                if (empty($EventCommunicationId)) {
 
-                        $Bindings = array(
-                            "event_id" => $EventId,
-                            "user_id"  => $UserId,
-                            "question" => $QuestionName,
-                            "answer"   => $Answer
-                        );
+                    $Bindings = array(
+                        "event_id" => $EventId,
+                        "user_id" => $UserId,
+                        "question" => $QuestionName,
+                        "answer" => $Answer
+                    );
 
-                        $insert_SQL = "INSERT INTO event_FAQ (event_id,user_id,question,answer) VALUES(:event_id,:user_id,:question,:answer)";
-                        DB::insert($insert_SQL, $Bindings);
+                    $insert_SQL = "INSERT INTO event_FAQ (event_id,user_id,question,answer) VALUES(:event_id,:user_id,:question,:answer)";
+                    DB::insert($insert_SQL, $Bindings);
 
-                        $ResposneCode = 200;
-                        $message = "FAQ added successfully";
+                    $ResposneCode = 200;
+                    $message = "FAQ added successfully";
 
-                    } else {
+                } else {
 
-                        $Bindings = array(
-                            "question" => $QuestionName,
-                            "answer"   => $Answer,
-                            "event_comm_id" => $EventCommunicationId
-                        );
+                    $Bindings = array(
+                        "question" => $QuestionName,
+                        "answer" => $Answer,
+                        "event_comm_id" => $EventCommunicationId
+                    );
 
-                        $sql = 'UPDATE event_FAQ SET question = :question, answer  = :answer WHERE id = :event_comm_id';
-                        // dd($sql);
-                        DB::update($sql, $Bindings);
+                    $sql = 'UPDATE event_FAQ SET question = :question, answer  = :answer WHERE id = :event_comm_id';
+                    // dd($sql);
+                    DB::update($sql, $Bindings);
 
-                        $ResposneCode = 200;
-                        $message = "FAQ updated successfully";
-                    }
+                    $ResposneCode = 200;
+                    $message = "FAQ updated successfully";
+                }
 
-            }else {
+            } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
             }
@@ -1619,7 +1706,7 @@ class EventController extends Controller
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $EventCommId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
             $CommonFlag = !empty($request->common_flag) ? $request->common_flag : '';
-            
+
             if(isset($request->common_flag) && $CommonFlag == 'faq_delete'){
                     $del_sSQL = 'DELETE FROM event_FAQ WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
                     DB::delete($del_sSQL,array(
@@ -1627,7 +1714,7 @@ class EventController extends Controller
                         'event_comm_id' => $EventCommId
                     ));
             }else if(isset($request->common_flag) && $CommonFlag == 'coupon_delete'){
-                    
+
                     $Bindings = array(
                             "is_deleted" => 1,
                             'event_comm_id' => $EventCommId
@@ -1640,6 +1727,12 @@ class EventController extends Controller
                         'eventId' => $EventId,
                         'event_comm_id' => $EventCommId
                     ));
+            }else if(isset($request->common_flag) && $CommonFlag == 'age_delete'){
+                    $del_sSQL = 'DELETE FROM age_criteria WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
+                    DB::delete($del_sSQL,array(
+                        'eventId' => $EventId,
+                        'event_comm_id' => $EventCommId
+                    ));
             }else{
                     $del_sSQL1 = 'DELETE FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
                     DB::delete($del_sSQL1,array(
@@ -1647,12 +1740,12 @@ class EventController extends Controller
                         'event_comm_id' => $EventCommId
                     ));
             }
-            
+
             $response['data'] = [];
             $response['message'] = 'Record removed successfully';
             $ResposneCode = 200;
 
-        }else{
+        } else {
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
@@ -1678,25 +1771,33 @@ class EventController extends Controller
             $EventCommId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
             $EventEditFlag = !empty($request->event_edit_flag) ? $request->event_edit_flag : '';
 
-            if($EventEditFlag == 'communication_edit'){
+            if ($EventEditFlag == 'communication_edit') {
 
                 $Sql = 'SELECT id,subject_name,message_content FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
-                $aResult['communication_edit_details'] = DB::select($Sql,array(
+                $aResult['communication_edit_details'] = DB::select($Sql, array(
                     'eventId' => $EventId,
                     'event_comm_id' => $EventCommId
                 ));
 
-            }else if($EventEditFlag == 'faq_edit'){
-               
-                $Sql = 'SELECT id,question,answer FROM event_FAQ WHERE `event_id`=:eventId AND `id`=:event_comm_id  '; 
-                $aResult['faq_edit_details'] = DB::select($Sql,array(
+            } else if ($EventEditFlag == 'faq_edit') {
+
+                $Sql = 'SELECT id,question,answer FROM event_FAQ WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
+                $aResult['faq_edit_details'] = DB::select($Sql, array(
                     'eventId' => $EventId,
                     'event_comm_id' => $EventCommId
                 ));
 
-            }else if($EventEditFlag == 'coupon_edit'){
-               
-                $Sql = 'SELECT id,discount_type,discount_name FROM event_coupon WHERE `event_id`=:eventId AND `id`=:event_comm_id'; 
+            } else if ($EventEditFlag == 'age_criteria_edit') {
+
+                $Sql = 'SELECT * FROM age_criteria WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
+                $aResult['age_criteria_details'] = DB::select($Sql, array(
+                    'eventId' => $EventId,
+                    'event_comm_id' => $EventCommId
+                ));
+
+            } else if($EventEditFlag == 'coupon_edit'){
+
+                $Sql = 'SELECT id,discount_type,discount_name FROM event_coupon WHERE `event_id`=:eventId AND `id`=:event_comm_id';
                 $CouponResult = DB::select($Sql,array(
                     'eventId' => $EventId,
                     'event_comm_id' => $EventCommId
@@ -1707,7 +1808,7 @@ class EventController extends Controller
                     foreach($CouponResult as $res){
                         $sql2 = "SELECT * FROM event_coupon_details WHERE event_id=:event_id AND event_coupon_id=:event_coupon_id ";
                         $CouponDetailsResult = DB::select($sql2, array('event_id' => $EventId, 'event_coupon_id' => $res->id));
-                       
+
                         $res->discount_amt_per_type =  !empty($CouponDetailsResult[0]->discount_amt_per_type) ? (string)$CouponDetailsResult[0]->discount_amt_per_type : '';
                         $res->discount_amount =  !empty($CouponDetailsResult[0]->discount_amount) ? $CouponDetailsResult[0]->discount_amount : '';
                         $res->discount_percentage =  !empty($CouponDetailsResult[0]->discount_percentage) ? $CouponDetailsResult[0]->discount_percentage : '';
@@ -1723,7 +1824,7 @@ class EventController extends Controller
 
                         $ticket_details_id = !empty($CouponDetailsResult[0]->ticket_details) ? $CouponDetailsResult[0]->ticket_details : '';
                         $new_array = explode(",",$ticket_details_id);
-                        $Sql = 'SELECT id,ticket_name FROM event_tickets WHERE `event_id`=:eventId'; 
+                        $Sql = 'SELECT id,ticket_name FROM event_tickets WHERE `event_id`=:eventId';
                         $TicketArray = DB::select($Sql,array(
                             'eventId' => $EventId
                         ));
@@ -1750,7 +1851,7 @@ class EventController extends Controller
             $response['message'] = 'Request processed successfully';
             $ResposneCode = 200;
 
-        }else{
+        } else {
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
@@ -1758,7 +1859,7 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    
+
     public function addEditCoupon(Request $request)
     {
         // return $request->file('upload_csv');
@@ -1782,7 +1883,7 @@ class EventController extends Controller
             }
 
             if (!$empty) {
-               
+
                 $EventId = $aPost['event_id'];
                 $UserId = $aPost['user_id'];
 
@@ -1796,7 +1897,7 @@ class EventController extends Controller
                 $DiscountCode = !empty($request->discount_code) ? $request->discount_code : '';
                 $PrefixCode = !empty($request->prefix_code) ? $request->prefix_code : '';
                 $DiscountAmtPerType = !empty($request->discount_amt_per_type) ? $request->discount_amt_per_type : '';
-                
+
                 $discount_from_date = !empty($request->discount_from_date) ? $request->discount_from_date : 0;
                 $discount_from_time = !empty($request->discount_from_time) ? $request->discount_from_time : 0;
                 $discount_to_date = !empty($request->discount_to_date) ? $request->discount_to_date : 0;
@@ -1809,9 +1910,9 @@ class EventController extends Controller
                 $HaveListCodes = !empty($request->have_list_codes) ? $request->have_list_codes : 0;
                 $ApplyTicket = !empty($request->apply_ticket) ? $request->apply_ticket : 1;
                 $TicketSelectedData = !empty($request->ticket_selected_data) ? json_decode($request->ticket_selected_data) : '';
-                
+
                 $UploadedCsv = !empty($request->upload_csv) ? $request->file('upload_csv') : '';
-              
+
                 $EditCouponId = !empty($request->edit_coupon_id) ? $request->edit_coupon_id : '';
 
                 //---------- all ticket apply -----------
@@ -1835,14 +1936,14 @@ class EventController extends Controller
                     $ticket_ids = !empty($ticket_id_array) ? implode(",", $ticket_id_array) : '';
                 }
 
-                
+
                 if(empty($EditCouponId)){     // data insert
- 
-                    $SQL = "SELECT discount_name FROM event_coupon WHERE LOWER(discount_name) = :discount_name AND event_id = :event_id"; 
+
+                    $SQL = "SELECT discount_name FROM event_coupon WHERE LOWER(discount_name) = :discount_name AND event_id = :event_id";
                     $IsExist = DB::select($SQL, array('discount_name' => strtolower($DiscountName), "event_id" => $EventId));
                    // dd($IsExist);
 
-                    $SQL1 = "SELECT discount_code FROM event_coupon_details WHERE LOWER(discount_code) = :discount_code AND event_id = :event_id"; 
+                    $SQL1 = "SELECT discount_code FROM event_coupon_details WHERE LOWER(discount_code) = :discount_code AND event_id = :event_id";
                     $IsCouponExist = DB::select($SQL1, array('discount_code' => strtolower($DiscountCode), "event_id" => $EventId));
                     //dd($IsCouponExist);
 
@@ -1865,17 +1966,17 @@ class EventController extends Controller
                                     "created_by"    => $UserId,
                                     "created_date"  => time()
                                 );
-                           
+
                         $insert_SQL = "INSERT INTO event_coupon (event_id,discount_type,discount_name,created_by,created_date) VALUES(:event_id,:discount_type,:discount_name,:created_by,:created_date)";
                             DB::insert($insert_SQL, $Bindings);
                         $last_inserted_id = DB::getPdo()->lastInsertId();
                         //dd($last_inserted_id);
 
-                        
+
                         if($CodeType == 1){
-                           
+
                             if(!empty($last_inserted_id)){
-                                
+
                                 $Bindings1 = array(
                                     "event_coupon_id" => $last_inserted_id,
                                     "event_id"        => $EventId,
@@ -1913,19 +2014,19 @@ class EventController extends Controller
 
                                     }
                                 }
-                   
-                                
+
+
                                 if(!empty($NewCouponArray)){
                                     $indexSpam = array_search('DISCOUNT_CODE', $NewCouponArray);
                                     unset($NewCouponArray[$indexSpam]);
                                 }
                                 $NewCouponArray = array_unique($NewCouponArray);
                                 //dd($NewCouponArray);
-                                if($HaveListCodes == 1){
-                                    
+                                //if($HaveListCodes == 1){
+
                                     if(!empty($NewCouponArray)){
                                         foreach ($NewCouponArray as $res) {
-                                            
+
                                             $Bindings1 = array(
                                                 "event_coupon_id" => $last_inserted_id,
                                                 "event_id"        => $EventId,
@@ -1946,24 +2047,24 @@ class EventController extends Controller
                                             $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details)";
                                             //dd($insert_SQL1);
                                             DB::insert($insert_SQL1, $Bindings1);
-         
+
                                         }
-                                    } 
-                                }
+                                    }
+                                //}
                             }
                         }
 
                         $message = 'Coupon added successfully';
                         $ResposneCode = 200;
                     }
-                
+
                 }else{                       // data update
                     // dd($EditCouponId);
 
-                    $SQL = "SELECT discount_name FROM event_coupon WHERE LOWER(discount_name) = :discount_name AND event_id = :event_id AND id != :edit_id"; 
+                    $SQL = "SELECT discount_name FROM event_coupon WHERE LOWER(discount_name) = :discount_name AND event_id = :event_id AND id != :edit_id";
                     $IsExist = DB::select($SQL, array('discount_name' => strtolower($DiscountName), "event_id" => $EventId, "edit_id" => $EditCouponId));
                    // dd($IsExist);
-                    $SQL1 = "SELECT discount_code FROM event_coupon_details WHERE LOWER(discount_code) = :discount_code AND event_id = :event_id AND event_coupon_id != :edit_id"; 
+                    $SQL1 = "SELECT discount_code FROM event_coupon_details WHERE LOWER(discount_code) = :discount_code AND event_id = :event_id AND event_coupon_id != :edit_id";
                     $IsCouponExist = DB::select($SQL1, array('discount_code' => strtolower($DiscountCode), "event_id" => $EventId, "edit_id" => $EditCouponId));
 
                     if (!empty($IsExist) ) {
@@ -1977,8 +2078,8 @@ class EventController extends Controller
                         $flag = 2;
                         $ResponseData = $flag;
                     }else{
-                  
-                       
+
+
                         $Bindings = array(
                                 "discount_type" => $DiscountType,
                                 "discount_name" => $DiscountName,
@@ -1987,7 +2088,7 @@ class EventController extends Controller
                         );
                         $edit_sql = 'UPDATE event_coupon SET discount_type = :discount_type, discount_name = :discount_name WHERE event_id = :event_id AND id = :edit_id';
                         DB::update($edit_sql, $Bindings);
-                        
+
                         $cond = $arr_cond = '';
                         if($CodeType == '1'){
                             $cond = ', discount_code = :discount_code';
@@ -2028,16 +2129,16 @@ class EventController extends Controller
                                             'edit_id'               => $EditCouponId
                                         );
                         }
-                       
+
                         $edit_sql1 = 'UPDATE event_coupon_details SET discount_type = :discount_type, discount_amt_per_type = :discount_amt_per_type, discount_amount = :discount_amount, discount_percentage = :discount_percentage, code_type = :code_type, no_of_discount = :no_of_discount, prefix_code = :prefix_code, discount_from_datetime = :discount_from_datetime, discount_to_datetime = :discount_to_datetime, apply_ticket = :apply_ticket, ticket_details = :ticket_details '.$cond.' WHERE event_id = :event_id AND event_coupon_id = :edit_id';
                         DB::update($edit_sql1, $Bindings1);
-     
+
                         $message = 'Coupon updated successfully';
                         $ResposneCode = 200;
                     }
                 }
                 ////
-                
+
 
             }else {
                 $ResposneCode = 400;
@@ -2055,10 +2156,9 @@ class EventController extends Controller
         ];
         return response()->json($response, $ResposneCode);
     }
-    
+
     public function StatusCoupon(Request $request)
     {
-        //return $request->coupon_status;
         $response['data'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
@@ -2067,27 +2167,46 @@ class EventController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         //dd($aToken);
         if ($aToken['code'] == 200) {
-
+            //return $request;
             $CouponId     = !empty($request->coupon_id) ? $request->coupon_id : 0;
-            $CouponStatus = 0;
-            if(isset($request->coupon_status)){
-                if($request->coupon_status == true){
-                    $CouponStatus = 1;
-                }else if($request->coupon_status == false){
+           // $CouponStatus = 0;
+            //if(isset($request->coupon_status)){
+                if($request->coupon_status == "true"){
                     $CouponStatus = 0;
+                }else if($request->coupon_status == "false"){
+                    $CouponStatus = 1;
                 }
-            }
+            //}
+
 
             $ActionFlag  = !empty($request->action_flag) ? $request->action_flag : '';
             $msg = '';
+                
+                if(isset($ActionFlag) && $ActionFlag == 'faq_changes_status'){
+                    $status_sSQL = 'UPDATE event_FAQ SET `status` =:coupon_status WHERE `id`=:coupon_id ';
+                    DB::update($status_sSQL,array(
+                        'coupon_id' => $CouponId,
+                        'coupon_status' => $CouponStatus
+                    ));
+                    $msg = 'FAQ status change successfully';
 
-                $status_sSQL = 'UPDATE event_coupon SET `coupon_status` =:coupon_status WHERE `id`=:coupon_id ';
-                DB::update($status_sSQL,array(
-                    'coupon_id' => $CouponId,
-                    'coupon_status' => $CouponStatus
-                ));
-                $msg = 'Coupon status change successfully';
-           
+                }else if($ActionFlag == 'age_criteria_changes_status'){
+                    $status_sSQL = 'UPDATE age_criteria SET `status` =:coupon_status WHERE `id`=:age_id ';
+                    DB::update($status_sSQL,array(
+                        'age_id' => $CouponId,
+                        'coupon_status' => $CouponStatus
+                    ));
+                    $msg = 'Age criteria status change successfully';
+
+                } else{
+                    $status_sSQL = 'UPDATE event_coupon SET `coupon_status` =:coupon_status WHERE `id`=:coupon_id ';
+                    DB::update($status_sSQL,array(
+                        'coupon_id' => $CouponId,
+                        'coupon_status' => $CouponStatus
+                    ));
+                    $msg = 'Coupon status change successfully';
+                }
+                
             $response['data'] = [];
             $response['message'] = $msg;
             $ResposneCode = 200;
@@ -2097,6 +2216,95 @@ class EventController extends Controller
             $response['message'] = $aToken['message'];
         }
 
+        return response()->json($response, $ResposneCode);
+    }
+    
+    // ----------- 
+    public function addEditAgeCriteria(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $EventId = $aPost['event_id'];
+                $UserId = $aPost['user_id'];
+
+                $DistanceCategory = !empty($request->distance_category) ? $request->distance_category : 0;
+                $AgeCategory = !empty($request->age_category) ? $request->age_category : 0;
+                $AgeStart = !empty($request->age_start) ? $request->age_start : 0;
+                $AgeEnd = !empty($request->age_end) ? $request->age_end : 0;
+                $Gender = !empty($request->gender) ? $request->gender : 0;
+                $EventCommunicationId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+
+                // $SQL = "SELECT id FROM event_communication WHERE event_id =:event_id";
+                // $IsExist = DB::select($SQL, array('event_id' => $EventId));
+
+                if (empty($EventCommunicationId)) {
+
+                    $Bindings = array(
+                        "event_id" => $EventId,
+                        "distance_category" => $DistanceCategory,
+                        "age_category" => $AgeCategory,
+                        "gender" => $Gender,
+                        "age_start" => $AgeStart,
+                        "age_end" => $AgeEnd,
+                        "created_by" => $UserId
+                    );
+
+                    $insert_SQL = "INSERT INTO age_criteria (event_id,distance_category,age_category,gender,age_start,age_end,created_by) VALUES(:event_id,:distance_category,:age_category,:gender,:age_start,:age_end,:created_by)";
+                    DB::insert($insert_SQL, $Bindings);
+
+                    $ResposneCode = 200;
+                    $message = "Age Criteria added successfully";
+
+                } else {
+
+                    $Bindings = array(
+                        "distance_category" => $DistanceCategory,
+                        "age_category" => $AgeCategory,
+                        "gender" => $Gender,
+                        "age_start" => $AgeStart,
+                        "age_end" => $AgeEnd,
+                        "event_comm_id" => $EventCommunicationId
+                    );
+
+                    $sql = 'UPDATE age_criteria SET distance_category= :distance_category, age_category= :age_category, gender= :gender, age_start= :age_start, age_end= :age_end WHERE id = :event_comm_id';
+                    // dd($sql);
+                    DB::update($sql, $Bindings);
+
+                    $ResposneCode = 200;
+                    $message = "Age Criteria updated successfully";
+                }
+
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
         return response()->json($response, $ResposneCode);
     }
 

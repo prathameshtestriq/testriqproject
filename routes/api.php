@@ -79,6 +79,7 @@ Route::controller(EventController::class)->group(function () {
     Route::post('delete_event/{id}', 'EventDelete');
     Route::post('event_status', 'EventStatus');
     Route::post('add_edit_coupon', 'addEditCoupon');
+    Route::post('add_edit_age_criteria', 'addEditAgeCriteria');
     Route::post('status_coupon', 'StatusCoupon');
 });
 

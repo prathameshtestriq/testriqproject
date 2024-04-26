@@ -637,10 +637,10 @@ class FormQuestionsController extends Controller
             $EventId     = !empty($request->event_id) ? $request->event_id : 0;
             $EventStatus = 0;
             if(!empty($request->event_status)){
-                if($request->event_status == 'true'){
-                    $EventStatus = 1;
-                }else if($request->event_status == 'false'){
+                if($request->event_status == "true"){
                     $EventStatus = 0;
+                }else if($request->event_status == "false"){
+                    $EventStatus = 1;
                 }
             }
 
