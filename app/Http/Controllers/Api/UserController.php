@@ -442,16 +442,16 @@ class UserController extends Controller
                     $state = (!empty ($request->state)) ? $request->state : '';
                     $country = (!empty ($request->country)) ? $request->country : '';
                     $pincode = (!empty ($request->pincode)) ? $request->pincode : '';
+                    $sameAsPermanent = (!empty($request->sameAsPermanent)) ? $request->sameAsPermanent : 0;
 
                     $SQL = 'UPDATE users SET
-
                     address1= :address1,
                     address2= :address2,
                     city= :city,
                     state= :state,
                     country= :country,
                     pincode=:pincode,
-
+                    sameAsPermanent=:sameAsPermanent,
                     ca_address1= :ca_address1,
                     ca_address2= :ca_address2,
                     ca_city= :ca_city,
@@ -472,7 +472,7 @@ class UserController extends Controller
                         'state' => $state,
                         'country' => $country,
                         'pincode' => $pincode,
-
+                        'sameAsPermanent'=> $sameAsPermanent,
                         'ca_address1' => !empty ($request->ca_address1) ? $request->ca_address1 : "",
                         'ca_address2' => $request->ca_address2,
                         'ca_city' => $request->ca_city,
