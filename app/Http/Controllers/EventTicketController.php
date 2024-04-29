@@ -30,30 +30,37 @@ class EventTicketController extends Controller
             }
             $master = new Master();
             if (!$empty) {
-                $sSQL = 'SELECT * FROM event_tickets WHERE event_id =:event_id AND active = 1 AND is_deleted = 0';
-                $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+                $now = strtotime("now");
+                $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end';
+                $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $aPost['event_id'], 'now_start' => $now, 'now_end' => $now));
+
                 foreach ($ResponseData['event_tickets'] as $value) {
                     $value->count = 0;
                     $value->Error = "";
+
+                    $value->display_ticket_name = !empty($value->ticket_name) ? (strlen($value->ticket_name) > 40 ? ucwords(substr($value->ticket_name, 0, 80)) . "..." : ucwords($value->ticket_name)) : "";
 
                     $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
                     $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
 
                     $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
+                    $value->show_early_bird = 0;
+                    if ($value->early_bird == 1 && $value->TotalBookedTickets <= $value->no_of_tickets && $value->start_time <= $now && $value->end_time >= $now) {
+                        $value->show_early_bird = 1;
+                        $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
 
-                    $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
-
-                    $discount_ticket_price = 0;
-                    $total_discount = 0;
-                    if ($value->discount === 1) { //percentage
-                        $total_discount = ($value->ticket_price * ($value->discount_value / 100));
-                        $discount_ticket_price = $value->ticket_price - $total_discount;
-                    } else if ($value->discount === 2) { //amount
-                        $total_discount = $value->discount_value;
-                        $discount_ticket_price = $value->ticket_price - $value->discount_value;
+                        $discount_ticket_price = 0;
+                        $total_discount = 0;
+                        if ($value->discount === 1) { //percentage
+                            $total_discount = ($value->ticket_price * ($value->discount_value / 100));
+                            $discount_ticket_price = $value->ticket_price - $total_discount;
+                        } else if ($value->discount === 2) { //amount
+                            $total_discount = $value->discount_value;
+                            $discount_ticket_price = $value->ticket_price - $value->discount_value;
+                        }
+                        $value->discount_ticket_price = $discount_ticket_price;
+                        $value->total_discount = $total_discount;
                     }
-                    $value->discount_ticket_price = $discount_ticket_price;
-                    $value->total_discount = $total_discount;
                 }
 
 
@@ -803,45 +810,6 @@ class EventTicketController extends Controller
 
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 20;
-                // return $UserId;
-
-                // $SQL = "SELECT *,
-                //     (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName
-                //     FROM booking_details AS bd
-                //     WHERE user_id=:user_id AND event_id=:event_id";
-                // $BookingData = DB::select($SQL, array('user_id' => $UserId, 'event_id' => $EventId));
-                // $key = 0;
-                // foreach ($BookingData as $ticket) {
-                //     // dd($ticket->quantity);
-                //     $attendee_names = [];
-                //     for ($i = 1; $i <= $ticket->quantity; $i++) {
-                //         $sql1 = "SELECT field_value FROM attendee_details WHERE booking_details_id = :booking_details_id AND (field_name = 'first_name') LIMIT :start, :end";
-                //         $FirstName = DB::select($sql1, array('booking_details_id' => $ticket->id, 'start' => $i - 1, 'end' => $i));
-                //         $sql2 = "SELECT field_value FROM attendee_details WHERE booking_details_id = :booking_details_id AND (field_name = 'last_name') LIMIT :start, :end";
-                //         $LastName = DB::select($sql2, array('booking_details_id' => $ticket->id, 'start' => $i - 1, 'end' => $i));
-
-                //         // echo $i; echo "<pre>";echo ($FirstName[0]->field_value);
-                //         // $ticket->attendee_name ="";
-                //         // $ticket->attendee_name = (sizeof($FirstName) > 0) ? ((sizeof($LastName)>0) ? $FirstName[0]->field_value." ".$LastName[0]->field_value : $FirstName[0]->field_value ): "";
-
-                //         // // echo $key;echo "<pre>";print_r($ticket);
-                //         // $TicketBookingArr[$key] = $ticket;
-
-                //         $attendee_names[] = (sizeof($FirstName) > 0) ? ((sizeof($LastName) > 0) ? $FirstName[0]->field_value . " " . $LastName[0]->field_value : $FirstName[0]->field_value) : ""; // Add attendee
-                //         // $ticket->i_val = $i;
-                //         $ticket->attendee_name = (sizeof($attendee_names) > 0) ? $attendee_names : [];
-
-                //         $TicketBookingArr[$key] = $ticket;
-                //         $key++;
-                //     }
-
-
-                //     //
-                // }
-                // echo "<pre>";
-                // print_r($TicketBookingArr);
-                // die;
-
 
                 $SQL = "SELECT *,
                 (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName,
@@ -849,7 +817,7 @@ class EventTicketController extends Controller
                 (SELECT banner_image FROM events WHERE id=bd.event_id) AS banner_image
 
                 FROM booking_details AS bd
-                WHERE bd.user_id=:user_id AND bd.event_id=:event_id";
+                WHERE bd.quantity !=0 AND bd.user_id=:user_id AND bd.event_id=:event_id";
                 $BookingData = DB::select($SQL, array('user_id' => $UserId, 'event_id' => $EventId));
                 $TicketBookingArr = [];
                 foreach ($BookingData as $ticket) {
@@ -890,9 +858,11 @@ class EventTicketController extends Controller
                         $TicketBookingArr[] = $ticket;
                     }
                 }
-
+                // dd
+                $AttendeeNumber = 0;
                 foreach ($TicketBookingArr as $event) {
                     // $event->TicketName =
+                    $AttendeeNumber++;
                     $event->TicketName = !empty($event->TicketName) ? (strlen($event->TicketName) > 40 ? ucwords(substr($event->TicketName, 0, 40)) . "..." : ucwords($event->TicketName)) : "";
                     $event->booking_start_date = (!empty($event->booking_date)) ? gmdate("d M Y", $event->booking_date) : 0;
                     $event->booking_time = (!empty($event->booking_date)) ? date("h:i A", $event->booking_date) : "";
@@ -908,6 +878,10 @@ class EventTicketController extends Controller
                     $uniqueId = 0;
                     $uniqueId = $EventId . "-" . $event->id . "-" . $event->booking_date;
                     $event->unique_ticket_id = $uniqueId;
+
+                    #GET EXTRA PRICING DETAILS
+                    $PricingDetails = $this->getPricingDetails($AttendeeNumber, $event);
+                    // dd($PricingDetails);
 
                 }
                 // dd($BookingData);
@@ -930,6 +904,29 @@ class EventTicketController extends Controller
         ];
 
         return response()->json($response, $ResposneCode);
+    }
+
+    function getPricingDetails($AttendeeNumber, $event) {
+        $Sql = "SELECT bd.*,(SELECT question_label FROM event_form_question WHERE id=bd.question_id) AS QueLabel FROM booking_details AS bd WHERE bd.attendee_number=:attendee_number AND bd.booking_id=:booking_id AND bd.event_id=:event_id AND bd.user_id=:user_id AND bd.ticket_id=:ticket_id";
+        $Bindings = array(
+            "attendee_number" => $AttendeeNumber,
+            "booking_id"=>$event->booking_id,
+            "event_id"=>$event->event_id,
+            "user_id"=>$event->user_id,
+            "ticket_id"=>$event->ticket_id
+        );
+        $Data = DB::select($Sql,$Bindings);
+
+        $filteredData = [];
+
+        foreach ($Data as $item) {
+            $filteredData[] = [
+                'ticket_amount' => $item->ticket_amount,
+                'QueLabel' => $item->QueLabel,
+            ];
+        }
+
+        return $filteredData;
     }
 
     public function generatePDF(Request $request)

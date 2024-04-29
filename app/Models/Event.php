@@ -94,12 +94,6 @@ class Event extends Model
 
     function getTypes($EventId)
     {
-        $ResponseData = [];
-        $ResposneCode = 200;
-        $empty = false;
-        $message = 'Success';
-        $field = '';
-
         $sql = "SELECT e.* FROM eTypes AS e WHERE e.active=1";
         $AllEventTypes = DB::select($sql);
 
@@ -111,6 +105,12 @@ class Event extends Model
             $value->logo = (isset($value->logo) && !empty($value->logo)) ? url('/') . '/assets/img/banner/' . $value->logo : "";
         }
         return $AllEventTypes;
+    }
+
+    function getDistances($EventId){
+        $SQL = "SELECT t.category,(SELECT name FROM eTypes WHERE active=1 AND id=t.category) AS distance_name FROM event_tickets AS t WHERE t.event_id=:event_id AND t.active = 1 AND t.is_deleted = 0 AND t.category!=0";
+        $Tickets = DB::select($SQL, array('event_id' => $EventId));
+        return $Tickets;
     }
 
 
