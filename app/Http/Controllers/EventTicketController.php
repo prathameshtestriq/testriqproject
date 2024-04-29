@@ -880,9 +880,8 @@ class EventTicketController extends Controller
                     $event->unique_ticket_id = $uniqueId;
 
                     #GET EXTRA PRICING DETAILS
-                    $PricingDetails = $this->getPricingDetails($AttendeeNumber, $event);
+                    $event->PricingDetails = $this->getPricingDetails($AttendeeNumber, $event);
                     // dd($PricingDetails);
-
                 }
                 // dd($BookingData);
                 $ResponseData['BookingData'] = $TicketBookingArr;
