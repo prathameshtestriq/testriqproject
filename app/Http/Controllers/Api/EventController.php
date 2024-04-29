@@ -73,9 +73,14 @@ class EventController extends Controller
             }
             $event->event_images = $EventImgArr;
 
+            #EVENT TICKETS DISTANCE
+            $event->distances = $e->getDistances($event->id);
+
             #EVENT CATEGORIES
             $event->category = $e->getCategoryDetails($event->id);
             $event->types = $e->getTypeDetails($event->id);
+
+
         }
         // dd($Events);
         return $Events;
@@ -111,8 +116,8 @@ class EventController extends Controller
 
         #GET EVENTS COUNTRY WISE
         $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
-        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time";
-        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time";
+        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.event_info_status=1 AND u.start_time >=:start_time";
+        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
 
         $CountryCode = $request->country_code;
@@ -515,7 +520,7 @@ class EventController extends Controller
         $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
         $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
-        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time";
+        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time";
         // $CountryCode = $request->country_code;
         $City = isset($request->city) ? $request->city : '';
         // $State = isset($request->state) ? $request->state : '';
@@ -1053,7 +1058,7 @@ class EventController extends Controller
 
             //-------- age criteria dropdown -----
             $new_array = [];
-            for ($i=1; $i <= 100; $i++) { 
+            for ($i=1; $i <= 100; $i++) {
                 // code...
                 $ResponseData['age_details'][] = array("id"=>$i,"name"=>$i);
             }
@@ -2181,7 +2186,7 @@ class EventController extends Controller
 
             $ActionFlag  = !empty($request->action_flag) ? $request->action_flag : '';
             $msg = '';
-                
+
                 if(isset($ActionFlag) && $ActionFlag == 'faq_changes_status'){
                     $status_sSQL = 'UPDATE event_FAQ SET `status` =:coupon_status WHERE `id`=:coupon_id ';
                     DB::update($status_sSQL,array(
@@ -2206,7 +2211,7 @@ class EventController extends Controller
                     ));
                     $msg = 'Coupon status change successfully';
                 }
-                
+
             $response['data'] = [];
             $response['message'] = $msg;
             $ResposneCode = 200;
@@ -2218,8 +2223,8 @@ class EventController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
-    
-    // ----------- 
+
+    // -----------
     public function addEditAgeCriteria(Request $request)
     {
         $ResponseData = [];

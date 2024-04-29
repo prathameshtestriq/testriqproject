@@ -131,6 +131,7 @@ Route::controller(AdvertisementController::class)->group(function () {
 
 Route::controller(TestimonialController::class)->group(function () {
     Route::get('/get_testimonial', 'GetTestimonial');
+    Route::post('/add_subscriber','AddSubscriber');
 });
 
 Route::controller(OrganizerController::class)->group(function () {
