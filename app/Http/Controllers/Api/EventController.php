@@ -1080,6 +1080,12 @@ class EventController extends Controller
             }
             $ResponseData['age_criteria_details'] = !empty($ageCriteriaResult) ? $ageCriteriaResult : [];
 
+            // ---------- get terms & conditions tab details
+            $sql1 = "SELECT id,title,terms_conditions FROM event_terms_conditions WHERE event_id=:event_id AND user_id=:user_id ";
+            $CommResult = DB::select($sql1, array('event_id' => $EventId, 'user_id' => $UserId));
+            //dd($CommResult);
+            $ResponseData['terms_conditions_details'] = !empty($CommResult) ? $CommResult : [];
+
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
         } else {
@@ -1719,7 +1725,7 @@ class EventController extends Controller
                         'eventId' => $EventId,
                         'event_comm_id' => $EventCommId
                     ));
-            }else if(isset($request->common_flag) && $CommonFlag == 'coupon_delete'){
+            } else if(isset($request->common_flag) && $CommonFlag == 'coupon_delete'){
 
                     $Bindings = array(
                             "is_deleted" => 1,
@@ -1733,13 +1739,19 @@ class EventController extends Controller
                         'eventId' => $EventId,
                         'event_comm_id' => $EventCommId
                     ));
-            }else if(isset($request->common_flag) && $CommonFlag == 'age_delete'){
+            } else if(isset($request->common_flag) && $CommonFlag == 'age_delete'){
                     $del_sSQL = 'DELETE FROM age_criteria WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
                     DB::delete($del_sSQL,array(
                         'eventId' => $EventId,
                         'event_comm_id' => $EventCommId
                     ));
-            }else{
+            } else if(isset($request->common_flag) && $CommonFlag == 'delete_terms'){
+                    $del_sSQL = 'DELETE FROM event_terms_conditions WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
+                    DB::delete($del_sSQL,array(
+                        'eventId' => $EventId,
+                        'event_comm_id' => $EventCommId
+                    ));
+            } else{
                     $del_sSQL1 = 'DELETE FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id ';
                     DB::delete($del_sSQL1,array(
                         'eventId' => $EventId,
@@ -1797,6 +1809,14 @@ class EventController extends Controller
 
                 $Sql = 'SELECT * FROM age_criteria WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
                 $aResult['age_criteria_details'] = DB::select($Sql, array(
+                    'eventId' => $EventId,
+                    'event_comm_id' => $EventCommId
+                ));
+
+            } else if ($EventEditFlag == 'term_conditions_edit') {
+
+                $Sql = 'SELECT * FROM event_terms_conditions WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
+                $aResult['terms_conditions_details'] = DB::select($Sql, array(
                     'eventId' => $EventId,
                     'event_comm_id' => $EventCommId
                 ));
@@ -2225,7 +2245,7 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    // -----------
+    // ----------- Age Criteria
     public function addEditAgeCriteria(Request $request)
     {
         $ResponseData = [];
@@ -2295,6 +2315,83 @@ class EventController extends Controller
 
                     $ResposneCode = 200;
                     $message = "Age Criteria updated successfully";
+                }
+
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+    }
+
+    // ----------- Terms & Conditions
+    public function addEditTermsConditions(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $EventId = $aPost['event_id'];
+                $UserId = $aPost['user_id'];
+
+                $Title = !empty($request->title) ? $request->title : '';
+                $TermsConditions = !empty($request->terms_conditions) ? $request->terms_conditions : '';
+                $EventTermId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+
+                if (empty($EventTermId)) {
+
+                    $Bindings = array(
+                        "event_id" => $EventId,
+                        "user_id"  => $UserId,
+                        "title"    => $Title,
+                        "terms_conditions" => $TermsConditions
+                    );
+
+                    $insert_SQL = "INSERT INTO event_terms_conditions (event_id,user_id,title,terms_conditions) VALUES(:event_id,:user_id,:title,:terms_conditions)";
+                    DB::insert($insert_SQL, $Bindings);
+
+                    $ResposneCode = 200;
+                    $message = "Terms & Conditions added successfully";
+
+                } else {
+
+                    $Bindings = array(
+                        "title"    => $Title,
+                        "terms_conditions" => $TermsConditions,
+                        "event_comm_id" => $EventTermId
+                    );
+
+                    $sql = 'UPDATE event_terms_conditions SET title= :title, terms_conditions= :terms_conditions WHERE id = :event_comm_id';
+                    // dd($sql);
+                    DB::update($sql, $Bindings);
+
+                    $ResposneCode = 200;
+                    $message = "Terms & Conditions updated successfully";
                 }
 
             } else {
