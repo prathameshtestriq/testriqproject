@@ -366,17 +366,17 @@ class EventTicketController extends Controller
 
             foreach ($Ticket as $key => $value) {
                 $value->ticket_start_date = !empty($value->ticket_sale_start_date) ? date("Y-m-d", $value->ticket_sale_start_date) : 0;
-                $value->ticket_start_time = (!empty($value->ticket_sale_start_date)) ? date("h:i", $value->ticket_sale_start_date) : 0;
+                $value->ticket_start_time = (!empty($value->ticket_sale_start_date)) ? date("H:i", $value->ticket_sale_start_date) : 0;
 
                 $value->ticket_end_date = !empty($value->ticket_sale_end_date) ? date("Y-m-d", $value->ticket_sale_end_date) : 0;
-                $value->ticket_end_time = (!empty($value->ticket_sale_end_date)) ? date("h:i", $value->ticket_sale_end_date) : 0;
+                $value->ticket_end_time = (!empty($value->ticket_sale_end_date)) ? date("H:i", $value->ticket_sale_end_date) : 0;
 
                 //EARLY BIRD
                 $value->eb_start_date = !empty($value->start_time) ? date("Y-m-d", $value->start_time) : 0;
-                $value->eb_start_time = (!empty($value->start_time)) ? date("h:i", $value->start_time) : 0;
+                $value->eb_start_time = (!empty($value->start_time)) ? date("H:i", $value->start_time) : 0;
 
                 $value->eb_end_date = !empty($value->end_time) ? date("Y-m-d", $value->end_time) : 0;
-                $value->eb_end_time = (!empty($value->end_time)) ? date("h:i", $value->end_time) : 0;
+                $value->eb_end_time = (!empty($value->end_time)) ? date("H:i", $value->end_time) : 0;
             }
             $ResponseData['Ticket'] = $Ticket;
             $ResposneCode = 200;

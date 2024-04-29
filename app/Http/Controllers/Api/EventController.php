@@ -875,13 +875,13 @@ class EventController extends Controller
             $e = new Event();
             foreach ($Events as $event) {
                 $event->start_date = (!empty($event->start_time)) ? date("Y-m-d", $event->start_time) : 0;
-                $event->start_time_event = (!empty($event->start_time)) ? date("h:i", $event->start_time) : 0;
+                $event->start_time_event = (!empty($event->start_time)) ? date("H:i", $event->start_time) : 0;
 
                 $event->end_date = (!empty($event->end_time)) ? date("Y-m-d", $event->end_time) : 0;
-                $event->end_time_event = (!empty($event->end_time)) ? date("h:i", $event->end_time) : 0;
+                $event->end_time_event = (!empty($event->end_time)) ? date("H:i", $event->end_time) : 0;
 
-                $event->repeat_start_time = (!empty($event->repeat_start_time)) ? date("h:i", $event->repeat_start_time) : 0;
-                $event->repeat_end_time = (!empty($event->repeat_end_time)) ? date("h:i", $event->repeat_end_time) : 0;
+                $event->repeat_start_time = (!empty($event->repeat_start_time)) ? date("H:i", $event->repeat_start_time) : 0;
+                $event->repeat_end_time = (!empty($event->repeat_end_time)) ? date("H:i", $event->repeat_end_time) : 0;
 
                 $event->banner_image = !empty($event->banner_image) ? url('/') . '/uploads/banner_image/' . $event->banner_image . '' : '';
                 $event->logo_image = !empty($event->logo_image) ? url('/') . '/uploads/logo_image/' . $event->logo_image . '' : '';
@@ -911,10 +911,10 @@ class EventController extends Controller
                 $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d M Y", $event->registration_end_time) : "";
 
                 $event->diplay_registration_start_date = (!empty($event->registration_start_time)) ? date("Y-m-d", $event->registration_start_time) : 0;
-                $event->diplay_registration_start_time = (!empty($event->registration_start_time)) ? date("h:i", $event->registration_start_time) : 0;
+                $event->diplay_registration_start_time = (!empty($event->registration_start_time)) ? date("H:i", $event->registration_start_time) : 0;
 
                 $event->diplay_registration_end_date = (!empty($event->registration_end_time)) ? date("Y-m-d", $event->registration_end_time) : 0;
-                $event->diplay_registration_end_time = (!empty($event->registration_end_time)) ? date("h:i", $event->registration_end_time) : 0;
+                $event->diplay_registration_end_time = (!empty($event->registration_end_time)) ? date("H:i", $event->registration_end_time) : 0;
 
             }
             // dd($Events);
@@ -936,8 +936,8 @@ class EventController extends Controller
                 "start_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("F d, Y", $Events[0]->start_time) : 0,
                 "city" => (isset($Events[0]->city) && !empty($Events[0]->city)) ? $master->getCityName($Events[0]->city) : "",
                 "event_name" => (isset($Events[0]->name) && !empty($Events[0]->name)) ? (strlen($Events[0]->name) > 40 ? ucwords(substr($Events[0]->name, 0, 40)) . "..." : ucwords($Events[0]->name)) : "",
-                "start_event_month" => (isset($Events[0]->registration_end_time) && (!empty($Events[0]->registration_end_time))) ? gmdate("M", $Events[0]->registration_end_time) : gmdate("M", strtotime('now')),
-                "start_event_date" => (isset($Events[0]->registration_end_time) && (!empty($Events[0]->registration_end_time))) ? gmdate("d", $Events[0]->registration_end_time) : gmdate("d", strtotime('now')),
+                "start_event_month" => (isset($Events[0]->registration_start_time) && (!empty($Events[0]->registration_start_time))) ? gmdate("M", $Events[0]->registration_start_time) : gmdate("M", strtotime('now')),
+                "start_event_date" => (isset($Events[0]->registration_start_time) && (!empty($Events[0]->registration_start_time))) ? gmdate("d", $Events[0]->registration_start_time) : gmdate("d", strtotime('now')),
                 "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('now')),
 
                 "min_price" => (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0,
@@ -1040,7 +1040,7 @@ class EventController extends Controller
                     $CouponDetailsResult = DB::select($sql2, array('event_id' => $EventId, 'event_coupon_id' => $res->id));
 
                     $res->no_of_discount =  !empty($CouponDetailsResult[0]->no_of_discount) ? $CouponDetailsResult[0]->no_of_discount : '';
-                    $res->discount_amt_per_type =  !empty($CouponDetailsResult[0]->discount_amt_per_type) ? $CouponDetailsResult[0]->discount_amt_per_type : '';
+                    $res->discount_amt_per_type =  !empty($CouponDetailsResult[0]->discount_amt_per_type) ? (string)$CouponDetailsResult[0]->discount_amt_per_type : '';
                     $res->discount_amount =  !empty($CouponDetailsResult[0]->discount_amount) ? $CouponDetailsResult[0]->discount_amount : '';
                     $res->discount_percentage =  !empty($CouponDetailsResult[0]->discount_percentage) ? $CouponDetailsResult[0]->discount_percentage : '';
                     $res->expired_date =  !empty($CouponDetailsResult[0]->discount_to_datetime) ? date('d-m-Y',$CouponDetailsResult[0]->discount_to_datetime) : '';
@@ -1053,7 +1053,7 @@ class EventController extends Controller
 
             //-------- age criteria dropdown -----
             $new_array = [];
-            for ($i=1; $i <= 100; $i++) { 
+            for ($i=1; $i <= 110; $i++) { 
                 // code...
                 $ResponseData['age_details'][] = array("id"=>$i,"name"=>$i);
             }
