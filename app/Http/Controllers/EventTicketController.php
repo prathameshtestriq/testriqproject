@@ -7,6 +7,7 @@ use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use App\Models\Master;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use App\Libraries\Emails;
 
 class EventTicketController extends Controller
 {
@@ -429,15 +430,11 @@ class EventTicketController extends Controller
                 $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
                 $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
 
-
                 foreach ($FormQuestions as $value) {
                     $value->ActualValue = "";
                     $value->Error = "";
                     $value->TicketId = 0;
 
-                    if ($value->id == 170) {
-                        // dd(($value->question_form_option));
-                    }
                     if (!empty($value->question_form_option)) {
                         $jsonString = $value->question_form_option;
                         $array = json_decode($jsonString, true);
@@ -507,6 +504,8 @@ class EventTicketController extends Controller
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($request->FormQuestions);
 
+
+
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
             if (empty($aPost['event_id'])) {
@@ -531,6 +530,8 @@ class EventTicketController extends Controller
                 $ExtraPricing = isset($request->ExtraPricing) && !empty($request->ExtraPricing) ? $request->ExtraPricing : [];
 
                 $UserId = $aToken["data"]->ID;
+                $UserEmail = $aToken["data"]->email;
+                // dd($UserEmail);
                 $TotalTickets = 0;
 
                 if (!empty($TotalPrice)) {
@@ -619,14 +620,14 @@ class EventTicketController extends Controller
                                             "id" => $ExistId
                                         );
                                         $Sql5 = "UPDATE extra_pricing_booking SET
-                                                event_id = :event_id,
-                                                booking_id = :booking_id,
-                                                user_id = :user_id,
-                                                ticket_id = :ticket_id,
-                                                total_count = :total_count,
-                                                current_count = :current_count,
-                                                last_booked_date = :last_booked_date
-                                                WHERE id = :id";
+                                                  event_id = :event_id,
+                                                  booking_id = :booking_id,
+                                                  user_id = :user_id,
+                                                  ticket_id = :ticket_id,
+                                                  total_count = :total_count,
+                                                  current_count = :current_count,
+                                                  last_booked_date = :last_booked_date
+                                                  WHERE id = :id";
                                         DB::update($Sql5, $Binding5);
                                     } else {
                                         // $ResposneCode = 400;
@@ -654,6 +655,52 @@ class EventTicketController extends Controller
                         }
                     }
                     #ATTENDEE DETAILS
+                    $separatedArrays = [];
+                    $first_name = null;
+                    $last_name = null;
+                    $email = null;
+                    $IdBookingDetails = 0;
+
+                    foreach ($FormQuestions as $key => $arrays) {
+                        foreach ($arrays as $subArray) {
+                            $separatedArrays[] = json_encode($subArray);
+                        }
+                    }
+                    foreach ($separatedArrays as $key => $value) {
+                        $subArray = [];
+                        $subArray = json_decode($value);
+                        $TicketId = 0;
+                        // dd($subArray);
+                        foreach ($subArray as $key => $sArray) {
+                            if (isset($sArray->question_form_name)) {
+                                if ($sArray->question_form_name == 'first_name') {
+                                    $first_name = $sArray->ActualValue;
+                                } elseif ($sArray->question_form_name == 'last_name') {
+                                    $last_name = $sArray->ActualValue;
+                                } elseif ($sArray->question_form_name == 'email') {
+                                    $email = $sArray->ActualValue;
+                                }
+                            }
+                            if (empty($TicketId)) {
+                                $TicketId = !empty($sArray->TicketId) ? $sArray->TicketId : 0;
+                            }
+
+                        }
+                        // die;
+                        $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
+                        $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,created_at) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:created_at)";
+                        $Bind1 = array(
+                            "booking_details_id" => $IdBookingDetails,
+                            "ticket_id" => $TicketId,
+                            "attendee_details" => json_encode($value),
+                            "email" => $email,
+                            "firstname" => $first_name,
+                            "lastname" => $last_name,
+                            "created_at" => strtotime("now")
+                        );
+                        DB::insert($sql, $Bind1);
+                    }
+                    // -------------------------------------------END ATTENDEE DETAIL
                     foreach ($FormQuestions as $Form) {
                         $TotTickets = count($Form);
                         $TotalTickets += $TotTickets;
@@ -689,6 +736,7 @@ class EventTicketController extends Controller
                                         // }
                                     }
                                     $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
+
                                     if (!empty($IdBookingDetails)) {
                                         $Binding3 = array(
                                             "booking_details_id" => $IdBookingDetails,
@@ -706,6 +754,8 @@ class EventTicketController extends Controller
                 }
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
+                $EventUrl = isset($request->EventUrl) && !empty($request->EventUrl) ? $request->EventUrl : "";
+                $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
@@ -721,6 +771,61 @@ class EventTicketController extends Controller
         ];
 
         return response()->json($response, $ResposneCode);
+    }
+
+    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets)
+    {
+        $sql1 = "SELECT * FROM users WHERE id=:user_id";
+        $User = DB::select($sql1, ['user_id' => $UserId]);
+
+        $sql2 = "SELECT * FROM events WHERE id=:event_id";
+        $Event = DB::select($sql2, ['event_id' => $EventId]);
+
+        $sql3 = "SELECT * FROM organizer WHERE user_id=:user_id";
+        $Organizer = DB::select($sql3, ['user_id' => $UserId]);
+        $OrgName = "";
+        if (count($Organizer) > 0) {
+            $OrgName = $Organizer[0]->name;
+        }
+
+        $ConfirmationEmail = array(
+            // "USERID" => $UserId,
+            // "EMAIL" => $UserEmail,
+            "FIRSTNAME" => $User[0]->firstname,
+            "LASTNAME" => $User[0]->lastname,
+            "EVENTID" => $EventId,
+            "EVENTNAME" => $Event[0]->name,
+            "EVENTSTARTDATE" => date('d-m-Y', strtotime($Event[0]->start_time)),
+            "EVENTSTARTTIME" => date('H:i A', strtotime($Event[0]->start_time)),
+            "EVENTENDDATE" => date('d-m-Y', strtotime($Event[0]->end_time)),
+            "EVENTENDTIME" => date('H:i A', strtotime($Event[0]->end_time)),
+            "YTCRTEAM" => "Ytcr Team",
+            "EVENTURL" => $EventUrl,
+            "COMPANYNAME" => $OrgName,
+            "TOTALTICKETS" => $TotalNoOfTickets
+        );
+        // dd($ConfirmationEmail);
+        $Subject = "";
+        $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND UPPER(subject_name)=:subject_name";
+        $Communications = DB::select($sql, ["event_id" => $EventId, "subject_name" => strtoupper("Confirmation Email")]);
+        if (count($Communications) > 0) {
+            $MessageContent = $Communications[0]->message_content;
+            $Subject =  $Communications[0]->subject_name;
+        } else {
+            $MessageContent = "<p>Hello {FIRSTNAME},</p><p>Your event ticket booking is successful.</p><p>Thank you for booking for {EVENTNAME}.</p><p>Regards,</p><p>{YTCRTEAM}</p>";
+            $Subject =  "Confirmation Email";
+        }
+
+        foreach ($ConfirmationEmail as $key => $value) {
+            $placeholder = '{' . $key . '}';
+            $MessageContent = str_replace($placeholder, $value, $MessageContent);
+        }
+
+        // Output the filled message
+        // dd($MessageContent);
+        $Email = new Emails();
+        // $Email->send_booking_mail($UserId,$UserEmail,$MessageContent,$Subject);
+        return ;
     }
 
     function GetBookings(Request $request)
@@ -858,7 +963,7 @@ class EventTicketController extends Controller
                         $TicketBookingArr[] = $ticket;
                     }
                 }
-                // dd
+                // dd($TicketBookingArr);
                 $AttendeeNumber = 0;
                 foreach ($TicketBookingArr as $event) {
                     // $event->TicketName =
@@ -880,10 +985,12 @@ class EventTicketController extends Controller
                     $event->unique_ticket_id = $uniqueId;
 
                     #GET EXTRA PRICING DETAILS
-                    $event->PricingDetails = $this->getPricingDetails($AttendeeNumber, $event);
+                    // $event->PricingDetails = $this->getPricingDetails($AttendeeNumber, $event);
+
+                    $event->PricingDetails = $this->getNewPricingDetails($event);
                     // dd($PricingDetails);
                 }
-                // dd($BookingData);
+                // dd($TicketBookingArr);
                 $ResponseData['BookingData'] = $TicketBookingArr;
 
                 $ResposneCode = 200;
@@ -905,26 +1012,83 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function getPricingDetails($AttendeeNumber, $event) {
-        $Sql = "SELECT bd.*,(SELECT question_label FROM event_form_question WHERE id=bd.question_id) AS QueLabel FROM booking_details AS bd WHERE bd.attendee_number=:attendee_number AND bd.booking_id=:booking_id AND bd.event_id=:event_id AND bd.user_id=:user_id AND bd.ticket_id=:ticket_id";
-        $Bindings = array(
-            "attendee_number" => $AttendeeNumber,
-            "booking_id"=>$event->booking_id,
-            "event_id"=>$event->event_id,
-            "user_id"=>$event->user_id,
-            "ticket_id"=>$event->ticket_id
-        );
-        $Data = DB::select($Sql,$Bindings);
+    function getNewPricingDetails($event)
+    {
+        // dd($event->id);
+        $sql = "SELECT * FROM attendee_booking_details WHERE booking_details_id=:booking_details_id";
+        $Data = DB::select($sql, array("booking_details_id" => $event->id));
+        if (count($Data) == 1) {
+            // dd($Data[0]->attendee_details);
+            $newData = json_decode(json_decode($Data[0]->attendee_details));
+            //    dd($newData);
+            $filteredData = [];
+            foreach ($newData as $key => $value) {
+                if ($value->question_form_type == "amount" && $value->ActualValue !== null) {
+                    $filteredData[] = [
+                        'ticket_amount' => $value->ActualValue,
+                        'QueLabel' => $value->question_label,
+                    ];
+                }
+                if ($value->question_form_type == "select" && $value->question_form_option !== "" && $value->ActualValue !== null) {
+                    // dd($value->question_form_option);
+                    $FormOptions = json_decode($value->question_form_option);
+                    // dd($FormOptions);
+                    if (!empty($FormOptions)) {
+                        foreach ($FormOptions as $key => $form) {
+                            // dd($form->id);
+                            if ($form->id == $value->ActualValue) {
+                                // echo "<pre>";print_r($form);
+                                if (isset($form->price)) {
+                                    $filteredData[] = [
+                                        'ticket_amount' => $form->price,
+                                        'QueLabel' => $form->label,
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // dd($filteredData);
 
-        $filteredData = [];
+        } else if (count($Data) > 1) {
+            foreach ($Data as $key => $aData) {
+                // dd($aData);
+                // --------------------
+                $newData = json_decode(json_decode($aData->attendee_details));
+                //    dd($newData);
+                $filteredData = [];
+                foreach ($newData as $key => $value) {
+                    if ($value->question_form_type == "amount" && $value->ActualValue !== null) {
+                        $filteredData[] = [
+                            'ticket_amount' => $value->ActualValue,
+                            'QueLabel' => $value->question_label,
+                        ];
+                    }
+                    if ($value->question_form_type == "select" && $value->question_form_option !== "" && $value->ActualValue !== null) {
+                        // dd($value->question_form_option);
+                        $FormOptions = json_decode($value->question_form_option);
+                        // dd($FormOptions);
+                        if (!empty($FormOptions)) {
+                            foreach ($FormOptions as $key => $form) {
+                                // dd($form->id);
+                                if ($form->id == $value->ActualValue) {
+                                    // echo "<pre>";print_r($form);
+                                    if (isset($form->price)) {
+                                        $filteredData[] = [
+                                            'ticket_amount' => $form->price,
+                                            'QueLabel' => $form->label,
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
-        foreach ($Data as $item) {
-            $filteredData[] = [
-                'ticket_amount' => $item->ticket_amount,
-                'QueLabel' => $item->QueLabel,
-            ];
+                // --------------------
+            }
         }
-
         return $filteredData;
     }
 

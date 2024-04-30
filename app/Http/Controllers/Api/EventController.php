@@ -469,7 +469,13 @@ class EventController extends Controller
         // dd($Events);
         $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
         $ResponseData['EventDetailId'] = sizeof($Events) > 0 ? $Events[0]->id : 0;
+        $ResponseData['FAQ'] = [];
 
+        if (!empty($EventId)) {
+            $sSQL = 'SELECT * FROM event_FAQ WHERE event_id =:event_id AND status=1';
+            $FAQ = DB::select($sSQL, array('event_id' => $EventId));
+            $ResponseData['FAQ'] = $FAQ;
+        }
         #ORGANISER
         $ResponseData['OrganiserName'] = $ResponseData['OrganiserId'] = $ResponseData['UserId'] = "";
         if (!empty($Events[0]->created_by)) {
@@ -1059,7 +1065,7 @@ class EventController extends Controller
             //-------- age criteria dropdown -----
             $new_array = [];
 
-            for ($i=1; $i <= 110; $i++) { 
+            for ($i=1; $i <= 110; $i++) {
                 // code...
                 $ResponseData['age_details'][] = array("id"=>$i,"name"=>$i);
             }
