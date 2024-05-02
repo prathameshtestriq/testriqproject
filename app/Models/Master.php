@@ -60,6 +60,16 @@ class Master extends Model
         return $CountryName;
     }
 
+    public function getCountryCode($CountryId){
+        $CountryCode = "";
+        if($CountryId){
+            $sql = "SELECT country_code FROM countries WHERE id=:id";
+            $Country = DB::select($sql,array('id'=>$CountryId));
+            $CountryCode = isset($Country[0]->country_code) ? $Country[0]->country_code : "";
+        }
+        return $CountryCode;
+    }
+
     public function getTimeZoneName($TimeZoneId){
         $TimeZoneName = "";
         if($TimeZoneId){

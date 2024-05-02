@@ -46,11 +46,12 @@ class UserController extends Controller
                 $value->city_name = !empty ($value->city) ? $master->getCityName($value->city) : "";
                 $value->state_name = !empty ($value->state) ? $master->getStateName($value->state) : "";
                 $value->country_name = !empty ($value->country) ? $master->getCountryName($value->country) : "";
+                $value->country_code = !empty ($value->country) ? $master->getCountryCode($value->country) : "";
 
                 $value->ca_city_name = !empty ($value->ca_city) ? $master->getCityName($value->ca_city) : "";
                 $value->ca_state_name = !empty ($value->ca_state) ? $master->getStateName($value->ca_state) : "";
                 $value->ca_country_name = !empty ($value->ca_country) ? $master->getCountryName($value->ca_country) : "";
-
+                // $value->ca_country_code = !empty ($value->ca_country) ? $master->getCountryCode($value->ca_country) : "";
             }
             if (!empty ($userData)) {
                 $ResponseData['userData'] = $userData;
