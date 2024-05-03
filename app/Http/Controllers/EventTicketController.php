@@ -541,9 +541,9 @@ class EventTicketController extends Controller
                         "booking_date" => strtotime("now"),
                         "total_amount" => $TotalPrice,
                         "total_discount" => $TotalDiscount,
-                        "UtmCampaign" => $UtmCampaign
+                        "utm_campaign" => $UtmCampaign
                     );
-                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount)";
+                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign)";
                     DB::insert($Sql1, $Binding1);
                     $BookingId = DB::getPdo()->lastInsertId();
 
