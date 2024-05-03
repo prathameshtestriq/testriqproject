@@ -98,7 +98,8 @@ class FormQuestionsController extends Controller
 
             //dd($EventId);
 
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  '; // 
+          //  $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  '; // 
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
             $aResult = DB::select($Sql);
             //dd($aResult);
             $general_form_array = [];
@@ -146,8 +147,8 @@ class FormQuestionsController extends Controller
                 //         }
                 //     }
                 // }else{ $res->sub_question_array = []; }
-
                 $general_form_array[] = $res;
+                //$general_form_array[$res->form_name][] = $res;
             }//die;
 
             //dd($general_form_array);
@@ -531,7 +532,7 @@ class FormQuestionsController extends Controller
 
             DB::insert($sSQL,array(
                 'questionLabel'     => $questionLabel,
-                'formId'            => 1,
+                'formId'            => 8,
                 'questionFormType'  => $questionFormType,
                 'questionFormName'  => $question_name,
                 'questionFormOption' => $questionFormOptionArray,
@@ -864,6 +865,15 @@ class FormQuestionsController extends Controller
                         'generalFormId' => $res['general_form_id'],
                         'Id' => $res['id']
                     ));
+
+                    if($res['child_question_ids'] != ''){
+                        $sSQL = 'UPDATE event_form_question SET `sort_order` =:sort_order WHERE `event_id`=:eventId AND `general_form_id` IN('.$res['child_question_ids'].')';
+                        DB::update($sSQL,array(
+                            'sort_order' => $sort_order,
+                            'eventId' => $EventId
+                        ));
+                    }
+
                 }
 
                 $response['data'] = $new_array;

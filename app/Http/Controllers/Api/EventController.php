@@ -745,6 +745,22 @@ class EventController extends Controller
                         $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_url,event_type,created_by,ytcr_base_price) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_url,:event_type,:created_by,:ytcr_base_price)";
                         DB::insert($SQL, $Bindings);
                         $EventId = DB::getPdo()->lastInsertId();
+                        
+                        //------------ added manual FAQ questions -------------
+                        if(!empty($EventId)){
+                         
+                            $insert_sSQL = 'INSERT INTO event_FAQ (event_id, user_id, question, answer, custom_faq)';
+                            $insert_sSQL .= 'SELECT :eventId, :user_id, faq_name, faq_answer, :customFaq
+                                FROM FAQ_master
+                                WHERE faq_status = 1 ';
+                            //dd($insert_sSQL);
+                            DB::insert($insert_sSQL,array(
+                                'eventId' => $EventId,
+                                'user_id' => $UserId,
+                                'customFaq'  => 1
+                            ));
+
+                        }
 
                         if (!empty($Category) && !empty($EventId)) {
                             foreach ($Category as $value) {
@@ -999,7 +1015,7 @@ class EventController extends Controller
 
             $ytcr_base_price = !empty($Events) && $Events[0]->ytcr_base_price ? $Events[0]->ytcr_base_price : 0;
             $ResponseData['YTCR_FEE_PERCENTAGE'] = !empty($SettingInfoDetails) && !empty($SettingInfoDetails[0]->ticket_ytcr_base_price) ?
-                $SettingInfoDetails[0]->ticket_ytcr_base_price : $ytcr_base_price;
+                $SettingInfoDetails[0]->ticket_ytcr_base_price : (int)$ytcr_base_price;
 
             $ResponseData['PAYMENT_GATEWAY_FEE_PERCENTAGE'] = config('custom.payment_gateway_fee_percent');
 
@@ -1009,13 +1025,23 @@ class EventController extends Controller
             //dd($FieldMppedDetails);
 
             // ---------- get communication tab details
-            $sql1 = "SELECT id,subject_name,message_content  FROM event_communication WHERE event_id=:event_id AND user_id=:user_id ";
+            $sql1 = "SELECT id,subject_name,message_content,status FROM event_communication WHERE event_id=:event_id AND user_id=:user_id ";
             $CommResult = DB::select($sql1, array('event_id' => $EventId, 'user_id' => $UserId));
             //dd($CommResult);
+            if (!empty($CommResult)) {
+                foreach ($CommResult as $res) {
+                    if($res->status == 1){
+                       $res->status = true;
+                    }else{
+                       $res->status = false;
+                    }
+                }
+            }
+
             $ResponseData['communication_details'] = !empty($CommResult) ? $CommResult : [];
 
             // ---------- get FAQ tab details
-            $sql1 = "SELECT id,question,answer,status FROM event_FAQ WHERE event_id=:event_id AND user_id=:user_id ";
+            $sql1 = "SELECT id,question,answer,status,custom_faq FROM event_FAQ WHERE event_id=:event_id AND user_id=:user_id ";
             $FAQResult = DB::select($sql1, array('event_id' => $EventId, 'user_id' => $UserId));
             //dd($CommResult);
             if (!empty($FAQResult)) {
@@ -1087,9 +1113,18 @@ class EventController extends Controller
             $ResponseData['age_criteria_details'] = !empty($ageCriteriaResult) ? $ageCriteriaResult : [];
 
             // ---------- get terms & conditions tab details
-            $sql1 = "SELECT id,title,terms_conditions FROM event_terms_conditions WHERE event_id=:event_id AND user_id=:user_id ";
+            $sql1 = "SELECT id,title,terms_conditions,status FROM event_terms_conditions WHERE event_id=:event_id AND user_id=:user_id ";
             $CommResult = DB::select($sql1, array('event_id' => $EventId, 'user_id' => $UserId));
             //dd($CommResult);
+            if (!empty($CommResult)) {
+                foreach ($CommResult as $res) {
+                    if($res->status == 1){
+                       $res->status = true;
+                    }else{
+                       $res->status = false;
+                    }
+                }
+            }
             $ResponseData['terms_conditions_details'] = !empty($CommResult) ? $CommResult : [];
 
             $ResposneCode = 200;
@@ -2230,7 +2265,23 @@ class EventController extends Controller
                     ));
                     $msg = 'Age criteria status change successfully';
 
-                } else{
+                }else if($ActionFlag == 'communication_changes_status'){
+                    $status_sSQL = 'UPDATE event_communication SET `status` =:comm_status WHERE `id`=:comm_id ';
+                    DB::update($status_sSQL,array(
+                        'comm_status' => $CouponStatus,
+                        'comm_id' => $CouponId
+                    ));
+                    $msg = 'Communication status change successfully';
+
+                }else if($ActionFlag == 'term_changes_status'){
+                    $status_sSQL = 'UPDATE event_terms_conditions SET `status` =:term_status WHERE `id`=:term_id ';
+                    DB::update($status_sSQL,array(
+                        'term_status' => $CouponStatus,
+                        'term_id' => $CouponId
+                    ));
+                    $msg = 'Terms & conditions status change successfully';
+
+                }else{
                     $status_sSQL = 'UPDATE event_coupon SET `coupon_status` =:coupon_status WHERE `id`=:coupon_id ';
                     DB::update($status_sSQL,array(
                         'coupon_id' => $CouponId,
