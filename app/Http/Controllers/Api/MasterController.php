@@ -19,7 +19,7 @@ class MasterController extends Controller
         $message = 'Success';
         $field = '';
 
-        $sql = "SELECT e.* FROM eTypes AS e WHERE e.active=1";
+        $sql = "SELECT e.* FROM eTypes AS e WHERE e.active=1 ORDER BY sort_order";
         $AllEventTypes = DB::select($sql);
 
         foreach ($AllEventTypes as $key => $value) {
