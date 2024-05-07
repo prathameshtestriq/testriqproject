@@ -745,10 +745,10 @@ class EventController extends Controller
                         $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_url,event_type,created_by,ytcr_base_price) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_url,:event_type,:created_by,:ytcr_base_price)";
                         DB::insert($SQL, $Bindings);
                         $EventId = DB::getPdo()->lastInsertId();
-                        
+
                         //------------ added manual FAQ questions -------------
                         if(!empty($EventId)){
-                         
+
                             $insert_sSQL = 'INSERT INTO event_FAQ (event_id, user_id, question, answer, custom_faq)';
                             $insert_sSQL .= 'SELECT :eventId, :user_id, faq_name, faq_answer, :customFaq
                                 FROM FAQ_master

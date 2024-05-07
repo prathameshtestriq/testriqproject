@@ -1058,6 +1058,90 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function getCoupons(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+
+            if (!$empty) {
+                $master = new Master();
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $UserId = $aToken['data']->ID;
+                $now = strtotime("now");
+                $EventId = (isset($aPost['event_id'])) ? $aPost['event_id'] : 0;
+                $TicketIds = (isset($aPost['ticket_ids'])) ? $aPost['ticket_ids'] : 0;
+                $CouponsArr = [];
+
+                if (!empty($EventId) && !empty($TicketIds)) {
+
+                    $SQL = "SELECT ecd.*, ec.*, ec.id AS coupon_id,
+                    (SELECT COUNT(id) FROM applied_coupons WHERE coupon_id = ecd.event_coupon_id AND event_id = ecd.event_id) AS coupon_count
+                    FROM event_coupon_details AS ecd
+                    JOIN event_coupon AS ec ON ecd.event_coupon_id = ec.id
+                    WHERE ecd.event_id = :event_id
+                    AND ec.coupon_status = 1
+                    AND FIND_IN_SET(:ticket_id, ecd.ticket_details) > 0
+                    AND ecd.discount_from_datetime <= :now1
+                    AND ecd.discount_to_datetime >= :now2
+                    HAVING ecd.no_of_discount > coupon_count;
+                    ";
+
+                    foreach ($TicketIds as $ticketId) {
+                        $result = DB::select($SQL, [
+                            "event_id" => $EventId,
+                            "ticket_id" => $ticketId,
+                            "now1" => $now,
+                            "now2" => $now
+                        ]);
+
+                        if (!empty($result)) {
+                            foreach ($result as $value) {
+                                // Check if the ID is not already in the CouponsArr array
+                                if (!in_array($value->id, array_column($CouponsArr, 'id'))) {
+                                    // Add the current value to CouponsArr
+                                    $CouponsArr[] = $value;
+                                }
+                            }
+                        }
+                    }
+                    // die;
+                    foreach ($CouponsArr as $coupon) {
+                        $coupon->discount_from_datetime = (!empty($coupon->discount_from_datetime)) ? date("d F Y", $coupon->discount_from_datetime) : 0;
+                        $coupon->discount_to_datetime = (!empty($coupon->discount_to_datetime)) ? date("d F Y", $coupon->discount_to_datetime) : 0;
+                    }
+                }
+
+                $ResponseData['Coupons'] = $CouponsArr;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
 }
 
 
