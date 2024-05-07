@@ -1080,7 +1080,7 @@ class EventTicketController extends Controller
                 $now = strtotime("now");
                 $EventId = (isset($aPost['event_id'])) ? $aPost['event_id'] : 0;
                 $TicketIds = (isset($aPost['ticket_ids'])) ? $aPost['ticket_ids'] : 0;
-                $coupons = [];
+                $CouponsArr = [];
 
                 if (!empty($EventId) && !empty($TicketIds)) {
 
@@ -1105,15 +1105,23 @@ class EventTicketController extends Controller
                         ]);
 
                         if (!empty($result)) {
-                            if (!in_array($result[0]->id, array_column($coupons, 'id'))) {
-                                $coupons = array_merge($coupons, $result);
-                                $coupons[] = $result[0]->id;
+                            foreach ($result as $value) {
+                                // Check if the ID is not already in the CouponsArr array
+                                if (!in_array($value->id, array_column($CouponsArr, 'id'))) {
+                                    // Add the current value to CouponsArr
+                                    $CouponsArr[] = $value;
+                                }
                             }
                         }
                     }
+                    // die;
+                    foreach ($CouponsArr as $coupon) {
+                        $coupon->discount_from_datetime = (!empty($coupon->discount_from_datetime)) ? date("d F Y", $coupon->discount_from_datetime) : 0;
+                        $coupon->discount_to_datetime = (!empty($coupon->discount_to_datetime)) ? date("d F Y", $coupon->discount_to_datetime) : 0;
+                    }
                 }
 
-                $ResponseData['Coupons'] = $coupons;
+                $ResponseData['Coupons'] = $CouponsArr;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
