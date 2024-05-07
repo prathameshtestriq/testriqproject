@@ -1018,6 +1018,7 @@ class EventController extends Controller
                 $SettingInfoDetails[0]->ticket_ytcr_base_price : (int)$ytcr_base_price;
 
             $ResponseData['PAYMENT_GATEWAY_FEE_PERCENTAGE'] = config('custom.payment_gateway_fee_percent');
+            $ResponseData['PAYMENT_GATEWAY_GST_PERCENTAGE'] = config('custom.payment_gateway_gst_percent');
 
             //----------
             $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "Races2.0_Web" AND TABLE_NAME = "users" ';
@@ -1864,7 +1865,7 @@ class EventController extends Controller
 
             } else if($EventEditFlag == 'coupon_edit'){
 
-                $Sql = 'SELECT id,discount_type,discount_name FROM event_coupon WHERE `event_id`=:eventId AND `id`=:event_comm_id';
+                $Sql = 'SELECT id,discount_type,discount_name,description,show_public FROM event_coupon WHERE `event_id`=:eventId AND `id`=:event_comm_id';
                 $CouponResult = DB::select($Sql,array(
                     'eventId' => $EventId,
                     'event_comm_id' => $EventCommId
@@ -1970,6 +1971,9 @@ class EventController extends Controller
                 $discount_to_date = !empty($request->discount_to_date) ? $request->discount_to_date : 0;
                 $discount_to_time = !empty($request->discount_to_time) ? $request->discount_to_time : 0;
 
+                $description = !empty($request->description) ? $request->description : '';
+                $show_public = !empty($request->show_public) ? $request->show_public : 0;
+
                 $final_discount_from_datetime = !empty($discount_from_date) && !empty($discount_from_time) ? strtotime($discount_from_date.' '.$discount_from_time) : '';
                 $final_discount_to_datetime   = !empty($discount_to_date) && !empty($discount_to_time) ? strtotime($discount_to_date.' '.$discount_to_time) : '';
                 //dd($final_discount_to_datetime);
@@ -2030,11 +2034,13 @@ class EventController extends Controller
                                     "event_id" => $EventId,
                                     "discount_type" => $DiscountType,
                                     "discount_name" => $DiscountName,
+                                    "description"   => $description,
+                                    "show_public"   => $show_public,
                                     "created_by"    => $UserId,
                                     "created_date"  => time()
                                 );
 
-                        $insert_SQL = "INSERT INTO event_coupon (event_id,discount_type,discount_name,created_by,created_date) VALUES(:event_id,:discount_type,:discount_name,:created_by,:created_date)";
+                        $insert_SQL = "INSERT INTO event_coupon (event_id,discount_type,discount_name,description,show_public,created_by,created_date) VALUES(:event_id,:discount_type,:discount_name,:description,:show_public,:created_by,:created_date)";
                             DB::insert($insert_SQL, $Bindings);
                         $last_inserted_id = DB::getPdo()->lastInsertId();
                         //dd($last_inserted_id);
@@ -2150,10 +2156,12 @@ class EventController extends Controller
                         $Bindings = array(
                                 "discount_type" => $DiscountType,
                                 "discount_name" => $DiscountName,
+                                "description"   => $description,
+                                "show_public"   => $show_public,
                                 "event_id"      => $EventId,
                                 'edit_id'       => $EditCouponId
                         );
-                        $edit_sql = 'UPDATE event_coupon SET discount_type = :discount_type, discount_name = :discount_name WHERE event_id = :event_id AND id = :edit_id';
+                        $edit_sql = 'UPDATE event_coupon SET discount_type = :discount_type, discount_name = :discount_name, description = :description, show_public =:show_public  WHERE event_id = :event_id AND id = :edit_id';
                         DB::update($edit_sql, $Bindings);
 
                         $cond = $arr_cond = '';
@@ -2465,6 +2473,76 @@ class EventController extends Controller
             'data' => $ResponseData,
             'message' => $message
         ];
+        return response()->json($response, $ResposneCode);
+    }
+
+    // Delete description for Banner Image and Photos
+    public function deleteEventImages(Request $request)
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $EventId = !empty($request->event_id) ? $request->event_id : 0;
+            $EventPhotoId = !empty($request->event_img_id) ? $request->event_img_id : 0;
+            $CommonFlag = !empty($request->common_flag) ? $request->common_flag : '';
+
+            $CollectGst = !empty($request->collect_gst) ? $request->collect_gst : 0;
+            $PriceTaxesStatus = !empty($request->prices_taxes_status) ? $request->prices_taxes_status : 1;
+
+            $msg = '';
+
+            if(isset($request->common_flag) && $CommonFlag == 'banner_delete'){
+                
+                    $Bindings = array(
+                        "event_id" => $EventId
+                    );
+
+                    $sql = 'UPDATE events SET banner_image = "" WHERE id = :event_id';
+                    DB::update($sql, $Bindings);
+
+                    $msg = 'Banner image deleted successfully';
+            } else if(isset($request->common_flag) && $CommonFlag == 'photo_delete'){
+                    
+                    $del_sSQL = 'DELETE FROM event_images WHERE `event_id`=:eventId AND `id`=:event_img_id ';
+                    DB::delete($del_sSQL,array(
+                        'eventId' => $EventId,
+                        'event_img_id' => $EventPhotoId
+                    ));
+                    $msg = 'Event Photo deleted successfully';
+                   
+            } 
+
+            //------------ event collect gst and price taxes saving 
+
+            if(isset($request->common_flag) && $CommonFlag == 'ticket_gst_taxes_price'){
+                
+                    $Bindings = array(
+                        "collect_gst" => $CollectGst,
+                        "prices_taxes_status" => $PriceTaxesStatus,
+                        "event_id" => $EventId
+                    );
+
+                    $sql = 'UPDATE events SET collect_gst =:collect_gst, prices_taxes_status =:prices_taxes_status  WHERE id = :event_id';
+                    DB::update($sql, $Bindings);
+
+                    $msg = 'Record updated successfully';
+            } 
+
+            $response['data'] = [];
+            $response['message'] =  $msg;
+            $ResposneCode = 200;
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
         return response()->json($response, $ResposneCode);
     }
 

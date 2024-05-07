@@ -192,6 +192,7 @@ class FormQuestionsController extends Controller
             $MinLength = !empty($request->min_length) ? $request->min_length : '';
             $MaxLength = !empty($request->max_length) ? $request->max_length : '';
             $FieldMapping = !empty($request->field_mapping) ? $request->field_mapping : '';
+            $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
 
             //dd($LimitLengthCheck);
             $limit_length = '';
@@ -210,9 +211,9 @@ class FormQuestionsController extends Controller
           
             if(!empty($aResult5) && $aResult5[0]->tot_count == 0)
             {
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids)';
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint)';
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, form_id, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, form_id, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -294,7 +295,7 @@ class FormQuestionsController extends Controller
 
                     if($SubQuestionTitle != '')
                     {
-                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount)';
+                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint)';
 
                         DB::insert($sSQL,array(
                             //'questionLabel'     => !empty($question_title_name) ? $question_title_name.' '.$SubQuestionTitle : $SubQuestionTitle,
@@ -312,6 +313,8 @@ class FormQuestionsController extends Controller
                             "subQuePrice"       => $SubQuestionPriceFlag,
                             "subQueCount"       => $SubQuestionCountFlag,
                             "subQueOtherAmount" => $SubQuestionOtherAmountFlag,
+                            "questionHint"      => $questionHint
+
                         ));
 
                         $last_inserted_id = DB::getPdo()->lastInsertId();
@@ -508,6 +511,7 @@ class FormQuestionsController extends Controller
             $userId = !empty($request->user_id) ? $request->user_id : 0;
             $questionLabel = !empty($request->question_label) ? $request->question_label : '';
             $questionFormType = !empty($request->question_form_type) ? $request->question_form_type : '';
+            $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
             $isManadatory = !empty($request->is_manadatory) ? $request->is_manadatory : 0;
             $questionFormOption = !empty($request->question_form_option) ? array_filter($request->question_form_option) : 0;
 
@@ -528,13 +532,14 @@ class FormQuestionsController extends Controller
             $questionFormOptionArray = !empty($new_array) ? json_encode($new_array) : '';
             // dd($questionFormOptionArray);
 
-            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm)';
+            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_hint,question_form_option, is_manadatory, question_status, created_by, is_custom_form) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionHint,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm)';
 
             DB::insert($sSQL,array(
                 'questionLabel'     => $questionLabel,
                 'formId'            => 8,
                 'questionFormType'  => $questionFormType,
                 'questionFormName'  => $question_name,
+                'questionHint'      => $questionHint,
                 'questionFormOption' => $questionFormOptionArray,
                 'isManadatory'      => $isManadatory,
                 'questionStatus'    => 1,

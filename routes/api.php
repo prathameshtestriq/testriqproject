@@ -83,6 +83,7 @@ Route::controller(EventController::class)->group(function () {
     Route::post('add_edit_age_criteria', 'addEditAgeCriteria');
     Route::post('add_edit_terms_conditions', 'addEditTermsConditions');
     Route::post('status_coupon', 'StatusCoupon');
+    Route::post('delete_event_images', 'deleteEventImages');
 });
 
 Route::controller(UserController::class)->group(function () {
