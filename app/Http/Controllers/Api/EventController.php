@@ -19,6 +19,7 @@ class EventController extends Controller
         // dd($Events,$UserId);
         $master = new Master();
         $e = new Event();
+        $now = strtotime("now");
         foreach ($Events as $event) {
             $event->name = !empty($event->name) ? ucwords($event->name) : "";
             $event->display_name = !empty($event->name) ? (strlen($event->name) > 40 ? ucwords(substr($event->name, 0, 40)) . "..." : ucwords($event->name)) : "";
@@ -43,6 +44,9 @@ class EventController extends Controller
 
             #GET ALL TICKETS
             $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price,max(early_bird) AS early_bird FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
+
+            // $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end ORDER BY ticket_price';
+            // $Tickets = DB::select($sSQL, array('event_id' => $event->id, 'now_start' => $now, 'now_end' => $now));
             $Tickets = DB::select($SQL, array('event_id' => $event->id));
 
             $event->min_price = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->min_price) ? $Tickets[0]->min_price : 0) : 0;
@@ -2498,7 +2502,7 @@ class EventController extends Controller
             $msg = '';
 
             if(isset($request->common_flag) && $CommonFlag == 'banner_delete'){
-                
+
                     $Bindings = array(
                         "event_id" => $EventId
                     );
@@ -2508,20 +2512,20 @@ class EventController extends Controller
 
                     $msg = 'Banner image deleted successfully';
             } else if(isset($request->common_flag) && $CommonFlag == 'photo_delete'){
-                    
+
                     $del_sSQL = 'DELETE FROM event_images WHERE `event_id`=:eventId AND `id`=:event_img_id ';
                     DB::delete($del_sSQL,array(
                         'eventId' => $EventId,
                         'event_img_id' => $EventPhotoId
                     ));
                     $msg = 'Event Photo deleted successfully';
-                   
-            } 
 
-            //------------ event collect gst and price taxes saving 
+            }
+
+            //------------ event collect gst and price taxes saving
 
             if(isset($request->common_flag) && $CommonFlag == 'ticket_gst_taxes_price'){
-                
+
                     $Bindings = array(
                         "collect_gst" => $CollectGst,
                         "prices_taxes_status" => $PriceTaxesStatus,
@@ -2532,7 +2536,7 @@ class EventController extends Controller
                     DB::update($sql, $Bindings);
 
                     $msg = 'Record updated successfully';
-            } 
+            }
 
             $response['data'] = [];
             $response['message'] =  $msg;

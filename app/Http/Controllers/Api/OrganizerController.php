@@ -29,8 +29,8 @@ class OrganizerController extends Controller
             $organizerData = DB::select($sSQL, array('user_id' => $UserId));
 
             foreach ($organizerData as $value) {
-                $value->banner_image = (!empty ($value->banner_image)) ? url('/')."/organiser/banner_image/" . $value->banner_image . '' : '';
-                $value->logo_image = (!empty ($value->logo_image)) ? url('/')."/organiser/logo_image/" . $value->logo_image . '' : '';
+                $value->banner_image = (!empty($value->banner_image)) ? url('/') . "/organiser/banner_image/" . $value->banner_image . '' : '';
+                $value->logo_image = (!empty($value->logo_image)) ? url('/') . "/organiser/logo_image/" . $value->logo_image . '' : '';
             }
             $ResponseData['organizerData'] = $organizerData;
 
@@ -175,6 +175,31 @@ class OrganizerController extends Controller
                             $sSQLImg = 'UPDATE organizer SET logo_image = :logo_image WHERE id=:id';
                             DB::update($sSQLImg, ['logo_image' => $logo_image, 'id' => $organiserId]);
                         }
+
+                        #INSERT COMPANY PANCARD INTO FOLDER
+                        if (!empty($request->file('company_pancard'))) {
+                            $Path = public_path('organiser/company_pancard/');
+                            $new_company_pancard = $request->file('company_pancard');
+                            $originalName = $new_company_pancard->getClientOriginalName() . "_" . $organiserId;
+                            $company_pancard = $originalName;
+                            $new_company_pancard->move($Path, $company_pancard);
+
+                            $sSQLImg = 'UPDATE organizer SET company_pan = :company_pancard WHERE id=:id';
+                            DB::update($sSQLImg, ['company_pancard' => $company_pancard, 'id' => $organiserId]);
+                        }
+
+                        #INSERT GST CERTIFICATE INTO FOLDER
+                        if (!empty($request->file('gst_certificate'))) {
+                            $Path = public_path('organiser/gst_certificate/');
+                            $new_gst_certificate = $request->file('gst_certificate');
+                            $originalName = $new_gst_certificate->getClientOriginalName() . "_" . $organiserId;
+                            $gst_certificate = $originalName;
+                            $new_gst_certificate->move($Path, $gst_certificate);
+
+                            $sSQLImg = 'UPDATE organizer SET gst_certificate = :gst_certificate WHERE id=:id';
+                            DB::update($sSQLImg, ['gst_certificate' => $gst_certificate, 'id' => $organiserId]);
+                        }
+
                         $ResposneCode = 200;
                         $message = 'Organizer inserted successfully';
                     }
@@ -189,12 +214,6 @@ class OrganizerController extends Controller
                         $ResposneCode = 400;
                         $message = "Organiser with same name is already exists, please use another name.";
                     } else {
-                        // $SQL = "SELECT banner_image,logo_image FROM organizer WHERE id =:id";
-                        // $Org = DB::select($SQL, array('id' => $organiserId));
-
-                        // $banner_image = (isset($aPost['banner_image']) && !empty($aPost['banner_image'])) ? $aPost['banner_image'] : $Org[0]->banner_image;
-                        // $logo_image = (isset($aPost['logo_image']) && !empty($aPost['logo_image'])) ? $aPost['logo_image'] : $Org[0]->logo_image;
-
                         #UPDATE BANNER IMAGE INTO FOLDER
                         if (!empty($request->file('banner_image'))) {
                             $Path = public_path('organiser/banner_image/');
@@ -219,6 +238,30 @@ class OrganizerController extends Controller
                             DB::update($sSQLImg, ['logo_image' => $logo_image, 'id' => $organiserId]);
                         }
 
+                        #UPDATE COMPANY PANCARD INTO FOLDER
+                        if (!empty($request->file('company_pancard'))) {
+                            $Path = public_path('organiser/company_pancard/');
+                            $new_company_pancard = $request->file('company_pancard');
+                            $originalName = $new_company_pancard->getClientOriginalName() . "_" . $organiserId;
+                            $company_pancard = $originalName;
+                            $new_company_pancard->move($Path, $company_pancard);
+
+                            $sSQLImg = 'UPDATE organizer SET company_pan = :company_pancard WHERE id=:id';
+                            DB::update($sSQLImg, ['company_pancard' => $company_pancard, 'id' => $organiserId]);
+                        }
+
+                        #UPDATE GST CERTIFICATE INTO FOLDER
+                        if (!empty($request->file('gst_certificate'))) {
+                            $Path = public_path('organiser/gst_certificate/');
+                            $new_gst_certificate = $request->file('gst_certificate');
+                            $originalName = $new_gst_certificate->getClientOriginalName() . "_" . $organiserId;
+                            $gst_certificate = $originalName;
+                            $new_gst_certificate->move($Path, $gst_certificate);
+
+                            $sSQLImg = 'UPDATE organizer SET gst_certificate = :gst_certificate WHERE id=:id';
+                            DB::update($sSQLImg, ['gst_certificate' => $gst_certificate, 'id' => $organiserId]);
+                        }
+
                         #UPDATE CODE OF ORGANISER
                         DB::table('organizer')
                             ->where('id', $organiserId)
@@ -237,7 +280,6 @@ class OrganizerController extends Controller
                         $message = 'Organizer updated successfully';
                     }
                 }
-
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
@@ -348,71 +390,6 @@ class OrganizerController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    // public function addEditOrganizer(Request $request)
-    // {
-    //     $ResponseData = [];
-    //     $message = "";
-    //     $ResposneCode = 400;
-    //     $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-
-    //     if ($aToken['code'] == 200) {
-    //         $aPost = $request->all();
-    //         $Auth = new Authenticate();
-    //         $Auth->apiLog($request);
-
-    //         $UserId = $aToken['data']->ID;
-
-    //         if (empty ($aPost['name'])) {
-    //             $empty = true;
-    //             $field = 'Name';
-    //         }
-    //         if (empty ($aPost['email'])) {
-    //             $empty = true;
-    //             $field = 'Email Id';
-    //         }
-    //         if (empty ($aPost['roles'])) {
-    //             $empty = true;
-    //             $field = 'Roles';
-    //         }
-    //         if (empty ($aPost['events'])) {
-    //             $empty = true;
-    //             $field = 'Events';
-    //         }
-    //         if (!$empty) {
-    //             $Auth = new Authenticate();
-    //             $Auth->apiLog($request);
-
-    //             #CHECK USER IS EXIST OR NOT
-    //             $SQL = "SELECT email FROM users WHERE email=:email";
-    //             $IsExist = DB::select($SQL, array('email' => $aPost['email']));
-
-    //             if (count($IsExist) === 0) {
-
-    //                 // $ResponseData['organizers'] = $Organizers;
-    //                 $ResposneCode = 200;
-    //                 $message = 'Data getting successfully';
-    //             } else {
-    //                 $ResposneCode = 400;
-    //                 $message = 'Organizer is exist';
-    //             }
-    //         } else {
-    //             $ResposneCode = 400;
-    //             $message = $field . ' is empty';
-    //         }
-    //     } else {
-    //         $ResposneCode = $aToken['code'];
-    //         $message = $aToken['message'];
-    //     }
-
-    //     $response = [
-    //         'data' => $ResponseData,
-    //         'message' => $message
-    //     ];
-
-    //     return response()->json($response, $ResposneCode);
-    // }
-
-
     public function allOrganizerData(Request $request)
     {
         $ResponseData = [];
@@ -436,8 +413,8 @@ class OrganizerController extends Controller
                 // dd($value->id);
                 $value->is_follow = !empty($LoggedUserId) ? $e->isOrgFollowed($value->id, $LoggedUserId) : 0;
                 $value->join_on = !empty($value->created_at) ? gmdate("F d, Y", $value->created_at) : 0;
-                $value->banner_image = (!empty ($value->banner_image)) ? url('/')."/organiser/banner_image/" . $value->banner_image . '' : '';
-                $value->logo_image = (!empty ($value->logo_image)) ? url('/')."/organiser/logo_image/" . $value->logo_image . '' : '';
+                $value->banner_image = (!empty($value->banner_image)) ? url('/') . "/organiser/banner_image/" . $value->banner_image . '' : '';
+                $value->logo_image = (!empty($value->logo_image)) ? url('/') . "/organiser/logo_image/" . $value->logo_image . '' : '';
             }
             $ResponseData['Organizer'] = $Organizer;
 
