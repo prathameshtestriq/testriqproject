@@ -1084,6 +1084,12 @@ class EventController extends Controller
                     $res->expired_date =  !empty($CouponDetailsResult[0]->discount_to_datetime) ? date('d-m-Y',$CouponDetailsResult[0]->discount_to_datetime) : '';
                     $res->discount_code =  !empty($CouponDetailsResult[0]->discount_code) ? $CouponDetailsResult[0]->discount_code : '';
                     $res->coupon_status =  !empty($res->coupon_status) ? true : false;
+                    $res->user_email_address =  !empty($CouponDetailsResult[0]->user_email_address) ? $CouponDetailsResult[0]->user_email_address : '';
+                    $res->discount_coupon_flag =  !empty($CouponDetailsResult) && count($CouponDetailsResult) > 1 ? 1 : 0;
+
+                    foreach($CouponDetailsResult as $val){
+                       $res->multiple_coupon_details[] = $val->discount_code;
+                    }
                 }
             }
             //dd($CouponResult);
@@ -1127,6 +1133,10 @@ class EventController extends Controller
                 }
             }
             $ResponseData['terms_conditions_details'] = !empty($CommResult) ? $CommResult : [];
+
+            // ---------- get event form question
+            $sql1 = "SELECT id FROM event_form_question WHERE event_id=:event_id";
+            $ResponseData['event_form_question_details'] = DB::select($sql1, array('event_id' => $EventId));
 
             $ResposneCode = 200;
             $message = "Events Data getting successfully";
@@ -1889,7 +1899,7 @@ class EventController extends Controller
                         $res->discount_to_date =  !empty($CouponDetailsResult[0]->discount_to_datetime) ? date('Y-m-d',$CouponDetailsResult[0]->discount_to_datetime) : '';
                         $res->discount_to_time =  !empty($CouponDetailsResult[0]->discount_to_datetime) ? date('h:i',$CouponDetailsResult[0]->discount_to_datetime) : '';
                         $res->apply_ticket =  !empty($CouponDetailsResult[0]->apply_ticket) ? $CouponDetailsResult[0]->apply_ticket : 1;
-
+                        $res->user_email_address =  !empty($CouponDetailsResult[0]->user_email_address) ? $CouponDetailsResult[0]->user_email_address : '';
                         $ticket_details_id = !empty($CouponDetailsResult[0]->ticket_details) ? $CouponDetailsResult[0]->ticket_details : '';
                         $new_array = explode(",",$ticket_details_id);
                         $Sql = 'SELECT id,ticket_name FROM event_tickets WHERE `event_id`=:eventId';
@@ -1973,6 +1983,7 @@ class EventController extends Controller
 
                 $description = !empty($request->description) ? $request->description : '';
                 $show_public = !empty($request->show_public) ? $request->show_public : 0;
+                $UserEmailAddress = !empty($request->user_email_address) ? $request->user_email_address : '';
 
                 $final_discount_from_datetime = !empty($discount_from_date) && !empty($discount_from_time) ? strtotime($discount_from_date.' '.$discount_from_time) : '';
                 $final_discount_to_datetime   = !empty($discount_to_date) && !empty($discount_to_time) ? strtotime($discount_to_date.' '.$discount_to_time) : '';
@@ -2065,40 +2076,75 @@ class EventController extends Controller
                                     "discount_to_datetime" => $final_discount_to_datetime,
                                     "have_list_codes" => $HaveListCodes,
                                     "apply_ticket" => $ApplyTicket,
-                                    "ticket_details" => $ticket_ids
+                                    "ticket_details" => $ticket_ids,
+                                    "user_email_address" => $UserEmailAddress
+                                   
                                 );
-                                $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details)";
+                                $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details,:user_email_address)";
                                 //dd($insert_SQL1);
                                 DB::insert($insert_SQL1, $Bindings1);
                             }
 
                         }else{
-
+                           //$last_inserted_id = 33;
                             if(!empty($UploadedCsv)){
                                 // Read CSV file
                                 $csv = Reader::createFromPath($UploadedCsv->getPathname(), 'r');
                                 $records = $csv->getRecords();
+                                //dd($records);
                                 // $header = array_shift($records);
                                 $NewCouponArray = [];
+                                $NewCouponArray1 = [];
+                                $column1 = [];
                                 // Iterate over records and convert them to arrays
+
                                 foreach ($records as $record) {
-                                    foreach($record as $key=>$res){
-                                            $NewCouponArray[] = $res;
-
+                                    $column1[] = isset($record[0]) ? $record[0] : []; // Assuming the first column
+                                    $column2[] = isset($record[1]) ? $record[1] : []; // Assuming the second column
+                                }
+                                
+                                $column1 = array_unique($column1);
+                                foreach($column1 as $key=>$res){
+                                    if($res !== 'DISCOUNT_CODE')
+                                       $NewCouponArray[] = array("id"=>$key, "name"=>$res);
+                                }
+                                
+                                if(!empty($column2)){
+                                   foreach($column2 as $key=>$res1){
+                                       if($res1 !== 'EMAIL_ADDRESS')
+                                          $NewCouponArray1[] = array("id"=>$key, "name"=>$res1);
+                                   } 
+                                }else{ $NewCouponArray1 = []; }
+                                
+                                $final_code_array = [];
+                                if(!empty($NewCouponArray1))
+                                    foreach($NewCouponArray as $val){
+                                        foreach($NewCouponArray1 as $val1){
+                                           // dd($val1);
+                                            if(isset($val['id']) && isset($val1['id']) && $val['id'] == $val1['id']){
+                                                $final_code_array[] = array("id"=>$val['id'], "name"=>$val['name'], "emails"=> isset($val1['name']) && !empty($val1['name']) ? $val1['name'] : "");
+                                            }
+                                        }
                                     }
-                                }
+                              // dd($new_array);
+                                // if(!empty($NewCouponArray)){ 
+                                //     $indexSpam = array_search('DISCOUNT_CODE', $NewCouponArray);
+                                //     unset($NewCouponArray[$indexSpam]);
+                                // }
+                                //$NewCouponArray = array_unique($NewCouponArray);
+                                //dd($NewCouponArray1);
 
-
-                                if(!empty($NewCouponArray)){
-                                    $indexSpam = array_search('DISCOUNT_CODE', $NewCouponArray);
-                                    unset($NewCouponArray[$indexSpam]);
-                                }
-                                $NewCouponArray = array_unique($NewCouponArray);
-                                //dd($NewCouponArray);
+                                // if(!empty($NewCouponArray1)){
+                                //     $indexSpam1 = array_search('EMAIL_ADDRESS', $NewCouponArray1);
+                                //     unset($NewCouponArray1[$indexSpam1]);
+                                // }
+                                // $NewCouponArray1 = array_unique($NewCouponArray1);
+                                
+                             
                                 //if($HaveListCodes == 1){
 
-                                    if(!empty($NewCouponArray)){
-                                        foreach ($NewCouponArray as $res) {
+                                    if(!empty($final_code_array)){
+                                        foreach ($final_code_array as $res) {
 
                                             $Bindings1 = array(
                                                 "event_coupon_id" => $last_inserted_id,
@@ -2109,15 +2155,16 @@ class EventController extends Controller
                                                 "discount_percentage" => $DiscountPercentage,
                                                 "code_type" => $CodeType,
                                                 "no_of_discount" => $NoOfDiscount,
-                                                "discount_code" => $res,
+                                                "discount_code" => $res['name'],
                                                 "prefix_code" => $PrefixCode,
                                                 "discount_from_datetime" => $final_discount_from_datetime,
                                                 "discount_to_datetime" => $final_discount_to_datetime,
                                                 "have_list_codes" => $HaveListCodes,
                                                 "apply_ticket" => $ApplyTicket,
-                                                "ticket_details" => $ticket_ids
+                                                "ticket_details" => $ticket_ids,
+                                                "user_email_address" => isset($res['emails']) && !empty($res['emails']) ? $res['emails'] : ''
                                             );
-                                            $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details)";
+                                            $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details,user_email_address) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details,:user_email_address)";
                                             //dd($insert_SQL1);
                                             DB::insert($insert_SQL1, $Bindings1);
 
@@ -2183,6 +2230,7 @@ class EventController extends Controller
                                             "discount_to_datetime"  => $final_discount_to_datetime,
                                             "apply_ticket"          => $ApplyTicket,
                                             "ticket_details"        => $ticket_ids,
+                                            "user_email_address"    => $UserEmailAddress,
                                             "discount_code"         => $DiscountCode,
                                             "event_id"              => $EventId,
                                             'edit_id'               => $EditCouponId
@@ -2200,12 +2248,13 @@ class EventController extends Controller
                                             "discount_to_datetime"  => $final_discount_to_datetime,
                                             "apply_ticket"          => $ApplyTicket,
                                             "ticket_details"        => $ticket_ids,
+                                            "user_email_address"    => $UserEmailAddress,
                                             "event_id"              => $EventId,
                                             'edit_id'               => $EditCouponId
                                         );
                         }
 
-                        $edit_sql1 = 'UPDATE event_coupon_details SET discount_type = :discount_type, discount_amt_per_type = :discount_amt_per_type, discount_amount = :discount_amount, discount_percentage = :discount_percentage, code_type = :code_type, no_of_discount = :no_of_discount, prefix_code = :prefix_code, discount_from_datetime = :discount_from_datetime, discount_to_datetime = :discount_to_datetime, apply_ticket = :apply_ticket, ticket_details = :ticket_details '.$cond.' WHERE event_id = :event_id AND event_coupon_id = :edit_id';
+                        $edit_sql1 = 'UPDATE event_coupon_details SET discount_type = :discount_type, discount_amt_per_type = :discount_amt_per_type, discount_amount = :discount_amount, discount_percentage = :discount_percentage, code_type = :code_type, no_of_discount = :no_of_discount, prefix_code = :prefix_code, discount_from_datetime = :discount_from_datetime, discount_to_datetime = :discount_to_datetime, apply_ticket = :apply_ticket, ticket_details = :ticket_details, user_email_address = :user_email_address '.$cond.' WHERE event_id = :event_id AND event_coupon_id = :edit_id';
                         DB::update($edit_sql1, $Bindings1);
 
                         $message = 'Coupon updated successfully';

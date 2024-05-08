@@ -105,13 +105,15 @@ class FormQuestionsController extends Controller
             $general_form_array = [];
             foreach($aResult as $res){
 
-                $Sql = 'SELECT id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$res->id.'  ';
+                $Sql = 'SELECT id,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$res->id.'  ';
                 $aResult1 = DB::select($Sql);
                 //dd($aResult1);
                 if(!empty($aResult1)){
                     $res->event_questions_flag = 1;
+                    $res->sub_questions_added_flag = !empty($aResult1[0]->child_question_ids) ? 1 : 0;
                 }else{
                     $res->event_questions_flag = 0;
+                    $res->sub_questions_added_flag = 0;
                     $event_question_form_option = [];
                 }
 
