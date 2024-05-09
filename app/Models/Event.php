@@ -107,7 +107,8 @@ class Event extends Model
         return $AllEventTypes;
     }
 
-    function getDistances($EventId){
+    function getDistances($EventId)
+    {
         $SQL = "SELECT t.category,(SELECT name FROM eTypes WHERE active=1 AND id=t.category) AS distance_name FROM event_tickets AS t WHERE t.event_id=:event_id AND t.active = 1 AND t.is_deleted = 0 AND t.category!=0";
         $Tickets = DB::select($SQL, array('event_id' => $EventId));
         return $Tickets;
@@ -159,6 +160,84 @@ class Event extends Model
         }
         // dd($Count);
         return $EventCount;
+    }
+
+    function getEventTicketDetails($EventId)
+    {
+        $now = strtotime("now");
+        $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end';
+        $event_tickets = DB::select($sSQL, array('event_id' => $EventId, 'now_start' => $now, 'now_end' => $now));
+
+        foreach ($event_tickets as $value) {
+
+            $value->display_ticket_name = !empty($value->ticket_name) ? (strlen($value->ticket_name) > 40 ? ucwords(substr($value->ticket_name, 0, 80)) . "..." : ucwords($value->ticket_name)) : "";
+
+            $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
+            $TotalTickets = DB::select($sql, array("event_id" => $EventId, "ticket_id" => $value->id));
+
+            $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
+            $value->show_early_bird = 0;
+            if ($value->early_bird == 1 && $value->TotalBookedTickets <= $value->no_of_tickets && $value->start_time <= $now && $value->end_time >= $now) {
+                $value->show_early_bird = 1;
+                $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
+
+                $discount_ticket_price = 0;
+                $total_discount = 0;
+                if ($value->discount === 1) { //percentage
+                    $total_discount = ($value->ticket_price * ($value->discount_value / 100));
+                    $discount_ticket_price = $value->ticket_price - $total_discount;
+                } else if ($value->discount === 2) { //amount
+                    $total_discount = $value->discount_value;
+                    $discount_ticket_price = $value->ticket_price - $value->discount_value;
+                }
+                $value->discount_ticket_price = $discount_ticket_price;
+                $value->total_discount = $total_discount;
+            }
+        }
+        // if($EventId == 5) dd($event_tickets);
+        $minMaxPrices = $this->getMinMaxTicketPrices($event_tickets);
+        return $minMaxPrices;
+    }
+
+    function getMinMaxTicketPrices($ticketArray)
+    {
+        $minPrice = null;
+        $maxPrice = null;
+        $minPriceElement = null;
+        $maxPriceElement = null;
+        $minPriceTicketId = null;
+        $maxPriceTicketId = null;
+
+        foreach ($ticketArray as $ticket) {
+            $ticketPrice = $ticket->ticket_price;
+            $ticketId = $ticket->id;
+
+            if ($minPrice === null || $ticketPrice < $minPrice) {
+                $minPrice = $ticketPrice;
+                $minPriceTicketId = $ticketId;
+                $minPriceElement = $ticket;
+            }
+
+            if ($maxPrice === null || $ticketPrice > $maxPrice) {
+                $maxPrice = $ticketPrice;
+                $maxPriceTicketId = $ticketId;
+                $maxPriceElement = $ticket;
+            }
+        }
+
+        // Check if min_price and max_price are the same
+        if ($minPriceElement != null && $maxPriceElement != null) {
+            if ($minPriceTicketId === $maxPriceTicketId) {
+                return [0 => $minPriceElement];
+            } else {
+                return [
+                    0 => $minPriceElement,
+                    1 => $maxPriceElement
+                ];
+            }
+        }else{
+            return [];
+        }
     }
 
 }

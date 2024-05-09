@@ -74,7 +74,7 @@ class Banner extends Model
             get: fn($value) => ["superadmin", "admin", "user"][$value],
         );
     }
-    
+
 
     public $timestamps = false;
 
@@ -82,28 +82,28 @@ class Banner extends Model
     public static function get_all($limit, $a_search = array())
     {
         $a_return = [];
-        
-        $s_sql = 'SELECT b.id, b.banner_name, b.banner_image, b.banner_url, b.start_time, b.end_time, 
-                        (SELECT name FROM cities WHERE Id = b.city) AS city, 
+
+        $s_sql = 'SELECT b.id, b.banner_name, b.banner_image, b.banner_url, b.start_time, b.end_time,
+                        (SELECT name FROM cities WHERE Id = b.city) AS city,
                         (SELECT name FROM states WHERE Id = b.state) AS state,
-                        (SELECT name FROM countries WHERE Id = b.country) AS country, 
-                        b.active 
-                  FROM banner b 
+                        (SELECT name FROM countries WHERE Id = b.country) AS country,
+                        b.active
+                  FROM banner b
                   WHERE 1=1';
-    
+
         if (!empty($a_search['search_banner'])) {
             $s_sql .= ' AND (LOWER(b.banner_name) LIKE \'%' . strtolower($a_search['search_banner']) . '%\')';
         }
-        
+
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
         }
-    
+
         $a_return = DB::select($s_sql);
         return $a_return;
     }
-    
-    
+
+
 
 
 
@@ -119,11 +119,11 @@ class Banner extends Model
         //  //   $s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
         //    // $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
         // }
-        
+
         if (!empty($a_search['search_banner'])) {
             $s_sql .= ' AND (LOWER(b.banner_name) LIKE \'%' . strtolower($a_search['search_banner']) . '%\')';
         }
-        
+
 
         $CountsResult = DB::select($s_sql);
         if (!empty($CountsResult)) {
@@ -136,25 +136,25 @@ class Banner extends Model
     public static function add_banner($request)
 {
         $banner_image_name = '';
-    
+
         if ($request->file('banner_image')) {
             $path = public_path('uploads/banner_image/');
             $banner_image = $request->file('banner_image');
             $imageExtension = $banner_image->getClientOriginalExtension();
-            
-            
+
+
             $banner_image_name = strtotime('now') . '_banner.' . $imageExtension;
             //dd($banner_image_name);
-            
+
             $banner_image->move($path, $banner_image_name);
         }
-    
+
         $ssql = 'INSERT INTO banner (
             banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
         ) VALUES (
             :banner_name, :banner_image, :banner_url, :start_time, :end_time, :city, :state, :country, :active, :created_datetime
         )';
-    
+
         $bindings = array(
             'banner_name' => $request->banner_name,
             'banner_image' => $banner_image_name, // Use $banner_image_name here
@@ -167,37 +167,37 @@ class Banner extends Model
             'active' => $request->active,
             'created_datetime' => now() // Assuming `created_datetime` is a timestamp field
         );
-    
+
         $Result = DB::insert($ssql, $bindings);
-        
+
         return $banner_image_name;
     }
-    
 
-    
+
+
     public static function update_banner($iId, $request)
     {
-    
+
         if ($request->active == 'active') {
             $active = 1;
         } else {
             $active = 0;
         }
-    
+
         $banner_image_name = '';
-    
+
         if (!empty($request->file('banner_image'))) { // Check if banner_image is not empty
             $path = public_path('uploads/banner_image/');
             $banner_image = $request->file('banner_image');
             $imageExtension = $banner_image->getClientOriginalExtension();
-            
+
             $banner_image_name = strtotime('now') . '_banner.' . $imageExtension;
-            
+
             $banner_image->move($path, $banner_image_name);
         } else {
             $banner_image_name = $request->banner_image_name;
         }
-    
+
         $ssql = 'UPDATE banner SET
             banner_name = :banner_name,
             banner_url = :banner_url,
@@ -207,7 +207,7 @@ class Banner extends Model
             state = :state,
             country = :country,
             active = :active';
-        
+
         $bindings = array(
             'banner_name' => $request->banner_name,
             'banner_url' => $request->banner_url,
@@ -218,21 +218,21 @@ class Banner extends Model
             'country' => $request->country,
             'active' => $active
         );
-    
+
         if (!empty($banner_image_name)) {
             $ssql .= ', banner_image = :banner_image';
             $bindings['banner_image'] = $banner_image_name;
         }
-    
+
         $ssql .= ' WHERE id = :id';
-    
+
         $bindings['id'] = $iId;
-    
+
         $Result = DB::update($ssql, $bindings);
         // You might want to add error handling or return statements here
     }
-    
-    
+
+
 
     public static function change_status_banner($request)
     {
@@ -249,7 +249,7 @@ class Banner extends Model
 
     public static function remove_banner($iId)
     {
-        $Result = null; 
+        $Result = null;
         if (!empty($iId)) {
             $sSQL = 'DELETE FROM `banner` WHERE id=:id';
             $Result = DB::update(

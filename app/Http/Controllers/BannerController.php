@@ -131,7 +131,7 @@ class BannerController extends Controller
             if ($iId > 0) {
                 // #SHOW EXISTING DETAILS ON EDIT
                 $sql = 'SELECT id,banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
-                        FROM banner 
+                        FROM banner
                         WHERE id = ?';
 
                 $bannerdetails = DB::select($sql, array($iId));
