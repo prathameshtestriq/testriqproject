@@ -109,7 +109,7 @@ class Event extends Model
 
     function getDistances($EventId)
     {
-        $SQL = "SELECT t.category,(SELECT name FROM eTypes WHERE active=1 AND id=t.category) AS distance_name FROM event_tickets AS t WHERE t.event_id=:event_id AND t.active = 1 AND t.is_deleted = 0 AND t.category!=0";
+        $SQL = "SELECT DISTINCT(t.category),(SELECT name FROM eTypes WHERE active=1 AND id=t.category) AS distance_name FROM event_tickets AS t WHERE t.event_id=:event_id AND t.active = 1 AND t.is_deleted = 0 AND t.category!=0";
         $Tickets = DB::select($SQL, array('event_id' => $EventId));
         return $Tickets;
     }
