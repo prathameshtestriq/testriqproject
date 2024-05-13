@@ -32,6 +32,39 @@ class EventTicketController extends Controller
             $master = new Master();
             if (!$empty) {
                 $now = strtotime("now");
+                $UserId = $aToken['data']->ID;
+                // -------------------------------------------------
+                $OrgGstPercentage = 0;
+                $sql1 = "SELECT gst_percentage FROM organizer WHERE user_id=:user_id";
+                $Org = DB::select($sql1, array("user_id" => $UserId));
+                if (count($Org) > 0) {
+                    $OrgGstPercentage = $Org[0]->gst_percentage;
+                }
+                $ResponseData['OrgGstPercentage'] = $OrgGstPercentage;
+
+                // -------------------------------------------------
+                $TicketYtcrBasePrice = 0;
+                $sql2 = "SELECT ticket_ytcr_base_price FROM event_settings WHERE event_id=:event_id";
+                $TicketYtcr = DB::select($sql2, array("event_id" => $aPost['event_id']));
+                if (count($TicketYtcr) > 0) {
+                    $TicketYtcrBasePrice = $TicketYtcr[0]->ticket_ytcr_base_price;
+                }
+                $ResponseData['TicketYtcrBasePrice'] = $TicketYtcrBasePrice;
+
+                // -------------------------------------------------
+                $CollectGst = 0;
+                $PriceTaxesStatus = 0;
+                $sql3 = "SELECT collect_gst,prices_taxes_status FROM events WHERE id=:event_id";
+                $CollectGstArr = DB::select($sql3, array("event_id" => $aPost['event_id']));
+                // dd($CollectGstArr);
+                if (count($CollectGstArr) > 0) {
+                    $CollectGst = $CollectGstArr[0]->collect_gst;
+                    $PriceTaxesStatus = $CollectGstArr[0]->prices_taxes_status;
+                }
+                $ResponseData['CollectGst'] = $CollectGst;
+                $ResponseData['PriceTaxesStatus'] = $PriceTaxesStatus;
+                // -------------------------------------------------
+
                 $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end';
                 $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $aPost['event_id'], 'now_start' => $now, 'now_end' => $now));
 
@@ -46,25 +79,24 @@ class EventTicketController extends Controller
 
                     $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
                     $value->show_early_bird = 0;
+
+                    $value->discount_ticket_price = 0;
+                    $value->total_discount = 0;
+
                     if ($value->early_bird == 1 && $value->TotalBookedTickets <= $value->no_of_tickets && $value->start_time <= $now && $value->end_time >= $now) {
                         $value->show_early_bird = 1;
                         $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
 
-                        $discount_ticket_price = 0;
-                        $total_discount = 0;
                         if ($value->discount === 1) { //percentage
-                            $total_discount = ($value->ticket_price * ($value->discount_value / 100));
-                            $discount_ticket_price = $value->ticket_price - $total_discount;
+                            $value->total_discount = ($value->ticket_price * ($value->discount_value / 100));
+                            $value->discount_ticket_price = $value->ticket_price - $value->total_discount;
                         } else if ($value->discount === 2) { //amount
-                            $total_discount = $value->discount_value;
-                            $discount_ticket_price = $value->ticket_price - $value->discount_value;
+                            $value->total_discount = $value->discount_value;
+                            $value->discount_ticket_price = $value->ticket_price - $value->discount_value;
                         }
-                        $value->discount_ticket_price = $discount_ticket_price;
-                        $value->total_discount = $total_discount;
                     }
                 }
-
-
+                // -------------------------------------------------
                 $Sql = "SELECT name,start_time,city FROM events WHERE id=:event_id";
                 $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
                 foreach ($EventData as $key => $event) {
@@ -74,16 +106,19 @@ class EventTicketController extends Controller
                 }
                 $ResponseData['EventData'] = $EventData;
 
-
+                // -------------------------------------------------
+                $ResponseData['YTCR_FEE_PERCENT'] = config('custom.ytcr_fee_percent');
+                $ResponseData['PLATFORM_FEE_PERCENT'] = config('custom.platform_fee_percent');
+                $ResponseData['PAYMENT_GATEWAY_FEE_PERCENT'] = config('custom.payment_gateway_fee_percent');
+                $ResponseData['PAYMENT_GATEWAY_GST_PERCENT'] = config('custom.payment_gateway_gst_percent');
+                // -------------------------------------------------
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
 
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
-                // dd($message);
             }
-
         } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];
@@ -420,13 +455,43 @@ class EventTicketController extends Controller
             }
 
             if (!$empty) {
-
+                $UserId = $aToken['data']->ID;
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
                 $TotalAttendee = isset($request->total_attendee) && !empty($request->total_attendee) ? $request->total_attendee : 0;
                 $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
                 // dd($AllTickets);
+                // -------------------------------------------------
+                $OrgGstPercentage = 0;
+                $sql1 = "SELECT gst_percentage FROM organizer WHERE user_id=:user_id";
+                $Org = DB::select($sql1, array("user_id" => $UserId));
+                if (count($Org) > 0) {
+                    $OrgGstPercentage = $Org[0]->gst_percentage;
+                }
+                $ResponseData['OrgGstPercentage'] = $OrgGstPercentage;
 
+                // -------------------------------------------------
+                $TicketYtcrBasePrice = 0;
+                $sql2 = "SELECT ticket_ytcr_base_price FROM event_settings WHERE event_id=:event_id";
+                $TicketYtcr = DB::select($sql2, array("event_id" => $aPost['event_id']));
+                if (count($TicketYtcr) > 0) {
+                    $TicketYtcrBasePrice = $TicketYtcr[0]->ticket_ytcr_base_price;
+                }
+                $ResponseData['TicketYtcrBasePrice'] = $TicketYtcrBasePrice;
+
+                // -------------------------------------------------
+                $CollectGst = 0;
+                $PriceTaxesStatus = 0;
+                $sql3 = "SELECT collect_gst,prices_taxes_status FROM events WHERE id=:event_id";
+                $CollectGstArr = DB::select($sql3, array("event_id" => $aPost['event_id']));
+                if (count($CollectGstArr) > 0) {
+                    $CollectGst = $CollectGstArr[0]->collect_gst;
+                    $PriceTaxesStatus = $CollectGstArr[0]->prices_taxes_status;
+                }
+                $ResponseData['CollectGst'] = $CollectGst;
+                $ResponseData['PriceTaxesStatus'] = $PriceTaxesStatus;
+
+                // -------------------------------------------------
                 $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
                 $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
 
@@ -472,6 +537,11 @@ class EventTicketController extends Controller
                 // dd($FinalFormQuestions);
 
                 $ResponseData['FormQuestions'] = $FinalFormQuestions;
+
+                $ResponseData['YTCR_FEE_PERCENT'] = config('custom.ytcr_fee_percent');
+                $ResponseData['PLATFORM_FEE_PERCENT'] = config('custom.platform_fee_percent');
+                $ResponseData['PAYMENT_GATEWAY_FEE_PERCENT'] = config('custom.payment_gateway_fee_percent');
+                $ResponseData['PAYMENT_GATEWAY_GST_PERCENT'] = config('custom.payment_gateway_gst_percent');
 
                 // $sql = "SELECT COUNT(id) FROM ticket_booking WHERE event_id=:event_id AND ticket_id=:ticket_id";
                 // $ResponseData['TotalBookedTickets'] = $TotalBookedTickets;
@@ -1094,8 +1164,7 @@ class EventTicketController extends Controller
                     AND FIND_IN_SET(:ticket_id, ecd.ticket_details) > 0
                     AND ecd.discount_from_datetime <= :now1
                     AND ecd.discount_to_datetime >= :now2
-                    HAVING ecd.no_of_discount > coupon_count;
-                    ";
+                    HAVING ecd.no_of_discount > coupon_count";
 
                     foreach ($TicketIds as $ticketId) {
                         $result = DB::select($SQL, [

@@ -3,7 +3,7 @@
 // use Illuminate\Support\Facades\Facade;
 
 return [
-    'ytcr_fee_percent' =>10,
+    'ytcr_fee_percent' =>18,
     'platform_fee_percent' => 18, // previos 10 per set
     'payment_gateway_fee_percent' => 1,  // previos 10 per set
     'payment_gateway_gst_percent' => 18,  // new added
