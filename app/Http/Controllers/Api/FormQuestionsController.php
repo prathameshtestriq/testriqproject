@@ -36,16 +36,16 @@ class FormQuestionsController extends Controller
             }
 
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
-            // $Sql = "SELECT question_label,question_form_type,question_form_name,is_manadatory FROM event_form_question WHERE question_status = 1";
-            // $aResult = DB::select($Sql);
+            
+            //$Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
 
-            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
+            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by form_id,sort_order asc';
             $aResult = DB::select($Sql);
 
             //dd($aResult);
             if(!empty($aResult)){
                 $new_array = [];
-
+                $i = 0;
                 foreach($aResult as $res){
                     if($res->question_form_type == 'radio' || $res->question_form_type == 'select' || $res->question_form_type == 'checkbox'){
                         $res->question_form_option = json_decode($res->question_form_option);
@@ -57,8 +57,11 @@ class FormQuestionsController extends Controller
                         //dd($sub_questions_aResult);
                         $res->sub_questions_array = !empty($sub_questions_aResult) ? $sub_questions_aResult : [];
                     }
-
-                    $new_array[] = $res;
+                    $res->common_index = $i;
+                   $new_array['event_form_array'][] = $res;
+                   $new_array['event_form_details'][$res->form_name][] = $res;
+                   //$new_array[$res->form_name][] = $res;
+                   $i++;
                 }
 
                 $response['data']['form_question'] = $new_array;
@@ -97,11 +100,12 @@ class FormQuestionsController extends Controller
             $UserId = !empty($request->user_id) ? $request->user_id : 0;
 
             //dd($EventId);
-
-          //  $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  '; // 
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
+            
+            // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
+            
             $aResult = DB::select($Sql);
-            //dd($aResult);
+           // dd($aResult);
             $general_form_array = [];
             foreach($aResult as $res){
 
@@ -149,8 +153,8 @@ class FormQuestionsController extends Controller
                 //         }
                 //     }
                 // }else{ $res->sub_question_array = []; }
-                $general_form_array[] = $res;
-                //$general_form_array[$res->form_name][] = $res;
+                // $general_form_array[] = $res;
+                $general_form_array[$res->form_name][] = $res;
             }//die;
 
             //dd($general_form_array);
@@ -516,6 +520,7 @@ class FormQuestionsController extends Controller
             $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
             $isManadatory = !empty($request->is_manadatory) ? $request->is_manadatory : 0;
             $questionFormOption = !empty($request->question_form_option) ? array_filter($request->question_form_option) : 0;
+            $formId = !empty($request->form_id) ? $request->form_id : '';
 
             $question_name = strtolower($questionLabel);
             $question_name = str_replace(' ', '_', $question_name);
@@ -538,7 +543,7 @@ class FormQuestionsController extends Controller
 
             DB::insert($sSQL,array(
                 'questionLabel'     => $questionLabel,
-                'formId'            => 8,
+                'formId'            => $formId,
                 'questionFormType'  => $questionFormType,
                 'questionFormName'  => $question_name,
                 'questionHint'      => $questionHint,
@@ -735,7 +740,7 @@ class FormQuestionsController extends Controller
             
             foreach($questionsObj as $data){
                 $question_form_option = isset($data->question_form_option) ? json_decode($data->question_form_option) : [];
-                //dd($question_form_option);
+                // dd($question_form_option);
                 $data->question_form_option = !empty($question_form_option) ? $question_form_option : [];
                 $parent_question_array[] = $data;
 
@@ -751,12 +756,12 @@ class FormQuestionsController extends Controller
 
                 //----------------------
                 if(!empty($question_form_option) && isset($question_form_option)){
-                    foreach($question_form_option as $res){
+                    foreach($question_form_option as $key=>$res){
                         // dd($res->child_question_id);
                         $questionArray[] = isset($res->child_question_id) ? $this->get_child_questions($res->child_question_id, $questionId, $questionArray, $EventId) : []; // $res->label
-                       // $data->ChildQuestionArray = !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : [];
-                       // dd($res->child_question_id);
+                        
                         if(isset($res->child_question_id)){
+                            
                             $data->ChildQuestionArray = array( array(
                                                             "id" => $data->id+11,
                                                             "question_form_option" => !empty($question_form_option) ? $question_form_option : [],
@@ -765,7 +770,8 @@ class FormQuestionsController extends Controller
                                                             "question_form_type" => $data->question_form_type,
                                                             "question_form_name" => $data->question_form_name,
                                                             "event_questions_flag" => 1,
-                                                            "ChildQuestionArray" => !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : []
+                                                            //"ChildQuestionArray" => !empty($questionArray) && ($questionArray[0] > 0) ? $questionArray[0] : []
+                                                            "ChildQuestionArray" => !empty($questionArray) && ($questionArray[$key]) ? $questionArray[$key] : []
                                                         ) );
                         }
                         // else{
