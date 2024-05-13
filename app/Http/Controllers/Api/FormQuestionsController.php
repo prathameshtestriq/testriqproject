@@ -199,6 +199,7 @@ class FormQuestionsController extends Controller
             $MaxLength = !empty($request->max_length) ? $request->max_length : '';
             $FieldMapping = !empty($request->field_mapping) ? $request->field_mapping : '';
             $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
+            $FormId = !empty($request->form_name) ? $request->form_name : 0;
 
             //dd($LimitLengthCheck);
             $limit_length = '';
@@ -217,9 +218,9 @@ class FormQuestionsController extends Controller
           
             if(!empty($aResult5) && $aResult5[0]->tot_count == 0)
             {
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint)';
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint, form_id)';
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, form_id, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint, :formId
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -230,7 +231,8 @@ class FormQuestionsController extends Controller
                     'generalFormId' => $GeneralFormId,
                     'limitCheck'    => $LimitLengthCheck,
                     'userFieldMapping' => $FieldMapping,
-                    'limitLength' => $limit_length
+                    'limitLength' => $limit_length,
+                    'formId' => $FormId
                 ));
             }
 
@@ -320,7 +322,6 @@ class FormQuestionsController extends Controller
                             "subQueCount"       => $SubQuestionCountFlag,
                             "subQueOtherAmount" => $SubQuestionOtherAmountFlag,
                             "questionHint"      => $questionHint
-
                         ));
 
                         $last_inserted_id = DB::getPdo()->lastInsertId();
@@ -904,6 +905,102 @@ class FormQuestionsController extends Controller
             $response['message'] = $aToken['message'];
         }
 
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function form_common_details(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $message = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+                $FormName = !empty($request->form_name) ? $request->form_name : 0;
+                $FormEditId = !empty($request->form_edit_id) ? $request->form_edit_id : 0;
+                $FormActionFlag = !empty($request->form_action_flag) ? $request->form_action_flag : 0;
+            
+            if($FormActionFlag == 'data_add_edit'){   // data add/edit
+
+                if (empty($FormEditId)) {
+                    
+                    $SQL = "SELECT form_name FROM form_master WHERE form_name=:form_name";
+                    $IsExist = DB::select($SQL, array('form_name' => strtolower($FormName)));
+
+                    if (count($IsExist) > 0) {
+                        $ResposneCode = 200;
+                        $message = "error";
+                    }else{
+                        $Bindings = array(
+                            "form_name" => $FormName,
+                        );
+                        $insert_SQL = "INSERT INTO form_master (form_name) VALUES(:form_name)";
+                        DB::insert($insert_SQL, $Bindings);
+
+                        $ResposneCode = 200;
+                        $message = "Form added successfully";
+                    }
+
+                } else {
+                    
+                    $SQL = "SELECT form_name FROM form_master WHERE form_name=:form_name AND id !=:id";
+                    $IsExist = DB::select($SQL, array('form_name' => strtolower($FormName), 'id' => $FormEditId));
+
+                    if (count($IsExist) > 0) {
+                        $ResposneCode = 200;
+                        $message = "error";
+                    } else {
+                        $Bindings = array(
+                            "form_name" => $FormName,
+                            "form_edit_id" => $FormEditId
+                        );
+                        $update_SQL = 'UPDATE form_master SET form_name = :form_name WHERE id = :form_edit_id';
+                        DB::update($update_SQL, $Bindings);
+
+                        $ResposneCode = 200;
+                        $message = "Form updated successfully";
+                    }
+                    
+                }
+            
+            }else if($FormActionFlag == 'form_details'){
+
+                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 ';
+                $ResponseData['form_details'] = DB::select($sel_SQL);
+
+                $ResposneCode = 200;
+                if (empty($FormEditId)) { $message = "Form added successfully"; } 
+                else { $message = "Form updated successfully"; } 
+           
+            }
+
+            if($FormActionFlag == 'form_details' && !empty($FormEditId)){
+
+                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND id = '.$FormEditId.' ';
+                $ResponseData['form_edit_details'] = DB::select($sel_SQL);
+
+                $ResposneCode = 200;
+                //$message = "";
+            }
+
+          
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
         return response()->json($response, $ResposneCode);
     }
 
