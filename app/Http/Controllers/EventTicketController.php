@@ -1161,6 +1161,7 @@ class EventTicketController extends Controller
                     WHERE ecd.event_id = :event_id
                     AND ec.coupon_status = 1
                     AND ec.show_public = 1
+                    AND ecd.end_coupon = 0
                     AND FIND_IN_SET(:ticket_id, ecd.ticket_details) > 0
                     AND ecd.discount_from_datetime <= :now1
                     AND ecd.discount_to_datetime >= :now2

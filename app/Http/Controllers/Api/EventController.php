@@ -506,8 +506,8 @@ class EventController extends Controller
                 $UpcomingEvents[] = clone $UpcomingEvents[0];
             }
         } else if ($NoOfUpcomingEvent == 2) {
-            $duplicateArray = clone $UpcomingEvents[0];
-            $UpcomingEvents[] = $duplicateArray;
+            $duplicateArray = $UpcomingEvents[0];
+            // $UpcomingEvents[] = $duplicateArray;
             $UpcomingEvents[] = clone $duplicateArray;
         } else if ($NoOfUpcomingEvent == 3) {
             $duplicateArray = clone $UpcomingEvents[0];
