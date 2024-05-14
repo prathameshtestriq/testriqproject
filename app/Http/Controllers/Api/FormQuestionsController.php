@@ -19,6 +19,7 @@ class FormQuestionsController extends Controller
     {
         // dd($request);
         $response['data'] = [];
+        $response['data']['form_question'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
         $empty = false;
@@ -975,6 +976,8 @@ class FormQuestionsController extends Controller
 
                 $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 ';
                 $ResponseData['form_details'] = DB::select($sel_SQL);
+
+                $ResponseData['form_array'] = array_column($ResponseData['form_details'], 'form_name');
 
                 $ResposneCode = 200;
                 if (empty($FormEditId)) { $message = "Form added successfully"; } 
