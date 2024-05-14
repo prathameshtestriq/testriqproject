@@ -500,14 +500,14 @@ class EventController extends Controller
 
         #UPCOMING EVENTS
         $NoOfUpcomingEvent = count($UpcomingEvents);
-
+        // dd($NoOfUpcomingEvent);
         if ($NoOfUpcomingEvent == 1) {
-            for ($i = 0; $i < 4; $i++) {
+            for ($i = 1; $i < 4; $i++) {
                 $UpcomingEvents[] = clone $UpcomingEvents[0];
             }
         } else if ($NoOfUpcomingEvent == 2) {
             $duplicateArray = $UpcomingEvents[0];
-            // $UpcomingEvents[] = $duplicateArray;
+            $UpcomingEvents[] = $duplicateArray;
             $UpcomingEvents[] = clone $duplicateArray;
         } else if ($NoOfUpcomingEvent == 3) {
             $duplicateArray = clone $UpcomingEvents[0];
@@ -517,6 +517,7 @@ class EventController extends Controller
         foreach ($UpcomingEvents as $key => $value) {
             $value->visibility = ($key < $NoOfUpcomingEvent) ? "show" : "hidden";
         }
+        // dd(count($UpcomingEvents));
         // echo "<pre>";
         // print_r($UpcomingEvents);
         // die;
