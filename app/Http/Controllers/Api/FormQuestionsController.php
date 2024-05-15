@@ -59,8 +59,13 @@ class FormQuestionsController extends Controller
                         $res->sub_questions_array = !empty($sub_questions_aResult) ? $sub_questions_aResult : [];
                     }
                     $res->common_index = $i;
-                   $new_array['event_form_array'][] = $res;
-                   $new_array['event_form_details'][$res->form_name][] = $res;
+                    $new_array['event_form_array'][] = $res;
+                    if(!empty($res->form_name)){
+                       $new_array['event_form_details'][$res->form_name][] = $res;
+                    }else{
+                       $new_array['event_form_details']['Do Not Have Form'][] = $res; 
+                    }
+                  
                    //$new_array[$res->form_name][] = $res;
                    $i++;
                 }
@@ -103,8 +108,8 @@ class FormQuestionsController extends Controller
             //dd($EventId);
             
             // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by ='.$UserId.' and is_subquestion = 0  ';
+            // created_by in (0,'.$UserId.')
             $aResult = DB::select($Sql);
            // dd($aResult);
             $general_form_array = [];
@@ -155,7 +160,12 @@ class FormQuestionsController extends Controller
                 //     }
                 // }else{ $res->sub_question_array = []; }
                 // $general_form_array[] = $res;
-                $general_form_array[$res->form_name][] = $res;
+                if(!empty($res->form_name)){
+                    $general_form_array[$res->form_name][] = $res;
+                }else{
+                    $general_form_array['Do Not Have Form'][] = $res;
+                }
+               
             }//die;
 
             //dd($general_form_array);
@@ -202,6 +212,18 @@ class FormQuestionsController extends Controller
             $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
             $FormId = !empty($request->form_name) ? $request->form_name : 0;
 
+            $SubQuestionFlag = !empty($request->sub_question_flag) ? 1 : 0;
+            $QuestionType = !empty($request->question_type) ? $request->question_type : 0;
+            $SubQuestionTitle = !empty($request->sub_question_title) ? $request->sub_question_title : '';
+            $QuestionFormOptionArray = !empty($request->sub_question_array) ? array_filter($request->sub_question_array) : [];
+            $SubQuestionMandatory = !empty($request->sub_question_mandatory_status) ? $request->sub_question_mandatory_status : 0;
+            $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'text';
+           
+            $SubQuestionPriceFlag = !empty($request->sub_question_price_flag) ? 1 : 0;
+            $SubQuestionCountFlag = !empty($request->sub_question_count_flag)  ? 1 : 0;
+            $SubQuestionOtherAmountFlag = !empty($request->sub_question_other_amount) ? 1 : 0;
+            $ParentGeneralFormId = !empty($request->parent_general_form_id) ? $request->parent_general_form_id : 0;
+
             //dd($LimitLengthCheck);
             $limit_length = '';
             if(!empty($MinLength) && !empty($MaxLength)){
@@ -218,10 +240,38 @@ class FormQuestionsController extends Controller
             //dd($aResult5);
           
             if(!empty($aResult5) && $aResult5[0]->tot_count == 0)
-            {
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint, form_id)';
+            {   
+                //--------- sorting order
+                
+        
+                if($SubQuestionFlag == 1){
+                    $SQL1 = "SELECT sort_order as last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id AND general_form_id =:general_form_id";
+                    $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'general_form_id' => $GeneralFormId));
+                    if(!empty($aResultSortOrder1)){
+                        $event_sort_order = !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
+                    }else{
+                        $SQL1 = "SELECT MAX(sort_order) AS last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id";
+                        $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId));
+                        $event_sort_order = !empty($aResultSortOrder1) && $aResultSortOrder1[0]->last_sort_order !== '' ? $aResultSortOrder1[0]->last_sort_order+1 : 1;
+                    }
+                    
+                }else{
+                    if(!empty($ParentGeneralFormId)){
+                        $SQL1 = "SELECT sort_order as last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id AND general_form_id =:general_form_id";
+                        $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'general_form_id' => $ParentGeneralFormId));
+                        $event_sort_order = !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
+                    }else{
+                        $SQL1 = "SELECT MAX(sort_order) AS last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id";
+                        $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId));
+                        $event_sort_order = !empty($aResultSortOrder1) && $aResultSortOrder1[0]->last_sort_order !== '' ? $aResultSortOrder1[0]->last_sort_order+1 : 1;
+                    }
+                    
+                }
+            
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, sort_order, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint, :formId
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint, form_id, sort_order)';
+
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint, :formId, :sortOrder
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -232,24 +282,13 @@ class FormQuestionsController extends Controller
                     'generalFormId' => $GeneralFormId,
                     'limitCheck'    => $LimitLengthCheck,
                     'userFieldMapping' => $FieldMapping,
-                    'limitLength' => $limit_length,
-                    'formId' => $FormId
+                    'limitLength'      => $limit_length,
+                    'formId'           => $FormId,
+                    'sortOrder'        => $event_sort_order
                 ));
             }
 
             //------------- Add new sub question ----------------
-
-                $SubQuestionFlag = !empty($request->sub_question_flag) ? 1 : 0;
-                $QuestionType = !empty($request->question_type) ? $request->question_type : 0;
-                $SubQuestionTitle = !empty($request->sub_question_title) ? $request->sub_question_title : '';
-                $QuestionFormOptionArray = !empty($request->sub_question_array) ? array_filter($request->sub_question_array) : [];
-                $SubQuestionMandatory = !empty($request->sub_question_mandatory_status) ? $request->sub_question_mandatory_status : 0;
-                $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'text';
-               
-                $SubQuestionPriceFlag = !empty($request->sub_question_price_flag) ? 1 : 0;
-                $SubQuestionCountFlag = !empty($request->sub_question_count_flag)  ? 1 : 0;
-                $SubQuestionOtherAmountFlag = !empty($request->sub_question_other_amount) ? 1 : 0;
-                $ParentGeneralFormId = !empty($request->parent_general_form_id) ? $request->parent_general_form_id : 0;
 
                 if($SubQuestionFlag == 1){
 
@@ -304,12 +343,17 @@ class FormQuestionsController extends Controller
 
                     if($SubQuestionTitle != '')
                     {
-                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint)';
+                        //--------- sorting order
+                        $SQL = "SELECT MAX(sort_order) AS last_sort_order FROM general_form_question WHERE created_by=:user_id";
+                        $aResultSortOrder = DB::select($SQL, array('user_id' => $userId));
+                        $sort_order = !empty($aResultSortOrder) && $aResultSortOrder[0]->last_sort_order !== '' ? $aResultSortOrder[0]->last_sort_order+1 : 1;
+
+                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint,sort_order) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint, :sortOrder)';
 
                         DB::insert($sSQL,array(
                             //'questionLabel'     => !empty($question_title_name) ? $question_title_name.' '.$SubQuestionTitle : $SubQuestionTitle,
                             'questionLabel'     => $SubQuestionTitle,
-                            'formId'            => 1,
+                            'formId'            => $FormId,
                             'questionFormType'  => $SubQuestionFormType, // ex. t-shirt size
                             'questionFormName'  => 'sub_question',
                             'questionFormOption' => $SubQuestionOptionArray,
@@ -322,7 +366,8 @@ class FormQuestionsController extends Controller
                             "subQuePrice"       => $SubQuestionPriceFlag,
                             "subQueCount"       => $SubQuestionCountFlag,
                             "subQueOtherAmount" => $SubQuestionOtherAmountFlag,
-                            "questionHint"      => $questionHint
+                            "questionHint"      => $questionHint,
+                            "sortOrder"         => $sort_order
                         ));
 
                         $last_inserted_id = DB::getPdo()->lastInsertId();
@@ -541,7 +586,12 @@ class FormQuestionsController extends Controller
             $questionFormOptionArray = !empty($new_array) ? json_encode($new_array) : '';
             // dd($questionFormOptionArray);
 
-            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_hint,question_form_option, is_manadatory, question_status, created_by, is_custom_form) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionHint,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm)';
+            //--------- sorting order
+            $SQL = "SELECT MAX(sort_order) AS last_sort_order FROM general_form_question WHERE created_by=:user_id";
+            $aResultSortOrder = DB::select($SQL, array('user_id' => $userId));
+            $sort_order = !empty($aResultSortOrder) && $aResultSortOrder[0]->last_sort_order !== '' ? $aResultSortOrder[0]->last_sort_order+1 : 1;
+
+            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_hint,question_form_option, is_manadatory, question_status, created_by, is_custom_form, sort_order) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionHint,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:sortOrder)';
 
             DB::insert($sSQL,array(
                 'questionLabel'     => $questionLabel,
@@ -553,7 +603,8 @@ class FormQuestionsController extends Controller
                 'isManadatory'      => $isManadatory,
                 'questionStatus'    => 1,
                 'createdBy'         => $userId,
-                'isCustomForm'      => 1
+                'isCustomForm'      => 1,
+                'sortOrder'         => $sort_order
             ));
 
             $response['data'] = [];
@@ -942,8 +993,9 @@ class FormQuestionsController extends Controller
                     }else{
                         $Bindings = array(
                             "form_name" => $FormName,
+                            "user_id"   => $UserId
                         );
-                        $insert_SQL = "INSERT INTO form_master (form_name) VALUES(:form_name)";
+                        $insert_SQL = "INSERT INTO form_master (form_name,user_id) VALUES(:form_name,:user_id)";
                         DB::insert($insert_SQL, $Bindings);
 
                         $ResposneCode = 200;
@@ -974,11 +1026,13 @@ class FormQuestionsController extends Controller
             
             }else if($FormActionFlag == 'form_details'){
 
-                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 ';
+                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND user_id = '.$UserId.' ';
                 $ResponseData['form_details'] = DB::select($sel_SQL);
-
+                
+                $ResponseData['form_details'] =  array_merge($ResponseData['form_details'],array(500 => array("id" => 500,"form_name" => "Do Not Have Form","status"=> 1)));
+                // dd($ResponseData['form_details']);
                 $ResponseData['form_array'] = array_column($ResponseData['form_details'], 'form_name');
-
+                // $ResponseData['form_array'] = array_merge($ResponseData['form_array'],array("Do Not Have Form"));
                 $ResposneCode = 200;
                 if (empty($FormEditId)) { $message = "Form added successfully"; } 
                 else { $message = "Form updated successfully"; } 
@@ -987,7 +1041,7 @@ class FormQuestionsController extends Controller
 
             if($FormActionFlag == 'form_details' && !empty($FormEditId)){
 
-                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND id = '.$FormEditId.' ';
+                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND id = '.$FormEditId.' AND user_id = '.$UserId.' ';
                 $ResponseData['form_edit_details'] = DB::select($sel_SQL);
 
                 $ResposneCode = 200;

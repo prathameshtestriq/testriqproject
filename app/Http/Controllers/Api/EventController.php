@@ -1119,6 +1119,7 @@ class EventController extends Controller
             $sql1 = "SELECT id,question,answer,status,custom_faq FROM event_FAQ WHERE event_id=:event_id AND user_id=:user_id ";
             $FAQResult = DB::select($sql1, array('event_id' => $EventId, 'user_id' => $UserId));
             //dd($CommResult);
+            $is_one_selected = 0;
             if (!empty($FAQResult)) {
                 foreach ($FAQResult as $res) {
                     if ($res->status == 1) {
@@ -1126,9 +1127,14 @@ class EventController extends Controller
                     } else {
                         $res->status = false;
                     }
+
+                    if($res->status == 1){
+                        $is_one_selected = 1;
+                    }
+
                 }
             }
-
+            $ResponseData['faq_selected_flag'] = $is_one_selected;
             $ResponseData['faq_details'] = !empty($FAQResult) ? $FAQResult : [];
 
             // ---------- get Tickets details
@@ -2189,7 +2195,7 @@ class EventController extends Controller
                                     "user_email_address" => $UserEmailAddress
 
                                 );
-                                $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details,:user_email_address)";
+                                $insert_SQL1 = "INSERT INTO event_coupon_details (event_coupon_id,event_id,discount_type,discount_amt_per_type,discount_amount,discount_percentage,code_type,no_of_discount,discount_code,prefix_code,discount_from_datetime,discount_to_datetime,have_list_codes,apply_ticket,ticket_details,user_email_address) VALUES(:event_coupon_id,:event_id,:discount_type,:discount_amt_per_type,:discount_amount,:discount_percentage,:code_type,:no_of_discount,:discount_code,:prefix_code,:discount_from_datetime,:discount_to_datetime,:have_list_codes,:apply_ticket,:ticket_details,:user_email_address)";
                                 //dd($insert_SQL1);
                                 DB::insert($insert_SQL1, $Bindings1);
                             }
@@ -2426,7 +2432,7 @@ class EventController extends Controller
                         'coupon_status' => $CouponStatus
                     )
                 );
-                $msg = 'FAQ status change successfully';
+                $msg = 'FAQ status changed successfully';
 
             } else if ($ActionFlag == 'age_criteria_changes_status') {
                 $status_sSQL = 'UPDATE age_criteria SET `status` =:coupon_status WHERE `id`=:age_id ';
@@ -2437,7 +2443,7 @@ class EventController extends Controller
                         'coupon_status' => $CouponStatus
                     )
                 );
-                $msg = 'Age criteria status change successfully';
+                $msg = 'Age criteria status changed successfully';
 
             } else if ($ActionFlag == 'communication_changes_status') {
                 $status_sSQL = 'UPDATE event_communication SET `status` =:comm_status WHERE `id`=:comm_id ';
@@ -2448,7 +2454,7 @@ class EventController extends Controller
                         'comm_id' => $CouponId
                     )
                 );
-                $msg = 'Communication status change successfully';
+                $msg = 'Communication status changed successfully';
 
             } else if ($ActionFlag == 'term_changes_status') {
                 $status_sSQL = 'UPDATE event_terms_conditions SET `status` =:term_status WHERE `id`=:term_id ';
@@ -2459,7 +2465,7 @@ class EventController extends Controller
                         'term_id' => $CouponId
                     )
                 );
-                $msg = 'Terms & conditions status change successfully';
+                $msg = 'Terms & conditions status changed successfully';
 
             } else {
                 $status_sSQL = 'UPDATE event_coupon SET `coupon_status` =:coupon_status WHERE `id`=:coupon_id ';
@@ -2470,7 +2476,7 @@ class EventController extends Controller
                         'coupon_status' => $CouponStatus
                     )
                 );
-                $msg = 'Coupon status change successfully';
+                $msg = 'Coupon status changed successfully';
             }
 
             $response['data'] = [];
