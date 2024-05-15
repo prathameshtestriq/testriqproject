@@ -461,6 +461,7 @@ class EventTicketController extends Controller
                 $TotalAttendee = isset($request->total_attendee) && !empty($request->total_attendee) ? $request->total_attendee : 0;
                 $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
                 // dd($AllTickets);
+                $ResponseData['FormQuestions'] = $FinalFormQuestions;
                 // -------------------------------------------------
                 $OrgGstPercentage = 0;
                 $sql1 = "SELECT gst_percentage FROM organizer WHERE user_id=:user_id";
@@ -494,60 +495,64 @@ class EventTicketController extends Controller
                 // -------------------------------------------------
                 $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
                 $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+                if (count($FormQuestions) > 0) {
+                    foreach ($FormQuestions as $value) {
+                        $value->ActualValue = "";
+                        $value->Error = "";
+                        $value->TicketId = 0;
 
-                foreach ($FormQuestions as $value) {
-                    $value->ActualValue = "";
-                    $value->Error = "";
-                    $value->TicketId = 0;
+                        if (!empty($value->question_form_option)) {
+                            $jsonString = $value->question_form_option;
+                            $array = json_decode($jsonString, true);
 
-                    if (!empty($value->question_form_option)) {
-                        $jsonString = $value->question_form_option;
-                        $array = json_decode($jsonString, true);
-
-                        foreach ($array as &$item) { // Note the "&" before $item to modify it directly
-                            if (isset($item['count']) && !empty($item["count"])) {
-                                $sql = "SELECT current_count FROM extra_pricing_booking WHERE question_id=:question_id AND option_id=:option_id";
-                                $SoldItems = DB::select($sql, array("question_id" => $value->id, "option_id" => $item["id"]));
-                                if (count($SoldItems) > 0) {
-                                    $currentCount = $SoldItems[0]->current_count;
-                                    // Adding current_count to the $item array
-                                    $item['current_count'] = $currentCount;
+                            foreach ($array as &$item) { // Note the "&" before $item to modify it directly
+                                if (isset($item['count']) && !empty($item["count"])) {
+                                    $sql = "SELECT current_count FROM extra_pricing_booking WHERE question_id=:question_id AND option_id=:option_id";
+                                    $SoldItems = DB::select($sql, array("question_id" => $value->id, "option_id" => $item["id"]));
+                                    if (count($SoldItems) > 0) {
+                                        $currentCount = $SoldItems[0]->current_count;
+                                        // Adding current_count to the $item array
+                                        $item['current_count'] = $currentCount;
+                                    }
                                 }
                             }
-                        }
-                        // Unset $item to avoid potential conflicts with other loops
-                        unset($item);
+                            // Unset $item to avoid potential conflicts with other loops
+                            unset($item);
 
-                        $updatedJsonString = json_encode($array);
+                            $updatedJsonString = json_encode($array);
 
-                        // Assign the updated JSON string back to $value->question_form_option
-                        $value->question_form_option = $updatedJsonString;
-                    }
-                }
-                // dd($FormQuestions);
-
-                if (!empty($AllTickets)) {
-                    foreach ($AllTickets as $ticket) {
-                        // dd($ticket);
-                        for ($i = 0; $i < $ticket['count']; $i++) {
-                            $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
+                            // Assign the updated JSON string back to $value->question_form_option
+                            $value->question_form_option = $updatedJsonString;
                         }
                     }
+                    // dd($FormQuestions);
+
+                    if (!empty($AllTickets)) {
+                        foreach ($AllTickets as $ticket) {
+                            // dd($ticket);
+                            for ($i = 0; $i < $ticket['count']; $i++) {
+                                $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
+                            }
+                        }
+                    }
+                    // dd($FinalFormQuestions);
+
+                    $ResponseData['FormQuestions'] = $FinalFormQuestions;
+
+                    $ResponseData['YTCR_FEE_PERCENT'] = config('custom.ytcr_fee_percent');
+                    $ResponseData['PLATFORM_FEE_PERCENT'] = config('custom.platform_fee_percent');
+                    $ResponseData['PAYMENT_GATEWAY_FEE_PERCENT'] = config('custom.payment_gateway_fee_percent');
+                    $ResponseData['PAYMENT_GATEWAY_GST_PERCENT'] = config('custom.payment_gateway_gst_percent');
+
+                    // $sql = "SELECT COUNT(id) FROM ticket_booking WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                    // $ResponseData['TotalBookedTickets'] = $TotalBookedTickets;
+
+                    $ResposneCode = 200;
+                    $message = 'Request processed successfully';
+                } else {
+                    $ResposneCode = 200;
+                    $message = 'Form Questions is empty';
                 }
-                // dd($FinalFormQuestions);
-
-                $ResponseData['FormQuestions'] = $FinalFormQuestions;
-
-                $ResponseData['YTCR_FEE_PERCENT'] = config('custom.ytcr_fee_percent');
-                $ResponseData['PLATFORM_FEE_PERCENT'] = config('custom.platform_fee_percent');
-                $ResponseData['PAYMENT_GATEWAY_FEE_PERCENT'] = config('custom.payment_gateway_fee_percent');
-                $ResponseData['PAYMENT_GATEWAY_GST_PERCENT'] = config('custom.payment_gateway_gst_percent');
-
-                // $sql = "SELECT COUNT(id) FROM ticket_booking WHERE event_id=:event_id AND ticket_id=:ticket_id";
-                // $ResponseData['TotalBookedTickets'] = $TotalBookedTickets;
-
-                $ResposneCode = 200;
-                $message = 'Request processed successfully';
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
@@ -598,6 +603,8 @@ class EventTicketController extends Controller
                 $ExtraPricing = isset($request->ExtraPricing) && !empty($request->ExtraPricing) ? $request->ExtraPricing : [];
                 $UtmCampaign = isset($request->UtmCampaign) && !empty($request->UtmCampaign) ? $request->UtmCampaign : "";
 
+                $GstArray = isset($request->GstArray) && !empty($request->GstArray) ? $request->GstArray : [];
+
                 $UserId = $aToken["data"]->ID;
                 $UserEmail = $aToken["data"]->email;
                 // dd($UserEmail);
@@ -611,9 +618,10 @@ class EventTicketController extends Controller
                         "booking_date" => strtotime("now"),
                         "total_amount" => $TotalPrice,
                         "total_discount" => $TotalDiscount,
-                        "utm_campaign" => $UtmCampaign
+                        "utm_campaign" => $UtmCampaign,
+                        "cart_details" => json_encode($GstArray)
                     );
-                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign)";
+                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign,cart_details) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign,:cart_details)";
                     DB::insert($Sql1, $Binding1);
                     $BookingId = DB::getPdo()->lastInsertId();
 
@@ -640,6 +648,51 @@ class EventTicketController extends Controller
                             $BookingDetailsId = DB::getPdo()->lastInsertId();
 
                             $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
+
+                            // ADD IF COUPONS APPLY ON TICKET
+                            $appliedCouponId = $appliedCouponAmount = 0;
+                            $appliedCouponCode = "";
+
+                            $appliedCouponId = (isset($ticket["appliedCouponId"]) && !empty($ticket["appliedCouponId"])) ? $ticket["appliedCouponId"] : 0;
+                            $appliedCouponAmount = (isset($ticket["appliedCouponAmount"]) && !empty($ticket["appliedCouponAmount"])) ? $ticket["appliedCouponAmount"] : 0;
+                            // $appliedCouponCode = (isset($ticket["appliedCouponCode"]) && !empty($ticket["appliedCouponCode"])) ? $ticket["appliedCouponCode"] : "";
+
+                            if (!empty($appliedCouponId) && $appliedCouponAmount) {
+                                $Binding6 = [];
+                                $Sql6 = "";
+                                $Binding6 = array(
+                                    "event_id" => $EventId,
+                                    "coupon_id" => $appliedCouponId,
+                                    "ticket_ids" => $ticket["id"],
+                                    "amount" => $appliedCouponAmount,
+                                    "created_by" => $UserId,
+                                    "created_at" => strtotime("now"),
+                                    "booking_id" => $BookingId,
+                                    "booking_detail_id" => $BookingDetailsId
+                                );
+                                $Sql6 = "INSERT INTO applied_coupons (event_id,coupon_id,ticket_ids,amount,created_by,created_at,booking_id,booking_detail_id) VALUES (:event_id,:coupon_id,:ticket_ids,:amount,:created_by,:created_at,:booking_id,:booking_detail_id)";
+                                DB::insert($Sql6, $Binding6);
+
+
+                                $Sql7 = "";
+                                $Binding7 = [];
+
+                                $Sql7 = "SELECT discount_type FROM event_coupon_details WHERE event_coupon_id=:event_coupon_id";
+                                $Binding7 = array("event_coupon_id" => $appliedCouponId);
+                                $Result = DB::select($Sql7, $Binding7);
+                                $IsDiscountOneTime = 0;
+
+                                if (count($Result) > 0) {
+                                    $IsDiscountOneTime = $Result[0]->discount_type;
+                                    $Sql8 = "";
+                                    $Binding8 = [];
+                                    if ($IsDiscountOneTime == 1) {
+                                        $Binding8 = array("event_coupon_id" => $appliedCouponId);
+                                        $Sql8 = "UPDATE event_coupon_details SET end_coupon=1 WHERE event_coupon_id=:event_coupon_id";
+                                        DB::update($Sql8, $Binding8);
+                                    }
+                                }
+                            }
                         }
                     }
                     #ADD EXTRA AMOUNT FOR PAYABLE FOR USER in booking_details
