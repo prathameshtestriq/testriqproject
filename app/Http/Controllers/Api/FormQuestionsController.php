@@ -108,7 +108,7 @@ class FormQuestionsController extends Controller
             //dd($EventId);
             
             // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by ='.$UserId.' and is_subquestion = 0  ';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
             // created_by in (0,'.$UserId.')
             $aResult = DB::select($Sql);
            // dd($aResult);
@@ -976,9 +976,10 @@ class FormQuestionsController extends Controller
             $Auth->apiLog($request);
             $UserId = $aToken['data']->ID;
 
-                $FormName = !empty($request->form_name) ? $request->form_name : 0;
+                $FormName = !empty($request->form_name) ? $request->form_name : '';
                 $FormEditId = !empty($request->form_edit_id) ? $request->form_edit_id : 0;
-                $FormActionFlag = !empty($request->form_action_flag) ? $request->form_action_flag : 0;
+                $FormActionFlag = !empty($request->form_action_flag) ? $request->form_action_flag : '';
+                $FormFlag = !empty($request->form_flag) ? $request->form_flag : '';
             
             if($FormActionFlag == 'data_add_edit'){   // data add/edit
 
@@ -1025,14 +1026,27 @@ class FormQuestionsController extends Controller
                 }
             
             }else if($FormActionFlag == 'form_details'){
+                
+                $cond = '';
+                if($FormFlag == 'form_ques_dropdown'){
+                    $cond .= ' user_id in (0,'.$UserId.')';
+                }else{
+                   $cond .= ' is_custom = 0 AND user_id = '.$UserId.' '; 
+                }
 
-                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND user_id = '.$UserId.' ';
+                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND '.$cond.' ';
                 $ResponseData['form_details'] = DB::select($sel_SQL);
                 
-                $ResponseData['form_details'] =  array_merge($ResponseData['form_details'],array(500 => array("id" => 500,"form_name" => "Do Not Have Form","status"=> 1)));
+                if($FormFlag == 'general_form'){
+                    $ResponseData['form_details'] =  array_merge($ResponseData['form_details'],array(999999 => array("id" => 999999,"form_name" => "Do Not Have Form","status"=> 1)));
+                }
                 // dd($ResponseData['form_details']);
-                $ResponseData['form_array'] = array_column($ResponseData['form_details'], 'form_name');
-                // $ResponseData['form_array'] = array_merge($ResponseData['form_array'],array("Do Not Have Form"));
+                if($FormFlag == 'general_form'){
+                    $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND user_id in (0,'.$UserId.') ';
+                    $form_details_ary = DB::select($sel_SQL);  
+                    $ResponseData['form_array'] = array_column($form_details_ary, 'form_name');
+                }
+               
                 $ResposneCode = 200;
                 if (empty($FormEditId)) { $message = "Form added successfully"; } 
                 else { $message = "Form updated successfully"; } 

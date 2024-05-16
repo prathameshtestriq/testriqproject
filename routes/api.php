@@ -16,6 +16,7 @@ use App\Http\Controllers\UserEventDetailsController;
 use App\Http\Controllers\Api\GoogleLoginController;
 //----------- added by prathmesh
 use App\Http\Controllers\Api\FormQuestionsController;
+use App\Http\Controllers\Api\PaymentGatwayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -186,4 +187,8 @@ Route::controller(FormQuestionsController::class)->group(function () {
     Route::post('ViewSubquestionsTree', 'view_sub_question_tree');
     Route::post('EventFormQuestionsSorting', 'event_form_question_sorting');
     Route::post('FormCommonDetails', 'form_common_details');
+});
+
+Route::controller(PaymentGatwayController::class)->group(function () {
+    Route::post('/paymentByUserDetails', 'payment_by_user_details');
 });
