@@ -246,7 +246,7 @@ class FormQuestionsController extends Controller
         
                 if($SubQuestionFlag == 1){
                     $SQL1 = "SELECT sort_order as last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id AND general_form_id =:general_form_id";
-                    $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'general_form_id' => $GeneralFormId));
+                    $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'general_form_id' => $ParentGeneralFormId));
                     if(!empty($aResultSortOrder1)){
                         $event_sort_order = !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
                     }else{
@@ -1045,6 +1045,8 @@ class FormQuestionsController extends Controller
                     $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND user_id in (0,'.$UserId.') ';
                     $form_details_ary = DB::select($sel_SQL);  
                     $ResponseData['form_array'] = array_column($form_details_ary, 'form_name');
+                    $ResponseData['form_array'] = array_merge($ResponseData['form_array'], ['Do Not Have Form']);
+                   // dd($ResponseData['form_array']);
                 }
                
                 $ResposneCode = 200;
