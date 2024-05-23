@@ -40,10 +40,11 @@ class FormQuestionsController extends Controller
             
             //$Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
 
-            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by form_id,sort_order asc';
+            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
             $aResult = DB::select($Sql);
-
-            //dd($aResult);
+             
+            $customFormArray = array("Personal Information", "Address Details", "Medical Information", "Documentation", "Emergency Contact", "Additional Information", "Professional Information", "Social Media Links");
+            // dd($customFormArray);
             if(!empty($aResult)){
                 $new_array = [];
                 $i = 0;
@@ -59,12 +60,25 @@ class FormQuestionsController extends Controller
                         $res->sub_questions_array = !empty($sub_questions_aResult) ? $sub_questions_aResult : [];
                     }
                     $res->common_index = $i;
-                    $new_array['event_form_array'][] = $res;
-                    if(!empty($res->form_name)){
-                       $new_array['event_form_details'][$res->form_name][] = $res;
+                    
+
+                    if(in_array($res->form_name, $customFormArray)){
+                       $res->new_form_name = "Custom Form";
+                       $new_array['event_form_details']['Custom Form'][] = $res;
+                    }else if($res->form_id == 999999){
+                        $res->new_form_name = "Custom Form";
+                        $new_array['event_form_details']['Custom Form'][] = $res;
                     }else{
-                       $new_array['event_form_details']['Do Not Have Form'][] = $res; 
+                       $res->new_form_name = $res->form_name;
+                       $new_array['event_form_details'][$res->form_name][] = $res; 
                     }
+
+                    $new_array['event_form_array'][] = $res;
+                    // if(!empty($res->form_name)){
+                    //    $new_array['event_form_details'][$res->form_name][] = $res;
+                    // }else{
+                    //    $new_array['event_form_details']['Do Not Have Form'][] = $res; 
+                    // }
                   
                    //$new_array[$res->form_name][] = $res;
                    $i++;
