@@ -284,18 +284,17 @@ class EventController extends Controller
         #REGISTRATION COMING SOON EVENTS
         $ResponseData['RegistrationEventData'] = $this->ManipulateEvents($RegistrationEvents, $UserId);
 
-        $upcomingEventIds = array_map(function ($event) {
-            return $event->id;
-        }, $ResponseData['UpcomingEventData']);
+        // $upcomingEventIds = array_map(function ($event) {
+        //     return $event->id;
+        // }, $ResponseData['UpcomingEventData']);
 
         // Filter out events from RegistrationEventData if their IDs are present in UpcomingEventData
-        $filteredRegistrationEventData = array_filter($ResponseData['RegistrationEventData'], function ($event) use ($upcomingEventIds) {
-            return !in_array($event->id, $upcomingEventIds);
-        });
+        // $filteredRegistrationEventData = array_filter($ResponseData['RegistrationEventData'], function ($event) use ($upcomingEventIds) {
+        //     return !in_array($event->id, $upcomingEventIds);
+        // });
 
-        // Set the filtered RegistrationEventData
-        $ResponseData['RegistrationEventData'] = $filteredRegistrationEventData;
-
+        // // Set the filtered RegistrationEventData
+        // $ResponseData['RegistrationEventData'] = $filteredRegistrationEventData;
 
         $ResponseData['MAX_UPLOAD_FILE_SIZE'] = config('custom.max_size');//Config::get('custom.MAX_UPLOAD_FILE_SIZE');
         $response = [
@@ -512,16 +511,16 @@ class EventController extends Controller
         $ResponseData['UpcomingEventData'] = $this->ManipulateEvents($UpcomingEvents, $UserId);
 
 
-        $upcomingEventIds = array_map(function ($event) {
-            return $event->id;
-        }, $ResponseData['UpcomingEventData']);
+        // $upcomingEventIds = array_map(function ($event) {
+        //     return $event->id;
+        // }, $ResponseData['UpcomingEventData']);
 
         // Filter out events from RegistrationEventData if their IDs are present in UpcomingEventData
         // $filteredRegistrationEventData = array_filter($ResponseData['RegistrationEventData'], function ($event) use ($upcomingEventIds) {
         //     return !in_array($event->id, $upcomingEventIds);
         // });
 
-        // // Set the filtered RegistrationEventData
+        // // // Set the filtered RegistrationEventData
         // $ResponseData['RegistrationEventData'] = $filteredRegistrationEventData;
 
         $ResponseData['MAX_UPLOAD_FILE_SIZE'] = config('custom.max_size');

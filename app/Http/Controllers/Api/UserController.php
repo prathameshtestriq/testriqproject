@@ -533,9 +533,10 @@ class UserController extends Controller
                 $field = 'Pincode';
             }
             if (!$empty) {
-                
+
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
+                $master = new Master();
 
                 $CountryId = $aPost['country_id'];
                 $Pincode = $aPost['pincode'];
@@ -554,6 +555,11 @@ class UserController extends Controller
                     $Address = DB::select($SQL2, array("pincode" => $Pincode, "country_code" => $CountryCode));
 
                     if (count($Address) > 0) {
+                        
+                        foreach ($Address as $key => $value) {
+                            $value->city_name = !empty($value->city_id) ? $master->getCityName($value->city_id) : "";
+                            $value->state_name = !empty($value->state_id) ? $master->getStateName($value->state_id) : "";
+                        }
                         $FullAddress = $Address[0];
                     }
                 }

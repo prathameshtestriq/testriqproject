@@ -617,138 +617,138 @@ class EventTicketController extends Controller
                 $TotalTickets = 0;
 
                 // if (!empty($TotalPrice)) {
-                    #event_booking
-                    $Binding1 = array(
-                        "event_id" => $EventId,
-                        "user_id" => $UserId,
-                        "booking_date" => strtotime("now"),
-                        "total_amount" => $TotalPrice,
-                        "total_discount" => $TotalDiscount,
-                        "utm_campaign" => $UtmCampaign,
-                        "cart_details" => json_encode($GstArray)
-                    );
-                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign,cart_details) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign,:cart_details)";
-                    DB::insert($Sql1, $Binding1);
-                    $BookingId = DB::getPdo()->lastInsertId();
+                #event_booking
+                $Binding1 = array(
+                    "event_id" => $EventId,
+                    "user_id" => $UserId,
+                    "booking_date" => strtotime("now"),
+                    "total_amount" => $TotalPrice,
+                    "total_discount" => $TotalDiscount,
+                    "utm_campaign" => $UtmCampaign,
+                    "cart_details" => json_encode($GstArray)
+                );
+                $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign,cart_details) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign,:cart_details)";
+                DB::insert($Sql1, $Binding1);
+                $BookingId = DB::getPdo()->lastInsertId();
 
-                    #booking_details
-                    $BookingDetailsIds = [];
+                #booking_details
+                $BookingDetailsIds = [];
 
-                    foreach ($AllTickets as $ticket) {
-                        if (!empty($ticket["count"])) {
-                            $Binding2 = [];
-                            $Sql2 = "";
-                            $Binding2 = array(
-                                "booking_id" => $BookingId,
+                foreach ($AllTickets as $ticket) {
+                    if (!empty($ticket["count"])) {
+                        $Binding2 = [];
+                        $Sql2 = "";
+                        $Binding2 = array(
+                            "booking_id" => $BookingId,
+                            "event_id" => $EventId,
+                            "user_id" => $UserId,
+                            "ticket_id" => $ticket["id"],
+                            "quantity" => $ticket["count"],
+                            "ticket_amount" => $ticket["ticket_price"],
+                            "ticket_discount" => isset($ticket["ticket_discount"]) ? ($ticket["ticket_discount"]) : 0,
+                            "booking_date" => strtotime("now"),
+                        );
+                        $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
+                        DB::insert($Sql2, $Binding2);
+                        #Get the last inserted id of booking_details
+                        $BookingDetailsId = DB::getPdo()->lastInsertId();
+
+                        $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
+
+                        // ADD IF COUPONS APPLY ON TICKET
+                        $appliedCouponId = $appliedCouponAmount = 0;
+                        $appliedCouponCode = "";
+
+                        $appliedCouponId = (isset($ticket["appliedCouponId"]) && !empty($ticket["appliedCouponId"])) ? $ticket["appliedCouponId"] : 0;
+                        $appliedCouponAmount = (isset($ticket["appliedCouponAmount"]) && !empty($ticket["appliedCouponAmount"])) ? $ticket["appliedCouponAmount"] : 0;
+                        // $appliedCouponCode = (isset($ticket["appliedCouponCode"]) && !empty($ticket["appliedCouponCode"])) ? $ticket["appliedCouponCode"] : "";
+
+                        if (!empty($appliedCouponId) && $appliedCouponAmount) {
+                            $Binding6 = [];
+                            $Sql6 = "";
+                            $Binding6 = array(
                                 "event_id" => $EventId,
-                                "user_id" => $UserId,
-                                "ticket_id" => $ticket["id"],
-                                "quantity" => $ticket["count"],
-                                "ticket_amount" => $ticket["ticket_price"],
-                                "ticket_discount" => isset($ticket["ticket_discount"]) ? ($ticket["ticket_discount"]) : 0,
-                                "booking_date" => strtotime("now"),
+                                "coupon_id" => $appliedCouponId,
+                                "ticket_ids" => $ticket["id"],
+                                "amount" => $appliedCouponAmount,
+                                "created_by" => $UserId,
+                                "created_at" => strtotime("now"),
+                                "booking_id" => $BookingId,
+                                "booking_detail_id" => $BookingDetailsId
                             );
-                            $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
-                            DB::insert($Sql2, $Binding2);
-                            #Get the last inserted id of booking_details
-                            $BookingDetailsId = DB::getPdo()->lastInsertId();
-
-                            $BookingDetailsIds[$ticket["id"]] = $BookingDetailsId;
-
-                            // ADD IF COUPONS APPLY ON TICKET
-                            $appliedCouponId = $appliedCouponAmount = 0;
-                            $appliedCouponCode = "";
-
-                            $appliedCouponId = (isset($ticket["appliedCouponId"]) && !empty($ticket["appliedCouponId"])) ? $ticket["appliedCouponId"] : 0;
-                            $appliedCouponAmount = (isset($ticket["appliedCouponAmount"]) && !empty($ticket["appliedCouponAmount"])) ? $ticket["appliedCouponAmount"] : 0;
-                            // $appliedCouponCode = (isset($ticket["appliedCouponCode"]) && !empty($ticket["appliedCouponCode"])) ? $ticket["appliedCouponCode"] : "";
-
-                            if (!empty($appliedCouponId) && $appliedCouponAmount) {
-                                $Binding6 = [];
-                                $Sql6 = "";
-                                $Binding6 = array(
-                                    "event_id" => $EventId,
-                                    "coupon_id" => $appliedCouponId,
-                                    "ticket_ids" => $ticket["id"],
-                                    "amount" => $appliedCouponAmount,
-                                    "created_by" => $UserId,
-                                    "created_at" => strtotime("now"),
-                                    "booking_id" => $BookingId,
-                                    "booking_detail_id" => $BookingDetailsId
-                                );
-                                $Sql6 = "INSERT INTO applied_coupons (event_id,coupon_id,ticket_ids,amount,created_by,created_at,booking_id,booking_detail_id) VALUES (:event_id,:coupon_id,:ticket_ids,:amount,:created_by,:created_at,:booking_id,:booking_detail_id)";
-                                DB::insert($Sql6, $Binding6);
+                            $Sql6 = "INSERT INTO applied_coupons (event_id,coupon_id,ticket_ids,amount,created_by,created_at,booking_id,booking_detail_id) VALUES (:event_id,:coupon_id,:ticket_ids,:amount,:created_by,:created_at,:booking_id,:booking_detail_id)";
+                            DB::insert($Sql6, $Binding6);
 
 
-                                $Sql7 = "";
-                                $Binding7 = [];
+                            $Sql7 = "";
+                            $Binding7 = [];
 
-                                $Sql7 = "SELECT discount_type FROM event_coupon_details WHERE event_coupon_id=:event_coupon_id";
-                                $Binding7 = array("event_coupon_id" => $appliedCouponId);
-                                $Result = DB::select($Sql7, $Binding7);
-                                $IsDiscountOneTime = 0;
+                            $Sql7 = "SELECT discount_type FROM event_coupon_details WHERE event_coupon_id=:event_coupon_id";
+                            $Binding7 = array("event_coupon_id" => $appliedCouponId);
+                            $Result = DB::select($Sql7, $Binding7);
+                            $IsDiscountOneTime = 0;
 
-                                if (count($Result) > 0) {
-                                    $IsDiscountOneTime = $Result[0]->discount_type;
-                                    $Sql8 = "";
-                                    $Binding8 = [];
-                                    if ($IsDiscountOneTime == 1) {
-                                        $Binding8 = array("event_coupon_id" => $appliedCouponId);
-                                        $Sql8 = "UPDATE event_coupon_details SET end_coupon=1 WHERE event_coupon_id=:event_coupon_id";
-                                        DB::update($Sql8, $Binding8);
-                                    }
+                            if (count($Result) > 0) {
+                                $IsDiscountOneTime = $Result[0]->discount_type;
+                                $Sql8 = "";
+                                $Binding8 = [];
+                                if ($IsDiscountOneTime == 1) {
+                                    $Binding8 = array("event_coupon_id" => $appliedCouponId);
+                                    $Sql8 = "UPDATE event_coupon_details SET end_coupon=1 WHERE event_coupon_id=:event_coupon_id";
+                                    DB::update($Sql8, $Binding8);
                                 }
                             }
                         }
                     }
-                    #ADD EXTRA AMOUNT FOR PAYABLE FOR USER in booking_details
-                    if (!empty($ExtraPricing)) {
-                        foreach ($ExtraPricing as $value) {
-                            $Binding4 = [];
-                            $Sql4 = "";
-                            $Binding4 = array(
-                                "booking_id" => $BookingId,
-                                "event_id" => $EventId,
-                                "user_id" => $UserId,
-                                "ticket_id" => $value["ticket_id"],
-                                "quantity" => 0,
-                                "ticket_amount" => $value["value"],
-                                "ticket_discount" => 0,
-                                "booking_date" => strtotime("now"),
-                                "question_id" => $value["question_id"],
-                                "attendee_number" => $value["aNumber"]
-                            );
-                            $Sql4 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date,question_id,attendee_number) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date,:question_id,:attendee_number)";
-                            DB::insert($Sql4, $Binding4);
+                }
+                #ADD EXTRA AMOUNT FOR PAYABLE FOR USER in booking_details
+                if (!empty($ExtraPricing)) {
+                    foreach ($ExtraPricing as $value) {
+                        $Binding4 = [];
+                        $Sql4 = "";
+                        $Binding4 = array(
+                            "booking_id" => $BookingId,
+                            "event_id" => $EventId,
+                            "user_id" => $UserId,
+                            "ticket_id" => $value["ticket_id"],
+                            "quantity" => 0,
+                            "ticket_amount" => $value["value"],
+                            "ticket_discount" => 0,
+                            "booking_date" => strtotime("now"),
+                            "question_id" => $value["question_id"],
+                            "attendee_number" => $value["aNumber"]
+                        );
+                        $Sql4 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date,question_id,attendee_number) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date,:question_id,:attendee_number)";
+                        DB::insert($Sql4, $Binding4);
 
-                            #ADD COUNT IN extra_pricing_booking TABLE
-                            $Binding5 = [];
-                            $Sql5 = "";
-                            $CurrentSoldCount = 0;
+                        #ADD COUNT IN extra_pricing_booking TABLE
+                        $Binding5 = [];
+                        $Sql5 = "";
+                        $CurrentSoldCount = 0;
 
-                            #Check If Question Id & Option Id Exists In extra_pricing_booking Table Or Not. If Yes Then Get The Current Count
-                            if (!empty($value["count"])) {
-                                $SqlExist = "SELECT id,current_count,option_id FROM extra_pricing_booking WHERE question_id =:question_id AND option_id=:option_id";
-                                $Exist = DB::select($SqlExist, array("question_id" => $value["question_id"], "option_id" => $value["option_id"]));
+                        #Check If Question Id & Option Id Exists In extra_pricing_booking Table Or Not. If Yes Then Get The Current Count
+                        if (!empty($value["count"])) {
+                            $SqlExist = "SELECT id,current_count,option_id FROM extra_pricing_booking WHERE question_id =:question_id AND option_id=:option_id";
+                            $Exist = DB::select($SqlExist, array("question_id" => $value["question_id"], "option_id" => $value["option_id"]));
 
-                                if (sizeof($Exist) > 0) {
-                                    #UPDATE THE RECORD GET CURRENT COUNT FROM SAME TABLE
-                                    $ExistId = $Exist[0]->id;
-                                    $SoldCount = $Exist[0]->current_count;
-                                    $CurrentSoldCount = $SoldCount + 1;
+                            if (sizeof($Exist) > 0) {
+                                #UPDATE THE RECORD GET CURRENT COUNT FROM SAME TABLE
+                                $ExistId = $Exist[0]->id;
+                                $SoldCount = $Exist[0]->current_count;
+                                $CurrentSoldCount = $SoldCount + 1;
 
-                                    if ($value["count"] >= $CurrentSoldCount) {
-                                        $Binding5 = array(
-                                            "event_id" => $EventId,
-                                            "booking_id" => $BookingId,
-                                            "user_id" => $UserId,
-                                            "ticket_id" => $value["ticket_id"],
-                                            "total_count" => $value["count"],
-                                            "current_count" => $CurrentSoldCount,
-                                            "last_booked_date" => strtotime('now'),
-                                            "id" => $ExistId
-                                        );
-                                        $Sql5 = "UPDATE extra_pricing_booking SET
+                                if ($value["count"] >= $CurrentSoldCount) {
+                                    $Binding5 = array(
+                                        "event_id" => $EventId,
+                                        "booking_id" => $BookingId,
+                                        "user_id" => $UserId,
+                                        "ticket_id" => $value["ticket_id"],
+                                        "total_count" => $value["count"],
+                                        "current_count" => $CurrentSoldCount,
+                                        "last_booked_date" => strtotime('now'),
+                                        "id" => $ExistId
+                                    );
+                                    $Sql5 = "UPDATE extra_pricing_booking SET
                                                   event_id = :event_id,
                                                   booking_id = :booking_id,
                                                   user_id = :user_id,
@@ -757,129 +757,129 @@ class EventTicketController extends Controller
                                                   current_count = :current_count,
                                                   last_booked_date = :last_booked_date
                                                   WHERE id = :id";
-                                        DB::update($Sql5, $Binding5);
-                                    } else {
-                                        // $ResposneCode = 400;
-                                        // $message = 'The ' . $value["question_label"] . ' you want to add is out of stock.';
-                                    }
+                                    DB::update($Sql5, $Binding5);
                                 } else {
-                                    #ADD A NEW RECORD TO THE TABLE
-                                    $CurrentSoldCount = 1;
-                                    $Binding5 = array(
-                                        "event_id" => $EventId,
-                                        "booking_id" => $BookingId,
-                                        "user_id" => $UserId,
-                                        "ticket_id" => $value["ticket_id"],
-                                        "question_id" => $value["question_id"],
-                                        "option_id" => $value["option_id"],
-                                        "total_count" => $value["count"],
-                                        "current_count" => $CurrentSoldCount,
-                                        "first_booked_date" => strtotime('now')
+                                    // $ResposneCode = 400;
+                                    // $message = 'The ' . $value["question_label"] . ' you want to add is out of stock.';
+                                }
+                            } else {
+                                #ADD A NEW RECORD TO THE TABLE
+                                $CurrentSoldCount = 1;
+                                $Binding5 = array(
+                                    "event_id" => $EventId,
+                                    "booking_id" => $BookingId,
+                                    "user_id" => $UserId,
+                                    "ticket_id" => $value["ticket_id"],
+                                    "question_id" => $value["question_id"],
+                                    "option_id" => $value["option_id"],
+                                    "total_count" => $value["count"],
+                                    "current_count" => $CurrentSoldCount,
+                                    "first_booked_date" => strtotime('now')
+                                );
+                                $Sql5 = "INSERT INTO extra_pricing_booking (event_id,booking_id,user_id,ticket_id,question_id,option_id,total_count,current_count,first_booked_date) VALUES (:event_id,:booking_id,:user_id,:ticket_id,:question_id,:option_id,:total_count,:current_count,:first_booked_date)";
+                                DB::insert($Sql5, $Binding5);
+                            }
+                        }
+
+                    }
+                }
+                #ATTENDEE DETAILS
+                $separatedArrays = [];
+                $first_name = null;
+                $last_name = null;
+                $email = null;
+                $IdBookingDetails = 0;
+
+                foreach ($FormQuestions as $key => $arrays) {
+                    foreach ($arrays as $subArray) {
+                        $separatedArrays[] = json_encode($subArray);
+                    }
+                }
+                foreach ($separatedArrays as $key => $value) {
+                    $subArray = [];
+                    $subArray = json_decode($value);
+                    $TicketId = 0;
+                    // dd($subArray);
+                    foreach ($subArray as $key => $sArray) {
+                        if (isset($sArray->question_form_name)) {
+                            if ($sArray->question_form_name == 'first_name') {
+                                $first_name = $sArray->ActualValue;
+                            } elseif ($sArray->question_form_name == 'last_name') {
+                                $last_name = $sArray->ActualValue;
+                            } elseif ($sArray->question_form_name == 'email') {
+                                $email = $sArray->ActualValue;
+                            }
+                        }
+                        if (empty($TicketId)) {
+                            $TicketId = !empty($sArray->TicketId) ? $sArray->TicketId : 0;
+                        }
+
+                    }
+                    // die;
+                    $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
+                    $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,created_at) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:created_at)";
+                    $Bind1 = array(
+                        "booking_details_id" => $IdBookingDetails,
+                        "ticket_id" => $TicketId,
+                        "attendee_details" => json_encode($value),
+                        "email" => $email,
+                        "firstname" => $first_name,
+                        "lastname" => $last_name,
+                        "created_at" => strtotime("now")
+                    );
+                    DB::insert($sql, $Bind1);
+                }
+                // -------------------------------------------END ATTENDEE DETAIL
+                foreach ($FormQuestions as $Form) {
+                    $TotTickets = count($Form);
+                    $TotalTickets += $TotTickets;
+                    foreach ($Form as $Question) {
+                        // echo "<pre>";print_r($Question);
+                        foreach ($Question as $value) {
+                            // dd($BookingDetailsIds,$value['ticket_id']);
+                            $Binding3 = [];
+                            $Sql3 = "";
+                            $IdBookingDetails = 0;
+                            if ((isset($value['ActualValue'])) && ($value['ActualValue'] !== "")) {
+
+                                if ($value['question_form_type'] == "file") {
+                                    // $_FILES = $value['ActualValue'];
+                                    $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
+                                    $is_valid = false;
+                                    $filename = $address_proof_doc_upload = '';
+                                    // if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
+                                    //     // Validate file extension
+                                    //     $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
+                                    //     $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
+                                    //     if (!in_array($address_proof_type, $allowedExts)) {
+                                    //         $filename = 'Address proof document';
+                                    //         $is_valid = true;
+                                    //     }
+
+                                    //     // Move uploaded file to destination
+                                    //     if (!$is_valid) {
+                                    //         $Path = public_path('uploads/user_documents/');
+                                    //         $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
+                                    //         move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
+                                    //     }
+                                    // }
+                                }
+                                $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
+
+                                if (!empty($IdBookingDetails)) {
+                                    $Binding3 = array(
+                                        "booking_details_id" => $IdBookingDetails,
+                                        "field_name" => $value['question_form_name'],
+                                        "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
                                     );
-                                    $Sql5 = "INSERT INTO extra_pricing_booking (event_id,booking_id,user_id,ticket_id,question_id,option_id,total_count,current_count,first_booked_date) VALUES (:event_id,:booking_id,:user_id,:ticket_id,:question_id,:option_id,:total_count,:current_count,:first_booked_date)";
-                                    DB::insert($Sql5, $Binding5);
-                                }
-                            }
 
-                        }
-                    }
-                    #ATTENDEE DETAILS
-                    $separatedArrays = [];
-                    $first_name = null;
-                    $last_name = null;
-                    $email = null;
-                    $IdBookingDetails = 0;
-
-                    foreach ($FormQuestions as $key => $arrays) {
-                        foreach ($arrays as $subArray) {
-                            $separatedArrays[] = json_encode($subArray);
-                        }
-                    }
-                    foreach ($separatedArrays as $key => $value) {
-                        $subArray = [];
-                        $subArray = json_decode($value);
-                        $TicketId = 0;
-                        // dd($subArray);
-                        foreach ($subArray as $key => $sArray) {
-                            if (isset($sArray->question_form_name)) {
-                                if ($sArray->question_form_name == 'first_name') {
-                                    $first_name = $sArray->ActualValue;
-                                } elseif ($sArray->question_form_name == 'last_name') {
-                                    $last_name = $sArray->ActualValue;
-                                } elseif ($sArray->question_form_name == 'email') {
-                                    $email = $sArray->ActualValue;
-                                }
-                            }
-                            if (empty($TicketId)) {
-                                $TicketId = !empty($sArray->TicketId) ? $sArray->TicketId : 0;
-                            }
-
-                        }
-                        // die;
-                        $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
-                        $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,created_at) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:created_at)";
-                        $Bind1 = array(
-                            "booking_details_id" => $IdBookingDetails,
-                            "ticket_id" => $TicketId,
-                            "attendee_details" => json_encode($value),
-                            "email" => $email,
-                            "firstname" => $first_name,
-                            "lastname" => $last_name,
-                            "created_at" => strtotime("now")
-                        );
-                        DB::insert($sql, $Bind1);
-                    }
-                    // -------------------------------------------END ATTENDEE DETAIL
-                    foreach ($FormQuestions as $Form) {
-                        $TotTickets = count($Form);
-                        $TotalTickets += $TotTickets;
-                        foreach ($Form as $Question) {
-                            // echo "<pre>";print_r($Question);
-                            foreach ($Question as $value) {
-                                // dd($BookingDetailsIds,$value['ticket_id']);
-                                $Binding3 = [];
-                                $Sql3 = "";
-                                $IdBookingDetails = 0;
-                                if ((isset($value['ActualValue'])) && ($value['ActualValue'] !== "")) {
-
-                                    if ($value['question_form_type'] == "file") {
-                                        // $_FILES = $value['ActualValue'];
-                                        $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
-                                        $is_valid = false;
-                                        $filename = $address_proof_doc_upload = '';
-                                        // if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
-                                        //     // Validate file extension
-                                        //     $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
-                                        //     $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
-                                        //     if (!in_array($address_proof_type, $allowedExts)) {
-                                        //         $filename = 'Address proof document';
-                                        //         $is_valid = true;
-                                        //     }
-
-                                        //     // Move uploaded file to destination
-                                        //     if (!$is_valid) {
-                                        //         $Path = public_path('uploads/user_documents/');
-                                        //         $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
-                                        //         move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
-                                        //     }
-                                        // }
-                                    }
-                                    $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
-
-                                    if (!empty($IdBookingDetails)) {
-                                        $Binding3 = array(
-                                            "booking_details_id" => $IdBookingDetails,
-                                            "field_name" => $value['question_form_name'],
-                                            "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
-                                        );
-
-                                        $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
-                                        DB::insert($Sql3, $Binding3);
-                                    }
+                                    $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
+                                    DB::insert($Sql3, $Binding3);
                                 }
                             }
                         }
                     }
+                }
                 // }
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -1252,6 +1252,75 @@ class EventTicketController extends Controller
                 }
 
                 $ResponseData['Coupons'] = $CouponsArr;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function GetAgeCriteria(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+            if (empty($aPost['ticket_id'])) {
+                $empty = true;
+                $field = 'Ticket Id';
+            }
+            if (empty($aPost['gender'])) {
+                $empty = true;
+                $field = 'Gender';
+            }
+            if (empty($aPost['age'])) {
+                $empty = true;
+                $field = 'Age';
+            }
+            if (!$empty) {
+
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventId = $aPost['event_id'];
+                $TicketId = $aPost['ticket_id'];
+                $Gender = $aPost['gender'];
+                $Age = $aPost['age'];
+
+                $Bindings = array(
+                    "event_id" => $EventId,
+                    "ticket_id" => $TicketId,
+                    "gender" => $Gender,
+                    "age" => $Age
+                );
+                $SQL1 = "SELECT id,age_category FROM `age_criteria` WHERE event_id=:event_id AND distance_category=:ticket_id AND gender=:gender AND :age BETWEEN age_start AND age_end";
+                
+                $AgeCriteriaData = DB::select($SQL1, $Bindings);
+
+                $ResponseData['AgeCriteriaData'] = $AgeCriteriaData;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';

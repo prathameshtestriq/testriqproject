@@ -123,6 +123,7 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_event_booking_tickets', 'GetEventBookingTickets');
     Route::post('ticket_pdf', 'generatePDF');
     Route::post('get_coupons', 'getCoupons');
+    Route::post('get_age_criteria','GetAgeCriteria');
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {
