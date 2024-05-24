@@ -484,7 +484,8 @@ class EventController extends Controller
         $ResponseData['eventData'] = $this->ManipulateEvents($Events, $UserId);
         $ResponseData['RegistrationEventData'] = $this->ManipulateEvents($RegistrationEvents, $UserId);
         $ResponseData['BannerImages'] = $BannerImages;
-
+        //dd($ResponseData['eventData']);
+        // dd($ResponseData['RegistrationEventData']);
         #UPCOMING EVENTS
         // $NoOfUpcomingEvent = count($UpcomingEvents);
         // // dd($NoOfUpcomingEvent);
@@ -516,15 +517,15 @@ class EventController extends Controller
         }, $ResponseData['UpcomingEventData']);
 
         // Filter out events from RegistrationEventData if their IDs are present in UpcomingEventData
-        $filteredRegistrationEventData = array_filter($ResponseData['RegistrationEventData'], function ($event) use ($upcomingEventIds) {
-            return !in_array($event->id, $upcomingEventIds);
-        });
+        // $filteredRegistrationEventData = array_filter($ResponseData['RegistrationEventData'], function ($event) use ($upcomingEventIds) {
+        //     return !in_array($event->id, $upcomingEventIds);
+        // });
 
-        // Set the filtered RegistrationEventData
-        $ResponseData['RegistrationEventData'] = $filteredRegistrationEventData;
+        // // Set the filtered RegistrationEventData
+        // $ResponseData['RegistrationEventData'] = $filteredRegistrationEventData;
 
         $ResponseData['MAX_UPLOAD_FILE_SIZE'] = config('custom.max_size');
-        // dd($ResponseData);
+        //dd($ResponseData['RegistrationEventData']);
 
         $response = [
             'status' => 'success',
@@ -953,7 +954,7 @@ class EventController extends Controller
             $EventId = isset($request->event_id) ? $request->event_id : 0;
             $Events = array();
             if (!empty($EventId)) {
-                $sql = "SELECT * from events WHERE active=1 AND deleted=0";
+                $sql = "SELECT * from events WHERE deleted=0"; //AND active=1
                 $sql .= " AND id=" . $EventId;
                 $Events = DB::select($sql);
             }

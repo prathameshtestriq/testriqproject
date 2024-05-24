@@ -40,10 +40,11 @@ class FormQuestionsController extends Controller
             
             //$Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
 
-            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by form_id,sort_order asc';
+            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
             $aResult = DB::select($Sql);
-
-            //dd($aResult);
+             
+            $customFormArray = array("Personal Information", "Address Details", "Medical Information", "Documentation", "Emergency Contact", "Additional Information", "Professional Information", "Social Media Links");
+            // dd($customFormArray);
             if(!empty($aResult)){
                 $new_array = [];
                 $i = 0;
@@ -59,12 +60,25 @@ class FormQuestionsController extends Controller
                         $res->sub_questions_array = !empty($sub_questions_aResult) ? $sub_questions_aResult : [];
                     }
                     $res->common_index = $i;
-                    $new_array['event_form_array'][] = $res;
-                    if(!empty($res->form_name)){
-                       $new_array['event_form_details'][$res->form_name][] = $res;
+                    
+
+                    if(in_array($res->form_name, $customFormArray)){
+                       $res->new_form_name = "Custom Form";
+                       $new_array['event_form_details']['Custom Form'][] = $res;
+                    }else if($res->form_id == 999999){
+                        $res->new_form_name = "Custom Form";
+                        $new_array['event_form_details']['Custom Form'][] = $res;
                     }else{
-                       $new_array['event_form_details']['Do Not Have Form'][] = $res; 
+                       $res->new_form_name = $res->form_name;
+                       $new_array['event_form_details'][$res->form_name][] = $res; 
                     }
+
+                    $new_array['event_form_array'][] = $res;
+                    // if(!empty($res->form_name)){
+                    //    $new_array['event_form_details'][$res->form_name][] = $res;
+                    // }else{
+                    //    $new_array['event_form_details']['Do Not Have Form'][] = $res; 
+                    // }
                   
                    //$new_array[$res->form_name][] = $res;
                    $i++;
@@ -108,7 +122,7 @@ class FormQuestionsController extends Controller
             //dd($EventId);
             
             // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by ='.$UserId.' and is_subquestion = 0  ';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
             // created_by in (0,'.$UserId.')
             $aResult = DB::select($Sql);
            // dd($aResult);
@@ -246,7 +260,7 @@ class FormQuestionsController extends Controller
         
                 if($SubQuestionFlag == 1){
                     $SQL1 = "SELECT sort_order as last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id AND general_form_id =:general_form_id";
-                    $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'general_form_id' => $GeneralFormId));
+                    $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'general_form_id' => $ParentGeneralFormId));
                     if(!empty($aResultSortOrder1)){
                         $event_sort_order = !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
                     }else{
@@ -976,9 +990,10 @@ class FormQuestionsController extends Controller
             $Auth->apiLog($request);
             $UserId = $aToken['data']->ID;
 
-                $FormName = !empty($request->form_name) ? $request->form_name : 0;
+                $FormName = !empty($request->form_name) ? $request->form_name : '';
                 $FormEditId = !empty($request->form_edit_id) ? $request->form_edit_id : 0;
-                $FormActionFlag = !empty($request->form_action_flag) ? $request->form_action_flag : 0;
+                $FormActionFlag = !empty($request->form_action_flag) ? $request->form_action_flag : '';
+                $FormFlag = !empty($request->form_flag) ? $request->form_flag : '';
             
             if($FormActionFlag == 'data_add_edit'){   // data add/edit
 
@@ -1025,14 +1040,29 @@ class FormQuestionsController extends Controller
                 }
             
             }else if($FormActionFlag == 'form_details'){
+                
+                $cond = '';
+                if($FormFlag == 'form_ques_dropdown'){
+                    $cond .= ' user_id in (0,'.$UserId.')';
+                }else{
+                   $cond .= ' is_custom = 0 AND user_id = '.$UserId.' '; 
+                }
 
-                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND user_id = '.$UserId.' ';
+                $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND '.$cond.' ';
                 $ResponseData['form_details'] = DB::select($sel_SQL);
                 
-                $ResponseData['form_details'] =  array_merge($ResponseData['form_details'],array(500 => array("id" => 500,"form_name" => "Do Not Have Form","status"=> 1)));
+                if($FormFlag == 'general_form'){
+                    $ResponseData['form_details'] =  array_merge($ResponseData['form_details'],array(999999 => array("id" => 999999,"form_name" => "Do Not Have Form","status"=> 1)));
+                }
                 // dd($ResponseData['form_details']);
-                $ResponseData['form_array'] = array_column($ResponseData['form_details'], 'form_name');
-                // $ResponseData['form_array'] = array_merge($ResponseData['form_array'],array("Do Not Have Form"));
+                if($FormFlag == 'general_form'){
+                    $sel_SQL = 'SELECT id,form_name,status FROM form_master WHERE status = 1 AND user_id in (0,'.$UserId.') ';
+                    $form_details_ary = DB::select($sel_SQL);  
+                    $ResponseData['form_array'] = array_column($form_details_ary, 'form_name');
+                    $ResponseData['form_array'] = array_merge($ResponseData['form_array'], ['Do Not Have Form']);
+                   // dd($ResponseData['form_array']);
+                }
+               
                 $ResposneCode = 200;
                 if (empty($FormEditId)) { $message = "Form added successfully"; } 
                 else { $message = "Form updated successfully"; } 
