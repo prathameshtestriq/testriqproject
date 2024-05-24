@@ -610,7 +610,7 @@ class EventTicketController extends Controller
                 // dd($UserEmail);
                 $TotalTickets = 0;
 
-                if (!empty($TotalPrice)) {
+                // if (!empty($TotalPrice)) {
                     #event_booking
                     $Binding1 = array(
                         "event_id" => $EventId,
@@ -639,7 +639,7 @@ class EventTicketController extends Controller
                                 "ticket_id" => $ticket["id"],
                                 "quantity" => $ticket["count"],
                                 "ticket_amount" => $ticket["ticket_price"],
-                                "ticket_discount" => $ticket["ticket_discount"],
+                                "ticket_discount" => isset($ticket["ticket_discount"]) ? ($ticket["ticket_discount"]) : 0,
                                 "booking_date" => strtotime("now"),
                             );
                             $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
@@ -834,7 +834,7 @@ class EventTicketController extends Controller
                                 $Binding3 = [];
                                 $Sql3 = "";
                                 $IdBookingDetails = 0;
-                                if ($value['ActualValue'] !== "") {
+                                if ((isset($value['ActualValue'])) && ($value['ActualValue'] !== "")) {
 
                                     if ($value['question_form_type'] == "file") {
                                         // $_FILES = $value['ActualValue'];
@@ -874,7 +874,7 @@ class EventTicketController extends Controller
                             }
                         }
                     }
-                }
+                // }
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
                 $EventUrl = isset($request->EventUrl) && !empty($request->EventUrl) ? $request->EventUrl : "";
@@ -1037,7 +1037,7 @@ class EventTicketController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 20;
 
-                $sql = "SELECT *,
+                $sql = "SELECT *,a.id AS attendeeId,
                 (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName,
                 (SELECT name FROM events WHERE id=bd.event_id) AS EventName,
                 (SELECT banner_image FROM events WHERE id=bd.event_id) AS banner_image
@@ -1062,7 +1062,7 @@ class EventTicketController extends Controller
 
                     // ticket registration number. generate it using -> (event_id + booking_id + timestamp)
                     $uniqueId = 0;
-                    $uniqueId = $EventId . "-" . $event->id . "-" . $event->booking_date;
+                    $uniqueId = $EventId . "-" . $event->attendeeId . "-" . $event->booking_date;
                     $event->unique_ticket_id = $uniqueId;
 
                     $event->attendee_name = $event->firstname . " " . $event->lastname;

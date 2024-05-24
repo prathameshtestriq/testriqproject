@@ -169,30 +169,32 @@ class Event extends Model
         $event_tickets = DB::select($sSQL, array('event_id' => $EventId, 'now_start' => $now, 'now_end' => $now));
 
         foreach ($event_tickets as $value) {
+            // if ($value->ticket_status == 1) {
 
-            $value->display_ticket_name = !empty($value->ticket_name) ? (strlen($value->ticket_name) > 40 ? ucwords(substr($value->ticket_name, 0, 80)) . "..." : ucwords($value->ticket_name)) : "";
+                $value->display_ticket_name = !empty($value->ticket_name) ? (strlen($value->ticket_name) > 40 ? ucwords(substr($value->ticket_name, 0, 80)) . "..." : ucwords($value->ticket_name)) : "";
 
-            $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
-            $TotalTickets = DB::select($sql, array("event_id" => $EventId, "ticket_id" => $value->id));
+                $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                $TotalTickets = DB::select($sql, array("event_id" => $EventId, "ticket_id" => $value->id));
 
-            $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
-            $value->show_early_bird = 0;
-            if ($value->early_bird == 1 && $value->TotalBookedTickets <= $value->no_of_tickets && $value->start_time <= $now && $value->end_time >= $now) {
-                $value->show_early_bird = 1;
-                $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
+                $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
+                $value->show_early_bird = 0;
+                if ($value->early_bird == 1 && $value->TotalBookedTickets <= $value->no_of_tickets && $value->start_time <= $now && $value->end_time >= $now) {
+                    $value->show_early_bird = 1;
+                    $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
 
-                $discount_ticket_price = 0;
-                $total_discount = 0;
-                if ($value->discount === 1) { //percentage
-                    $total_discount = ($value->ticket_price * ($value->discount_value / 100));
-                    $discount_ticket_price = $value->ticket_price - $total_discount;
-                } else if ($value->discount === 2) { //amount
-                    $total_discount = $value->discount_value;
-                    $discount_ticket_price = $value->ticket_price - $value->discount_value;
+                    $discount_ticket_price = 0;
+                    $total_discount = 0;
+                    if ($value->discount === 1) { //percentage
+                        $total_discount = ($value->ticket_price * ($value->discount_value / 100));
+                        $discount_ticket_price = $value->ticket_price - $total_discount;
+                    } else if ($value->discount === 2) { //amount
+                        $total_discount = $value->discount_value;
+                        $discount_ticket_price = $value->ticket_price - $value->discount_value;
+                    }
+                    $value->discount_ticket_price = $discount_ticket_price;
+                    $value->total_discount = $total_discount;
                 }
-                $value->discount_ticket_price = $discount_ticket_price;
-                $value->total_discount = $total_discount;
-            }
+            // }
         }
         // if($EventId == 5) dd($event_tickets);
         $minMaxPrices = $this->getMinMaxTicketPrices($event_tickets);
@@ -235,7 +237,7 @@ class Event extends Model
                     1 => $maxPriceElement
                 ];
             }
-        }else{
+        } else {
             return [];
         }
     }

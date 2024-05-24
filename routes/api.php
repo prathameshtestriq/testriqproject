@@ -98,6 +98,7 @@ Route::controller(UserController::class)->group(function () {
     Route::post('address_details', 'AddressDetails');
     Route::post('social_media', 'SocialMedia');
     Route::post('communication_settings', 'CommunicationSettings');
+    Route::post('get_address', 'getAddress');
 });
 
 Route::controller(EventUserFollowController::class)->group(function () {

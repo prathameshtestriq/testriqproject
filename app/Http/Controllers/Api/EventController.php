@@ -45,19 +45,6 @@ class EventController extends Controller
             #GET ALL TICKETS
             $event->TicketDetails = $e->getEventTicketDetails($event->id);
 
-            // if($event->id == 5){echo "<pre>"; print_r($event->TicketDetails);die;}
-
-            $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price,max(early_bird) AS early_bird FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
-
-            // $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end ORDER BY ticket_price';
-            // $Tickets = DB::select($sSQL, array('event_id' => $event->id, 'now_start' => $now, 'now_end' => $now));
-            $Tickets = DB::select($SQL, array('event_id' => $event->id));
-            // if($event->id == 9) dd($Tickets);
-
-            // $event->min_price = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->min_price) ? $Tickets[0]->min_price : 0) : 0;
-            // $event->max_price = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->max_price) ? $Tickets[0]->max_price : 0) : 0;
-            // $event->no_of_tickets = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->no_of_tickets) ? $Tickets[0]->no_of_tickets : 0) : 0;
-            // $event->early_bird = (sizeof($Tickets) > 0) ? (!empty($Tickets[0]->early_bird) ? $Tickets[0]->early_bird : 0) : 0;
             //event start month
             $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : 0;
             //event start d
@@ -499,24 +486,24 @@ class EventController extends Controller
         $ResponseData['BannerImages'] = $BannerImages;
 
         #UPCOMING EVENTS
-        $NoOfUpcomingEvent = count($UpcomingEvents);
-        // dd($NoOfUpcomingEvent);
-        if ($NoOfUpcomingEvent == 1) {
-            for ($i = 1; $i < 4; $i++) {
-                $UpcomingEvents[] = clone $UpcomingEvents[0];
-            }
-        } else if ($NoOfUpcomingEvent == 2) {
-            $duplicateArray = $UpcomingEvents[0];
-            $UpcomingEvents[] = $duplicateArray;
-            $UpcomingEvents[] = clone $duplicateArray;
-        } else if ($NoOfUpcomingEvent == 3) {
-            $duplicateArray = clone $UpcomingEvents[0];
-            $UpcomingEvents[] = clone $duplicateArray;
-        }
+        // $NoOfUpcomingEvent = count($UpcomingEvents);
+        // // dd($NoOfUpcomingEvent);
+        // if ($NoOfUpcomingEvent == 1) {
+        //     for ($i = 1; $i < 4; $i++) {
+        //         $UpcomingEvents[] = clone $UpcomingEvents[0];
+        //     }
+        // } else if ($NoOfUpcomingEvent == 2) {
+        //     $duplicateArray = $UpcomingEvents[0];
+        //     $UpcomingEvents[] = $duplicateArray;
+        //     $UpcomingEvents[] = clone $duplicateArray;
+        // } else if ($NoOfUpcomingEvent == 3) {
+        //     $duplicateArray = clone $UpcomingEvents[0];
+        //     $UpcomingEvents[] = clone $duplicateArray;
+        // }
 
-        foreach ($UpcomingEvents as $key => $value) {
-            $value->visibility = ($key < $NoOfUpcomingEvent) ? "show" : "hidden";
-        }
+        // foreach ($UpcomingEvents as $key => $value) {
+        //     $value->visibility = ($key < $NoOfUpcomingEvent) ? "show" : "hidden";
+        // }
         // dd(count($UpcomingEvents));
         // echo "<pre>";
         // print_r($UpcomingEvents);
