@@ -58,6 +58,9 @@ class EventController extends Controller
             $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : 0;
             $event->registration_end_date_time = (!empty($event->registration_end_time)) ? date("h:i A", $event->registration_end_time) : "";
 
+            // registration button show flag
+            $event->show_registration_button = ($now >= $event->registration_start_time && $now <= $event->registration_end_time) ? 1 : 0;
+
             #GETTING EVENT IMAGES
             $ImageQry = "SELECT * FROM event_images WHERE event_id=:event_id";
             $EventImg = DB::select($ImageQry, array('event_id' => $event->id));
