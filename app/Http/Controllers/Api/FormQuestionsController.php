@@ -204,7 +204,7 @@ class FormQuestionsController extends Controller
     // General Form Question
     public function add_general_form_questions(Request $request)
     {
-        // dd($request);
+       // dd($request);
         $response['data'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
@@ -300,6 +300,42 @@ class FormQuestionsController extends Controller
                     'formId'           => $FormId,
                     'sortOrder'        => $event_sort_order
                 ));
+
+                //-------------- child ids
+
+                if(empty($QuestionFormOptionArray)){
+                               
+                        $Sql1 = 'SELECT id,child_question_ids FROM event_form_question WHERE question_status = 1 and general_form_id = '.$ParentGeneralFormId.' and event_id = '.$EventId.' ';
+                        $aResult2 = DB::select($Sql1);
+                         
+                        $child_ques_ids1 = !empty($aResult2) && $aResult2[0]->child_question_ids ? $aResult2[0]->child_question_ids.','.$GeneralFormId : $GeneralFormId;
+                        
+                        if($aResult2[0]->child_question_ids != $GeneralFormId){
+                            $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
+                            DB::update($up_sSQL,array(
+                                'childQuestionIds' => $child_ques_ids1,
+                                'generalFormId' => $ParentGeneralFormId,
+                                'eventId' => $EventId
+                            )); 
+                        }else{
+                            $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
+                            DB::update($up_sSQL,array(
+                                'childQuestionIds' => $GeneralFormId,
+                                'generalFormId' => $GeneralFormId,
+                                'eventId' => $EventId
+                            )); 
+                        }
+                        
+                }else{
+                        $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
+                        DB::update($up_sSQL,array(
+                            'childQuestionIds' => $GeneralFormId,
+                            'generalFormId' => $GeneralFormId,
+                            'eventId' => $EventId
+                        )); 
+
+                }   
+
             }
 
             //------------- Add new sub question ----------------
@@ -327,15 +363,16 @@ class FormQuestionsController extends Controller
                         }
                     }
                     
-                    //dd($i);
-                    if($SubQuestionOtherAmountFlag == 1 && !empty($QuestionFormOptionArray)){
-                        $other_amt_array = array(array("id" => $i, "label" => "Other Amount", "price" => 0, "count" => ''));
-                        $new_array = array_merge($new_array, $other_amt_array);
-                    }
+                    // temp hide this code
+                    // if($SubQuestionOtherAmountFlag == 1 && !empty($QuestionFormOptionArray)){
+                    //     $other_amt_array = array(array("id" => $i, "label" => "Other Amount", "price" => 0));
+                    //     $new_array = array_merge($new_array, $other_amt_array);
+                    // }
+
                     // dd($new_array);
 
                     $SubQuestionOptionArray = !empty($new_array) ? json_encode($new_array) : '';
-                    //dd($SubQuestionOptionArray);
+                    //dd($SubQuestionOptionArray,$GeneralFormId);
 
                     $Sql = 'SELECT id,question_form_option,child_question_ids FROM general_form_question WHERE question_status = 1 and id = '.$GeneralFormId.'  ';
                     $aResult1 = DB::select($Sql);
@@ -398,7 +435,7 @@ class FormQuestionsController extends Controller
                                 $subArray[] = $res;
                             }
                         }
-
+                        // dd($subArray);
                         $child_ques_ids = !empty($aResult1) && $aResult1[0]->child_question_ids ? $aResult1[0]->child_question_ids : $last_inserted_id;
 
                         //dd($subArray);  --- json updated for privous question  `child_question_ids` =:childQuestionIds
@@ -420,16 +457,7 @@ class FormQuestionsController extends Controller
                         }
 
                         //-------------
-                        // $Sql1 = 'SELECT id,child_question_ids FROM general_form_question WHERE question_status = 1 and id = '.$ParentGeneralFormId.'  ';
-                        // $aResult2 = DB::select($Sql1);
-                        // $child_ques_ids1 = !empty($aResult2) && $aResult2[0]->child_question_ids ? $aResult2[0]->child_question_ids.','.$last_inserted_id : $last_inserted_id;
-
-                        // $up_sSQL = 'UPDATE general_form_question SET `child_question_ids` =:childQuestionIds WHERE `id`=:generalFormId ';
-                        // DB::update($up_sSQL,array(
-                        //     'childQuestionIds' => $child_ques_ids1,
-                        //     'generalFormId' => $ParentGeneralFormId
-                        // ));
-
+            
                         $Sql1 = 'SELECT id,child_question_ids FROM event_form_question WHERE question_status = 1 and general_form_id = '.$ParentGeneralFormId.' and event_id = '.$EventId.' ';
                         $aResult2 = DB::select($Sql1);
                         
@@ -444,17 +472,48 @@ class FormQuestionsController extends Controller
                         )); 
 
 
+                        //------------ add general form entry for check other amount
+                        if($SubQuestionOtherAmountFlag == 1 && !empty($QuestionFormOptionArray)){
+                           
+                            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint,sort_order) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint, :sortOrder)';
+
+                            DB::insert($sSQL,array(
+                                'questionLabel'     => 'Other Amount',
+                                'formId'            => $FormId,
+                                'questionFormType'  => 'amount', // ex. t-shirt size
+                                'questionFormName'  => 'sub_question',
+                                'questionFormOption' => '',
+                                'isManadatory'      => 0,
+                                'questionStatus'    => 1,
+                                'createdBy'         => $userId,
+                                'isCustomForm'      => 1,
+                                "parentQusId"       => $last_inserted_id,
+                                "isSubquestion"     => 1,
+                                "subQuePrice"       => $SubQuestionPriceFlag,
+                                "subQueCount"       => $SubQuestionCountFlag,
+                                "subQueOtherAmount" => $SubQuestionOtherAmountFlag,
+                                "questionHint"      => $questionHint,
+                                "sortOrder"         => $sort_order+1
+                            ));
+
+                            $last_inserted_id1 = DB::getPdo()->lastInsertId();
+
+                            $other_amt_array = array(array("id" => $i, "label" => "Other Amount", "price" => 0, "count" => '', "child_question_id" => $last_inserted_id+1));
+                            $new_array = array_merge($new_array, $other_amt_array);
+                            $SubQuestionOptionArray = !empty($new_array) ? json_encode($new_array) : '';
+
+                            $up_sSQL = 'UPDATE general_form_question SET `question_form_option` =:questionFormOption WHERE `id`=:generalFormId ';
+                            DB::update($up_sSQL,array(
+                                'questionFormOption' => $SubQuestionOptionArray,
+                                'generalFormId' => $last_inserted_id
+                            ));
+                          
+                        }
+
                     }
             }else{
-                // $Sql1 = 'SELECT id,child_question_ids FROM general_form_question WHERE question_status = 1 and id = '.$ParentGeneralFormId.'  ';
-                // $aResult2 = DB::select($Sql1);
 
-                // $up_sSQL1 = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `event_id`=:eventId and `general_form_id`=:generalFormId ';
-                // DB::update($up_sSQL1,array(
-                //     'childQuestionIds' => !empty($aResult2) && $aResult2[0]->child_question_ids ? $aResult2[0]->child_question_ids : '',
-                //     'eventId' => $EventId,
-                //     'generalFormId' => $ParentGeneralFormId
-                // ));
+                   
             }
 
             //------------------ end ----------------------------
@@ -812,7 +871,7 @@ class FormQuestionsController extends Controller
                 $parent_question_array[] = $data;
 
                 //---------------- check event table added form question entry or not
-                $Sql = 'SELECT id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$data->id.'  ';
+                $Sql = 'SELECT id,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$data->id.'  ';
                 $aResult1 = DB::select($Sql);
                 //dd($aResult1);
                 if(!empty($aResult1)){
@@ -820,7 +879,23 @@ class FormQuestionsController extends Controller
                 }else{
                     $data->event_questions_flag = 0;
                 }
-
+                
+                // $Sql1 = 'SELECT id FROM general_form_question WHERE question_status = 1 and id in ('.$aResult1[0]->child_question_ids.') ';
+                // $aResult2 = DB::select($Sql1);
+                // //dd($aResult2);
+                // if(!empty($aResult2)){
+                //     foreach($aResult2 as $res){
+                //         if($res->id == $data->id){
+                //             $data->check_flag = 1;
+                //         }else{
+                //             $data->check_flag = 0;
+                //         }
+                //     }
+                // }else{
+                //     $data->check_flag = 0;
+                // }
+                $data->check_flag = 0;
+               
                 //----------------------
                 if(!empty($question_form_option) && isset($question_form_option)){
                     foreach($question_form_option as $key=>$res){
@@ -868,7 +943,7 @@ class FormQuestionsController extends Controller
         $SQL = "SELECT * FROM general_form_question WHERE id = :qus_id AND is_subquestion = 1";
         $questionArray1 = DB::select($SQL, array('qus_id' => $child_question_id));
         //dd($questionCatArray);
-        
+      
        $questionCatArray = array();
         if (!empty($questionArray1)) {
            
@@ -879,15 +954,28 @@ class FormQuestionsController extends Controller
                     //dd($questionCatArray);
 
                     //---------------- check event table added form question entry or not
-                    $Sql = 'SELECT id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$data->id.'  ';
+                    $Sql = 'SELECT id,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$data->id.'  ';
                     $aResult1 = DB::select($Sql);
-                    //dd($aResult1);
+                    //dd($child_question_id);
                     if(!empty($aResult1)){
                         $data->event_questions_flag = 1;
                     }else{
                         $data->event_questions_flag = 0;
                     }
-
+                   // 
+                    // if($child_question_id){
+                        $Sql1 = 'SELECT child_question_ids FROM event_form_question WHERE child_question_ids in ('.$child_question_id.') ';
+                        $aResult2 = DB::select($Sql1);
+                        // dd($child_question_id);
+                    if(!empty($aResult2)){
+                        if($child_question_id == $aResult2[0]->child_question_ids){
+                            $data->check_flag = 1;
+                        }
+                    }else{
+                        $data->check_flag = 0;
+                    }
+                        
+                 
                     $data->question_form_option = !empty($questionCatArray) ? $questionCatArray : [];
                     if(!empty($questionCatArray) && isset($questionCatArray)){
                         if($data->is_subquestion == 1){
