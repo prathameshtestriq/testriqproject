@@ -26,6 +26,7 @@ class EventController extends Controller
             // $event->event_description = !empty($event->event_description) ? html_entity_decode(strip_tags($event->event_description)) : "";
 
             $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
+            $event->end_date = (!empty($event->end_time)) ? gmdate("d M Y", $event->end_time) : 0;
             $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
             $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
 
@@ -60,6 +61,12 @@ class EventController extends Controller
 
             // registration button show flag
             $event->show_registration_button = ($now >= $event->registration_start_time && $now <= $event->registration_end_time) ? 1 : 0;
+            $event->show_registration_button_msg = "";
+            if ($now < $event->registration_start_time) {
+                $event->show_registration_button_msg = "Registration Starting Soon";
+            }else if($now > $event->registration_end_time){
+                $event->show_registration_button_msg = "Registration Closed";
+            }
 
             #GETTING EVENT IMAGES
             $ImageQry = "SELECT * FROM event_images WHERE event_id=:event_id";
@@ -719,7 +726,7 @@ class EventController extends Controller
 
         // dd($Events);
         $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
-        $ResponseData['EventDetailId'] = sizeof($Events) > 0 ? $Events[0]->id : 0;
+        $ResponseData['EventDetailId'] = $EventId = sizeof($Events) > 0 ? $Events[0]->id : 0;
         $ResponseData['FAQ'] = [];
 
         if (!empty($EventId)) {
