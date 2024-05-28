@@ -1129,7 +1129,7 @@ class EventController extends Controller
             $ResponseData['faq_details'] = !empty($FAQResult) ? $FAQResult : [];
 
             // ---------- get Tickets details
-            $sql1 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id";
+            $sql1 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id AND ticket_status = 1 AND is_deleted = 0";
             $TicketResult = DB::select($sql1, array('event_id' => $EventId));
             //dd($CommResult);
             if (!empty($TicketResult)) {

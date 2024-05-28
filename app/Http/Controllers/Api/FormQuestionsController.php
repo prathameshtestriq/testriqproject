@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
+use App\Models\Event;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Config;
@@ -237,6 +238,33 @@ class FormQuestionsController extends Controller
             $SubQuestionCountFlag = !empty($request->sub_question_count_flag)  ? 1 : 0;
             $SubQuestionOtherAmountFlag = !empty($request->sub_question_other_amount) ? 1 : 0;
             $ParentGeneralFormId = !empty($request->parent_general_form_id) ? $request->parent_general_form_id : 0;
+            $ApplyTicket = !empty($request->apply_ticket) ? $request->apply_ticket : 1;
+            $TicketSelectedData = !empty($request->ticket_selected_data) ? json_decode($request->ticket_selected_data) : '';
+            
+            //---------- all ticket apply -----------
+            $ticket_ids = '';
+            if ($ApplyTicket == 1) {
+                $Sql = 'SELECT id FROM event_tickets WHERE `event_id`=:eventId AND is_deleted = 0';
+                $ticket_aResult = DB::select(
+                    $Sql,
+                    array(
+                        'eventId' => $EventId
+                    )
+                );
+                //dd($ticket_aResult);
+                $ticket_id_array = !empty($ticket_aResult) ? array_column($ticket_aResult, 'id') : '';
+                $ticket_ids = !empty($ticket_id_array) ? implode(",", $ticket_id_array) : '';
+            } else {
+                $ticket_id_array = [];
+                if (!empty($TicketSelectedData)) {
+                    foreach ($TicketSelectedData as $res) {
+                        if (isset($res->checked) && $res->checked == true)
+                            $ticket_id_array[] = $res->id;
+                    }
+                }
+                $ticket_ids = !empty($ticket_id_array) ? implode(",", $ticket_id_array) : '';
+            }
+
 
             //dd($LimitLengthCheck);
             $limit_length = '';
@@ -279,13 +307,19 @@ class FormQuestionsController extends Controller
                         $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId));
                         $event_sort_order = !empty($aResultSortOrder1) && $aResultSortOrder1[0]->last_sort_order !== '' ? $aResultSortOrder1[0]->last_sort_order+1 : 1;
                     }
-                    
                 }
+                
+                //---------- sub question tree flag updated
+                $up_sSQL = 'UPDATE general_form_question SET `sub_question_tree_flag` =:subQuestionTreeFlag WHERE `parent_question_id`=:parentQuestionId ';
+                DB::update($up_sSQL,array(
+                    'subQuestionTreeFlag' => 0,
+                    'parentQuestionId' => $GeneralFormId
+                ));
             
 
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint, form_id, sort_order)';
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint, form_id, sort_order, apply_ticket, ticket_details)';
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint, :formId, :sortOrder
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint, :formId, :sortOrder, :applyTicket, :ticketDetails
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -298,7 +332,9 @@ class FormQuestionsController extends Controller
                     'userFieldMapping' => $FieldMapping,
                     'limitLength'      => $limit_length,
                     'formId'           => $FormId,
-                    'sortOrder'        => $event_sort_order
+                    'sortOrder'        => $event_sort_order,
+                    'applyTicket'      => $ApplyTicket,
+                    'ticketDetails'    => $ticket_ids
                 ));
 
                 //-------------- child ids
@@ -310,7 +346,7 @@ class FormQuestionsController extends Controller
                          
                         $child_ques_ids1 = !empty($aResult2) && $aResult2[0]->child_question_ids ? $aResult2[0]->child_question_ids.','.$GeneralFormId : $GeneralFormId;
                         
-                        if($aResult2[0]->child_question_ids != $GeneralFormId){
+                        if(!empty($aResult2) && $aResult2[0]->child_question_ids != $GeneralFormId){
                             $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
                             DB::update($up_sSQL,array(
                                 'childQuestionIds' => $child_ques_ids1,
@@ -475,7 +511,7 @@ class FormQuestionsController extends Controller
                         //------------ add general form entry for check other amount
                         if($SubQuestionOtherAmountFlag == 1 && !empty($QuestionFormOptionArray)){
                            
-                            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint,sort_order) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint, :sortOrder)';
+                            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint,sort_order,sub_question_tree_flag) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint, :sortOrder, :subQuestionTreeFlag)';
 
                             DB::insert($sSQL,array(
                                 'questionLabel'     => 'Other Amount',
@@ -493,7 +529,8 @@ class FormQuestionsController extends Controller
                                 "subQueCount"       => $SubQuestionCountFlag,
                                 "subQueOtherAmount" => $SubQuestionOtherAmountFlag,
                                 "questionHint"      => $questionHint,
-                                "sortOrder"         => $sort_order+1
+                                "sortOrder"         => $sort_order+1,
+                                "subQuestionTreeFlag" => 1
                             ));
 
                             $last_inserted_id1 = DB::getPdo()->lastInsertId();
@@ -739,6 +776,7 @@ class FormQuestionsController extends Controller
         $empty = false;
 
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        $e = new Event();
         //dd($aToken);
         if ($aToken['code'] == 200) {
 
@@ -768,13 +806,16 @@ class FormQuestionsController extends Controller
                 $res->start_event_date = (!empty($res->start_time)) ? gmdate("d", $res->start_time) : '';
 
                 #GET ALL TICKETS
-                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
+                $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price, early_bird FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
                 $Tickets = DB::select($SQL, array('event_id' => $res->id));
 
                 $res->min_price = !empty($Tickets) && !empty($Tickets[0]->min_price) ? $Tickets[0]->min_price : 0;
                 $res->max_price = !empty($Tickets) && !empty($Tickets[0]->max_price) ? $Tickets[0]->max_price : 0;
                 $res->banner_image = !empty($res->banner_image) ? url('/') . '/uploads/banner_image/' . $res->banner_image . '' : '';
                 $res->user_join_date = !empty($res->user_created_date) ? date('M d, Y',$res->user_created_date) : 0;
+                $res->early_bird = !empty($Tickets) && !empty($Tickets[0]->early_bird) ? 1 : 0;
+
+                $res->TicketDetails = $e->getEventTicketDetails($res->id);
 
                 $new_array[] = $res;
             }
@@ -859,7 +900,7 @@ class FormQuestionsController extends Controller
             $EventId     = !empty($request->event_id) ? $request->event_id : 0;
             $questionId     = !empty($request->question_id) ? $request->question_id : 0;
             
-            $SQL = "SELECT id,question_form_option,question_label,form_id,question_form_type,question_form_name FROM general_form_question WHERE id = :qus_id ";
+            $SQL = "SELECT id,question_form_option,question_label,form_id,question_form_type,question_form_name,sub_question_tree_flag FROM general_form_question WHERE id = :qus_id ";
             $questionsObj = DB::select($SQL, array('qus_id' => $questionId));
             $questionArray = array();
             $parent_question_array = array();
