@@ -123,7 +123,7 @@ class FormQuestionsController extends Controller
             //dd($EventId);
             
             // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id';
             // created_by in (0,'.$UserId.')
             $aResult = DB::select($Sql);
            // dd($aResult);
@@ -241,6 +241,8 @@ class FormQuestionsController extends Controller
             $ApplyTicket = !empty($request->apply_ticket) ? $request->apply_ticket : 1;
             $TicketSelectedData = !empty($request->ticket_selected_data) ? json_decode($request->ticket_selected_data) : '';
             
+            $SubQuestionId = !empty($request->sub_question_id) ? $request->sub_question_id : 0;
+            
             //---------- all ticket apply -----------
             $ticket_ids = '';
             if ($ApplyTicket == 1) {
@@ -340,7 +342,7 @@ class FormQuestionsController extends Controller
                 //-------------- child ids
 
                 if(empty($QuestionFormOptionArray)){
-                               
+                      
                         $Sql1 = 'SELECT id,child_question_ids FROM event_form_question WHERE question_status = 1 and general_form_id = '.$ParentGeneralFormId.' and event_id = '.$EventId.' ';
                         $aResult2 = DB::select($Sql1);
                          
@@ -353,7 +355,27 @@ class FormQuestionsController extends Controller
                                 'generalFormId' => $ParentGeneralFormId,
                                 'eventId' => $EventId
                             )); 
+
+                            $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
+                            DB::update($up_sSQL,array(
+                                'childQuestionIds' => $GeneralFormId,
+                                'generalFormId' => $SubQuestionId,
+                                'eventId' => $EventId
+                            )); 
                         }else{
+                            if($ParentGeneralFormId != 0){
+                                //dd('d');
+                                $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
+                                DB::update($up_sSQL,array(
+                                    'childQuestionIds' => $GeneralFormId,
+                                    'generalFormId' => $SubQuestionId,
+                                    'eventId' => $EventId
+                                )); 
+                            }
+                        }
+                        
+                }else{
+                        if($ParentGeneralFormId != 0){
                             $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
                             DB::update($up_sSQL,array(
                                 'childQuestionIds' => $GeneralFormId,
@@ -361,15 +383,6 @@ class FormQuestionsController extends Controller
                                 'eventId' => $EventId
                             )); 
                         }
-                        
-                }else{
-                        $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
-                        DB::update($up_sSQL,array(
-                            'childQuestionIds' => $GeneralFormId,
-                            'generalFormId' => $GeneralFormId,
-                            'eventId' => $EventId
-                        )); 
-
                 }   
 
             }
@@ -700,26 +713,37 @@ class FormQuestionsController extends Controller
             $SQL = "SELECT MAX(sort_order) AS last_sort_order FROM general_form_question WHERE created_by=:user_id";
             $aResultSortOrder = DB::select($SQL, array('user_id' => $userId));
             $sort_order = !empty($aResultSortOrder) && $aResultSortOrder[0]->last_sort_order !== '' ? $aResultSortOrder[0]->last_sort_order+1 : 1;
+            
+            //--------- check duplication
+            $Sql5 = 'SELECT count(id) as tot_count FROM general_form_question WHERE question_status = 1 and question_label = "'.$questionLabel.'" and created_by in (0,'.$userId.') ';
+            $aResult5 = DB::select($Sql5);
+            // dd($aResult5);
+            if(!empty($aResult5) && $aResult5[0]->tot_count == 0){
+                $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_hint,question_form_option, is_manadatory, question_status, created_by, is_custom_form, sort_order) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionHint,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:sortOrder)';
 
-            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_hint,question_form_option, is_manadatory, question_status, created_by, is_custom_form, sort_order) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionHint,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:sortOrder)';
-
-            DB::insert($sSQL,array(
-                'questionLabel'     => $questionLabel,
-                'formId'            => $formId,
-                'questionFormType'  => $questionFormType,
-                'questionFormName'  => $question_name,
-                'questionHint'      => $questionHint,
-                'questionFormOption' => $questionFormOptionArray,
-                'isManadatory'      => $isManadatory,
-                'questionStatus'    => 1,
-                'createdBy'         => $userId,
-                'isCustomForm'      => 1,
-                'sortOrder'         => $sort_order
-            ));
-
-            $response['data'] = [];
-            $response['message'] = 'Question added successfully';
-            $ResposneCode = 200;
+                DB::insert($sSQL,array(
+                    'questionLabel'     => $questionLabel,
+                    'formId'            => $formId,
+                    'questionFormType'  => $questionFormType,
+                    'questionFormName'  => $question_name,
+                    'questionHint'      => $questionHint,
+                    'questionFormOption' => $questionFormOptionArray,
+                    'isManadatory'      => $isManadatory,
+                    'questionStatus'    => 1,
+                    'createdBy'         => $userId,
+                    'isCustomForm'      => 1,
+                    'sortOrder'         => $sort_order
+                ));
+                
+                $response['data'] = [];
+                $response['message'] = 'Question added successfully';
+                $ResposneCode = 200;
+            }else{
+                $response['data'] = 1;
+                $response['message'] = 'Question is alredy exist! please enter another.';
+                $ResposneCode = 200;
+            }
+           
 
         }else{
             $ResposneCode = $aToken['code'];

@@ -249,7 +249,7 @@ class EventTicketController extends Controller
                         $EBEndTime = strtotime($EBEndDate);
                     }
 
-                    if (!empty($TicketId)) {
+                    if (!empty($TicketId)) {   // update data
                         // dd("here");
                         $Binding = array(
                             // 'event_id' => $aPost['event_id'],
@@ -288,7 +288,7 @@ class EventTicketController extends Controller
                         $ResposneCode = 200;
                         $message = 'Event Ticket Updated Successfully';
 
-                    } else {
+                    } else {                // insert data
                         $Binding = array(
                             'event_id' => $EventId,
                             'ticket_name' => isset($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
@@ -322,6 +322,28 @@ class EventTicketController extends Controller
 
                         DB::select($SQL2, $Binding);
 
+                        //---------- add form question to aplay new ticket id
+                        $last_inserted_id = DB::getPdo()->lastInsertId();
+
+                        $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and apply_ticket = 1 and event_id = '.$EventId.'  ';
+                        $aResult = DB::select($Sql);
+
+                        if(!empty($aResult)){
+                            foreach($aResult as $res){
+                                $new_tickets_ids = !empty($res->ticket_details) ? $res->ticket_details.','.$last_inserted_id : "";
+                               
+                                $up_sSQL = 'UPDATE event_form_question SET `ticket_details` =:ticketDetailsIds WHERE `event_id`=:eventId and `id` =:Id and apply_ticket = 1 ';
+                                DB::update($up_sSQL,array(
+                                    'ticketDetailsIds' => $new_tickets_ids,
+                                    'eventId' => $EventId,
+                                    'Id' => $res->id
+                                ));
+
+                            }
+                        }
+
+                        //---------------------
+
                         $ResposneCode = 200;
                         $message = 'Event Ticket Inserted Successfully';
 
@@ -350,6 +372,7 @@ class EventTicketController extends Controller
 
     public function EventTicketDelete(Request $request)
     {
+        //dd($request);
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
@@ -362,12 +385,37 @@ class EventTicketController extends Controller
             $Auth = new Authenticate();
             $Auth->apiLog($request);
 
-            // $sSQL = 'DELETE FROM event_tickets WHERE id=:id ';
-            // $ResponseData= DB::delete($sSQL,
-            //     array(
-            //         'id' => $request->ticket_id
-            //     )
-            // );
+            $EventId = isset($request->event_id) ? $request->event_id : 0;
+            
+            //-------------- if ticket is deleted for this condition to event form question in ticket id delete.
+            $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.'  ';
+            $aResult = DB::select($Sql);
+            
+            if(!empty($aResult)){
+                foreach($aResult as $res){
+
+                    if(!empty($res->ticket_details)){
+                        $new_tickets_id_array = explode(",", $res->ticket_details);
+                        $arrayKey = array_search($request->ticket_id, $new_tickets_id_array);
+                        unset($new_tickets_id_array[$arrayKey]);
+ 
+                        $new_tickets_ids = !empty($new_tickets_id_array) ? implode(",", $new_tickets_id_array) : "";
+                        //dd($new_tickets_ids);
+                        if(!empty($new_tickets_ids)){
+                            $up_sSQL = 'UPDATE event_form_question SET `ticket_details` =:ticketDetailsIds WHERE `event_id`=:eventId and `id` =:Id ';  //and apply_ticket = 1
+                            DB::update($up_sSQL,array(
+                                'ticketDetailsIds' => $new_tickets_ids,
+                                'eventId' => $EventId,
+                                'Id' => $res->id
+                            ));
+                        }
+                        
+                    }
+
+                }
+            }
+
+
             $sSQL = 'UPDATE event_tickets SET is_deleted = 1 WHERE id=:id ';
             $ResponseData = DB::update(
                 $sSQL,

@@ -1146,6 +1146,16 @@ class EventController extends Controller
             }
             $ResponseData['tickets_details'] = !empty($TicketResult) ? $TicketResult : [];
 
+            $sql2 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id AND is_deleted = 0";
+            $TicketResult1 = DB::select($sql2, array('event_id' => $EventId));
+            //dd($CommResult);
+            if (!empty($TicketResult1)) {
+                foreach ($TicketResult1 as $res) {
+                    $res->checked = false;
+                }
+            }
+            $ResponseData['form_tickets_details'] = !empty($TicketResult1) ? $TicketResult1 : [];
+
             // ---------- get Coupons Details
             $sql1 = "SELECT id,discount_type,discount_name,coupon_status FROM event_coupon WHERE is_deleted = 0 AND event_id=:event_id";
             $CouponResult = DB::select($sql1, array('event_id' => $EventId));
