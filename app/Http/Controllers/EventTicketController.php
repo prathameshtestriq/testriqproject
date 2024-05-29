@@ -547,66 +547,89 @@ class EventTicketController extends Controller
                 $ResponseData['PriceTaxesStatus'] = $PriceTaxesStatus;
 
                 // -------------------------------------------------
-                $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
-                $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
-                if (count($FormQuestions) > 0) {
-                    foreach ($FormQuestions as $value) {
-                        $value->ActualValue = "";
-                        $value->Error = "";
-                        $value->TicketId = 0;
 
-                        if (!empty($value->question_form_option)) {
-                            $jsonString = $value->question_form_option;
-                            $array = json_decode($jsonString, true);
+                // $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
+                // $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+                // if (count($FormQuestions) > 0) {
 
-                            foreach ($array as &$item) { // Note the "&" before $item to modify it directly
-                                if (isset($item['count']) && !empty($item["count"])) {
-                                    $sql = "SELECT current_count FROM extra_pricing_booking WHERE question_id=:question_id AND option_id=:option_id";
-                                    $SoldItems = DB::select($sql, array("question_id" => $value->id, "option_id" => $item["id"]));
-                                    if (count($SoldItems) > 0) {
-                                        $currentCount = $SoldItems[0]->current_count;
-                                        // Adding current_count to the $item array
-                                        $item['current_count'] = $currentCount;
+                // dd($FormQuestions);
+
+                if (!empty($AllTickets)) {
+                    foreach ($AllTickets as $ticket) {
+                        // dd($ticket);
+                        $sSQL = 'SELECT * 
+                                    FROM event_form_question 
+                                    WHERE event_id = :event_id 
+                                    AND FIND_IN_SET(:ticket_id, ticket_details)
+                                    AND question_status = 1 
+                                    ORDER BY sort_order';
+
+                        $FormQuestions = DB::select($sSQL, [
+                            'event_id' => $aPost['event_id'],
+                            'ticket_id' => $ticket['id']
+                        ]);
+
+                        if (count($FormQuestions) > 0) {
+                        } else {
+                            $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
+                            $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+                        }
+
+                        foreach ($FormQuestions as $value) {
+                            $value->ActualValue = "";
+                            $value->Error = "";
+                            $value->TicketId = 0;
+
+                            if (!empty($value->question_form_option)) {
+                                $jsonString = $value->question_form_option;
+                                $array = json_decode($jsonString, true);
+
+                                foreach ($array as &$item) { // Note the "&" before $item to modify it directly
+                                    if (isset($item['count']) && !empty($item["count"])) {
+                                        $sql = "SELECT current_count FROM extra_pricing_booking WHERE question_id=:question_id AND option_id=:option_id";
+                                        $SoldItems = DB::select($sql, array("question_id" => $value->id, "option_id" => $item["id"]));
+                                        if (count($SoldItems) > 0) {
+                                            $currentCount = $SoldItems[0]->current_count;
+                                            // Adding current_count to the $item array
+                                            $item['current_count'] = $currentCount;
+                                        }
                                     }
                                 }
-                            }
-                            // Unset $item to avoid potential conflicts with other loops
-                            unset($item);
+                                // Unset $item to avoid potential conflicts with other loops
+                                unset($item);
 
-                            $updatedJsonString = json_encode($array);
+                                $updatedJsonString = json_encode($array);
 
-                            // Assign the updated JSON string back to $value->question_form_option
-                            $value->question_form_option = $updatedJsonString;
-                        }
-                    }
-                    // dd($FormQuestions);
-
-                    if (!empty($AllTickets)) {
-                        foreach ($AllTickets as $ticket) {
-                            // dd($ticket);
-                            for ($i = 0; $i < $ticket['count']; $i++) {
-                                $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
+                                // Assign the updated JSON string back to $value->question_form_option
+                                $value->question_form_option = $updatedJsonString;
                             }
                         }
+
+                        // dd($FormQuestions);
+
+                        for ($i = 0; $i < $ticket['count']; $i++) {
+                            $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
+                        }
                     }
-                    // dd($FinalFormQuestions);
-
-                    $ResponseData['FormQuestions'] = $FinalFormQuestions;
-
-                    $ResponseData['YTCR_FEE_PERCENT'] = config('custom.ytcr_fee_percent');
-                    $ResponseData['PLATFORM_FEE_PERCENT'] = config('custom.platform_fee_percent');
-                    $ResponseData['PAYMENT_GATEWAY_FEE_PERCENT'] = config('custom.payment_gateway_fee_percent');
-                    $ResponseData['PAYMENT_GATEWAY_GST_PERCENT'] = config('custom.payment_gateway_gst_percent');
-
-                    // $sql = "SELECT COUNT(id) FROM ticket_booking WHERE event_id=:event_id AND ticket_id=:ticket_id";
-                    // $ResponseData['TotalBookedTickets'] = $TotalBookedTickets;
-
-                    $ResposneCode = 200;
-                    $message = 'Request processed successfully';
-                } else {
-                    $ResposneCode = 200;
-                    $message = 'Form Questions is empty';
                 }
+                // dd($FinalFormQuestions);
+
+                $ResponseData['FormQuestions'] = $FinalFormQuestions;
+
+                $ResponseData['YTCR_FEE_PERCENT'] = config('custom.ytcr_fee_percent');
+                $ResponseData['PLATFORM_FEE_PERCENT'] = config('custom.platform_fee_percent');
+                $ResponseData['PAYMENT_GATEWAY_FEE_PERCENT'] = config('custom.payment_gateway_fee_percent');
+                $ResponseData['PAYMENT_GATEWAY_GST_PERCENT'] = config('custom.payment_gateway_gst_percent');
+
+                // $sql = "SELECT COUNT(id) FROM ticket_booking WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                // $ResponseData['TotalBookedTickets'] = $TotalBookedTickets;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+                // } else {
+                //     $ResposneCode = 200;
+                //     $message = 'Form Questions is empty';
+                // }
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
@@ -932,7 +955,9 @@ class EventTicketController extends Controller
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
                 $EventUrl = isset($request->EventUrl) && !empty($request->EventUrl) ? $request->EventUrl : "";
+                // $MessageContent = $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
                 $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
+                // $ResponseData['MessageContent'] = $MessageContent;
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';
@@ -972,10 +997,10 @@ class EventTicketController extends Controller
             "LASTNAME" => $User[0]->lastname,
             "EVENTID" => $EventId,
             "EVENTNAME" => $Event[0]->name,
-            "EVENTSTARTDATE" => date('d-m-Y', strtotime($Event[0]->start_time)),
-            "EVENTSTARTTIME" => date('H:i A', strtotime($Event[0]->start_time)),
-            "EVENTENDDATE" => date('d-m-Y', strtotime($Event[0]->end_time)),
-            "EVENTENDTIME" => date('H:i A', strtotime($Event[0]->end_time)),
+            "EVENTSTARTDATE" => date('d-m-Y', ($Event[0]->start_time)),
+            "EVENTSTARTTIME" => date('H:i A', ($Event[0]->start_time)),
+            "EVENTENDDATE" => date('d-m-Y', ($Event[0]->end_time)),
+            "EVENTENDTIME" => date('H:i A', ($Event[0]->end_time)),
             "YTCRTEAM" => "Ytcr Team",
             "EVENTURL" => $EventUrl,
             "COMPANYNAME" => $OrgName,
@@ -1002,6 +1027,7 @@ class EventTicketController extends Controller
         // dd($MessageContent);
         $Email = new Emails();
         // $Email->send_booking_mail($UserId,$UserEmail,$MessageContent,$Subject);
+        // return $ConfirmationEmail;
         return;
     }
 
@@ -1093,6 +1119,7 @@ class EventTicketController extends Controller
 
                 $sql = "SELECT *,a.id AS attendeeId,
                 (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName,
+                (SELECT ticket_status FROM event_tickets WHERE id=bd.ticket_id) AS TicketStatus,
                 (SELECT name FROM events WHERE id=bd.event_id) AS EventName,
                 (SELECT banner_image FROM events WHERE id=bd.event_id) AS banner_image
                  FROM `attendee_booking_details` AS a
@@ -1365,7 +1392,7 @@ class EventTicketController extends Controller
                     "age" => $Age
                 );
                 $SQL1 = "SELECT id,age_category FROM `age_criteria` WHERE event_id=:event_id AND distance_category=:ticket_id AND gender=:gender AND :age BETWEEN age_start AND age_end";
-                
+
                 $AgeCriteriaData = DB::select($SQL1, $Bindings);
 
                 $ResponseData['AgeCriteriaData'] = $AgeCriteriaData;
