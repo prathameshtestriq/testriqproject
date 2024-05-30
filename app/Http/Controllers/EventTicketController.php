@@ -576,6 +576,7 @@ class EventTicketController extends Controller
                         }
 
                         foreach ($FormQuestions as $value) {
+                            // echo "<pre>";print_r($value);
                             $value->ActualValue = "";
                             $value->Error = "";
                             $value->TicketId = 0;
@@ -602,6 +603,14 @@ class EventTicketController extends Controller
 
                                 // Assign the updated JSON string back to $value->question_form_option
                                 $value->question_form_option = $updatedJsonString;
+                            }
+
+                            // nationality and country array
+                            if ($value->question_form_type == 'countries'){
+                                $sql = "SELECT id,name AS label FROM countries WHERE flag=1";
+                                $countries = DB::select($sql);
+
+                                $value->question_form_option = json_encode($countries);
                             }
                         }
 
@@ -1284,6 +1293,9 @@ class EventTicketController extends Controller
                 $now = strtotime("now");
                 $EventId = (isset($aPost['event_id'])) ? $aPost['event_id'] : 0;
                 $TicketIds = (isset($aPost['ticket_ids'])) ? $aPost['ticket_ids'] : 0;
+                // show_public
+                $ShowPublicFlag = (isset($aPost['show_public'])) ? $aPost['show_public'] : 0;
+
                 $CouponsArr = [];
 
                 if (!empty($EventId) && !empty($TicketIds)) {
@@ -1293,9 +1305,13 @@ class EventTicketController extends Controller
                     FROM event_coupon_details AS ecd
                     JOIN event_coupon AS ec ON ecd.event_coupon_id = ec.id
                     WHERE ecd.event_id = :event_id
-                    AND ec.coupon_status = 1
-                    AND ec.show_public = 1
-                    AND ecd.end_coupon = 0
+                    AND ec.coupon_status = 1";
+
+                    if(empty($ShowPublicFlag)){
+                        $SQL .= " AND ec.show_public = 1";
+                    }
+
+                    $SQL .= " AND ecd.end_coupon = 0
                     AND FIND_IN_SET(:ticket_id, ecd.ticket_details) > 0
                     AND ecd.discount_from_datetime <= :now1
                     AND ecd.discount_to_datetime >= :now2
