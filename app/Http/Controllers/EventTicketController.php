@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Master;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use App\Libraries\Emails;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EventTicketController extends Controller
 {
@@ -131,6 +132,7 @@ class EventTicketController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+
     public function addediteventticket(Request $request)
     {
         //ticket_status
@@ -992,18 +994,19 @@ class EventTicketController extends Controller
 
     function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets)
     {
+        $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
         $User = DB::select($sql1, ['user_id' => $UserId]);
 
         $sql2 = "SELECT * FROM events WHERE id=:event_id";
         $Event = DB::select($sql2, ['event_id' => $EventId]);
         $Venue = "";
-        if(count($Event)>0){
-            $Venue .= ($Event[0]->address !== "") ? $Event[0]->address.", " : "";
-            $Venue .= ($Event[0]->city !== "") ? $Event[0]->city.", " : "";
-            $Venue .= ($Event[0]->state !== "") ? $Event[0]->state.", " : "";
-            $Venue .= ($Event[0]->country !== "") ? $Event[0]->country.", " : "";
-            $Venue .= ($Event[0]->pincode !== "") ? $Event[0]->pincode.", " : "";
+        if (count($Event) > 0) {
+            $Venue .= ($Event[0]->address !== "") ? $Event[0]->address . ", " : "";
+            $Venue .= ($Event[0]->city !== "") ? $master->getCityName($Event[0]->city) . ", " : "";
+            $Venue .= ($Event[0]->state !== "") ? $master->getStateName($Event[0]->state) . ", " : "";
+            $Venue .= ($Event[0]->country !== "") ? $master->getCountryName($Event[0]->country) . ", " : "";
+            $Venue .= ($Event[0]->pincode !== "") ? $Event[0]->pincode . ", " : "";
             // $Venue = $Event[0]->address.", ".$Event[0]->city.", ".$Event[0]->state.", ".$Event[0]->country.", ".$Event[0]->pincode;
         }
 
@@ -1029,7 +1032,7 @@ class EventTicketController extends Controller
             "EVENTURL" => $EventUrl,
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
-            "VENUE"=> $Venue,
+            "VENUE" => $Venue,
 
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
@@ -1192,6 +1195,8 @@ class EventTicketController extends Controller
 
                     $data = $this->getNewPricingDetails($event);
                     $event->PricingDetails = $data;
+
+                    $event->qrCode = base64_encode(QrCode::format('png')->size(200)->generate($event->unique_ticket_id));
                 }
                 $ResponseData['BookingData'] = $BookingData;
 
@@ -1264,16 +1269,68 @@ class EventTicketController extends Controller
                 $Auth->apiLog($request);
 
                 $UserId = $aToken['data']->ID;
+                // dd($UserId);
+                $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username FROM users WHERE id=:user_id";
+                $User = DB::select($sql1, ['user_id' => $UserId]);
+                $Username = (sizeof($User) > 0) ? $User[0]->username : '';
+                // dd($Username);
 
-                $EventId = isset($request->event_id) ? $request->event_id : 0;
-                $TicketId = isset($request->ticket_id) ? $request->ticket_id : 0;
-                $AttenddeeName = isset($request->attendee_name) ? $request->attendee_name : "";
-                $BookingDetailId = isset($request->booking_detail_id) ? $request->booking_detail_id : 0;
+                $Venue = "";
+                $TicketArr = isset($request->ticket) ? $request->ticket : []; // ticket array
+                // dd($TicketArr);
+
+                $EventId = isset($TicketArr["event_id"]) ? $TicketArr["event_id"] : 0;
+                $TicketId = isset($TicketArr["ticket_id"]) ? $TicketArr["ticket_id"] : 0;
+                $AttenddeeName = isset($TicketArr["attendee_name"]) ? $TicketArr["attendee_name"] : "";
+                $BookingDetailId = isset($TicketArr["booking_detail_id"]) ? $TicketArr["booking_detail_id"] : 0;
+                $EventLink = isset($request->event_link) ? $request->event_link : "";
+
+                if (!empty($EventId)) {
+                    $sql2 = "SELECT start_time,end_time,address,city,state,country,pincode FROM events WHERE id=:event_id";
+                    $Event = DB::select($sql2, ['event_id' => $EventId]);
+                    // dd($Event);
+                    if (sizeof($Event) > 0) {
+                        foreach ($Event as $key => $event) {
+                            $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
+                            $event->end_date = (!empty($event->end_time)) ? gmdate("d M Y", $event->end_time) : 0;
+                            $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
+                            $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
+
+                            $Venue .= ($event->address !== "") ? $event->address . ", " : "";
+                            $Venue .= ($event->city !== "") ? $master->getCityName($event->city) . ", " : "";
+                            $Venue .= ($event->state !== "") ? $master->getStateName($event->state) . ", " : "";
+                            $Venue .= ($event->country !== "") ? $master->getCountryName($event->country) . ", " : "";
+                            $Venue .= ($event->pincode !== "") ? $event->pincode . ", " : "";
+
+                            $event->Venue = $Venue;
+                        }
+                    }
+                }
+
+                $sql3 = "SELECT id,name,logo_image FROM organizer WHERE user_id=:user_id";
+                $Organizer = DB::select($sql3, ['user_id' => $UserId]);
+                // dd($Organizer[0]);
+
+                if (count($Organizer) > 0) {
+                    foreach ($Organizer as $key => $value) {
+                        $value->logo_image = !empty($value->logo_image) ? url('/') . 'organiser/logo_image/' . $value->logo_image : "";
+                    }
+                }
+                // dd($Organizer);
+                // Generate QR code
+                $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($TicketArr['unique_ticket_id']));
 
                 $data = [
-                    'title' => "Booking Detail Id : " . $BookingDetailId,
-                    'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
+                    // 'title' => "Booking Detail Id : " . $BookingDetailId,
+                    // 'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
+                    'ticket_details' => $TicketArr,
+                    'event_details' => (sizeof($Event) > 0) ? $Event[0] : [],
+                    'org_details' => (sizeof($Organizer) > 0) ? $Organizer[0] : [],
+                    'Username' => $Username,
+                    'EventLink' => $EventLink,
+                    'QrCode' => $qrCode
                 ];
+                // dd($data);
 
                 $pdf = PDF::loadView('pdf_template', $data);
 
