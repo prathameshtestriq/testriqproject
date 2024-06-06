@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Master;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use App\Libraries\Emails;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+// use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EventTicketController extends Controller
 {
@@ -952,18 +952,18 @@ class EventTicketController extends Controller
                                     //     }
                                     // }
                                 }
-                                $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
+                                // $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
 
-                                if (!empty($IdBookingDetails)) {
-                                    $Binding3 = array(
-                                        "booking_details_id" => $IdBookingDetails,
-                                        "field_name" => $value['question_form_name'],
-                                        "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
-                                    );
+                                // if (!empty($IdBookingDetails)) {
+                                //     $Binding3 = array(
+                                //         "booking_details_id" => $IdBookingDetails,
+                                //         "field_name" => $value['question_form_name'],
+                                //         "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
+                                //     );
 
-                                    $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
-                                    DB::insert($Sql3, $Binding3);
-                                }
+                                //     $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
+                                //     DB::insert($Sql3, $Binding3);
+                                // }
                             }
                         }
                     }
@@ -1196,7 +1196,7 @@ class EventTicketController extends Controller
                     $data = $this->getNewPricingDetails($event);
                     $event->PricingDetails = $data;
 
-                    $event->qrCode = base64_encode(QrCode::format('png')->size(200)->generate($event->unique_ticket_id));
+                    // $event->qrCode = base64_encode(QrCode::format('png')->size(200)->generate($event->unique_ticket_id));
                 }
                 $ResponseData['BookingData'] = $BookingData;
 
@@ -1318,8 +1318,8 @@ class EventTicketController extends Controller
                 }
                 // dd($Organizer);
                 // Generate QR code
-                $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($TicketArr['unique_ticket_id']));
-
+                // $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($TicketArr['unique_ticket_id']));
+                $qrCode = "";
                 $data = [
                     // 'title' => "Booking Detail Id : " . $BookingDetailId,
                     // 'content' => 'This is a sample PDF generated using Laravel and Dompdf.'

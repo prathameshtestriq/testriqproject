@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
@@ -115,53 +116,57 @@ class LoginController extends Controller
 
                                         $lastInsertedId = DB::getPdo()->lastInsertId();
 
-                                        // $otp = rand(1000, 9999);
-                                        // if (!empty($otp)) {
-                                        //     $data = DB::table('users')->where('id', $lastInsertedId)->update(['otp' => $otp]);
+                                        $email_otp = rand(1000, 9999);
+                                        if (!empty($email_otp)) {
+                                            $data = DB::table('users')->where('id', $lastInsertedId)->update(['email_otp' => $email_otp]);
+                                            #SEND OTP MAIL
+                                            $Email = new Emails();
+                                            $Email->post_email($aPost['email'], $email_otp);
+                                        }
 
-                                        //     #SEND OTP MESSAGE
-                                        //     $SmsObj = new SmsApis();
-                                        //     $SmsObj->post_sms($aPost['mobile'], $otp);
+                                        $mobile_otp = rand(1000, 9999);
+                                        if (!empty($mobile_otp)) {
+                                            $data = DB::table('users')->where('id', $lastInsertedId)->update(['mobile_otp' => $mobile_otp]);
+                                            #SEND OTP MESSAGE
+                                            $SmsObj = new SmsApis();
+                                            $SmsObj->post_sms($aPost['mobile'], $mobile_otp);
+                                        }
+                                        // Error: Class &quot;SendGrid\Mail\Mail&quot; not found in file /var/www/html/RacesWeb/app/Libraries/Emails.php on line 11
 
-                                        //     #SEND OTP MAIL
-                                        //     $Email = new Emails();
-                                        //     $Email->post_email($aPost['email'], $otp);
-                                        //     // Error: Class &quot;SendGrid\Mail\Mail&quot; not found in file /var/www/html/RacesWeb/app/Libraries/Emails.php on line 11
-                                        // }
 
                                         $SQL3 = 'SELECT * FROM users WHERE id =:id';
                                         $aResult = DB::select($SQL3, array('id' => $lastInsertedId));
 
-                                        $aToken['ID'] = $aResult[0]->id;
-                                        // $aToken['mobile'] = $aResult[0]->mobile;
-                                        $aToken['email'] = $aResult[0]->email;
-                                        $aToken['dob'] = $aResult[0]->dob;
+                                        // $aToken['ID'] = $aResult[0]->id;
+                                        // // $aToken['mobile'] = $aResult[0]->mobile;
+                                        // $aToken['email'] = $aResult[0]->email;
+                                        // $aToken['dob'] = $aResult[0]->dob;
 
-                                        $Auth = new Authenticate();
-                                        $ResponseData['token'] = $Auth->create_token($aToken);
+                                        // $Auth = new Authenticate();
+                                        // $ResponseData['token'] = $Auth->create_token($aToken);
 
-                                        foreach ($aResult as $value) {
+                                        // foreach ($aResult as $value) {
 
-                                            // $value->barcode_image = (!empty($value->barcode_image)) ? env('ATHLETE_BARCODE_PATH') . $value->barcode_image . '' : "";
+                                        //     // $value->barcode_image = (!empty($value->barcode_image)) ? env('ATHLETE_BARCODE_PATH') . $value->barcode_image . '' : "";
 
-                                            $value->profile_pic = (!empty($value->profile_pic)) ? env('ATHLETE_PROFILE_PATH') . $value->profile_pic . '' : '';
+                                        //     $value->profile_pic = (!empty($value->profile_pic)) ? env('ATHLETE_PROFILE_PATH') . $value->profile_pic . '' : '';
 
-                                            $value->id_proof_doc_upload = (!empty($value->id_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->id_proof_doc_upload . '' : '';
+                                        //     $value->id_proof_doc_upload = (!empty($value->id_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->id_proof_doc_upload . '' : '';
 
-                                            $value->address_proof_doc_upload = (!empty($value->address_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->address_proof_doc_upload . '' : '';
+                                        //     $value->address_proof_doc_upload = (!empty($value->address_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->address_proof_doc_upload . '' : '';
 
-                                            $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
-                                            // $value->dob = isset($value->dob) ? date("d-m-Y", strtotime($value->dob)) : "";
-                                        }
+                                        //     $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
+                                        //     // $value->dob = isset($value->dob) ? date("d-m-Y", strtotime($value->dob)) : "";
+                                        // }
 
                                         $ResponseData['userData'] = $aResult[0];
-                                        // dd($ResponseData['details']);
-                                        $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
-                                        DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
+                                        // // dd($ResponseData['details']);
+                                        // $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
+                                        // DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
 
-                                        #MODULES OF USER ON BASIS OF ITS ROLE
-                                        $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->type);
-                                        $ResponseData['modules'] = $aModules;
+                                        // #MODULES OF USER ON BASIS OF ITS ROLE
+                                        // $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->type);
+                                        // $ResponseData['modules'] = $aModules;
 
                                         $ResposneCode = 200;
                                         $message = 'Registered Successfully';
@@ -206,6 +211,111 @@ class LoginController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function validateOtp(Request $request)
+    {
+        $aPost = $request->all();
+        //dd($aPost);
+        $Auth = new Authenticate();
+        $Auth->apiLog($request);
+
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = '';
+        $EmailField = $MobileField = '';
+        if (empty($aPost['UserId'])) {
+            $empty = true;
+            $field = 'UserId';
+        }
+        if (empty($aPost['MobileOtp'])) {
+            $empty = true;
+            $field = 'Mobile Otp';
+        }
+        if (empty($aPost['EmailOtp'])) {
+            $empty = true;
+            $field = 'Email Otp';
+        }
+
+        if (!$empty) {
+            $UserId = $aPost["UserId"];
+            $EmailOtp = $aPost["EmailOtp"];
+            $MobileOtp = $aPost["MobileOtp"];
+            $EmailFlag = $MobileFlag = false;
+
+            $sql1 = 'SELECT id FROM users WHERE email_otp = :email_otp AND id=:user_id';
+            $validateEmailOtp = DB::select($sql1, array('email_otp' => $EmailOtp, 'user_id' => $UserId));
+            if (count($validateEmailOtp) > 0) {
+                $EmailFlag = true;
+            } else {
+                $EmailField = 'Email';
+            }
+            $sql2 = 'SELECT id FROM users WHERE mobile_otp = :mobile_otp AND id=:user_id';
+            $validateMobileOtp = DB::select($sql2, array('mobile_otp' => $MobileOtp, 'user_id' => $UserId));
+            if (count($validateMobileOtp) > 0) {
+                $MobileFlag = true;
+            } else {
+                $MobileField = 'Mobile';
+            }
+
+            if ($EmailFlag) {
+                if ($MobileFlag) {
+                    $sql3 = 'UPDATE users SET user_validated = 1 WHERE id=:user_id';
+                    DB::update($sql3, array('user_id' => $UserId));
+
+
+                    $SQL3 = 'SELECT * FROM users WHERE id =:id';
+                    $aResult = DB::select($SQL3, array('id' => $UserId));
+
+                    $aToken['ID'] = $aResult[0]->id;
+                    // $aToken['mobile'] = $aResult[0]->mobile;
+                    $aToken['email'] = $aResult[0]->email;
+                    $aToken['dob'] = $aResult[0]->dob;
+
+                    $Auth = new Authenticate();
+                    $ResponseData['token'] = $Auth->create_token($aToken);
+
+                    foreach ($aResult as $value) {
+                        // $value->barcode_image = (!empty($value->barcode_image)) ? env('ATHLETE_BARCODE_PATH') . $value->barcode_image . '' : "";
+                        $value->profile_pic = (!empty($value->profile_pic)) ? env('ATHLETE_PROFILE_PATH') . $value->profile_pic . '' : '';
+                        $value->id_proof_doc_upload = (!empty($value->id_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->id_proof_doc_upload . '' : '';
+                        $value->address_proof_doc_upload = (!empty($value->address_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->address_proof_doc_upload . '' : '';
+                        $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
+                        // $value->dob = isset($value->dob) ? date("d-m-Y", strtotime($value->dob)) : "";
+                    }
+
+                    $ResponseData['userData'] = $aResult[0];
+                    // dd($ResponseData['details']);
+                    $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
+                    DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
+
+                    #MODULES OF USER ON BASIS OF ITS ROLE
+                    $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->type);
+                    $ResponseData['modules'] = $aModules;
+
+                    $ResposneCode = 200;
+                    $message = 'OTP validate successfully';
+                } else {
+                    $ResposneCode = 400;
+                    $message = 'Invalid ' . $MobileField . ' OTP';
+                }
+            } else {
+                $ResposneCode = 400;
+                $message = 'Invalid ' . $EmailField . ' OTP';
+            }
+        } else {
+            $ResposneCode = 400;
+            $message = $field . ' is empty';
+        }
+        $response = [
+            'status' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
     public function login(Request $request)
     {
         // dd('login');
@@ -219,6 +329,8 @@ class LoginController extends Controller
         $empty = false;
         $message = 'Success';
         $field = '';
+        $validate = 0;
+        $user_id = 0;
 
         if (empty($aPost['Email'])) {
             $empty = true;
@@ -241,39 +353,63 @@ class LoginController extends Controller
                 if ($aResult) {
                     if ($aResult[0]->is_deleted == 0) {
                         if ($aResult[0]->is_active == 1) {
-                            $aToken['ID'] = $aResult[0]->id;
-                            // $aToken['mobile'] = $aResult[0]->mobile;
-                            $aToken['email'] = $aResult[0]->email;
-                            $aToken['dob'] = $aResult[0]->dob;
+                            if ($aResult[0]->user_validated == 1) {
+                                $aToken['ID'] = $aResult[0]->id;
+                                // $aToken['mobile'] = $aResult[0]->mobile;
+                                $aToken['email'] = $aResult[0]->email;
+                                $aToken['dob'] = $aResult[0]->dob;
 
-                            $Auth = new Authenticate();
-                            $ResponseData['token'] = $Auth->create_token($aToken);
+                                $Auth = new Authenticate();
+                                $ResponseData['token'] = $Auth->create_token($aToken);
 
-                            foreach ($aResult as $value) {
+                                foreach ($aResult as $value) {
 
-                                // $value->barcode_image = (!empty($value->barcode_image)) ? env('ATHLETE_BARCODE_PATH') . $value->barcode_image . '' : "";
+                                    // $value->barcode_image = (!empty($value->barcode_image)) ? env('ATHLETE_BARCODE_PATH') . $value->barcode_image . '' : "";
 
-                                $value->profile_pic = (!empty($value->profile_pic)) ? env('ATHLETE_PROFILE_PATH') . $value->profile_pic . '' : '';
+                                    $value->profile_pic = (!empty($value->profile_pic)) ? env('ATHLETE_PROFILE_PATH') . $value->profile_pic . '' : '';
 
-                                $value->id_proof_doc_upload = (!empty($value->id_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->id_proof_doc_upload . '' : '';
+                                    $value->id_proof_doc_upload = (!empty($value->id_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->id_proof_doc_upload . '' : '';
 
-                                $value->address_proof_doc_upload = (!empty($value->address_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->address_proof_doc_upload . '' : '';
+                                    $value->address_proof_doc_upload = (!empty($value->address_proof_doc_upload)) ? env('ATHLETE_PROFILE_PATH') . $value->address_proof_doc_upload . '' : '';
 
-                                $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
-                                // $value->dob = isset($value->dob) ? date("d-m-Y", strtotime($value->dob)) : "";
+                                    $value->cover_picture = (!empty($value->cover_picture)) ? url('') . '/uploads/cover_photo/' . $value->cover_picture . '' : '';
+                                    // $value->dob = isset($value->dob) ? date("d-m-Y", strtotime($value->dob)) : "";
+                                }
+
+                                $ResponseData['userData'] = $aResult[0];
+                                // dd($ResponseData['details']);
+                                $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
+                                DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
+
+                                #MODULES OF USER ON BASIS OF ITS ROLE
+                                $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->type);
+                                $ResponseData['modules'] = $aModules;
+
+                                $message = 'Login Successfully';
+                                $ResposneCode = 200;
+                            } else {
+                                // is_validated
+                                $email_otp = rand(1000, 9999);
+                                if (!empty($email_otp)) {
+                                    $data = DB::table('users')->where('id', $aResult[0]->id)->update(['email_otp' => $email_otp]);
+                                    #SEND OTP MAIL
+                                    $Email = new Emails();
+                                    $Email->post_email($aResult[0]->email, $email_otp);
+                                }
+
+                                $mobile_otp = rand(1000, 9999);
+                                if (!empty($mobile_otp)) {
+                                    $data = DB::table('users')->where('id', $aResult[0]->id)->update(['mobile_otp' => $mobile_otp]);
+                                    #SEND OTP MESSAGE
+                                    $SmsObj = new SmsApis();
+                                    $SmsObj->post_sms($aResult[0]->mobile, $mobile_otp);
+                                }
+
+                                $ResposneCode = 200;
+                                $message = 'User is not validated';
+                                $validate = 1;
+                                $user_id = $aResult[0]->id;
                             }
-
-                            $ResponseData['userData'] = $aResult[0];
-                            // dd($ResponseData['details']);
-                            $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
-                            DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));
-
-                            #MODULES OF USER ON BASIS OF ITS ROLE
-                            $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->type);
-                            $ResponseData['modules'] = $aModules;
-
-                            $message = 'Login Successfully';
-                            $ResposneCode = 200;
                         } else {
                             $ResposneCode = 400;
                             $message = 'Account deactivated';
@@ -295,6 +431,8 @@ class LoginController extends Controller
             $message = $field . ' is empty';
         }
         $response = [
+            'user_id' => $user_id,
+            'validate' => $validate,
             'status' => $ResposneCode,
             'data' => $ResponseData,
             'message' => $message
@@ -819,10 +957,12 @@ class LoginController extends Controller
                 if ($aPost['new_password'] === $aPost['confirm_new_password']) {
                     if (preg_match("/^(?=.*\d)(?=.*[a-zA-Z]).{8,20}$/", $aPost['new_password'])) {
                         $s_sql = 'SELECT id FROM users WHERE password = :existing_password AND is_deleted = 0 AND id=:id';
-                        $Result = DB::select($s_sql, array(
-                            'existing_password' => md5($aPost['existing_password']),
-                            'id' => $UserId
-                        )
+                        $Result = DB::select(
+                            $s_sql,
+                            array(
+                                'existing_password' => md5($aPost['existing_password']),
+                                'id' => $UserId
+                            )
                         );
                         // dd($Result);
                         if (!empty($Result[0])) {

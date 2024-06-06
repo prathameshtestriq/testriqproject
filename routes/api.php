@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdvertisementController;
+use App\Http\Controllers\Api\EventDashboardController;
 use App\Http\Controllers\Api\EventDetailsController;
 use App\Http\Controllers\Api\EventUserFollowController;
 use App\Http\Controllers\Api\OrganizerController;
@@ -37,6 +38,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('auth/google', [GoogleLoginController::class, 'redirectToGoogle']);
 Route::get('google_success', [GoogleLoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
+Route::controller(EventDashboardController::class)->group(function (){
+    Route::post('get_insights', 'getInsights');
+    Route::post('get_registered_users', 'getRegisteredUsers');
+    Route::post('get_netsales', 'getNetSales'); //attendees
+});
 
 Route::controller(MasterController::class)->group(function () {
     Route::post('country', 'getCountry');
@@ -59,6 +65,7 @@ Route::controller(LoginController::class)->group(function () {
     Route::post('send_reset_password_link', 'send_reset_password_link');
     Route::post('reset_password/{token}', 'reset_password');
     Route::post('update_password', 'update_password');
+    Route::post('validate_otp', 'validateOtp');
 });
 
 Route::controller(EventController::class)->group(function () {

@@ -1,0 +1,214 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Libraries\Authenticate;
+use Illuminate\Support\Facades\DB;
+
+
+class EventDashboardController extends Controller
+{
+    function getInsights(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
+
+                // Net Sales
+                $sql = "SELECT SUM(quantity) AS NetSales FROM booking_details WHERE event_id =:event_id";
+                $TotalBooking = DB::select($sql, array('event_id' => $EventId));
+                $NetSales = (count($TotalBooking) > 0) ? $TotalBooking[0]->NetSales : 0;
+                $ResponseData['NetSales'] = $NetSales;
+
+                // Registration
+                $sql = "SELECT COUNT(DISTINCT(user_id)) AS TotalRegistration,SUM(total_amount) AS TotalAmount FROM event_booking WHERE event_id =:event_id";
+                $TotalRegistration = DB::select($sql, array('event_id' => $EventId));
+                $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistration : 0;
+                $ResponseData['TotalAmount'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalAmount : 0;
+
+                // dd($TotalRegistration);
+
+
+                // Revenue
+                // $sql = "SELECT SUM(total_amount) AS TotalRevenue FROM event_booking WHERE event_id =
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function getRegisteredUsers(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
+
+                // Registration
+                // $sql = "SELECT eb.user_id,eb.booking_date,SUM(total_amount) AS TotalAmount,SUM(bd.quantity) AS TotalTickets,u.id,u.firstname,u.lastname FROM event_booking AS eb 
+                // LEFT JOIN users AS u ON u.id=eb.user_id
+                // LEFT JOIN booking_details AS bd ON bd.user_id=eb.user_id
+                // WHERE eb.event_id =:event_id GROUP BY eb.user_id";
+                // $UserData = DB::select($sql, array('event_id' => $EventId));
+
+                $sql = "SELECT 
+                        eb.user_id,
+                        eb.booking_date,
+                        SUM(eb.total_amount) AS TotalAmount,
+                        bd.TotalTickets,
+                        u.id,
+                        u.firstname,
+                        u.lastname
+                    FROM event_booking AS eb 
+                    LEFT JOIN users AS u ON u.id = eb.user_id
+                    LEFT JOIN (
+                        SELECT 
+                            user_id, 
+                            event_id, 
+                            SUM(quantity) AS TotalTickets
+                        FROM booking_details 
+                        GROUP BY user_id, event_id
+                    ) AS bd ON bd.user_id = eb.user_id AND bd.event_id = eb.event_id
+                    WHERE eb.event_id = :event_id 
+                    GROUP BY eb.user_id";
+                $UserData = DB::select($sql, array('event_id' => $EventId));
+
+
+                foreach ($UserData as $key => $value) {
+                    $value->booking_date = !empty($value->booking_date) ? date("Y-m-d H:i A", ($value->booking_date)) : '';
+                }
+                $ResponseData['UserData'] = (count($UserData) > 0) ? $UserData : [];
+
+
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function getNetSales(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
+                $user_id = isset($aPost['user_id']) ? $aPost['user_id'] : 0;
+
+                // $sql = "SELECT SUM(quantity) AS NetSales FROM booking_details WHERE event_id =:event_id";
+                // $TotalBooking = DB::select($sql, array('event_id' => $EventId));
+                // $NetSales = (count($TotalBooking) > 0) ? $TotalBooking[0]->NetSales : 0;
+                // $ResponseData['NetSales'] = $NetSales;
+
+                $sql = "SELECT *,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+                WHERE b.event_id = :event_id ";
+                if ($user_id != 0) {
+                    $sql .= " AND b.user_id =".$user_id;
+                }
+                $AttendeeData = DB::select($sql, array('event_id' => $EventId));
+                foreach ($AttendeeData as $key => $value) {
+                    $value->booking_date = !empty($value->created_at) ? date("Y-m-d H:i A", ($value->created_at)) : '';
+                }
+
+                $ResponseData['AttendeeData'] = (count($AttendeeData) > 0) ? $AttendeeData : [];
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+}
