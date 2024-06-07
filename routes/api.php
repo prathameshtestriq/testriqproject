@@ -201,4 +201,6 @@ Route::controller(FormQuestionsController::class)->group(function () {
 Route::controller(PaymentGatwayController::class)->group(function () {
     Route::post('/paymentByUserDetails', 'payment_by_user_details');
     Route::post('/bookingPaymentProcess', 'booking_payment_process');
+    Route::post('/PaymentProcess', 'payment_process');
+    Route::post('/featch_pay_data', 'featch_pay_data');
 });
