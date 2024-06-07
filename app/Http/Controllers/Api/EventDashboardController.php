@@ -96,6 +96,11 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
 
+                $SearchUser = isset($aPost['user_name']) ? $aPost['user_name'] : 0;
+
+                $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
+                $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
+
                 $sql = "SELECT 
                         eb.user_id,
                         eb.booking_date,
@@ -113,12 +118,30 @@ class EventDashboardController extends Controller
                             SUM(b_d.quantity) AS TotalTickets
                         FROM booking_details AS b_d
                         LEFT JOIN event_booking AS e_b ON e_b.id=b_d.booking_id
-                        WHERE e_b.transaction_status = 1
-                        GROUP BY b_d.user_id, b_d.event_id
+                        LEFT JOIN users AS uu ON uu.id = e_b.user_id
+                        WHERE e_b.transaction_status = 1";
+                // if ($SearchUser) {
+                //     $sql .= " AND uu.firstname LIKE '%" . $SearchUser . "%' OR uu.lastname LIKE '%" . $SearchUser . "%'";
+                // }
+                $sql .= " GROUP BY b_d.user_id, b_d.event_id
                     ) AS bd ON bd.user_id = eb.user_id AND bd.event_id = eb.event_id
                     WHERE eb.event_id = :event_id 
-                    AND eb.transaction_status = 1
-                    GROUP BY eb.user_id";
+                    AND eb.transaction_status = 1";
+
+                if ($SearchUser) {
+                    $sql .= " AND u.firstname LIKE '%" . $SearchUser . "%' OR u.lastname LIKE '%" . $SearchUser . "%'";
+                }
+                if (!empty($FromDate) && empty($ToDate)) {
+                    $sql .= " AND eb.booking_date >= " . $FromDate;
+                }
+                if (empty($FromDate) && !empty($ToDate)) {
+                    $sql .= " AND eb.booking_date <= " . $ToDate;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $sql .= " AND eb.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
+                }
+                $sql .= " GROUP BY eb.user_id";
+                // dd($sql);
                 $UserData = DB::select($sql, array('event_id' => $EventId));
 
 
@@ -171,8 +194,9 @@ class EventDashboardController extends Controller
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
                 $user_id = isset($aPost['user_id']) ? $aPost['user_id'] : 0;
                 $TicketId = isset($aPost['ticket_id']) ? $aPost['ticket_id'] : 0;
-                $FromDate = isset($aPost['from_date']) ? strtotime($aPost['from_date']) : 0;
-                $ToDate = isset($aPost['to_date']) ? strtotime($aPost['to_date']) : 0;
+
+                $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
+                $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
                 $now = strtotime("now");
 
                 $sql = "SELECT *,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
@@ -185,11 +209,14 @@ class EventDashboardController extends Controller
                 if ($user_id != 0) {
                     $sql .= " AND b.user_id =" . $user_id;
                 }
-                // if(!empty($FromDate) && empty($ToDate)){
-                //     $sql .= " AND b.created_at >= :from_date";
-                // }
+                if (!empty($FromDate) && empty($ToDate)) {
+                    $sql .= " AND b.booking_date >= " . $FromDate;
+                }
+                if (empty($FromDate) && !empty($ToDate)) {
+                    $sql .= " AND b.booking_date <= " . $ToDate;
+                }
                 if (!empty($FromDate) && !empty($ToDate)) {
-                    $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND ".$ToDate;
+                    $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
                 }
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
                 foreach ($AttendeeData as $key => $value) {
