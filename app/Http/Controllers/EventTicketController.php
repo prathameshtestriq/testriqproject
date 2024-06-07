@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Master;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use App\Libraries\Emails;
+
 // use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EventTicketController extends Controller
@@ -584,6 +585,7 @@ class EventTicketController extends Controller
                         }
 
                         foreach ($FormQuestions as $value) {
+                            $hasCountriesQuestion = $hasStatesQuestion = false;
                             // echo "<pre>";print_r($value);
                             $value->ActualValue = "";
                             $value->Error = "";
@@ -619,6 +621,21 @@ class EventTicketController extends Controller
                                 $countries = DB::select($sql);
 
                                 $value->question_form_option = json_encode($countries);
+                            }
+
+                            $hasCountriesQuestion = !empty(array_filter($FormQuestions, function ($value) {
+                                return $value->question_form_type == 'countries';
+                            }));
+
+                            $hasStatesQuestion = !empty(array_filter($FormQuestions, function ($value) {
+                                return $value->question_form_type == 'states';
+                            }));
+
+                            if (!$hasCountriesQuestion && $hasStatesQuestion && $value->question_form_type == 'states') {
+                                $sql = "SELECT id,name FROM states WHERE flag=1";
+                                $states = DB::select($sql);
+
+                                $value->question_form_option = json_encode($states);
                             }
                         }
 
