@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Master;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use App\Libraries\Emails;
+// use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EventTicketController extends Controller
 {
@@ -131,6 +132,7 @@ class EventTicketController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+
     public function addediteventticket(Request $request)
     {
         //ticket_status
@@ -325,19 +327,22 @@ class EventTicketController extends Controller
                         //---------- add form question to aplay new ticket id
                         $last_inserted_id = DB::getPdo()->lastInsertId();
 
-                        $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and apply_ticket = 1 and event_id = '.$EventId.'  ';
+                        $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and apply_ticket = 1 and event_id = ' . $EventId . '  ';
                         $aResult = DB::select($Sql);
 
-                        if(!empty($aResult)){
-                            foreach($aResult as $res){
-                                $new_tickets_ids = !empty($res->ticket_details) ? $res->ticket_details.','.$last_inserted_id : "";
-                               
+                        if (!empty($aResult)) {
+                            foreach ($aResult as $res) {
+                                $new_tickets_ids = !empty($res->ticket_details) ? $res->ticket_details . ',' . $last_inserted_id : "";
+
                                 $up_sSQL = 'UPDATE event_form_question SET `ticket_details` =:ticketDetailsIds WHERE `event_id`=:eventId and `id` =:Id and apply_ticket = 1 ';
-                                DB::update($up_sSQL,array(
-                                    'ticketDetailsIds' => $new_tickets_ids,
-                                    'eventId' => $EventId,
-                                    'Id' => $res->id
-                                ));
+                                DB::update(
+                                    $up_sSQL,
+                                    array(
+                                        'ticketDetailsIds' => $new_tickets_ids,
+                                        'eventId' => $EventId,
+                                        'Id' => $res->id
+                                    )
+                                );
 
                             }
                         }
@@ -386,30 +391,33 @@ class EventTicketController extends Controller
             $Auth->apiLog($request);
 
             $EventId = isset($request->event_id) ? $request->event_id : 0;
-            
-            //-------------- if ticket is deleted for this condition to event form question in ticket id delete.
-            $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.'  ';
-            $aResult = DB::select($Sql);
-            
-            if(!empty($aResult)){
-                foreach($aResult as $res){
 
-                    if(!empty($res->ticket_details)){
+            //-------------- if ticket is deleted for this condition to event form question in ticket id delete.
+            $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and event_id = ' . $EventId . '  ';
+            $aResult = DB::select($Sql);
+
+            if (!empty($aResult)) {
+                foreach ($aResult as $res) {
+
+                    if (!empty($res->ticket_details)) {
                         $new_tickets_id_array = explode(",", $res->ticket_details);
                         $arrayKey = array_search($request->ticket_id, $new_tickets_id_array);
                         unset($new_tickets_id_array[$arrayKey]);
- 
+
                         $new_tickets_ids = !empty($new_tickets_id_array) ? implode(",", $new_tickets_id_array) : "";
                         //dd($new_tickets_ids);
-                        if(!empty($new_tickets_ids)){
+                        if (!empty($new_tickets_ids)) {
                             $up_sSQL = 'UPDATE event_form_question SET `ticket_details` =:ticketDetailsIds WHERE `event_id`=:eventId and `id` =:Id ';  //and apply_ticket = 1
-                            DB::update($up_sSQL,array(
-                                'ticketDetailsIds' => $new_tickets_ids,
-                                'eventId' => $EventId,
-                                'Id' => $res->id
-                            ));
+                            DB::update(
+                                $up_sSQL,
+                                array(
+                                    'ticketDetailsIds' => $new_tickets_ids,
+                                    'eventId' => $EventId,
+                                    'Id' => $res->id
+                                )
+                            );
                         }
-                        
+
                     }
 
                 }
@@ -576,6 +584,7 @@ class EventTicketController extends Controller
                         }
 
                         foreach ($FormQuestions as $value) {
+                            // echo "<pre>";print_r($value);
                             $value->ActualValue = "";
                             $value->Error = "";
                             $value->TicketId = 0;
@@ -602,6 +611,14 @@ class EventTicketController extends Controller
 
                                 // Assign the updated JSON string back to $value->question_form_option
                                 $value->question_form_option = $updatedJsonString;
+                            }
+
+                            // nationality and country array
+                            if ($value->question_form_type == 'countries') {
+                                $sql = "SELECT id,name AS label FROM countries WHERE flag=1";
+                                $countries = DB::select($sql);
+
+                                $value->question_form_option = json_encode($countries);
                             }
                         }
 
@@ -935,18 +952,18 @@ class EventTicketController extends Controller
                                     //     }
                                     // }
                                 }
-                                $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
+                                // $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
 
-                                if (!empty($IdBookingDetails)) {
-                                    $Binding3 = array(
-                                        "booking_details_id" => $IdBookingDetails,
-                                        "field_name" => $value['question_form_name'],
-                                        "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
-                                    );
+                                // if (!empty($IdBookingDetails)) {
+                                //     $Binding3 = array(
+                                //         "booking_details_id" => $IdBookingDetails,
+                                //         "field_name" => $value['question_form_name'],
+                                //         "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
+                                //     );
 
-                                    $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
-                                    DB::insert($Sql3, $Binding3);
-                                }
+                                //     $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
+                                //     DB::insert($Sql3, $Binding3);
+                                // }
                             }
                         }
                     }
@@ -977,11 +994,21 @@ class EventTicketController extends Controller
 
     function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets)
     {
+        $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
         $User = DB::select($sql1, ['user_id' => $UserId]);
 
         $sql2 = "SELECT * FROM events WHERE id=:event_id";
         $Event = DB::select($sql2, ['event_id' => $EventId]);
+        $Venue = "";
+        if (count($Event) > 0) {
+            $Venue .= ($Event[0]->address !== "") ? $Event[0]->address . ", " : "";
+            $Venue .= ($Event[0]->city !== "") ? $master->getCityName($Event[0]->city) . ", " : "";
+            $Venue .= ($Event[0]->state !== "") ? $master->getStateName($Event[0]->state) . ", " : "";
+            $Venue .= ($Event[0]->country !== "") ? $master->getCountryName($Event[0]->country) . ", " : "";
+            $Venue .= ($Event[0]->pincode !== "") ? $Event[0]->pincode . ", " : "";
+            // $Venue = $Event[0]->address.", ".$Event[0]->city.", ".$Event[0]->state.", ".$Event[0]->country.", ".$Event[0]->pincode;
+        }
 
         $sql3 = "SELECT * FROM organizer WHERE user_id=:user_id";
         $Organizer = DB::select($sql3, ['user_id' => $UserId]);
@@ -997,14 +1024,17 @@ class EventTicketController extends Controller
             "LASTNAME" => $User[0]->lastname,
             "EVENTID" => $EventId,
             "EVENTNAME" => $Event[0]->name,
-            "EVENTSTARTDATE" => date('d-m-Y', ($Event[0]->start_time)),
-            "EVENTSTARTTIME" => date('H:i A', ($Event[0]->start_time)),
-            "EVENTENDDATE" => date('d-m-Y', ($Event[0]->end_time)),
-            "EVENTENDTIME" => date('H:i A', ($Event[0]->end_time)),
+            "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
+            "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
+            "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
+            "EVENTENDTIME" => (!empty($Event[0]->end_time)) ? date('H:i A', ($Event[0]->end_time)) : "",
             "YTCRTEAM" => "Ytcr Team",
             "EVENTURL" => $EventUrl,
             "COMPANYNAME" => $OrgName,
-            "TOTALTICKETS" => $TotalNoOfTickets
+            "TOTALTICKETS" => $TotalNoOfTickets,
+            "VENUE" => $Venue,
+
+            // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
         // dd($ConfirmationEmail);
         $Subject = "";
@@ -1055,6 +1085,7 @@ class EventTicketController extends Controller
                 (SELECT SUM(quantity) FROM booking_details WHERE user_id=eb.user_id AND event_id=eb.event_id) AS TotalCount,
                 (SELECT name FROM events WHERE id=eb.event_id) AS EventName,
                 (SELECT start_time FROM events WHERE id=eb.event_id) AS EventStartTime,
+                (SELECT end_time FROM events WHERE id=eb.event_id) AS EventEndTime,
                 (SELECT city FROM events WHERE id=eb.event_id) AS EventCity,
                 (SELECT banner_image FROM events WHERE id=eb.event_id) AS banner_image
                     FROM event_booking AS eb
@@ -1072,7 +1103,21 @@ class EventTicketController extends Controller
                     $event->city_name = !empty($event->EventCity) ? $master->getCityName($event->EventCity) : "";
                     $event->banner_image = !empty($event->banner_image) ? url('/') . '/uploads/banner_image/' . $event->banner_image . '' : '';
                 }
-                $ResponseData['BookingData'] = $BookingData;
+                // $ResponseData['BookingData'] = $BookingData;
+
+                $now = time(); // Get the current timestamp
+                $pastEvents = [];
+                $activeEvents = [];
+
+                foreach ($BookingData as $booking) {
+                    if ($booking->EventEndTime < $now) {
+                        $pastEvents[] = $booking; // Push to past events array
+                    } else {
+                        $activeEvents[] = $booking; // Push to active events array
+                    }
+                }
+                $ResponseData['pastEvents'] = $pastEvents;
+                $ResponseData['activeEvents'] = $activeEvents;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -1150,6 +1195,8 @@ class EventTicketController extends Controller
 
                     $data = $this->getNewPricingDetails($event);
                     $event->PricingDetails = $data;
+
+                    // $event->qrCode = base64_encode(QrCode::format('png')->size(200)->generate($event->unique_ticket_id));
                 }
                 $ResponseData['BookingData'] = $BookingData;
 
@@ -1222,16 +1269,68 @@ class EventTicketController extends Controller
                 $Auth->apiLog($request);
 
                 $UserId = $aToken['data']->ID;
+                // dd($UserId);
+                $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username FROM users WHERE id=:user_id";
+                $User = DB::select($sql1, ['user_id' => $UserId]);
+                $Username = (sizeof($User) > 0) ? $User[0]->username : '';
+                // dd($Username);
 
-                $EventId = isset($request->event_id) ? $request->event_id : 0;
-                $TicketId = isset($request->ticket_id) ? $request->ticket_id : 0;
-                $AttenddeeName = isset($request->attendee_name) ? $request->attendee_name : "";
-                $BookingDetailId = isset($request->booking_detail_id) ? $request->booking_detail_id : 0;
+                $Venue = "";
+                $TicketArr = isset($request->ticket) ? $request->ticket : []; // ticket array
+                // dd($TicketArr);
 
+                $EventId = isset($TicketArr["event_id"]) ? $TicketArr["event_id"] : 0;
+                $TicketId = isset($TicketArr["ticket_id"]) ? $TicketArr["ticket_id"] : 0;
+                $AttenddeeName = isset($TicketArr["attendee_name"]) ? $TicketArr["attendee_name"] : "";
+                $BookingDetailId = isset($TicketArr["booking_detail_id"]) ? $TicketArr["booking_detail_id"] : 0;
+                $EventLink = isset($request->event_link) ? $request->event_link : "";
+
+                if (!empty($EventId)) {
+                    $sql2 = "SELECT start_time,end_time,address,city,state,country,pincode FROM events WHERE id=:event_id";
+                    $Event = DB::select($sql2, ['event_id' => $EventId]);
+                    // dd($Event);
+                    if (sizeof($Event) > 0) {
+                        foreach ($Event as $key => $event) {
+                            $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
+                            $event->end_date = (!empty($event->end_time)) ? gmdate("d M Y", $event->end_time) : 0;
+                            $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
+                            $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
+
+                            $Venue .= ($event->address !== "") ? $event->address . ", " : "";
+                            $Venue .= ($event->city !== "") ? $master->getCityName($event->city) . ", " : "";
+                            $Venue .= ($event->state !== "") ? $master->getStateName($event->state) . ", " : "";
+                            $Venue .= ($event->country !== "") ? $master->getCountryName($event->country) . ", " : "";
+                            $Venue .= ($event->pincode !== "") ? $event->pincode . ", " : "";
+
+                            $event->Venue = $Venue;
+                        }
+                    }
+                }
+
+                $sql3 = "SELECT id,name,logo_image FROM organizer WHERE user_id=:user_id";
+                $Organizer = DB::select($sql3, ['user_id' => $UserId]);
+                // dd($Organizer[0]);
+
+                if (count($Organizer) > 0) {
+                    foreach ($Organizer as $key => $value) {
+                        $value->logo_image = !empty($value->logo_image) ? url('/') . 'organiser/logo_image/' . $value->logo_image : "";
+                    }
+                }
+                // dd($Organizer);
+                // Generate QR code
+                // $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($TicketArr['unique_ticket_id']));
+                $qrCode = "";
                 $data = [
-                    'title' => "Booking Detail Id : " . $BookingDetailId,
-                    'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
+                    // 'title' => "Booking Detail Id : " . $BookingDetailId,
+                    // 'content' => 'This is a sample PDF generated using Laravel and Dompdf.'
+                    'ticket_details' => $TicketArr,
+                    'event_details' => (sizeof($Event) > 0) ? $Event[0] : [],
+                    'org_details' => (sizeof($Organizer) > 0) ? $Organizer[0] : [],
+                    'Username' => $Username,
+                    'EventLink' => $EventLink,
+                    'QrCode' => $qrCode
                 ];
+                // dd($data);
 
                 $pdf = PDF::loadView('pdf_template', $data);
 
@@ -1284,6 +1383,9 @@ class EventTicketController extends Controller
                 $now = strtotime("now");
                 $EventId = (isset($aPost['event_id'])) ? $aPost['event_id'] : 0;
                 $TicketIds = (isset($aPost['ticket_ids'])) ? $aPost['ticket_ids'] : 0;
+                // show_public
+                $ShowPublicFlag = (isset($aPost['show_public'])) ? $aPost['show_public'] : 0;
+
                 $CouponsArr = [];
 
                 if (!empty($EventId) && !empty($TicketIds)) {
@@ -1293,9 +1395,13 @@ class EventTicketController extends Controller
                     FROM event_coupon_details AS ecd
                     JOIN event_coupon AS ec ON ecd.event_coupon_id = ec.id
                     WHERE ecd.event_id = :event_id
-                    AND ec.coupon_status = 1
-                    AND ec.show_public = 1
-                    AND ecd.end_coupon = 0
+                    AND ec.coupon_status = 1";
+
+                    if (empty($ShowPublicFlag)) {
+                        $SQL .= " AND ec.show_public = 1";
+                    }
+
+                    $SQL .= " AND ecd.end_coupon = 0
                     AND FIND_IN_SET(:ticket_id, ecd.ticket_details) > 0
                     AND ecd.discount_from_datetime <= :now1
                     AND ecd.discount_to_datetime >= :now2
