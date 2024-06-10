@@ -708,19 +708,26 @@ class EventTicketController extends Controller
                 $BookingPaymentId = !empty($aPost['booking_pay_id']) ? $aPost['booking_pay_id'] : 0;
                 $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                 $BookingPayment = DB::select($sql, array('booking_pay_id' => $BookingPaymentId));
+
+                // $sql1 = "SELECT payment_status FROM booking_payment_details WHERE id =:id";
+                // $Status = DB::select($sql, array('id' => $BookingPaymentId));
                 // dd($BookingPayment);
 
                 if (count($BookingPayment) > 0) {
                     $EventId = $BookingPayment[0]->event_id;
                     $TotalAttendee = $BookingPayment[0]->total_attendees;
-                    $FormQuestions = !empty($BookingPayment[0]->FormQuestions) ? json_decode($BookingPayment[0]->FormQuestions)  : [];
-                    $AllTickets = !empty($BookingPayment[0]->AllTickets) ? json_decode($BookingPayment[0]->AllTickets)  : [];
+                    $FormQuestions = !empty($BookingPayment[0]->FormQuestions) ? json_decode($BookingPayment[0]->FormQuestions) : [];
+                    $AllTickets = !empty($BookingPayment[0]->AllTickets) ? json_decode($BookingPayment[0]->AllTickets) : [];
                     $TotalPrice = $BookingPayment[0]->TotalPrice;
                     $TotalDiscount = $BookingPayment[0]->TotalDiscount;
-                    $ExtraPricing = !empty($BookingPayment[0]->ExtraPricing) ? json_decode($BookingPayment[0]->ExtraPricing)  : [];
+                    $ExtraPricing = !empty($BookingPayment[0]->ExtraPricing) ? json_decode($BookingPayment[0]->ExtraPricing) : [];
                     $UtmCampaign = $BookingPayment[0]->UtmCampaign;
-                    $GstArray = !empty($BookingPayment[0]->GstArray) ? json_decode($BookingPayment[0]->GstArray)  : [];
-                    $TransactionStatus = 1;//!empty($BookingPayment[0]->TransactionStatus) ? json_decode($BookingPayment[0]->TransactionStatus)  : [];
+                    $GstArray = !empty($BookingPayment[0]->GstArray) ? json_decode($BookingPayment[0]->GstArray) : [];
+                    // $TransactionStatus = 0;
+                    // if (count($Status) > 0) {
+                    //     if ($Status[0]->payment_status == 'success') $TransactionStatus = 1;
+                    //     else if ($Status[0]->payment_status == 'failure') $TransactionStatus = 2;
+                    // }
 
                     // dd($EventId);
                     // $EventId = isset($aPost['event_id']) && !empty($aPost['event_id']) ? $aPost['event_id'] : 0;
@@ -748,9 +755,10 @@ class EventTicketController extends Controller
                         "total_discount" => $TotalDiscount,
                         "utm_campaign" => $UtmCampaign,
                         "cart_details" => json_encode($GstArray),
-                        "transaction_status"=> $TransactionStatus
+                        // "transaction_status" => $TransactionStatus
+                        "booking_pay_id"=> $BookingPaymentId
                     );
-                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign,cart_details,transaction_status) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign,:cart_details,:transaction_status)";
+                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign,cart_details,booking_pay_id) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign,:cart_details,:booking_pay_id)";
                     DB::insert($Sql1, $Binding1);
                     $BookingId = DB::getPdo()->lastInsertId();
 
@@ -1009,7 +1017,7 @@ class EventTicketController extends Controller
                     // $MessageContent = $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
                     $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
                     // $ResponseData['MessageContent'] = $MessageContent;
-                }else{
+                } else {
                     $ResposneCode = 400;
                     $message = 'Invalid request';
                 }
