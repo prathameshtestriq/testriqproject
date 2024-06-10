@@ -4,19 +4,19 @@
 
 //-------------------
 // Database connection parameters
-$flag = 3; // prime - 1 / live - 2 / local - 3 
+$flag = 2; // prime - 1 / live - 2 / local - 3 
 
-if($flag == 1){
+if($flag == 1){                   // prime
     $servername = 'localhost'; 
     $username   = 'root'; 
     $password   = 'pf4hP$v3g^xD'; 
     $database   = 'Races2.0_Web'; 
-}else if($flag == 2){
-    $servername = 'swtprime.com'; 
-    $username   = 'root'; 
-    $password   = '12345'; 
+}else if($flag == 2){             // live
+    $servername = 'localhost'; 
+    $username   = 'newroot'; 
+    $password   = 'ytcr@Swt12'; 
     $database   = 'Races2.0_Web'; 
-}else{
+}else{                            // local
     $servername = 'localhost'; 
     $username   = 'root'; 
     $password   = '12345'; 
@@ -176,9 +176,23 @@ if ($conn->connect_error) {
 	    //echo "New record created successfully";
         if($status == "failure"){
             //header("Location: http://localhost:3000/payment_gateway/".$status);
-            header("Location: http://localhost:3000/register_now/".$event_id."/".$status);
+            if($flag == 1){  // prime
+                header("Location: https://swtprime.com/Races2.0_Frontend/".$event_id."/".$status);
+            }else if($flag == 2){  // live
+                header("Location: https://racesregistrations.com/".$event_id."/".$status);
+            }else{
+                header("Location: http://localhost:3000/register_now/".$event_id."/".$status);
+            }
+            
         }else if($status == "success"){
-            header("Location: http://localhost:3000/payment_gateway/".$status);
+            
+            if($flag == 1){  // prime
+                header("Location: https://swtprime.com/Races2.0_Frontend/".$status);
+            }else if($flag == 2){  // live
+                header("Location: https://racesregistrations.com/".$status);
+            }else{
+                header("Location: http://localhost:3000/payment_gateway/".$status);
+            }
         }
 	} else {
 	    echo "Error: " . $sql . "<br>" . $conn->error;
