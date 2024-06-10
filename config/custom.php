@@ -98,4 +98,7 @@ return [
         'hi'=>'hindi'
     ),
      # 2MB
+
+    'merchant_key' => 'ozLEHc',  // payment details key
+    'salt' => 'vvHOCdxxbkTXYASLCevSJ7iDkE8DRBT4',  // payment details salt
 ];

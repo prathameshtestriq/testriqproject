@@ -1,13 +1,27 @@
 <?php 
 //print_r($_REQUEST); die;
 //header("Location: http://localhost:3000/payment_gateway");
-//-------------------
 
+//-------------------
 // Database connection parameters
-$servername = "localhost"; 
-$username = "root"; 
-$password = "12345"; 
-$database = "Races2.0_Web"; 
+$flag = 3; // prime - 1 / live - 2 / local - 3 
+
+if($flag == 1){
+    $servername = 'localhost'; 
+    $username   = 'root'; 
+    $password   = 'pf4hP$v3g^xD'; 
+    $database   = 'Races2.0_Web'; 
+}else if($flag == 2){
+    $servername = 'swtprime.com'; 
+    $username   = 'root'; 
+    $password   = '12345'; 
+    $database   = 'Races2.0_Web'; 
+}else{
+    $servername = 'localhost'; 
+    $username   = 'root'; 
+    $password   = '12345'; 
+    $database   = 'Races2.0_Web'; 
+}
 
 $conn = new mysqli($servername, $username, $password, $database);
 
@@ -17,13 +31,13 @@ if ($conn->connect_error) {
 }
 
     // Transcation data for insertion
-    $mihpayid = $_POST['mihpayid'];
+    	$mihpayid = $_POST['mihpayid'];
         $mode = $_POST['mode'];
         $status=$_POST['status'];
         $unmappedstatus=$_POST['unmappedstatus'];
         $key =$_POST['key'];
         $txnid=$_POST['txnid'];
-        $amount=$_POST['amount'];
+        $amount = $_POST['amount'];
         $discount=$_POST['discount'];
         $net_amount_debit=$_POST['net_amount_debit'];
         $addedon=$_POST['addedon'];
@@ -116,19 +130,61 @@ if ($conn->connect_error) {
         );
         // print_r($new_array); die;
         $jsonData = json_encode($transcation_array);
+     
+    
+    // $mihpayid = '20080004972';
+    // $txnid = 'Ytcr-5';
+    // $amount = '1.00';
+    // $jsonData = 'testdata';
+    // $status = 'failure';
 
+    //-------- event details
+    // $sel_Sql = "SELECT event_id FROM booking_payment_details WHERE txnid = '$txnid' ";
+    $sel_Sql = "SELECT id,event_id FROM booking_payment_details WHERE txnid = '$txnid' ";
+    $aResult = mysqli_query($conn, $sel_Sql);
+    $event_id = $booking_pay_id = 0;
 
-// SQL query for insertion
-$sql = "INSERT INTO new_payment (status, post_data) VALUES ('$status', '$jsonData')";
+    if ($aResult->num_rows > 0) {
+      while($row = $aResult->fetch_assoc()) {
+        $event_id = !empty($row["event_id"]) ? $row["event_id"] : 0;
+        $booking_pay_id = !empty($row["id"]) ? $row["id"] : 0;
+      }
+    }
 
-if ($conn->query($sql) === TRUE) {
-    //echo "New record created successfully";
-    header("Location: http://localhost:3000/payment_gateway/");
-} else {
-    echo "Error: " . $sql . "<br>" . $conn->error;
-}
+    //----------- log entry --------------
+    $response_datetime = date('Y-m-d H:i:s');
+	//$insert_sql = "INSERT INTO booking_payment_log(event_id, txnid, mihpayid, amount, post_data, created_by) VALUES ('1', '$txnid', '$mihpayid', '$amount', '$jsonData', '1')";
+	$update_sql = "UPDATE booking_payment_log SET mihpayid = '$mihpayid', response_data = '$jsonData', payment_status = '$status', response_datetime = '$response_datetime' WHERE txnid = '$txnid' ";
+    $result = mysqli_query($conn, $update_sql);
 
-// Close connection
-$conn->close();
+    //-------- event booking table update payment status
+    $transaction_status = 0;
+    if($status == "success"){
+        $transaction_status = 1;
+    }else{
+        $transaction_status = 2;
+    }
+   
+    $update_sql1 = "UPDATE event_booking SET transaction_status = $transaction_status WHERE booking_pay_id = $booking_pay_id ";
+    $result1 = mysqli_query($conn, $update_sql1);
+   
+	// SQL query for insertion
+	//$sql = "INSERT INTO new_payment (status, post_data) VALUES ('$status', '$jsonData')";
+	$sql = "UPDATE booking_payment_details SET payment_status = '$status', post_data = '$jsonData' WHERE txnid = '$txnid' ";
+
+	if ($conn->query($sql) === TRUE) {
+	    //echo "New record created successfully";
+        if($status == "failure"){
+            //header("Location: http://localhost:3000/payment_gateway/".$status);
+            header("Location: http://localhost:3000/register_now/".$event_id."/".$status);
+        }else if($status == "success"){
+            header("Location: http://localhost:3000/payment_gateway/".$status);
+        }
+	} else {
+	    echo "Error: " . $sql . "<br>" . $conn->error;
+	}
+
+	// Close connection
+	$conn->close();
 
 ?>
