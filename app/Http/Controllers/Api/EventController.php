@@ -601,14 +601,14 @@ class EventController extends Controller
             $EventSql .= " AND e.name LIKE '%" . $EventName . "%' ";
         }
         if ((!empty($StartDateTime)) && (empty($EndDateTime))) {
-            $EventSql .= " AND e.start_time >=" . $StartDateTime;
+            $EventSql .= " AND e.registration_start_time >=" . $StartDateTime;
         }
         if ((!empty($EndDateTime)) && (empty($StartDateTime))) {
-            $EventSql .= " AND e.end_time <=" . $EndDateTime;
+            $EventSql .= " AND e.registration_end_time <=" . $EndDateTime;
         }
         if ((!empty($StartDateTime)) && (!empty($EndDateTime))) {
-            // $EventSql .= ' AND e.start_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
-            $EventSql .= ' AND e.start_time >=' . $StartDateTime . ' AND e.end_time <= ' . $EndDateTime;
+            // $EventSql .= ' AND e.registration_start_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
+            $EventSql .= ' AND e.registration_start_time >=' . $StartDateTime . ' AND e.registration_end_time <= ' . $EndDateTime;
 
         }
         if (!empty($Distance)) {
