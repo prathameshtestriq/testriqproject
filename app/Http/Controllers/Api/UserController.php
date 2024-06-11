@@ -52,6 +52,8 @@ class UserController extends Controller
                 $value->ca_state_name = !empty($value->ca_state) ? $master->getStateName($value->ca_state) : "";
                 $value->ca_country_name = !empty($value->ca_country) ? $master->getCountryName($value->ca_country) : "";
                 // $value->ca_country_code = !empty ($value->ca_country) ? $master->getCountryCode($value->ca_country) : "";
+                $value->updated_at = (!empty($value->updated_at)) ? date("Y-m-d h:i A", $value->updated_at) : 0;
+
             }
             if (!empty($userData)) {
                 $ResponseData['userData'] = $userData;
@@ -555,7 +557,7 @@ class UserController extends Controller
                     $Address = DB::select($SQL2, array("pincode" => $Pincode, "country_code" => $CountryCode));
 
                     if (count($Address) > 0) {
-                        
+
                         foreach ($Address as $key => $value) {
                             $value->city_name = !empty($value->city_id) ? $master->getCityName($value->city_id) : "";
                             $value->state_name = !empty($value->state_id) ? $master->getStateName($value->state_id) : "";
@@ -1494,7 +1496,8 @@ class UserController extends Controller
                 drug_allergy_details=:drug_allergy_details,
                 hospitalization_details=:hospitalization_details,
                 stage_pregnancy=:stage_pregnancy,
-                current_medication_names=:current_medication_names
+                current_medication_names=:current_medication_names,
+                updated_at=:updated_at
                 WHERE  user_id=:user_id';
 
                 $Binding = [
@@ -1525,6 +1528,7 @@ class UserController extends Controller
                     'hospitalization_details' => $hospitalization_details,
                     'stage_pregnancy' => $stage_pregnancy,
                     'current_medication_names' => $current_medication_names,
+                    'updated_at' => strtotime("now"),
                     'user_id' => $userId
                     // 'id' => $id
 

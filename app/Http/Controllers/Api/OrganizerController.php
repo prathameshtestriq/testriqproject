@@ -118,6 +118,7 @@ class OrganizerController extends Controller
                 $organiserId = $aPost['oragniser_id'];
                 $name = $aPost['name'];
                 $email = $aPost['email'];
+                $mobile = $aPost['mobile'];
                 $about = $aPost['about'];
                 $gst = $aPost['gst'];
                 $gstNo = isset($aPost['gst_number']) ? $aPost['gst_number'] : "";
@@ -143,6 +144,7 @@ class OrganizerController extends Controller
                             'user_id' => $UserId,
                             'name' => $name,
                             'email' => $email,
+                            'mobile'=> $mobile,
                             'about' => $about,
                             'gst' => $gst,
                             'gst_number' => $gstNo,
@@ -269,6 +271,7 @@ class OrganizerController extends Controller
                                 'user_id' => $UserId,
                                 'name' => $name,
                                 'email' => $email,
+                                'mobile' => $mobile,
                                 'about' => $about,
                                 'gst' => $gst,
                                 'gst_number' => $gstNo,
