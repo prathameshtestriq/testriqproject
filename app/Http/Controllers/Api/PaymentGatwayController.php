@@ -133,11 +133,12 @@ class PaymentGatwayController extends Controller
                             "hash" => $hash,
                             "created_by" => $UserId,
                             "created_datetime" => $Datetime,
-                            "counter" => $last_count
+                            "counter" => $last_count,
+                            "payment_status" => 'initiate'
                         );
             //dd($Bindings);
             //-----------------
-            $insert_SQL = "INSERT INTO booking_payment_details (event_id,txnid,firstname,lastname,email,phone_no,productinfo,amount,merchant_key,hash,created_by,created_datetime,counter) VALUES(:event_id,:txnid,:firstname,:lastname,:email,:phone_no,:productinfo,:amount,:merchant_key,:hash,:created_by,:created_datetime,:counter)";
+            $insert_SQL = "INSERT INTO booking_payment_details (event_id,txnid,firstname,lastname,email,phone_no,productinfo,amount,merchant_key,hash,created_by,created_datetime,counter,payment_status) VALUES(:event_id,:txnid,:firstname,:lastname,:email,:phone_no,:productinfo,:amount,:merchant_key,:hash,:created_by,:created_datetime,:counter,:payment_status)";
             DB::insert($insert_SQL, $Bindings);
             $last_inserted_id = DB::getPdo()->lastInsertId();
             
@@ -151,9 +152,10 @@ class PaymentGatwayController extends Controller
                             "amount" => $Amount,
                             "request_data" => $post_data,
                             "created_by" => $UserId,
-                            "request_datetime" => $request_datetime
+                            "request_datetime" => $request_datetime,
+                            "payment_status" => 'initiate'
                         );
-            $insert_SQL1 = "INSERT INTO booking_payment_log (event_id,booking_det_id,txnid,amount,request_data,created_by,request_datetime) VALUES(:event_id,:booking_det_id,:txnid,:amount,:request_data,:created_by,:request_datetime)";
+            $insert_SQL1 = "INSERT INTO booking_payment_log (event_id,booking_det_id,txnid,amount,request_data,created_by,request_datetime,payment_status) VALUES(:event_id,:booking_det_id,:txnid,:amount,:request_data,:created_by,:request_datetime,:payment_status)";
             DB::insert($insert_SQL1, $Binding);
 
             //----------- temp table add entry for booking tickets
