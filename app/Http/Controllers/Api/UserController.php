@@ -37,7 +37,7 @@ class UserController extends Controller
                 )
             );
 
-            $UserIds = [33, 36,40];
+            $UserIds = [33, 36,40,51];
             $master = new Master();
             foreach ($userData as $value) {
                 $value->profile_pic = (!empty($value->profile_pic)) ? url('/') . '/uploads/profile_images/' . $value->profile_pic . '' : url('/') . '/uploads/profile_images/user-icon.png';
