@@ -18,7 +18,7 @@ class Emails
             "Dear Customer, Your OTP is: <strong>" . $otp . "</strong><p>Thank you,<br>YTCRUN</p>"
         );
 
-        $sendgrid = new \SendGrid(env('SENDGRID_API_KEY'));
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
         // try {
         $response = $sendgrid->send($email);
         // } catch (Exception $e) {
@@ -38,7 +38,7 @@ class Emails
             "Dear Customer, Your password is: <strong>" . $password . "</strong><p>Thank you,<br>YTCRUN</p>"
         );
 
-        $sendgrid = new \SendGrid(env('SENDGRID_API_KEY'));
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
         // try {
         $response = $sendgrid->send($email);
         // } catch (Exception $e) {
@@ -58,7 +58,7 @@ class Emails
             "You have requested to reset your password. Please click the link below to reset your password.<br>" . $reset_link . "<br><p>Thank you,<br>YTCRUN</p>"
         );
 
-        $sendgrid = new \SendGrid(env('SENDGRID_API_KEY'));
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
         try {
             $response = $sendgrid->send($email);
         } catch (Exception $e) {
@@ -78,7 +78,7 @@ class Emails
             "" . $message . "<br><p>Thank you,<br>YTCRUN</p>"
         );
 
-        $sendgrid = new \SendGrid(env('SENDGRID_API_KEY'));
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
         try {
             $response = $sendgrid->send($email);
         } catch (Exception $e) {
@@ -98,7 +98,7 @@ class Emails
             "" . $MessageContent . "<br><p>Thank you,<br>YTCRUN</p>"
         );
 
-        $sendgrid = new \SendGrid(env('SENDGRID_API_KEY'));
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
         try {
             $response = $sendgrid->send($email);
         } catch (Exception $e) {

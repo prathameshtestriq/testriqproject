@@ -107,8 +107,8 @@ class EventTicketController extends Controller
                         }
                     }
 
-                    $current_time = time(); 
-                    $two_days_later = $current_time + (2 * 24 * 60 * 60); 
+                    $current_time = time();
+                    $two_days_later = $current_time + (2 * 24 * 60 * 60);
                     if (!empty($value->ticket_sale_end_date) && $value->ticket_sale_end_date <= $two_days_later) {
                         $value->ticket_sale_end_date = date("d M Y H:i A", $value->ticket_sale_end_date);
                     } else {
@@ -640,20 +640,20 @@ class EventTicketController extends Controller
                                 $value->question_form_option = json_encode($countries);
                             }
 
-                            $hasCountriesQuestion = !empty(array_filter($FormQuestions, function ($value) {
-                                return $value->question_form_type == 'countries';
-                            }));
+                            // $hasCountriesQuestion = !empty(array_filter($FormQuestions, function ($value) {
+                            //     return $value->question_form_type == 'countries';
+                            // }));
 
-                            $hasStatesQuestion = !empty(array_filter($FormQuestions, function ($value) {
-                                return $value->question_form_type == 'states';
-                            }));
+                            // $hasStatesQuestion = !empty(array_filter($FormQuestions, function ($value) {
+                            //     return $value->question_form_type == 'states';
+                            // }));
 
-                            if (!$hasCountriesQuestion && $hasStatesQuestion && $value->question_form_type == 'states') {
-                                $sql = "SELECT id,name FROM states WHERE flag=1";
-                                $states = DB::select($sql);
+                            // if (!$hasCountriesQuestion && $hasStatesQuestion && $value->question_form_type == 'states') {
+                            //     $sql = "SELECT id,name FROM states WHERE flag=1";
+                            //     $states = DB::select($sql);
 
-                                $value->question_form_option = json_encode($states);
-                            }
+                            //     $value->question_form_option = json_encode($states);
+                            // }
                         }
 
                         // dd($FormQuestions);
@@ -727,6 +727,7 @@ class EventTicketController extends Controller
                 $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                 $BookingPayment = DB::select($sql, array('booking_pay_id' => $BookingPaymentId));
 
+
                 // $sql1 = "SELECT payment_status FROM booking_payment_details WHERE id =:id";
                 // $Status = DB::select($sql, array('id' => $BookingPaymentId));
                 // dd($BookingPayment);
@@ -742,6 +743,7 @@ class EventTicketController extends Controller
                     $UtmCampaign = $BookingPayment[0]->UtmCampaign;
                     $GstArray = !empty($BookingPayment[0]->GstArray) ? json_decode($BookingPayment[0]->GstArray) : [];
                     $TransactionStatus = 0; //Initiated Transaction
+                    // dd($FormQuestions);
                     // if (count($Status) > 0) {
                     //     if ($Status[0]->payment_status == 'success') $TransactionStatus = 1;
                     //     else if ($Status[0]->payment_status == 'failure') $TransactionStatus = 2;
@@ -938,11 +940,14 @@ class EventTicketController extends Controller
                     $email = null;
                     $IdBookingDetails = 0;
 
+                    // dd($FormQuestions);
                     foreach ($FormQuestions as $key => $arrays) {
                         foreach ($arrays as $subArray) {
                             $separatedArrays[] = json_encode($subArray);
                         }
                     }
+
+                    
                     foreach ($separatedArrays as $key => $value) {
                         $subArray = [];
                         $subArray = json_decode($value);
@@ -1227,14 +1232,15 @@ class EventTicketController extends Controller
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 20;
 
                 $sql = "SELECT *,a.id AS attendeeId,
-                (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id) AS TicketName,
-                (SELECT ticket_status FROM event_tickets WHERE id=bd.ticket_id) AS TicketStatus,
+                (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id AND a.ticket_id=id AND event_id=bd.event_id) AS TicketName,
+                (SELECT ticket_status FROM event_tickets WHERE id=bd.ticket_id AND a.ticket_id=id AND event_id=bd.event_id) AS TicketStatus,
                 (SELECT name FROM events WHERE id=bd.event_id) AS EventName,
                 (SELECT banner_image FROM events WHERE id=bd.event_id) AS banner_image
-                 FROM `attendee_booking_details` AS a
+                FROM attendee_booking_details AS a
                 LEFT JOIN booking_details AS bd ON bd.id=a.booking_details_id
                 LEFT JOIN event_booking AS e ON e.id=bd.booking_id
-                WHERE bd.event_id=:event_id AND e.event_id=:event_id1 AND bd.quantity !=0 AND bd.user_id=:user_id ";
+                WHERE bd.event_id=:event_id AND e.event_id=:event_id1 AND bd.quantity !=0 AND bd.user_id=:user_id AND e.transaction_status=1";
+                // dd($sql);
                 $BookingData = DB::select($sql, array('user_id' => $UserId, 'event_id' => $EventId, 'event_id1' => $EventId));
                 // dd($BookingData);
                 foreach ($BookingData as $event) {
