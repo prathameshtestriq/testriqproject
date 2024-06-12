@@ -35,9 +35,10 @@ class EventDashboardController extends Controller
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
 
                 // Net Sales
-                $sql = "SELECT SUM(b.quantity) AS NetSales FROM booking_details AS b
+                $sql = "SELECT SUM(b.quantity) AS NetSales 
+                    FROM booking_details AS b
                     LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                 WHERE b.event_id =:event_id AND e.transaction_status = 1";
+                    WHERE b.event_id =:event_id AND e.transaction_status = 1";
                 $TotalBooking = DB::select($sql, array('event_id' => $EventId));
 
                 $NetSales = (count($TotalBooking) > 0) ? $TotalBooking[0]->NetSales : 0;
@@ -111,7 +112,8 @@ class EventDashboardController extends Controller
                          SUM(bd.quantity) AS TotalTickets,
                          u.id,
                          u.firstname,
-                         u.lastname
+                         u.lastname,
+                         u.email
                      FROM event_booking AS eb 
                      LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
                      LEFT JOIN users AS u ON u.id = eb.user_id
@@ -190,11 +192,11 @@ class EventDashboardController extends Controller
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
                 $now = strtotime("now");
 
-                $sql = "SELECT *,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
+                $sql = "SELECT *,a.id AS aId,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                WHERE b.event_id = :event_id AND e.transaction_status = 1
-                ORDER BY a.id DESC";
+                WHERE b.event_id = :event_id AND e.transaction_status = 1";
+                // ORDER BY a.id DESC";
                 if (!empty($EventBookingId)) {
                     $sql .= " AND b.booking_id =" . $EventBookingId;
                 }
@@ -214,6 +216,7 @@ class EventDashboardController extends Controller
                 if (!empty($FromDate) && !empty($ToDate)) {
                     $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
                 }
+                $sql .= " ORDER BY a.id DESC";
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
                 foreach ($AttendeeData as $key => $value) {
                     $value->booking_date = !empty($value->created_at) ? date("Y-m-d H:i A", ($value->created_at)) : '';
@@ -271,14 +274,47 @@ class EventDashboardController extends Controller
                 $BookingId = isset($aPost['BookingId']) ? $aPost['BookingId'] : 0;
                 $BookingDetailId = isset($aPost['BookingDetailId']) ? $aPost['BookingDetailId'] : 0;
 
-                $sql = "SELECT *,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
+                $sql = "SELECT *,a.id AS attendeeId,b.ticket_discount AS TicketDiscount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,
+                (SELECT txnid FROM booking_payment_details WHERE id=e.booking_pay_id) AS OrderId
+                FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                WHERE b.event_id = :event_id AND a.id=:BookingId AND a.booking_details_id=:BookingDetailId";
+                WHERE b.event_id =:event_id AND a.id=:BookingId AND a.booking_details_id=:BookingDetailId";
                 $params = array('event_id' => $EventId, 'BookingId' => $BookingId, 'BookingDetailId' => $BookingDetailId);
-                $result = DB::select($sql, $params);
-                // dd($result);
-                $ResponseData['BasicDetails'] = $result;
+                $BookingDetails = DB::select($sql, $params);
+
+                foreach ($BookingDetails as $value) {
+                    // ticket registration number. generate it using -> (event_id + booking_id + timestamp)
+                    // registration id
+                    $uniqueId = 0;
+                    $uniqueId = $EventId . "-" . $value->attendeeId . "-" . $value->booking_date;
+                    $value->unique_ticket_id = $uniqueId;
+
+                    //Booking date
+                    $value->booking_start_date = (!empty($value->booking_date)) ? gmdate("d M Y", $value->booking_date) : 0;
+                    $value->booking_time = (!empty($value->booking_date)) ? date("h:i A", $value->booking_date) : "";
+
+                    // get extra amounts
+                    $attendee_details = json_decode(json_decode($value->attendee_details));
+                    // dd($attendee_details);
+                    $amount_details = [];
+
+                    // Iterate through attendee details to separate the amounts
+                    foreach ($attendee_details as $detail) {
+                        if ($detail->question_form_type == 'amount') {
+                            $amount_details[] = $detail;
+                        }
+                    }
+                    foreach ($amount_details as $key => $value1) {
+                        $value1->question_label = ucwords($value1->question_label);
+                    }
+                    // dd($amount_details);
+                    $value->amount_details = $amount_details;
+                }
+                // dd($BookingDetails);
+                $ResponseData['BookingDetails'] = $BookingDetails;
+
+                // $TicketDetails = [];
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';

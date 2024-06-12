@@ -27,14 +27,17 @@ class UserController extends Controller
             $Auth = new Authenticate();
             $Auth->apiLog($request);
 
+            $UserId = $aToken['data']->ID;
+
             $sSQL = 'SELECT users.*, user_details.* FROM users LEFT JOIN user_details ON users.id = user_details.user_id WHERE users.id=:Id';
             $userData = DB::select(
                 $sSQL,
                 array(
-                    'Id' => $aToken['data']->ID
+                    'Id' => $UserId
                 )
             );
 
+            $UserIds = [33, 36];
             $master = new Master();
             foreach ($userData as $value) {
                 $value->profile_pic = (!empty($value->profile_pic)) ? url('/') . '/uploads/profile_images/' . $value->profile_pic . '' : url('/') . '/uploads/profile_images/user-icon.png';
@@ -53,6 +56,12 @@ class UserController extends Controller
                 $value->ca_country_name = !empty($value->ca_country) ? $master->getCountryName($value->ca_country) : "";
                 // $value->ca_country_code = !empty ($value->ca_country) ? $master->getCountryCode($value->ca_country) : "";
                 $value->updated_at = (!empty($value->updated_at)) ? date("Y-m-d h:i A", $value->updated_at) : 0;
+
+                if (in_array($UserId, $UserIds, true)) {
+                    $value->show_create_event_tab = true;
+                } else {
+                    $value->show_create_event_tab = false;
+                }
 
             }
             if (!empty($userData)) {
