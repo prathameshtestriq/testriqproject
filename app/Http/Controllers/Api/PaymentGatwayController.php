@@ -110,7 +110,7 @@ class PaymentGatwayController extends Controller
             $aResult = DB::select($Sql);
             
             $last_count = !empty($aResult) && !empty($aResult[0]->counter) ? $aResult[0]->counter+1 : 1;
-            $txnid  = !empty($last_count) ? 'Ytcr-'.$last_count : 'Ytcr-1';
+            $txnid  = !empty($last_count) ? 'YTCR-'.date('dmy').'-'.$last_count : 'YTCR-'.date('dmy').'-1';
            
            // $hash = hash('sha512', $Merchant_key . '|' . $txnid . '|' . $Amount . '|' . $ProductInfo . '|' . $FirstName . '|' . $Email . '|' . '||||||vvHOCdxxbkTXYASLCevSJ7iDkE8DRBT4');
            
