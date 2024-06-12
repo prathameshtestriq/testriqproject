@@ -377,6 +377,12 @@ class LoginController extends Controller
                                 }
 
                                 $ResponseData['userData'] = $aResult[0];
+
+                                //---------------- company details checking
+                                $SQL1 = "SELECT id FROM organizer WHERE user_id=:user_id";
+                                $CompDetailResult = DB::select($SQL1, array('user_id' => $aResult[0]->id));
+                                $ResponseData['company_info_flag'] = !empty($CompDetailResult) && !empty($CompDetailResult[0]->id) ? 1 : 0;
+
                                 // dd($ResponseData['details']);
                                 $SQL = 'UPDATE users SET auth_token=:auth_token,login_time=:login_time,is_login = 1 WHERE id=:id';
                                 DB::update($SQL, array('id' => $aResult[0]->id, 'auth_token' => "Bearer " . $ResponseData['token'], 'login_time' => strtotime('now')));

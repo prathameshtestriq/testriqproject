@@ -123,7 +123,7 @@ class FormQuestionsController extends Controller
             //dd($EventId);
             
             // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id,id';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,user_field_mapping,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id,id';
             // created_by in (0,'.$UserId.')
             $aResult = DB::select($Sql);
            // dd($aResult);
@@ -309,7 +309,6 @@ class FormQuestionsController extends Controller
             {   
                 //--------- sorting order
                 
-        
                 if($SubQuestionFlag == 1){
                     $SQL1 = "SELECT sort_order as last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id AND general_form_id =:general_form_id";
                     $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'general_form_id' => $ParentGeneralFormId));
@@ -325,6 +324,7 @@ class FormQuestionsController extends Controller
                     if(!empty($ParentGeneralFormId)){
                         $SQL1 = "SELECT sort_order as last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id AND general_form_id =:general_form_id";
                         $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'general_form_id' => $ParentGeneralFormId));
+                        // $event_sort_order = !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
                         $event_sort_order = !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
                     }else{
                         $SQL1 = "SELECT MAX(sort_order) AS last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id";
@@ -341,9 +341,9 @@ class FormQuestionsController extends Controller
                 ));
             
 
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint, form_id, sort_order, apply_ticket, ticket_details)';
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint, form_id, sort_order, apply_ticket, ticket_details, created_by)';
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, created_by, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint, :formId, :sortOrder, :applyTicket, :ticketDetails
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint, :formId, :sortOrder, :applyTicket, :ticketDetails, :createdBy
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -358,7 +358,8 @@ class FormQuestionsController extends Controller
                     'formId'           => $FormId,
                     'sortOrder'        => $event_sort_order,
                     'applyTicket'      => $ApplyTicket,
-                    'ticketDetails'    => $ticket_ids
+                    'ticketDetails'    => $ticket_ids,
+                    'createdBy'        => $userId
                 ));
 
                 //-------------- child ids
@@ -616,6 +617,22 @@ class FormQuestionsController extends Controller
 
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $GeneralFormId = !empty($request->general_form_id) ? $request->general_form_id : 0;
+            $QuestionFormName = !empty($request->question_form_name) ? $request->question_form_name : 0;
+            
+            $del_cond = '';
+            if($QuestionFormName == 'country'){
+                $del_cond = ' AND question_form_name IN("state","city") ';
+            }else if($QuestionFormName == 'state') {
+                $del_cond = ' AND question_form_name = "city" ';
+            } 
+
+            if(!empty($del_cond)){
+                $del_sSQL1 = 'DELETE FROM event_form_question WHERE `event_id`=:eventId '.$del_cond.' ';
+
+                DB::delete($del_sSQL1,array(
+                    'eventId' => $EventId
+                ));
+            }
 
             $sel_SQL = "SELECT child_question_ids FROM event_form_question WHERE `event_id`=:eventId AND `general_form_id`=:generalFormId ";
             $questionsObj = DB::select($sel_SQL,array(
@@ -753,7 +770,7 @@ class FormQuestionsController extends Controller
                     'isManadatory'      => $isManadatory,
                     'questionStatus'    => 1,
                     'createdBy'         => $userId,
-                    'isCustomForm'      => 1,
+                    'isCustomForm'      => 0,
                     'sortOrder'         => $sort_order
                 ));
                 

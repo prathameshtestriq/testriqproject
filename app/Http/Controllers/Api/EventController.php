@@ -831,7 +831,21 @@ class EventController extends Controller
                                     'customFaq' => 1
                                 )
                             );
+                        }
 
+                        //------------ added manual Communication questions -------------
+                        if (!empty($EventId)) {
+                            $insert_sSQL1 = 'INSERT INTO event_communication (event_id, user_id, subject_name, message_content)';
+                            $insert_sSQL1 .= 'SELECT :eventId, :user_id, subject_name, message_content
+                                FROM communication_master
+                                WHERE status = 1 ';
+                            //dd($insert_sSQL);
+                            DB::insert($insert_sSQL1,
+                                array(
+                                    'eventId' => $EventId,
+                                    'user_id' => $UserId
+                                )
+                            );
                         }
 
                         if (!empty($Category) && !empty($EventId)) {
@@ -1093,14 +1107,15 @@ class EventController extends Controller
             $ResponseData['PAYMENT_GATEWAY_GST_PERCENTAGE'] = config('custom.payment_gateway_gst_percent');
 
             //----------
-            $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "races2.0_web" AND TABLE_NAME = "users" ';
+            $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "Races2.0_Web" AND TABLE_NAME = "users" ';
             $ResponseData['field_mapping_details'] = DB::select($sSQL, array());
-            //dd($FieldMppedDetails);
+            
 
             // ---------- get communication tab details
             $sql1 = "SELECT id,subject_name,message_content,status FROM event_communication WHERE event_id=:event_id AND user_id=:user_id ";
             $CommResult = DB::select($sql1, array('event_id' => $EventId, 'user_id' => $UserId));
             //dd($CommResult);
+            $is_comm_selected = 0;
             if (!empty($CommResult)) {
                 foreach ($CommResult as $res) {
                     if ($res->status == 1) {
@@ -1108,6 +1123,11 @@ class EventController extends Controller
                     } else {
                         $res->status = false;
                     }
+
+                    if($res->status == 1){
+                        $is_comm_selected = 1;
+                    }
+
                 }
             }
 
@@ -1132,7 +1152,9 @@ class EventController extends Controller
 
                 }
             }
+
             $ResponseData['faq_selected_flag'] = $is_one_selected;
+            $ResponseData['comm_selected_flag'] = $is_comm_selected;
             $ResponseData['faq_details'] = !empty($FAQResult) ? $FAQResult : [];
 
             // ---------- get Tickets details
