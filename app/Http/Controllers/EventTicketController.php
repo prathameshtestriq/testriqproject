@@ -75,10 +75,20 @@ class EventTicketController extends Controller
 
                     $value->display_ticket_name = !empty($value->ticket_name) ? (strlen($value->ticket_name) > 40 ? ucwords(substr($value->ticket_name, 0, 80)) . "..." : ucwords($value->ticket_name)) : "";
 
-                    $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                    // $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                    // $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
+                    $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
                     $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
 
                     $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
+
+                    $value->RemainingTickets = $RemainingTickets = 0;
+                    if ($value->total_quantity > $value->TotalBookedTickets) {
+                        $RemainingTickets = $value->total_quantity - $value->TotalBookedTickets;
+                        if ($RemainingTickets <= 10) {
+                            $value->RemainingTickets = $RemainingTickets;
+                        }
+                    }
                     $value->show_early_bird = 0;
 
                     $value->discount_ticket_price = 0;
@@ -95,6 +105,14 @@ class EventTicketController extends Controller
                             $value->total_discount = $value->discount_value;
                             $value->discount_ticket_price = $value->ticket_price - $value->discount_value;
                         }
+                    }
+
+                    $current_time = time(); 
+                    $two_days_later = $current_time + (2 * 24 * 60 * 60); 
+                    if (!empty($value->ticket_sale_end_date) && $value->ticket_sale_end_date <= $two_days_later) {
+                        $value->ticket_sale_end_date = date("d M Y H:i A", $value->ticket_sale_end_date);
+                    } else {
+                        $value->ticket_sale_end_date = "";
                     }
                 }
                 // -------------------------------------------------
@@ -723,7 +741,7 @@ class EventTicketController extends Controller
                     $ExtraPricing = !empty($BookingPayment[0]->ExtraPricing) ? json_decode($BookingPayment[0]->ExtraPricing) : [];
                     $UtmCampaign = $BookingPayment[0]->UtmCampaign;
                     $GstArray = !empty($BookingPayment[0]->GstArray) ? json_decode($BookingPayment[0]->GstArray) : [];
-                    // $TransactionStatus = 0;
+                    $TransactionStatus = 0; //Initiated Transaction
                     // if (count($Status) > 0) {
                     //     if ($Status[0]->payment_status == 'success') $TransactionStatus = 1;
                     //     else if ($Status[0]->payment_status == 'failure') $TransactionStatus = 2;
@@ -755,10 +773,10 @@ class EventTicketController extends Controller
                         "total_discount" => $TotalDiscount,
                         "utm_campaign" => $UtmCampaign,
                         "cart_details" => json_encode($GstArray),
-                        // "transaction_status" => $TransactionStatus
-                        "booking_pay_id"=> $BookingPaymentId
+                        "transaction_status" => $TransactionStatus,
+                        "booking_pay_id" => $BookingPaymentId
                     );
-                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign,cart_details,booking_pay_id) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign,:cart_details,:booking_pay_id)";
+                    $Sql1 = "INSERT INTO event_booking (event_id,user_id,booking_date,total_amount,total_discount,utm_campaign,cart_details,transaction_status,booking_pay_id) VALUES (:event_id,:user_id,:booking_date,:total_amount,:total_discount,:utm_campaign,:cart_details,:transaction_status,:booking_pay_id)";
                     DB::insert($Sql1, $Binding1);
                     $BookingId = DB::getPdo()->lastInsertId();
 

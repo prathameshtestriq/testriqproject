@@ -193,7 +193,8 @@ class EventDashboardController extends Controller
                 $sql = "SELECT *,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                WHERE b.event_id = :event_id AND e.transaction_status = 1";
+                WHERE b.event_id = :event_id AND e.transaction_status = 1
+                ORDER BY a.id DESC";
                 if (!empty($EventBookingId)) {
                     $sql .= " AND b.booking_id =" . $EventBookingId;
                 }
@@ -224,6 +225,60 @@ class EventDashboardController extends Controller
                 $sql = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
                 $TicketData = DB::select($sql, array('event_id' => $EventId));
                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function getBookingDetails(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
+                $BookingId = isset($aPost['BookingId']) ? $aPost['BookingId'] : 0;
+                $BookingDetailId = isset($aPost['BookingDetailId']) ? $aPost['BookingDetailId'] : 0;
+
+                $sql = "SELECT *,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE b.event_id = :event_id AND a.id=:BookingId AND a.booking_details_id=:BookingDetailId";
+                $params = array('event_id' => $EventId, 'BookingId' => $BookingId, 'BookingDetailId' => $BookingDetailId);
+                $result = DB::select($sql, $params);
+                // dd($result);
+                $ResponseData['BasicDetails'] = $result;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';

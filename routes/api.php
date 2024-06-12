@@ -42,6 +42,7 @@ Route::controller(EventDashboardController::class)->group(function (){
     Route::post('get_insights', 'getInsights');
     Route::post('get_registered_users', 'getRegisteredUsers');
     Route::post('get_netsales', 'getNetSales'); //attendees
+    Route::post('get_booking_details', 'getBookingDetails'); 
 });
 
 Route::controller(MasterController::class)->group(function () {
