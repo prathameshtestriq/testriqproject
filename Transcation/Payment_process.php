@@ -177,9 +177,9 @@ if ($conn->connect_error) {
         if($status == "failure"){
             //header("Location: http://localhost:3000/payment_gateway/".$status);
             if($flag == 1){  // prime
-                header("Location: https://swtprime.com/Races2.0_Frontend/".$event_id."/".$status);
+                header("Location: https://swtprime.com/Races2.0_Frontend/register_now/".$event_id."/".$status);
             }else if($flag == 2){  // live
-                header("Location: https://racesregistrations.com/".$event_id."/".$status);
+                header("Location: https://racesregistrations.com/register_now/".$event_id."/".$status);
             }else{
                 header("Location: http://localhost:3000/register_now/".$event_id."/".$status);
             }
@@ -187,9 +187,9 @@ if ($conn->connect_error) {
         }else if($status == "success"){
             
             if($flag == 1){  // prime
-                header("Location: https://swtprime.com/Races2.0_Frontend/".$status);
+                header("Location: https://swtprime.com/Races2.0_Frontend/payment_gateway/".$status);
             }else if($flag == 2){  // live
-                header("Location: https://racesregistrations.com/".$status);
+                header("Location: https://racesregistrations.com/payment_gateway/".$status);
             }else{
                 header("Location: http://localhost:3000/payment_gateway/".$status);
             }
