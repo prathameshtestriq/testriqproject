@@ -123,23 +123,45 @@ class FormQuestionsController extends Controller
             //dd($EventId);
             
             // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id,id';
             // created_by in (0,'.$UserId.')
             $aResult = DB::select($Sql);
            // dd($aResult);
             $general_form_array = [];
             foreach($aResult as $res){
 
+                //$Sql = 'SELECT id,child_question_ids,(select id from general_form_question where id = event_form_question.general_form_id and event_form_question.question_label = "Country") as country_flag, (select id from general_form_question where id = event_form_question.general_form_id and event_form_question.question_label = "State") as state_flag, (select id from general_form_question where id = event_form_question.general_form_id and event_form_question.question_label = "City") as city_flag FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$res->id.'  ';
                 $Sql = 'SELECT id,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and general_form_id = '.$res->id.'  ';
                 $aResult1 = DB::select($Sql);
                 //dd($aResult1);
                 if(!empty($aResult1)){
                     $res->event_questions_flag = 1;
                     $res->sub_questions_added_flag = !empty($aResult1[0]->child_question_ids) ? 1 : 0;
+                    // $res->country_flag = !empty($aResult1) && !empty($aResult1[0]->country_flag) ? $aResult1[0]->country_flag : '';
+                    // $res->state_flag = !empty($aResult1) && !empty($aResult1[0]->state_flag) ? $aResult1[0]->state_flag : '';
+                    // $res->city_flag = !empty($aResult1) && !empty($aResult1[0]->city_flag) ? $aResult1[0]->city_flag : '';
                 }else{
                     $res->event_questions_flag = 0;
                     $res->sub_questions_added_flag = 0;
                     $event_question_form_option = [];
+                    // $res->country_flag = !empty($aResult1) && !empty($aResult1[0]->country_flag) ? $aResult1[0]->country_flag : '';
+                    // $res->state_flag = !empty($aResult1) && !empty($aResult1[0]->state_flag) ? $aResult1[0]->state_flag : '';
+                    // $res->city_flag = !empty($aResult1) && !empty($aResult1[0]->city_flag) ? $aResult1[0]->city_flag : '';
+                }
+
+                if($res->question_label == "State"){
+                    $Sql1 = 'SELECT id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and question_label = "Country" ';
+                    $aResult2 = DB::select($Sql1);
+                    $res->state_flag = !empty($aResult2) && !empty($aResult2[0]->id) ? 1 : 0;
+                    $res->show_msg = 'Please Select Country';
+                }else if($res->question_label == "City"){
+                    $Sql2 = 'SELECT id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and question_label = "State" ';
+                    $aResult3 = DB::select($Sql2);
+                    $res->city_flag = !empty($aResult3) && !empty($aResult3[0]->id) ? 1 : 0;
+                    $res->show_msg = 'Please Select State';
+                }else{
+                    $res->state_flag = 0;
+                    $res->city_flag = 0;
                 }
 
                 //---------------------
