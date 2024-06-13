@@ -1119,8 +1119,8 @@ Thank you for registering for " . $Event[0]->name . "! We are thrilled to have y
  <br/><br/>
 Event Details:
  <br/><br/>
-● Date: " . (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "" . "<br/>
-● Time: " . (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "" . "<br/>
+● Date: " . $ConfirmationEmail["EVENTSTARTDATE"]. "<br/>
+● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
 ● Location: " . $Venue . "<br/>
 <br/><br/>
 Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
