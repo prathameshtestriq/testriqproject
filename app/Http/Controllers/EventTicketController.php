@@ -659,7 +659,8 @@ class EventTicketController extends Controller
                         // dd($FormQuestions);
 
                         for ($i = 0; $i < $ticket['count']; $i++) {
-                            $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
+                            if(count($FormQuestions) > 0)
+                                $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
                         }
                     }
                 }
