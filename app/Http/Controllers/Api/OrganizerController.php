@@ -126,7 +126,6 @@ class OrganizerController extends Controller
                 $contactPerson = isset($aPost['contact_person']) ? $aPost['contact_person'] : "";
                 $contactNumber = isset($aPost['contact_no']) ? $aPost['contact_no'] : "";
 
-
                 if (empty($organiserId)) {
                     #ADD ORGANISER
                     #CHECK SAME ORGANISER NAME EXIST OR NOT
@@ -150,7 +149,8 @@ class OrganizerController extends Controller
                             'gst_number' => $gstNo,
                             'gst_percentage' => $gstPercent,
                             'contact_person' => $contactPerson,
-                            'contact_no' => $contactNumber
+                            'contact_no' => $contactNumber,
+                            'created_at'=>strtotime("now")
                         ]);
                         $organiserId = DB::getPdo()->lastInsertId();
 
@@ -478,8 +478,8 @@ class OrganizerController extends Controller
                 $UserId = $aToken['data']->ID;
 
                 $Email = new Emails();
-                // $Email->send_org_notification($aPost['fullname'], $aPost['email'], $aPost['contact_no'], $aPost['message']);
-                $message = 'Mail send successfully';
+                $Email->send_org_notification($aPost['fullname'], $aPost['email'], $aPost['contact_no'], $aPost['message']);
+                $message = 'Mail sent successfully';
                 $ResposneCode = 200;
 
             } else {

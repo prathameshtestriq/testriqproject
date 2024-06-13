@@ -293,6 +293,9 @@ class LoginController extends Controller
                     $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->type);
                     $ResponseData['modules'] = $aModules;
 
+                    $Email = new Emails();
+                    $Email->registered_email($aResult[0]->email);
+
                     $ResposneCode = 200;
                     $message = 'OTP validate successfully';
                 } else {
