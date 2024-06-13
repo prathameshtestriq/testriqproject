@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class EmailLog extends Model
+{
+    use HasFactory;
+    protected $primaryKey = 'id';
+    protected $table = 'email_log';
+
+    protected $fillable = [
+        'type',
+        'send_mail_to',
+        'subject',
+        'message',
+        'response',
+        'datetime'
+    ];
+
+    public $timestamps = false;
+}

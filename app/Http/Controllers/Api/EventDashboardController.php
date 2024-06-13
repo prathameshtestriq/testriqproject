@@ -113,7 +113,8 @@ class EventDashboardController extends Controller
                          u.id,
                          u.firstname,
                          u.lastname,
-                         u.email
+                         u.email,
+                         u.mobile
                      FROM event_booking AS eb 
                      LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
                      LEFT JOIN users AS u ON u.id = eb.user_id
@@ -195,7 +196,7 @@ class EventDashboardController extends Controller
                 $sql = "SELECT *,a.id AS aId,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                WHERE b.event_id = :event_id AND e.transaction_status = 1";
+                WHERE b.event_id = :event_id ";
                 // ORDER BY a.id DESC";
                 if (!empty($EventBookingId)) {
                     $sql .= " AND b.booking_id =" . $EventBookingId;
