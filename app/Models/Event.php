@@ -164,11 +164,13 @@ class Event extends Model
 
     function getEventTicketDetails($EventId)
     {
-        // $now = strtotime("now");
-        $now = strtotime(date('Y-m-d h:i:s'));
+        // dd($EventId);
+        $now = strtotime("now");
+        // $now = strtotime(date('Y-m-d h:i:s'));
        // dd($now);
         $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end';
         $event_tickets = DB::select($sSQL, array('event_id' => $EventId, 'now_start' => $now, 'now_end' => $now));
+        // dd($event_tickets);
 
         foreach ($event_tickets as $value) {
             // if ($value->ticket_status == 1) {
@@ -198,8 +200,10 @@ class Event extends Model
                 }
             // }
         }
-        // if($EventId == 5) dd($event_tickets);
+        // if($EventId == 5) 
+        // dd($event_tickets);
         $minMaxPrices = $this->getMinMaxTicketPrices($event_tickets);
+        // dd($minMaxPrices);
         return $minMaxPrices;
     }
 
