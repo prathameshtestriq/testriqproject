@@ -1589,6 +1589,7 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+   
 }
 
 
