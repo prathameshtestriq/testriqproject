@@ -959,7 +959,7 @@ class EventTicketController extends Controller
                                     $first_name = $sArray->ActualValue;
                                 } elseif ($sArray->question_form_name == 'last_name') {
                                     $last_name = $sArray->ActualValue;
-                                } elseif ($sArray->question_form_name == 'email') {
+                                } elseif ($sArray->question_form_type == 'email') {
                                     $email = $sArray->ActualValue;
                                 }
                             }
@@ -1158,7 +1158,8 @@ class EventTicketController extends Controller
                 (SELECT city FROM events WHERE id=eb.event_id) AS EventCity,
                 (SELECT banner_image FROM events WHERE id=eb.event_id) AS banner_image
                     FROM event_booking AS eb
-                    WHERE user_id=:user_id
+                    WHERE eb.user_id=:user_id
+                    AND eb.transaction_status = 1
                     GROUP BY eb.event_id";
                 $BookingData = DB::select($SQL, array('user_id' => $UserId));
 

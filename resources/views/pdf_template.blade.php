@@ -209,8 +209,8 @@
 
 
         <div class="main-banner">
-            <h1 class="event-name">{{ $ticket_details['TicketName']}}</h1>
-            <p class="event-organizer">{{ $org_details->name }}</p>
+            <h1 class="event-name">{{ isset($ticket_details['TicketName']) ? $ticket_details['TicketName'] : ""}}</h1>
+            <p class="event-organizer">{{ isset($org_details->name) ? $org_details->name : "" }}</p>
         </div>
 
 
@@ -224,25 +224,26 @@
                         <td>Name</td>
                         <td>{{ $Username }}</td>
                     </tr>
-                    <tr>
+                    <!-- <tr>
                         <td>other info</td>
                         <td>NA</td>
-                    </tr>
+                    </tr> -->
                     <tr>
                         <th colspan="2">Event Details</th>
                     </tr>
                     <tr>
                         <td>Organizer</td>
-                        <td>{{ $org_details->name }}</td>
+                        <td>{{ isset($org_details->name) ? $org_details->name : '' }}</td>
                     </tr>
+
                     <tr>
                         <td>Venue</td>
-                        <td>{{ $event_details->Venue }}</td>
+                        <td>{{ isset($event_details->Venue) ? $event_details->Venue : '' }}</td>
                     </tr>
                     <tr>
                         <td>Event Date &amp; Time</td>
-                        <td>{{ $event_details->start_date }} : {{ $event_details->start_time_event }} -
-                            {{ $event_details->end_date }} : {{ $event_details->end_date_event }}
+                        <td>{{ isset($event_details->start_date) ? $event_details->start_date : '' }} : {{isset($event_details->start_time_event) ? $event_details->start_time_event : ''  }} -
+                            {{isset($event_details->end_date) ? $event_details->end_date : ''   }} : {{isset($event_details->end_date_event) ? $event_details->end_date_event : ''  }}
                         </td>
                     </tr>
                     <!-- <tr>
@@ -258,7 +259,7 @@
                     </tr>
                     <tr>
                         <td>Booking Date &amp; Time</td>
-                        <td>{{ $ticket_details['booking_start_date'] }} {{ $ticket_details['booking_time'] }}</td>
+                        <td>{{ isset($ticket_details['booking_start_date']) ? $ticket_details['booking_start_date'] : "" }} {{ isset($ticket_details['booking_time']) ? $ticket_details['booking_time'] : "" }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -267,7 +268,7 @@
         <div class="booking-conformation">
             <h4 class="title">Booking Conformation</h4>
             <hr>
-            <h3 class="booking-number">Booking Number : {{ $ticket_details['unique_ticket_id'] }}</h3>
+            <h3 class="booking-number">Booking Number : {{ isset($ticket_details['unique_ticket_id']) ? $ticket_details['unique_ticket_id'] : "" }}</h3>
 
         </div>
 
