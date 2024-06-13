@@ -1606,6 +1606,56 @@ Best regards,<br/>
 
         return response()->json($response, $ResposneCode);
     }
+    
+    public function ResendEmailToAttendee(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $EventId = !empty($request->event_id) ? $request->event_id : 0;
+            $attendee_id = !empty($request->attendee_id) ? $request->attendee_id : 0;
+            $EventUrl = !empty($request->event_url) ? $request->event_url : '';
+            
+            $UserId = $aToken['data']->ID;
+
+            if(!empty($attendee_id)){
+               
+                $SQL = "SELECT email FROM attendee_booking_details WHERE id =:id";
+                $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
+                $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
+
+                if(!empty($attendee_email)){
+                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
+                    $ResponseData['data'] = 1; 
+                    $message = "Email send successfully";
+                    $ResposneCode = 200;
+                }else{
+                    $ResponseData['data'] = 0; 
+                    $message = "Email Not Found";
+                    $ResposneCode = 401;
+                }
+
+            }
+            
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
 
    
 }
