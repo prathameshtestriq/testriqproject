@@ -123,7 +123,7 @@ class FormQuestionsController extends Controller
             //dd($EventId);
             
             // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,user_field_mapping,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id,id';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,user_field_mapping,question_hint,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id,id';
             // created_by in (0,'.$UserId.')
             $aResult = DB::select($Sql);
            // dd($aResult);
@@ -264,6 +264,7 @@ class FormQuestionsController extends Controller
             $TicketSelectedData = !empty($request->ticket_selected_data) ? json_decode($request->ticket_selected_data) : '';
             
             $SubQuestionId = !empty($request->sub_question_id) ? $request->sub_question_id : 0;
+            $MainQuestionHint = !empty($request->main_question_hint) ? $request->main_question_hint : '';
             
             //---------- all ticket apply -----------
             $ticket_ids = '';
@@ -341,9 +342,9 @@ class FormQuestionsController extends Controller
                 ));
             
 
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, question_hint, form_id, sort_order, apply_ticket, ticket_details, created_by)';
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, form_id, sort_order, apply_ticket, ticket_details, created_by, question_hint)';
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, question_hint, :formId, :sortOrder, :applyTicket, :ticketDetails, :createdBy
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, :formId, :sortOrder, :applyTicket, :ticketDetails, :createdBy, :questionHint
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -359,7 +360,8 @@ class FormQuestionsController extends Controller
                     'sortOrder'        => $event_sort_order,
                     'applyTicket'      => $ApplyTicket,
                     'ticketDetails'    => $ticket_ids,
-                    'createdBy'        => $userId
+                    'createdBy'        => $userId,
+                    'questionHint'     => $MainQuestionHint
                 ));
 
                 //-------------- child ids
@@ -547,7 +549,7 @@ class FormQuestionsController extends Controller
                         //------------ add general form entry for check other amount
                         if($SubQuestionOtherAmountFlag == 1 && !empty($QuestionFormOptionArray)){
                            
-                            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint,sort_order,sub_question_tree_flag) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint, :sortOrder, :subQuestionTreeFlag)';
+                            $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,sort_order,sub_question_tree_flag) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :sortOrder, :subQuestionTreeFlag)';
 
                             DB::insert($sSQL,array(
                                 'questionLabel'     => 'Other Amount',
@@ -564,7 +566,7 @@ class FormQuestionsController extends Controller
                                 "subQuePrice"       => $SubQuestionPriceFlag,
                                 "subQueCount"       => $SubQuestionCountFlag,
                                 "subQueOtherAmount" => $SubQuestionOtherAmountFlag,
-                                "questionHint"      => $questionHint,
+                                // "questionHint"      => $questionHint,
                                 "sortOrder"         => $sort_order+1,
                                 "subQuestionTreeFlag" => 1
                             ));
@@ -963,7 +965,7 @@ class FormQuestionsController extends Controller
             $EventId     = !empty($request->event_id) ? $request->event_id : 0;
             $questionId     = !empty($request->question_id) ? $request->question_id : 0;
             
-            $SQL = "SELECT id,question_form_option,question_label,form_id,question_form_type,question_form_name,sub_question_tree_flag FROM general_form_question WHERE id = :qus_id ";
+            $SQL = "SELECT id,question_form_option,question_label,form_id,question_form_type,question_form_name,sub_question_tree_flag,question_hint,user_field_mapping FROM general_form_question WHERE id = :qus_id ";
             $questionsObj = DB::select($SQL, array('qus_id' => $questionId));
             $questionArray = array();
             $parent_question_array = array();
@@ -984,20 +986,6 @@ class FormQuestionsController extends Controller
                     $data->event_questions_flag = 0;
                 }
                 
-                // $Sql1 = 'SELECT id FROM general_form_question WHERE question_status = 1 and id in ('.$aResult1[0]->child_question_ids.') ';
-                // $aResult2 = DB::select($Sql1);
-                // //dd($aResult2);
-                // if(!empty($aResult2)){
-                //     foreach($aResult2 as $res){
-                //         if($res->id == $data->id){
-                //             $data->check_flag = 1;
-                //         }else{
-                //             $data->check_flag = 0;
-                //         }
-                //     }
-                // }else{
-                //     $data->check_flag = 0;
-                // }
                 $data->check_flag = 0;
                
                 //----------------------

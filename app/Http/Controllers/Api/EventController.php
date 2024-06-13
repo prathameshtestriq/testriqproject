@@ -315,8 +315,6 @@ class EventController extends Controller
         ];
 
         return response()->json($response, $ResposneCode);
-
-
     }
 
     public function get_data_location_wise(Request $request)
@@ -841,6 +839,21 @@ class EventController extends Controller
                                 WHERE status = 1 ';
                             //dd($insert_sSQL);
                             DB::insert($insert_sSQL1,
+                                array(
+                                    'eventId' => $EventId,
+                                    'user_id' => $UserId
+                                )
+                            );
+                        }
+
+                        //------------ added manual terms & conditions -------------
+                        if (!empty($EventId)) {
+                            $insert_sSQL2 = 'INSERT INTO event_terms_conditions (event_id, user_id, title, terms_conditions)';
+                            $insert_sSQL2 .= 'SELECT :eventId, :user_id, subject_name, message_content
+                                FROM communication_master
+                                WHERE status = 0 ';
+                            //dd($insert_sSQL);
+                            DB::insert($insert_sSQL2,
                                 array(
                                     'eventId' => $EventId,
                                     'user_id' => $UserId
