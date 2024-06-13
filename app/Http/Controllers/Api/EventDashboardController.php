@@ -299,18 +299,28 @@ class EventDashboardController extends Controller
                     $attendee_details = json_decode(json_decode($value->attendee_details));
                     // dd($attendee_details);
                     $amount_details = [];
+                    $extra_details = [];
+
 
                     // Iterate through attendee details to separate the amounts
                     foreach ($attendee_details as $detail) {
                         if ($detail->question_form_type == 'amount') {
                             $amount_details[] = $detail;
                         }
+                        if($detail->question_form_name == 'drink_preferences'){
+                            $extra_details[] = $detail;
+                        }
+                        if($detail->question_form_name == 'breakfast_preferences'){
+                            $extra_details[] = $detail;
+                        }
                     }
+
                     foreach ($amount_details as $key => $value1) {
                         $value1->question_label = ucwords($value1->question_label);
                     }
-                    // dd($amount_details);
+                    // dd($extra_details);
                     $value->amount_details = $amount_details;
+                    $value->extra_details = $extra_details;
                 }
                 // dd($BookingDetails);
                 $ResponseData['BookingDetails'] = $BookingDetails;
