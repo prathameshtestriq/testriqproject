@@ -7,17 +7,30 @@ use Exception;
 class Emails
 {
 
-    public function post_email($athelete_email, $otp)
+    public function post_email($athelete_email, $otp,$firstname, $lastname)
     {
-        $message = "Dear Customer, Your OTP is: <strong>" . $otp;
+        $message = "Dear " . $firstname . " " . $lastname . ",
+ <br/><br/>
+Your One-Time Password (OTP) for accessing your account is: <b>" . $otp . "</b>
+ <br/><br/>
+Please enter this code on the verification page to proceed. This OTP is valid for the next 10 minutes.
+ <br/><br/>
+Please ignore this email or contact our support team immediately if you did not request this code.
+ <br/><br/>
+Thank you for choosing RACES.
+ <br/><br/>
+Best regards,
+ <br/><br/>
+(For RACES)<br/>
+Team YouTooCanRun";
         $email = new \SendGrid\Mail\Mail();
         $email->setFrom("support@youtoocantun.com", "YTCR ");
-        $email->setSubject("YTCRUN OTP");
+        $email->setSubject("Your OTP Code for Secure Access");
         $email->addTo($athelete_email, "YTCR ");
         $email->addContent("text/plain", "Dear Customer, Your OTP is.");
         $email->addContent(
             "text/html",
-            $message . "</strong><p>Thank you,<br>YTCRUN</p>"
+            $message
         );
 
         $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
@@ -120,7 +133,7 @@ class Emails
     {
         $email = new \SendGrid\Mail\Mail();
         $email->setFrom("support@youtoocantun.com", "YTCR ");
-        $email->setSubject("YTCRUN password");
+        $email->setSubject($Subject);
         $email->addTo($UserEmail, $Subject);
         $email->addContent("text/plain", "Dear, ");
         $email->addContent(
@@ -141,16 +154,28 @@ class Emails
         }
     }
 
-    public function registered_email($mail)
+    public function registered_email($mail, $firstname, $lastname)
     {
+        $message = "Dear " . $firstname . " " . $lastname . ",
+ <br/><br/>
+Thank you for registering with RACES! We are excited to have you join our community.
+ <br/><br/>
+If you have any questions or need assistance, feel free to reach out to our support team.
+ <br/><br/>
+Welcome aboard!
+ <br/><br/>
+Best regards,
+ <br/><br/>
+(For RACES)<br/>
+Team YouTooCanRun";
         $email = new \SendGrid\Mail\Mail();
         $email->setFrom("support@youtoocantun.com", "YTCR ");
-        $email->setSubject("Registration");
+        $email->setSubject("Welcome to RACES!");
         $email->addTo($mail, "Registration");
         $email->addContent("text/plain", "Dear Customer, ");
         $email->addContent(
             "text/html",
-            "You have successfuly registered. <br><p>Thank you,<br>YTCRUN</p>"
+            $message
         );
         $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
         try {
@@ -159,7 +184,7 @@ class Emails
             $type = "registration";
             $send_mail_to = $mail;
             $subject = "Registration";
-            $this->save_email_log($type, $send_mail_to, $subject, "Registration", $response);
+            $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
 
         } catch (Exception $e) {
             echo 'Caught exception: ' . $e->getMessage() . "\n";

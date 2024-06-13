@@ -121,7 +121,7 @@ class LoginController extends Controller
                                             $data = DB::table('users')->where('id', $lastInsertedId)->update(['email_otp' => $email_otp]);
                                             #SEND OTP MAIL
                                             $Email = new Emails();
-                                            $Email->post_email($aPost['email'], $email_otp);
+                                            $Email->post_email($aPost['email'], $email_otp,$aPost['firstname'],$aPost['lastname']);
                                         }
 
                                         $mobile_otp = rand(1000, 9999);
@@ -294,7 +294,7 @@ class LoginController extends Controller
                     $ResponseData['modules'] = $aModules;
 
                     $Email = new Emails();
-                    $Email->registered_email($aResult[0]->email);
+                    $Email->registered_email($aResult[0]->email,$aResult[0]->firstname,$aResult[0]->lastname);
 
                     $ResposneCode = 200;
                     $message = 'OTP validate successfully';
@@ -403,7 +403,7 @@ class LoginController extends Controller
                                     $data = DB::table('users')->where('id', $aResult[0]->id)->update(['email_otp' => $email_otp]);
                                     #SEND OTP MAIL
                                     $Email = new Emails();
-                                    $Email->post_email($aResult[0]->email, $email_otp);
+                                    $Email->post_email($aResult[0]->email, $email_otp,$aResult[0]->firstname,$aResult[0]->lastname);
                                 }
 
                                 $mobile_otp = rand(1000, 9999);

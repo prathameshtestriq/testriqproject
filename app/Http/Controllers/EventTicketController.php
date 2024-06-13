@@ -659,7 +659,8 @@ class EventTicketController extends Controller
                         // dd($FormQuestions);
 
                         for ($i = 0; $i < $ticket['count']; $i++) {
-                            $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
+                            if(count($FormQuestions) > 0)
+                                $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
                         }
                     }
                 }
@@ -947,7 +948,7 @@ class EventTicketController extends Controller
                         }
                     }
 
-                    
+
                     foreach ($separatedArrays as $key => $value) {
                         $subArray = [];
                         $subArray = json_decode($value);
@@ -959,7 +960,7 @@ class EventTicketController extends Controller
                                     $first_name = $sArray->ActualValue;
                                 } elseif ($sArray->question_form_name == 'last_name') {
                                     $last_name = $sArray->ActualValue;
-                                } elseif ($sArray->question_form_name == 'email') {
+                                } elseif ($sArray->question_form_type == 'email') {
                                     $email = $sArray->ActualValue;
                                 }
                             }
@@ -1113,8 +1114,23 @@ class EventTicketController extends Controller
             $MessageContent = $Communications[0]->message_content;
             $Subject = $Communications[0]->subject_name;
         } else {
-            $MessageContent = "<p>Hello {FIRSTNAME},</p><p>Your event ticket booking is successful.</p><p>Thank you for booking for {EVENTNAME}.</p><p>Regards,</p><p>{YTCRTEAM}</p>";
-            $Subject = "Confirmation Email";
+            $MessageContent = "Dear " . $User[0]->firstname . " " . $User[0]->lastname . ",
+ <br/><br/>
+Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+ <br/><br/>
+Event Details:
+ <br/><br/>
+● Date: " . $ConfirmationEmail["EVENTSTARTDATE"]. "<br/>
+● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
+● Location: " . $Venue . "<br/>
+<br/><br/>
+Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
+ <br/><br/>
+We look forward to seeing you at the event!
+ <br/><br/>
+Best regards,<br/>
+" . $Event[0]->name . " Team";
+            $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
         }
 
         foreach ($ConfirmationEmail as $key => $value) {
@@ -1125,7 +1141,7 @@ class EventTicketController extends Controller
         // Output the filled message
         // dd($MessageContent);
         $Email = new Emails();
-        // $Email->send_booking_mail($UserId,$UserEmail,$MessageContent,$Subject);
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject);
         // return $ConfirmationEmail;
         return;
     }
@@ -1158,7 +1174,8 @@ class EventTicketController extends Controller
                 (SELECT city FROM events WHERE id=eb.event_id) AS EventCity,
                 (SELECT banner_image FROM events WHERE id=eb.event_id) AS banner_image
                     FROM event_booking AS eb
-                    WHERE user_id=:user_id
+                    WHERE eb.user_id=:user_id
+                    AND eb.transaction_status = 1
                     GROUP BY eb.event_id";
                 $BookingData = DB::select($SQL, array('user_id' => $UserId));
 
@@ -1340,9 +1357,9 @@ class EventTicketController extends Controller
 
                 $UserId = $aToken['data']->ID;
                 // dd($UserId);
-                $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username FROM users WHERE id=:user_id";
+                $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username,email,mobile FROM users WHERE id=:user_id";
                 $User = DB::select($sql1, ['user_id' => $UserId]);
-                $Username = (sizeof($User) > 0) ? $User[0]->username : '';
+                // $Username = (sizeof($User) > 0) ? $User[0]->username : '';
                 // dd($Username);
 
                 $Venue = "";
@@ -1356,11 +1373,12 @@ class EventTicketController extends Controller
                 $EventLink = isset($request->event_link) ? $request->event_link : "";
 
                 if (!empty($EventId)) {
-                    $sql2 = "SELECT start_time,end_time,address,city,state,country,pincode FROM events WHERE id=:event_id";
+                    $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode FROM events WHERE id=:event_id";
                     $Event = DB::select($sql2, ['event_id' => $EventId]);
                     // dd($Event);
                     if (sizeof($Event) > 0) {
                         foreach ($Event as $key => $event) {
+                            $event->name = (!empty($event->name)) ? $event->name : '';
                             $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
                             $event->end_date = (!empty($event->end_time)) ? gmdate("d M Y", $event->end_time) : 0;
                             $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
@@ -1394,7 +1412,7 @@ class EventTicketController extends Controller
                     'ticket_details' => $TicketArr,
                     'event_details' => (sizeof($Event) > 0) ? $Event[0] : [],
                     'org_details' => (sizeof($Organizer) > 0) ? $Organizer[0] : [],
-                    'Username' => $Username,
+                    'user_details' => (sizeof($User) > 0) ? $User[0] : [],
                     'EventLink' => $EventLink,
                     'QrCode' => $qrCode
                 ];

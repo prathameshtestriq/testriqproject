@@ -1,34 +1,3 @@
-<!-- <!DOCTYPE html>
-<html>
-
-<head>
-    <title>Ticket PDF</title>
-</head>
-
-<body>
-    <h1>Hi {{ $Username }},<br />
-        Thank you for purchasing {{ $ticket_details['quantity'] }} ticket(s) for {{ $ticket_details['TicketName'] }}
-    </h1>
-    <p>Your Registration details are as follows:<br />
-        Booking Id : {{ $ticket_details['unique_ticket_id'] }}<br />
-        Booking Date : {{ $ticket_details['booking_start_date'] }} {{ $ticket_details['booking_time'] }}</p>
-
-    <p>
-        Event Details :<br />
-        Organizer : {{ $org_details->name }}<br />
-        Venue : {{ $event_details->Venue }}<br />
-        Event Date : {{ $event_details->start_date }} : {{ $event_details->start_time_event }} -
-        {{ $event_details->end_date }} : {{ $event_details->end_date_event }}<br />
-        Event Link : {{ $EventLink }}<br />
-    </p>
-
-    <div>
-        <img src="data:image/png;base64,{{ $QrCode }}" alt="QR Code" style="height:100px;width:100px">
-    </div>
-</body>
-
-</html> -->
-
 <!DOCTYPE html>
 <html>
 
@@ -209,8 +178,10 @@
 
 
         <div class="main-banner">
-            <h1 class="event-name">{{ $ticket_details['TicketName']}}</h1>
-            <p class="event-organizer">{{ $org_details->name }}</p>
+            <h1 class="event-name">{{ isset($event_details->name) ? $event_details->name : ""}}</h1>
+            <!-- <h1 class="event-name">{{ isset($ticket_details['TicketName']) ? $ticket_details['TicketName'] : ""}}</h1> -->
+            <p class="event-organizer">{{ isset($ticket_details['TicketName']) ? $ticket_details['TicketName'] : "" }}
+            </p>
         </div>
 
 
@@ -218,31 +189,40 @@
             <table>
                 <tbody>
                     <tr>
-                        <th colspan="2">Applicant Details</th>
+                        <th colspan="2">Attendee Details</th>
                     </tr>
+                   
                     <tr>
                         <td>Name</td>
-                        <td>{{ $Username }}</td>
+                        <td>{{ isset($ticket_details["firstname"]) ? $ticket_details["firstname"] . " " . $ticket_details["lastname"] : "" }}
+                        </td>
                     </tr>
                     <tr>
-                        <td>other info</td>
-                        <td>NA</td>
+                        <td>Email</td>
+                        <td>{{ isset($ticket_details["email"]) ? $ticket_details["email"] : "" }}</td>
                     </tr>
                     <tr>
                         <th colspan="2">Event Details</th>
                     </tr>
                     <tr>
                         <td>Organizer</td>
-                        <td>{{ $org_details->name }}</td>
+                        <td>{{ isset($org_details->name) ? $org_details->name : '' }}</td>
                     </tr>
+
                     <tr>
                         <td>Venue</td>
-                        <td>{{ $event_details->Venue }}</td>
+                        <td>{{ isset($event_details->Venue) ? $event_details->Venue : '' }}</td>
                     </tr>
                     <tr>
-                        <td>Event Date &amp; Time</td>
-                        <td>{{ $event_details->start_date }} : {{ $event_details->start_time_event }} -
-                            {{ $event_details->end_date }} : {{ $event_details->end_date_event }}
+                        <td>Event Starts On</td>
+                        <td>{{ isset($event_details->start_date) ? $event_details->start_date : '' }} :
+                            {{isset($event_details->start_time_event) ? $event_details->start_time_event : ''  }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Event Ends On</td>
+                        <td> {{isset($event_details->end_date) ? $event_details->end_date : ''   }} :
+                            {{isset($event_details->end_date_event) ? $event_details->end_date_event : ''  }}
                         </td>
                     </tr>
                     <!-- <tr>
@@ -257,17 +237,47 @@
                         <th colspan="2">Booking Details</th>
                     </tr>
                     <tr>
+                        <td>Registered By</td>
+                        <td>{{ isset($user_details->username) ? $user_details->username: "" }}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Email</td>
+                        <td>{{ isset($user_details->email) ? $user_details->email : "" }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Mobile</td>
+                        <td>{{ isset($user_details->mobile) ? $user_details->mobile : "" }}</td>
+                    </tr>
+
+                    <tr>
                         <td>Booking Date &amp; Time</td>
-                        <td>{{ $ticket_details['booking_start_date'] }} {{ $ticket_details['booking_time'] }}</td>
+                        <td>{{ isset($ticket_details['booking_start_date']) ? $ticket_details['booking_start_date'] : "" }}
+                            {{ isset($ticket_details['booking_time']) ? $ticket_details['booking_time'] : "" }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Amount</td>
+                        <td>&#8377; {{ isset($ticket_details['ticket_amount']) ? $ticket_details['ticket_amount'] : "" }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+
 
         <div class="booking-conformation">
             <h4 class="title">Booking Conformation</h4>
             <hr>
-            <h3 class="booking-number">Booking Number : {{ $ticket_details['unique_ticket_id'] }}</h3>
+            <h3 class="booking-number">Booking Number :
+                {{ isset($ticket_details['unique_ticket_id']) ? $ticket_details['unique_ticket_id'] : "" }}
+            </h3>
 
         </div>
 
