@@ -50,10 +50,6 @@ class EventDashboardController extends Controller
                 $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistration : 0;
                 $ResponseData['TotalAmount'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalAmount : 0;
 
-                // dd($TotalRegistration);
-
-                // Revenue
-                // $sql = "SELECT SUM(total_amount) AS TotalRevenue FROM event_booking WHERE event_id =
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
             } else {
@@ -99,7 +95,6 @@ class EventDashboardController extends Controller
 
                 $SearchUser = isset($aPost['user_name']) ? $aPost['user_name'] : 0;
                 $TransactionStatus = isset($aPost['TransactionStatus']) ? $aPost['TransactionStatus'] : "";
-
 
                 $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;

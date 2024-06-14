@@ -2,7 +2,10 @@
 <html>
 
 <head>
-    <title>Ticket PDF</title>
+
+    <title>Races Registration Ticket</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/img/ico/favicon.ico') }}">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -176,14 +179,11 @@
             <a><img src="ytcr-logo.png" alt="ytcr-logo"></a>
         </div>
 
-
         <div class="main-banner">
             <h1 class="event-name">{{ isset($event_details->name) ? $event_details->name : ""}}</h1>
-            <!-- <h1 class="event-name">{{ isset($ticket_details['TicketName']) ? $ticket_details['TicketName'] : ""}}</h1> -->
             <p class="event-organizer">{{ isset($ticket_details['TicketName']) ? $ticket_details['TicketName'] : "" }}
             </p>
         </div>
-
 
         <div class="event-details">
             <table>
@@ -260,7 +260,7 @@
 
                     <tr>
                         <td>Amount</td>
-                        <td>&#8377;
+                        <td><span style="font-family:dejavusans;">&#8377;</span>
                             {{ isset($ticket_details['ticket_amount']) ? $ticket_details['ticket_amount'] : "" }}
                         </td>
                     </tr>
@@ -272,13 +272,13 @@
         <br />
         <br />
         <br />
+        <?php if (isset($extra_details) && count($extra_details) > 0) { ?>
         <div class="event-details">
             <h4 class="title">Additional Purchases</h4>
             <hr>
             <table class="table table-bordered">
                 <tbody>
-                    <?php if (isset($extra_details) && count($extra_details) > 0) {
-                            foreach ($extra_details as $extra_detail) {
+                    <?php    foreach ($extra_details as $extra_detail) {
                                 $actual_value = intval($extra_detail->ActualValue);
                                 $question_form_option = json_decode($extra_detail->question_form_option, true);
 
@@ -290,15 +290,15 @@
                                     }
                                 }
                                 ?>
-                                <tr>
-                                    <td>{{$extra_detail->question_label}}</td>
-                                    <td>{{ $label }}</td>
-                                </tr>
-                    <?php    }
-                        }?>
+                    <tr>
+                        <td>{{$extra_detail->question_label}}</td>
+                        <td>{{ $label }}</td>
+                    </tr>
+                    <?php    }  ?>
                 </tbody>
             </table>
         </div>
+        <?php    }?>
         <br />
         <br />
         <br />
@@ -313,10 +313,6 @@
                 {{ isset($ticket_details['unique_ticket_id']) ? $ticket_details['unique_ticket_id'] : "" }}
             </h3>
         </div>
-
-     
-
-
 
         <div class="qr-code">
             <img src="data:image/png;base64,{{ $QrCode }}" alt="qr-img">
