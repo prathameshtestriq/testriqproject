@@ -730,7 +730,7 @@ class EventTicketController extends Controller
 
 
                 $OrgSql = "SELECT email FROM organizer AS e WHERE e.user_id=:user_id";
-                $Org = DB::select($OrgSql, array('user_id' =>$UserId));
+                $Org = DB::select($OrgSql, array('user_id' => $UserId));
                 if (count($Org) > 0) {
                     $OrgEmail = $Org[0]->email;
                 }
@@ -796,8 +796,9 @@ class EventTicketController extends Controller
 
 
             if (!$empty) {
+                $UserId = $aToken["data"]->ID;
                 $Auth = new Authenticate();
-                $Auth->apiLog($request);
+                $Auth->apiLog($request, $UserId, "after payment");
 
                 $BookingPaymentId = !empty($aPost['booking_pay_id']) ? $aPost['booking_pay_id'] : 0;
                 $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";

@@ -172,7 +172,7 @@ class LoginController extends Controller
                                         $message = 'Registered Successfully';
                                     } else {
                                         $ResposneCode = 400;
-                                        $message = 'User already exist, please sign in';
+                                        $message = 'User already exist, please login';
                                     }
                                 } else {
                                     $ResposneCode = 400;
@@ -713,7 +713,7 @@ class LoginController extends Controller
                     $message = 'Registered Successfully';
                 } else {
                     $ResposneCode = 400;
-                    $message = 'User is not exist, please sign in';
+                    $message = 'User is not exist, please signup';
                 }
 
             } else {
