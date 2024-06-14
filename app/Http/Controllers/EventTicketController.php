@@ -1725,7 +1725,7 @@ Best regards,<br/>
                 $TicketDetailsResult = DB::select($SQL1, array('booking_pay_id' => $BookingPayId));
 
                 $no_of_tickets = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
-                $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? $TicketDetailsResult[0]->total_price : 0;
+                $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? '₹ '.$TicketDetailsResult[0]->total_price : 0;
                 
                 if(!empty($user_email)){
                     
