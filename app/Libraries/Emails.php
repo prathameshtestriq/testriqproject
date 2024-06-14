@@ -138,7 +138,7 @@ Team YouTooCanRun";
         $email->addContent("text/plain", "Dear, ");
         $email->addContent(
             "text/html",
-            "" . $MessageContent . "<br><p>Thank you,<br>YTCRUN</p>"
+            "" . $MessageContent
         );
 
         $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));

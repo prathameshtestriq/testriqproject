@@ -191,7 +191,7 @@
                     <tr>
                         <th colspan="2">Attendee Details</th>
                     </tr>
-                   
+
                     <tr>
                         <td>Name</td>
                         <td>{{ isset($ticket_details["firstname"]) ? $ticket_details["firstname"] . " " . $ticket_details["lastname"] : "" }}
@@ -238,9 +238,9 @@
                     </tr>
                     <tr>
                         <td>Registered By</td>
-                        <td>{{ isset($user_details->username) ? $user_details->username: "" }}</td>
+                        <td>{{ isset($user_details->username) ? $user_details->username : "" }}</td>
                     </tr>
-                    
+
                     <tr>
                         <td>Email</td>
                         <td>{{ isset($user_details->email) ? $user_details->email : "" }}</td>
@@ -260,16 +260,50 @@
 
                     <tr>
                         <td>Amount</td>
-                        <td>&#8377; {{ isset($ticket_details['ticket_amount']) ? $ticket_details['ticket_amount'] : "" }}</td>
+                        <td>&#8377;
+                            {{ isset($ticket_details['ticket_amount']) ? $ticket_details['ticket_amount'] : "" }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <div class="event-details">
+            <h4 class="title">Additional Purchases</h4>
+            <hr>
+            <table class="table table-bordered">
+                <tbody>
+                    <?php if (isset($extra_details) && count($extra_details) > 0) {
+                            foreach ($extra_details as $extra_detail) {
+                                $actual_value = intval($extra_detail->ActualValue);
+                                $question_form_option = json_decode($extra_detail->question_form_option, true);
+
+                                $label = null;
+                                foreach ($question_form_option as $option) {
+                                    if ($option['id'] === $actual_value) {
+                                        $label = $option['label'];
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <tr>
+                                    <td>{{$extra_detail->question_label}}</td>
+                                    <td>{{ $label }}</td>
+                                </tr>
+                    <?php    }
+                        }?>
+                </tbody>
+            </table>
+        </div>
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
 
 
         <div class="booking-conformation">
@@ -278,8 +312,11 @@
             <h3 class="booking-number">Booking Number :
                 {{ isset($ticket_details['unique_ticket_id']) ? $ticket_details['unique_ticket_id'] : "" }}
             </h3>
-
         </div>
+
+     
+
+
 
         <div class="qr-code">
             <img src="data:image/png;base64,{{ $QrCode }}" alt="qr-img">

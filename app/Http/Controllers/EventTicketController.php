@@ -574,9 +574,9 @@ class EventTicketController extends Controller
 
                 // -------------------------------------------------
 
-                // $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
-                // $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
-                // if (count($FormQuestions) > 0) {
+                $sSQL = 'SELECT id,title,terms_conditions FROM event_terms_conditions WHERE event_id =:event_id AND status = 1 LIMIT 1';
+                $TermsConditions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+                $ResponseData['TermsConditions'] = $TermsConditions;
 
                 // dd($FormQuestions);
 
@@ -659,7 +659,7 @@ class EventTicketController extends Controller
                         // dd($FormQuestions);
 
                         for ($i = 0; $i < $ticket['count']; $i++) {
-                            if(count($FormQuestions) > 0)
+                            if (count($FormQuestions) > 0)
                                 $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
                         }
                     }
@@ -1039,7 +1039,7 @@ class EventTicketController extends Controller
                     $message = 'Request processed successfully';
                     $EventUrl = isset($request->EventUrl) && !empty($request->EventUrl) ? $request->EventUrl : "";
                     // $MessageContent = $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
-                    $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
+                    // $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee,$TotalPrice);
                     // $ResponseData['MessageContent'] = $MessageContent;
                 } else {
                     $ResposneCode = 400;
@@ -1062,7 +1062,7 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets)
+    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets,$TotalPrice)
     {
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
@@ -1103,6 +1103,7 @@ class EventTicketController extends Controller
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
+            "TOTALAMOUNT"=> $TotalPrice
 
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
@@ -1120,7 +1121,7 @@ Thank you for registering for " . $Event[0]->name . "! We are thrilled to have y
  <br/><br/>
 Event Details:
  <br/><br/>
-● Date: " . $ConfirmationEmail["EVENTSTARTDATE"]. "<br/>
+● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
 ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
 ● Location: " . $Venue . "<br/>
 <br/><br/>
@@ -1368,10 +1369,40 @@ Best regards,<br/>
 
                 $EventId = isset($TicketArr["event_id"]) ? $TicketArr["event_id"] : 0;
                 $TicketId = isset($TicketArr["ticket_id"]) ? $TicketArr["ticket_id"] : 0;
+                $attendeeId = isset($TicketArr["attendeeId"]) ? $TicketArr["attendeeId"] : 0;
+                // dd($TicketArr);
+                // attendeeId
                 $AttenddeeName = isset($TicketArr["attendee_name"]) ? $TicketArr["attendee_name"] : "";
                 $BookingDetailId = isset($TicketArr["booking_detail_id"]) ? $TicketArr["booking_detail_id"] : 0;
                 $EventLink = isset($request->event_link) ? $request->event_link : "";
+                $AttendeeData = $AttenddeeDetails = [];
+                // dd($attendeeId);
+                if (!empty($attendeeId)) {
+                    $sql = "SELECT attendee_details FROM attendee_booking_details WHERE id=:attendee_id";
+                    $AttendeeData = DB::select($sql, ['attendee_id' => $attendeeId]);
+                    if (count($AttendeeData) > 0) {
+                        $AttenddeeDetails = $AttendeeData[0]->attendee_details;
+                        $attendee_details = json_decode(json_decode($AttenddeeDetails));
+                        // dd($attendee_details);
+                        $amount_details = [];
+                        $extra_details = [];
 
+                        // Iterate through attendee details to separate the amounts
+                        foreach ($attendee_details as $detail) {
+                            if ($detail->question_form_type == 'amount') {
+                                $amount_details[] = $detail;
+                            }
+                            if ($detail->question_form_name == 'drink_preferences') {
+                                $extra_details[] = $detail;
+                            }
+                            if ($detail->question_form_name == 'breakfast_preferences') {
+                                $extra_details[] = $detail;
+                            }
+                        }
+
+                    }
+                }
+                // dd($amount_details,$extra_details);
                 if (!empty($EventId)) {
                     $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode FROM events WHERE id=:event_id";
                     $Event = DB::select($sql2, ['event_id' => $EventId]);
@@ -1414,7 +1445,9 @@ Best regards,<br/>
                     'org_details' => (sizeof($Organizer) > 0) ? $Organizer[0] : [],
                     'user_details' => (sizeof($User) > 0) ? $User[0] : [],
                     'EventLink' => $EventLink,
-                    'QrCode' => $qrCode
+                    'QrCode' => $qrCode,
+                    'amount_details' => $amount_details,
+                    'extra_details' => $extra_details
                 ];
                 // dd($data);
 
