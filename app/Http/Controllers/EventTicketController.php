@@ -1859,15 +1859,15 @@ Best regards,<br/>
 
             $MessageContent = "Dear ".$Organizer_name.",
  
-            Congratulations! Your onboarding as an organiser on RACES is now complete. We are excited to have you as part of our platform.
+            Congratulations! Your onboarding as an organiser on RACES is now complete. We are excited to have you as part of our platform.<br/><br/>
              
-            You can now start creating and managing your events through your organiser dashboard. Here are your login details:
+            You can now start creating and managing your events through your organiser dashboard. Here are your login details:<br/><br/>
           
-            For any assistance or to get started, please  contact our support team.
+            For any assistance or to get started, please  contact our support team.<br/><br/>
              
-            We look forward to your successful events and collaborations.
+            We look forward to your successful events and collaborations.<br/><br/>
              
-            Best regards,
+            Best regards,<br/><br/>
              
             (For RACES)
             Team YouTooCanRun";
