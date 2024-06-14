@@ -145,7 +145,7 @@
                                         </p>
                                     </div>
                                     <input type="hidden" name="command" value="login" />
-                                    <button class="btn btn-primary btn-block" tabindex="4">Sign in</button>
+                                    <button class="btn btn-primary btn-block" tabindex="4">Log in</button>
                                 </form>
 
 

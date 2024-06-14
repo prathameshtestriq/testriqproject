@@ -109,7 +109,7 @@ class GoogleLoginController extends Controller
                 $message = 'Registered Successfully';
             } else {
                 // $ResposneCode = 400;
-                // $message = 'User already exist, please sign in';
+                // $message = 'User already exist, please Login';
                 $sql1 = 'SELECT * FROM users WHERE id = :id';
                 $aResult = DB::select($sql1, array('id' => $Exist[0]->id));
 

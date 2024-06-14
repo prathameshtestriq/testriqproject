@@ -143,7 +143,7 @@
                                         </p>
                                     </div>
                                     <input type="hidden" name="command" value="login" />
-                                    <button class="btn btn-primary btn-block" style="background-color:#202B63 !important" tabindex="4">Sign in</button>
+                                    <button class="btn btn-primary btn-block" style="background-color:#202B63 !important" tabindex="4">Signup</button>
                                 </form>
 
 

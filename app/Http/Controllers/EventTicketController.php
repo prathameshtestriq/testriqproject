@@ -9,6 +9,7 @@ use App\Models\Master;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use App\Libraries\Emails;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Str;
 
 class EventTicketController extends Controller
 {
@@ -719,13 +720,39 @@ class EventTicketController extends Controller
                 $UserId = $aToken['data']->ID;
                 $Auth = new Authenticate();
                 $Auth->apiLog($request);
-
+                $EventName = $ATermsConditions = $NewTermsConditions = "";
                 $EventSql = "SELECT name FROM events AS e WHERE e.id=:event_id";
-                $Events = DB::select($EventSql, array('event_id' =>$aPost['event_id']));
+                $Events = DB::select($EventSql, array('event_id' => $aPost['event_id']));
+                if (count($Events) > 0) {
+                    $EventName = $Events[0]->name;
+                }
+                // $ResponseData['EventName'] = $EventName;
+
+
+                $OrgSql = "SELECT email FROM organizer AS e WHERE e.user_id=:user_id";
+                $Org = DB::select($OrgSql, array('user_id' => $UserId));
+                if (count($Org) > 0) {
+                    $OrgEmail = $Org[0]->email;
+                }
+                // $ResponseData['OrgEmail'] = $OrgEmail;
+
 
                 $sSQL = 'SELECT id,title,terms_conditions FROM event_terms_conditions WHERE event_id =:event_id AND status = 1 LIMIT 1';
                 $TermsConditions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
-                $ResponseData['TermsConditions'] = $TermsConditions;
+
+                if (count($TermsConditions) > 0) {
+                    $ATermsConditions = $TermsConditions[0]->terms_conditions;
+                }
+                $content = "";
+                if (!empty($ATermsConditions)) {
+                    // $NewTermsConditions = str_replace(("[Event Name]"), "<b>" . $EventName . "</b>", $ATermsConditions);
+                    // $NewTermsConditions = str_replace(("[Event name]"), "<b>" . $EventName . "</b>", $ATermsConditions);
+                    $content = Str::replace('[Event Name]', "<b>" . $EventName . "</b>", $ATermsConditions);
+                    $content = Str::replace('[Event name]', "<b>" . $EventName . "</b>", $content);
+                    $content = Str::replace("[organiser email id]", "<b>" . $OrgEmail . "</b>", $content);
+                }
+
+                $ResponseData['TermsConditions'] = $content;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -769,8 +796,9 @@ class EventTicketController extends Controller
 
 
             if (!$empty) {
+                $UserId = $aToken["data"]->ID;
                 $Auth = new Authenticate();
-                $Auth->apiLog($request);
+                $Auth->apiLog($request, $UserId, "after payment");
 
                 $BookingPaymentId = !empty($aPost['booking_pay_id']) ? $aPost['booking_pay_id'] : 0;
                 $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
@@ -1151,8 +1179,8 @@ class EventTicketController extends Controller
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
-            "TOTALAMOUNT"=> $TotalPrice,
-            "TICKETAMOUNT"=> $TotalPrice
+            "TOTALAMOUNT" => $TotalPrice,
+            "TICKETAMOUNT" => $TotalPrice
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
         // dd($ConfirmationEmail);
@@ -1705,17 +1733,17 @@ Best regards,<br/>
 
             $UserId = $aToken['data']->ID;
 
-            if(!empty($attendee_id)){
-               
+            if (!empty($attendee_id)) {
+
                 $SQL = "SELECT email,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
-                $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? '₹ '.$attendeeResult[0]->ticket_amount : '';
+                $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? '₹ ' . $attendeeResult[0]->ticket_amount : '';
 
-                if(!empty($attendee_email)){
-                   // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
+                if (!empty($attendee_email)) {
+                    // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
                     $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount);
-                    $ResponseData['data'] = 1; 
+                    $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
                 } else {
@@ -1773,10 +1801,10 @@ Best regards,<br/>
 
 
                 $no_of_tickets = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
-                $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? '₹ '.$TicketDetailsResult[0]->total_price : 0;
-                
-                if(!empty($user_email)){
-                    
+                $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? '₹ ' . $TicketDetailsResult[0]->total_price : 0;
+
+                if (!empty($user_email)) {
+
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
                     $ResponseData['data'] = 1;
