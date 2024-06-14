@@ -1857,7 +1857,7 @@ Best regards,<br/>
 
             $Subject = "Welcome to RACES - Organiser Onboarding Successful";
 
-            $MessageContent = "Dear ".$Organizer_name.",
+            $MessageContent = "Dear ".$Organizer_name.",<br/><br/>
  
             Congratulations! Your onboarding as an organiser on RACES is now complete. We are excited to have you as part of our platform.<br/><br/>
              
@@ -1869,7 +1869,7 @@ Best regards,<br/>
              
             Best regards,<br/><br/>
              
-            (For RACES)
+            (For RACES)<br/>
             Team YouTooCanRun";
                 
             if($SendEmailFlag == 0){
