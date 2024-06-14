@@ -24,9 +24,9 @@ Best regards,
 (For RACES)<br/>
 Team YouTooCanRun";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YTCR ");
+        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
         $email->setSubject("Your OTP Code for Secure Access");
-        $email->addTo($athelete_email, "YTCR ");
+        $email->addTo($athelete_email, "YouTooCanRun ");
         $email->addContent("text/plain", "Dear Customer, Your OTP is.");
         $email->addContent(
             "text/html",
@@ -50,9 +50,9 @@ Team YouTooCanRun";
     {
         $message = "Dear Customer, Your password is: <strong>" . $password;
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YTCR ");
+        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
         $email->setSubject("YTCRUN password");
-        $email->addTo($athelete_email, "YTCR ");
+        $email->addTo($athelete_email, "YouTooCanRun ");
         $email->addContent("text/plain", "Dear Customer, Your password is.");
         $email->addContent(
             "text/html",
@@ -76,7 +76,7 @@ Team YouTooCanRun";
     {
         $message = "You have requested to reset your password. Please click the link below to reset your password.<br>" . $reset_link . "<br><p>Thank you,<br>YTCRUN</p>";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YTCR ");
+        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
         $email->setSubject("YTCRUN password");
         $email->addTo($athelete_email, "Reset Your Password");
         $email->addContent("text/plain", "Dear Customer, ");
@@ -101,7 +101,7 @@ Team YouTooCanRun";
     public function send_org_notification($fullname, $email, $contact_no, $message)
     {
         $mail = new \SendGrid\Mail\Mail();  // Renamed the variable to $mail to avoid conflict
-        $mail->setFrom("support@youtoocantun.com", "YTCR ");
+        $mail->setFrom("support@youtoocantun.com", "YouTooCanRun ");
         $mail->setSubject("YTCRUN Organiser");
         $mail->addTo($email, $fullname);  // Here $email is the recipient's email and $fullname is the recipient's name
         $mail->addContent("text/plain", "Dear Organiser, ");
@@ -132,7 +132,7 @@ Team YouTooCanRun";
     public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject)
     {
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YTCR ");
+        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
         $email->setSubject($Subject);
         $email->addTo($UserEmail, $Subject);
         $email->addContent("text/plain", "Dear, ");
@@ -169,7 +169,7 @@ Best regards,
 (For RACES)<br/>
 Team YouTooCanRun";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YTCR ");
+        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
         $email->setSubject("Welcome to RACES!");
         $email->addTo($mail, "Registration");
         $email->addContent("text/plain", "Dear Customer, ");

@@ -133,6 +133,7 @@ class EventDashboardController extends Controller
                     $sql .= " AND eb.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
                 }
                 $sql .= " GROUP BY bd.booking_id";
+                $sql .= " ORDER BY eb.id DESC";
                 // dd($sql);
                 $UserData = DB::select($sql, array('event_id' => $EventId));
 
