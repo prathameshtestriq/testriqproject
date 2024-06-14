@@ -37,8 +37,8 @@ class EventController extends Controller
             $event->state_name = !empty($event->state) ? $master->getStateName($event->state) : "";
             $event->country_name = !empty($event->country) ? $master->getCountryName($event->country) : "";
 
-            $event->latitude = !empty($event->city) ? $master->getCityLatitude($event->city) : "";
-            $event->longitude = !empty($event->city) ? $master->getCityLongitude($event->city) : "";
+            // $event->latitude = !empty($event->city) ? $master->getCityLatitude($event->city) : "";
+            // $event->longitude = !empty($event->city) ? $master->getCityLongitude($event->city) : "";
 
             #FOLLOW(WISHLIST)
             $event->is_follow = !empty($UserId) ? $e->isFollowed($event->id, $UserId) : 0;
@@ -716,6 +716,7 @@ class EventController extends Controller
         if (!empty($EventId)) {
             $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id";
             $Events = DB::select($EventSql, array('event_id' => $EventId));
+            // dd($Events);
         }
         if ($EventName !== "") {
             $EventSql = "SELECT * FROM events AS e WHERE e.name=:event_name";
@@ -732,6 +733,7 @@ class EventController extends Controller
             $FAQ = DB::select($sSQL, array('event_id' => $EventId));
             $ResponseData['FAQ'] = $FAQ;
         }
+        // dd($Events);
         #ORGANISER
         $ResponseData['OrganiserName'] = $ResponseData['OrganiserId'] = $ResponseData['UserId'] = "";
         if (!empty($Events[0]->created_by)) {
@@ -741,6 +743,7 @@ class EventController extends Controller
             $ResponseData['OrganiserId'] = (sizeof($Organiser) > 0) ? $Organiser[0]->id : 0;
             $ResponseData['UserId'] = $Events[0]->created_by;
         }
+        // dd($Events);
         $response = [
             'status' => 200,
             'data' => $ResponseData,
