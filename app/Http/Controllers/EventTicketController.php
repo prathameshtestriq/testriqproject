@@ -1803,7 +1803,81 @@ Best regards,<br/>
 
         return response()->json($response, $ResposneCode);
     }
+    
+    //-------- To send email organiser
+    public function SendEmailOrganiserOnboardingConfirmation(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $message = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
 
+            $UserId = $aToken['data']->ID;
+            
+            $sql3 = "SELECT name,send_email_flag,(select email from users where id = organizer.user_id) as email FROM organizer WHERE user_id=:user_id";
+            $Organizer = DB::select($sql3, ['user_id' => $UserId]);
+            
+            $Organizer_name   = !empty($Organizer) && !empty($Organizer[0]->name) ? $Organizer[0]->name : '';
+            $UserEmail        = !empty($Organizer) && $Organizer[0]->email ? $Organizer[0]->email : '';
+            $SendEmailFlag    = !empty($Organizer) && $Organizer[0]->send_email_flag ? $Organizer[0]->send_email_flag : 0;
+
+            $Subject = "Welcome to RACES - Organiser Onboarding Successful";
+
+            $MessageContent = "Dear ".$Organizer_name.",
+ 
+            Congratulations! Your onboarding as an organiser on RACES is now complete. We are excited to have you as part of our platform.
+             
+            You can now start creating and managing your events through your organiser dashboard. Here are your login details:
+          
+            For any assistance or to get started, please  contact our support team.
+             
+            We look forward to your successful events and collaborations.
+             
+            Best regards,
+             
+            (For RACES)
+            Team YouTooCanRun";
+                
+            if($SendEmailFlag == 0){
+                // dd($MessageContent);
+                $Email = new Emails();
+                $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject);
+
+                //--------
+                $up_sSQL = 'UPDATE organizer SET `send_email_flag` =:sendEmailFlag WHERE `user_id`=:user_id ';
+                DB::update($up_sSQL,array(
+                    'sendEmailFlag' => 1,
+                    'user_id' => $UserId
+                )); 
+ 
+                $ResponseData['data'] = 1;
+                $message = "Email send successfully";
+                $ResposneCode = 200;
+            } else {
+                $ResponseData['data'] = 0;
+                $message = "Email Not Found";
+                $ResposneCode = 401;
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
 
 }
 
