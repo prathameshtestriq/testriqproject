@@ -574,9 +574,9 @@ class EventTicketController extends Controller
 
                 // -------------------------------------------------
 
-                // $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
-                // $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
-                // if (count($FormQuestions) > 0) {
+                $sSQL = 'SELECT id,title,terms_conditions FROM event_terms_conditions WHERE event_id =:event_id AND status = 1 LIMIT 1';
+                $TermsConditions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+                $ResponseData['TermsConditions'] = $TermsConditions;
 
                 // dd($FormQuestions);
 
@@ -1039,7 +1039,7 @@ class EventTicketController extends Controller
                     $message = 'Request processed successfully';
                     $EventUrl = isset($request->EventUrl) && !empty($request->EventUrl) ? $request->EventUrl : "";
                     // $MessageContent = $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
-                    $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
+                    // $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee,$TotalPrice);
                     // $ResponseData['MessageContent'] = $MessageContent;
                 } else {
                     $ResposneCode = 400;
@@ -1062,7 +1062,7 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets)
+    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets,$TotalPrice)
     {
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
@@ -1103,6 +1103,7 @@ class EventTicketController extends Controller
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
+            "TOTALAMOUNT"=> $TotalPrice
 
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
