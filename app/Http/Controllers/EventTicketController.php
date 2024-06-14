@@ -1690,6 +1690,69 @@ Best regards,<br/>
         return response()->json($response, $ResposneCode);
     }
 
+
+    public function SendEmailPaymentSuccess(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $message = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+           
+            $EventId = !empty($request->event_id) ? $request->event_id : 0;
+            $EventUrl = !empty($request->event_url) ? $request->event_url : '';
+            $BookingPayId = !empty($request->booking_pay_id) ? $request->booking_pay_id : 0;
+            
+            $UserId = $aToken['data']->ID;
+
+            if(!empty($BookingPayId)){
+               
+                $SQL = "SELECT name as event_name,(select email from users where id = events.created_by) as email FROM events WHERE created_by =:id";
+                $aResult = DB::select($SQL, array('id' => $UserId));
+                $user_email = !empty($aResult) && $aResult[0]->email ? $aResult[0]->email : '';
+                $event_name = !empty($aResult) && $aResult[0]->event_name ? $aResult[0]->event_name : '';
+                $event_url = $EventUrl.'/'.$event_name;
+                
+                $SQL1 = "SELECT total_attendees as no_of_tickets,TotalPrice as total_price FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
+                $TicketDetailsResult = DB::select($SQL1, array('booking_pay_id' => $BookingPayId));
+
+                $ticket_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
+                $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? $TicketDetailsResult[0]->total_price : 0;
+                
+                if(!empty($user_email)){
+                    
+                    $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $ticket_price, $total_price);
+                    //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
+                    $ResponseData['data'] = 1; 
+                    $message = "Email send successfully";
+                    $ResposneCode = 200;
+                }else{
+                    $ResponseData['data'] = 0; 
+                    $message = "Email Not Found";
+                    $ResposneCode = 401;
+                }
+
+            }
+            
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+ 
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
    
 }
 
