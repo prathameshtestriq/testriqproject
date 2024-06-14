@@ -1,18 +1,23 @@
 <!DOCTYPE html>
+
+
 <html>
 
 <head>
-
+    <meta charset="UTF-8">
     <title>Races Registration Ticket</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/img/ico/favicon.ico') }}">
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            /* background-color: #ed1c24; */
+        @font-face {
+            font-family: 'DejaVu Sans';
+            src: url('{{ resource_path('fonts/DejaVuSans.ttf') }}') format('truetype');
         }
+
+        body {
+            font-family: 'DejaVu Sans', sans-serif;
+        }
+
 
         .container {
             /* width: 210mm; */
@@ -260,7 +265,8 @@
 
                     <tr>
                         <td>Amount</td>
-                        <td><span style="font-family:dejavusans;">&#8377;</span>
+                        <td>
+                            <span style="font-family:dejavusans;">&#8377;</span>
                             {{ isset($ticket_details['ticket_amount']) ? $ticket_details['ticket_amount'] : "" }}
                         </td>
                     </tr>
@@ -279,16 +285,16 @@
             <table class="table table-bordered">
                 <tbody>
                     <?php    foreach ($extra_details as $extra_detail) {
-                                $actual_value = intval($extra_detail->ActualValue);
-                                $question_form_option = json_decode($extra_detail->question_form_option, true);
+        $actual_value = intval($extra_detail->ActualValue);
+        $question_form_option = json_decode($extra_detail->question_form_option, true);
 
-                                $label = null;
-                                foreach ($question_form_option as $option) {
-                                    if ($option['id'] === $actual_value) {
-                                        $label = $option['label'];
-                                        break;
-                                    }
-                                }
+        $label = null;
+        foreach ($question_form_option as $option) {
+            if ($option['id'] === $actual_value) {
+                $label = $option['label'];
+                break;
+            }
+        }
                                 ?>
                     <tr>
                         <td>{{$extra_detail->question_label}}</td>

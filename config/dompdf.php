@@ -45,8 +45,10 @@ return array(
          * Times-Roman, Times-Bold, Times-BoldItalic, Times-Italic,
          * Symbol, ZapfDingbats.
          */
-        "font_dir" => storage_path('fonts'), // advised by dompdf (https://github.com/dompdf/dompdf/pull/782)
-
+        // "font_dir" => storage_path('fonts'), // advised by dompdf (https://github.com/dompdf/dompdf/pull/782)
+        // 'font_dir' => base_path('resources/fonts/'), // Add your custom fonts directory
+        // 'font_cache' => storage_path('fonts/'), // Font cache directory
+        // 'default_font' => 'DejaVu Sans Condensed',
         /**
          * The location of the DOMPDF font cache directory
          *
@@ -55,7 +57,7 @@ return array(
          *
          * Note: This directory must exist and be writable by the webserver process.
          */
-        "font_cache" => storage_path('fonts'),
+        // "font_cache" => storage_path('fonts'),
 
         /**
          * The location of a temporary directory.
@@ -96,9 +98,9 @@ return array(
             "https://" => ["rules" => []]
         ],
 
-         /**
-          * @var string
-          */
+        /**
+         * @var string
+         */
         'log_output_file' => null,
 
         /**
@@ -171,13 +173,13 @@ return array(
          */
         "default_paper_size" => "a4",
 
-         /**
-          * The default paper orientation.
-          *
-          * The orientation of the page (portrait or landscape).
-          *
-          * @var string
-          */
+        /**
+         * The default paper orientation.
+         *
+         * The orientation of the page (portrait or landscape).
+         *
+         * @var string
+         */
         'default_paper_orientation' => "portrait",
 
         /**
@@ -186,7 +188,20 @@ return array(
          * Used if no suitable fonts can be found. This must exist in the font folder.
          * @var string
          */
-        "default_font" => "serif",
+        // "default_font" => "serif",
+        'font_dir' => resource_path('fonts/'), // Custom fonts directory
+        'font_cache' => storage_path('fonts/'), // Font cache directory
+        
+        'default_font' => 'DejaVu Sans',
+    
+        'fonts' => [
+            'dejavu sans' => [
+                'R'  => 'DejaVuSans.ttf',
+                'B'  => 'DejaVuSans-Bold.ttf',
+                'I'  => 'DejaVuSans-Oblique.ttf',
+                'BI' => 'DejaVuSans-BoldOblique.ttf',
+            ],
+        ],
 
         /**
          * Image DPI setting

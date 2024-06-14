@@ -699,6 +699,54 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    function GetEventTermsConditions(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $UserId = $aToken['data']->ID;
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventSql = "SELECT name FROM events AS e WHERE e.id=:event_id";
+                $Events = DB::select($EventSql, array('event_id' =>$aPost['event_id']));
+
+                $sSQL = 'SELECT id,title,terms_conditions FROM event_terms_conditions WHERE event_id =:event_id AND status = 1 LIMIT 1';
+                $TermsConditions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+                $ResponseData['TermsConditions'] = $TermsConditions;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
     function BookTickets(Request $request)
     {
         $ResponseData = $FinalFormQuestions = [];
@@ -1062,7 +1110,7 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets,$TotalPrice)
+    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice)
     {
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
@@ -1103,7 +1151,7 @@ class EventTicketController extends Controller
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
-            "TOTALAMOUNT"=> $TotalPrice
+            "TOTALAMOUNT" => $TotalPrice
 
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
@@ -1639,7 +1687,7 @@ Best regards,<br/>
 
         return response()->json($response, $ResposneCode);
     }
-    
+
     public function ResendEmailToAttendee(Request $request)
     {
         $ResponseData = [];
@@ -1654,28 +1702,28 @@ Best regards,<br/>
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $attendee_id = !empty($request->attendee_id) ? $request->attendee_id : 0;
             $EventUrl = !empty($request->event_url) ? $request->event_url : '';
-            
+
             $UserId = $aToken['data']->ID;
 
-            if(!empty($attendee_id)){
-               
+            if (!empty($attendee_id)) {
+
                 $SQL = "SELECT email FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
 
-                if(!empty($attendee_email)){
-                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
-                    $ResponseData['data'] = 1; 
+                if (!empty($attendee_email)) {
+                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1);
+                    $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
-                }else{
-                    $ResponseData['data'] = 0; 
+                } else {
+                    $ResponseData['data'] = 0;
                     $message = "Email Not Found";
                     $ResposneCode = 401;
                 }
 
             }
-            
+
         } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];
@@ -1703,47 +1751,47 @@ Best regards,<br/>
         // dd($aToken['data']->ID);
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
-           
+
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $EventUrl = !empty($request->event_url) ? $request->event_url : '';
             $BookingPayId = !empty($request->booking_pay_id) ? $request->booking_pay_id : 0;
-            
+
             $UserId = $aToken['data']->ID;
 
-            if(!empty($BookingPayId)){
-               
+            if (!empty($BookingPayId)) {
+
                 $SQL = "SELECT name as event_name,(select email from users where id = events.created_by) as email FROM events WHERE created_by =:id";
                 $aResult = DB::select($SQL, array('id' => $UserId));
                 $user_email = !empty($aResult) && $aResult[0]->email ? $aResult[0]->email : '';
                 $event_name = !empty($aResult) && $aResult[0]->event_name ? $aResult[0]->event_name : '';
-                $event_url = $EventUrl.'/'.$event_name;
-                
+                $event_url = $EventUrl . '/' . $event_name;
+
                 $SQL1 = "SELECT total_attendees as no_of_tickets,TotalPrice as total_price FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                 $TicketDetailsResult = DB::select($SQL1, array('booking_pay_id' => $BookingPayId));
 
                 $ticket_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
                 $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? $TicketDetailsResult[0]->total_price : 0;
-                
-                if(!empty($user_email)){
-                    
+
+                if (!empty($user_email)) {
+
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $ticket_price, $total_price);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
-                    $ResponseData['data'] = 1; 
+                    $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
-                }else{
-                    $ResponseData['data'] = 0; 
+                } else {
+                    $ResponseData['data'] = 0;
                     $message = "Email Not Found";
                     $ResposneCode = 401;
                 }
 
             }
-            
+
         } else {
             $ResposneCode = $aToken['code'];
             $message = $aToken['message'];
         }
- 
+
         $response = [
             'success' => $ResposneCode,
             'data' => $ResponseData,
@@ -1753,7 +1801,7 @@ Best regards,<br/>
         return response()->json($response, $ResposneCode);
     }
 
-   
+
 }
 
 

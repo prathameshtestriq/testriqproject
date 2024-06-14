@@ -134,7 +134,9 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_age_criteria','GetAgeCriteria');
     Route::post('resend_email_to_attendee','ResendEmailToAttendee');
     Route::post('send_email_payment_success','SendEmailPaymentSuccess');
+    Route::post('get_event_term_and_conditions','GetEventTermsConditions');
 
+    
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {
