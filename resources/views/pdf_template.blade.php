@@ -283,11 +283,9 @@
                                 $question_form_option = json_decode($extra_detail->question_form_option, true);
 
                                 $label = null;
-                                // dd($question_form_option);
                                 foreach ($question_form_option as $option) {
                                     if ($option['id'] === $actual_value) {
                                         $label = $option['label'];
-                                        // dd($label);
                                         break;
                                     }
                                 }

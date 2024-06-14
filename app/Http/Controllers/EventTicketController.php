@@ -1386,7 +1386,6 @@ Best regards,<br/>
                         $amount_details = [];
                         $extra_details = [];
 
-
                         // Iterate through attendee details to separate the amounts
                         foreach ($attendee_details as $detail) {
                             if ($detail->question_form_type == 'amount') {
