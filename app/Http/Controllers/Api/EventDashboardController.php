@@ -98,7 +98,7 @@ class EventDashboardController extends Controller
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
 
                 $SearchUser = isset($aPost['user_name']) ? $aPost['user_name'] : 0;
-                $TransactionStatus = isset($aPost['TransactionStatus']) ? $aPost['TransactionStatus'] : 1;
+                $TransactionStatus = isset($aPost['TransactionStatus']) ? $aPost['TransactionStatus'] : "";
 
 
                 $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
@@ -109,6 +109,7 @@ class EventDashboardController extends Controller
                          eb.user_id,
                          eb.booking_date,
                          eb.total_amount AS TotalAmount,
+                         eb.transaction_status,
                          SUM(bd.quantity) AS TotalTickets,
                          u.id,
                          u.firstname,
@@ -118,8 +119,12 @@ class EventDashboardController extends Controller
                      FROM event_booking AS eb 
                      LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
                      LEFT JOIN users AS u ON u.id = eb.user_id
-                     WHERE eb.event_id=:event_id AND eb.transaction_status=:transaction_status";
-
+                     WHERE eb.event_id=:event_id ";
+                if (!empty($TransactionStatus)) {
+                    if ($TransactionStatus == 3)
+                        $TransactionStatus = 0;
+                    $sql .= " AND eb.transaction_status= " . $TransactionStatus;
+                }
                 if ($SearchUser) {
                     $sql .= " AND (u.firstname LIKE '%" . $SearchUser . "%' OR u.lastname LIKE '%" . $SearchUser . "%')";
                 }
@@ -134,7 +139,7 @@ class EventDashboardController extends Controller
                 }
                 $sql .= " GROUP BY bd.booking_id";
                 // dd($sql);
-                $UserData = DB::select($sql, array('event_id' => $EventId, 'transaction_status' => $TransactionStatus));
+                $UserData = DB::select($sql, array('event_id' => $EventId));
 
                 foreach ($UserData as $key => $value) {
                     $value->booking_date = !empty($value->booking_date) ? date("Y-m-d H:i A", ($value->booking_date)) : '';
@@ -307,10 +312,10 @@ class EventDashboardController extends Controller
                         if ($detail->question_form_type == 'amount') {
                             $amount_details[] = $detail;
                         }
-                        if($detail->question_form_name == 'drink_preferences'){
+                        if ($detail->question_form_name == 'drink_preferences') {
                             $extra_details[] = $detail;
                         }
-                        if($detail->question_form_name == 'breakfast_preferences'){
+                        if ($detail->question_form_name == 'breakfast_preferences') {
                             $extra_details[] = $detail;
                         }
                     }
