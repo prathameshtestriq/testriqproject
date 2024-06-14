@@ -1151,14 +1151,14 @@ class EventTicketController extends Controller
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
-            "TOTALAMOUNT" => $TotalPrice
-
+            "TOTALAMOUNT"=> $TotalPrice,
+            "TICKETAMOUNT"=> $TotalPrice
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
         // dd($ConfirmationEmail);
         $Subject = "";
         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND UPPER(subject_name)=:subject_name";
-        $Communications = DB::select($sql, ["event_id" => $EventId, "subject_name" => strtoupper("Confirmation Email")]);
+        $Communications = DB::select($sql, ["event_id" => $EventId, "subject_name" => strtoupper("Registration Confirmation for SV Run")]);
         if (count($Communications) > 0) {
             $MessageContent = $Communications[0]->message_content;
             $Subject = $Communications[0]->subject_name;
@@ -1705,15 +1705,17 @@ Best regards,<br/>
 
             $UserId = $aToken['data']->ID;
 
-            if (!empty($attendee_id)) {
-
-                $SQL = "SELECT email FROM attendee_booking_details WHERE id =:id";
+            if(!empty($attendee_id)){
+               
+                $SQL = "SELECT email,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
+                $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? '₹ '.$attendeeResult[0]->ticket_amount : '';
 
-                if (!empty($attendee_email)) {
-                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1);
-                    $ResponseData['data'] = 1;
+                if(!empty($attendee_email)){
+                   // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
+                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount);
+                    $ResponseData['data'] = 1; 
                     $message = "Email send successfully";
                     $ResposneCode = 200;
                 } else {
@@ -1769,12 +1771,13 @@ Best regards,<br/>
                 $SQL1 = "SELECT total_attendees as no_of_tickets,TotalPrice as total_price FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                 $TicketDetailsResult = DB::select($SQL1, array('booking_pay_id' => $BookingPayId));
 
-                $ticket_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
-                $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? $TicketDetailsResult[0]->total_price : 0;
 
-                if (!empty($user_email)) {
-
-                    $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $ticket_price, $total_price);
+                $no_of_tickets = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
+                $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? '₹ '.$TicketDetailsResult[0]->total_price : 0;
+                
+                if(!empty($user_email)){
+                    
+                    $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
