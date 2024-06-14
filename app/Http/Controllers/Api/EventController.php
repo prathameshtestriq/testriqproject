@@ -64,7 +64,7 @@ class EventController extends Controller
             $event->show_registration_button_msg = "";
             if ($now < $event->registration_start_time) {
                 $event->show_registration_button_msg = "Registration Starting Soon";
-            }else if($now > $event->registration_end_time){
+            } else if ($now > $event->registration_end_time) {
                 $event->show_registration_button_msg = "Registration Closed";
             }
 
@@ -170,6 +170,9 @@ class EventController extends Controller
                 $ResponseData['StateId'] = $StateId[0]->id;
             }
         }
+        $EventSql .= ' ORDER BY e.id DESC';
+        $RegistrationSql .= ' ORDER BY r.id DESC';
+        $UpcomingSql .= ' ORDER BY u.id DESC';
 
         // dd($EventSql,$BannerSql);
         if (!empty($HomeFlag)) {
@@ -194,6 +197,8 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
+                $EventSql .= ' ORDER BY e.id DESC';
+
                 if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
                 }
@@ -212,6 +217,8 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
+
+                $UpcomingSql .= ' ORDER BY u.id DESC';
                 if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
@@ -222,6 +229,8 @@ class EventController extends Controller
             $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
             if (!empty($NewState_id)) {
                 $RegistrationSql .= ' AND r.state=' . $NewState_id;
+
+                $RegistrationSql .= ' ORDER BY r.id DESC';
                 if (!empty($HomeFlag)) {
                     $RegistrationSql .= ' Limit 8';
                 }
@@ -236,6 +245,8 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
+                $EventSql .= ' ORDER BY e.id DESC';
+
                 if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
                 }
@@ -253,6 +264,7 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
+                $UpcomingEventsql .= ' ORDER BY u.id DESC';
                 if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
@@ -264,6 +276,7 @@ class EventController extends Controller
             $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
             if (!empty($NewState_id)) {
                 $RegistrationSql .= ' AND r.country=' . $NewCountry_id;
+                $RegistrationSql .= ' ORDER BY r.id DESC';
                 if (!empty($HomeFlag)) {
                     $RegistrationSql .= ' Limit 8';
                 }
@@ -371,6 +384,9 @@ class EventController extends Controller
                 $ResponseData['StateId'] = $CityId[0]->state_id;
                 $ResponseData['CityId'] = $CityId[0]->id;
             }
+            $EventSql .= ' ORDER BY e.id DESC';
+            $RegistrationSql .= ' ORDER BY r.id DESC';
+            $UpcomingSql .= ' ORDER BY u.id DESC';
             if (!empty($HomeFlag)) {
                 $EventSql .= ' Limit 8';
                 $RegistrationSql .= ' Limit 8';
@@ -396,6 +412,8 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
+                $EventSql .= ' ORDER BY e.id DESC';
+
                 if (empty($ResponseData['StateId'])) {
                     // dd($ResponseData,$NewState_id);
                     $ResponseData['StateId'] = $NewState_id;
@@ -418,6 +436,7 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
+                $UpcomingEventsql .= ' ORDER BY u.id DESC';
                 if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
@@ -428,6 +447,7 @@ class EventController extends Controller
             $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
             if (!empty($NewState_id)) {
                 $RegistrationSql .= ' AND r.state=' . $NewState_id;
+                $RegistrationSql .= ' ORDER BY r.id DESC';
                 if (!empty($HomeFlag)) {
                     $RegistrationSql .= ' Limit 8';
                 }
@@ -441,6 +461,7 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
+                $EventSql .= ' ORDER BY e.id DESC';
                 if (empty($ResponseData['CountryId'])) {
                     $ResponseData['CountryId'] = $NewCountry_id;
                 }
@@ -461,6 +482,7 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
+                $UpcomingEventsql .= ' ORDER BY u.id DESC';
                 if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
@@ -471,6 +493,7 @@ class EventController extends Controller
             $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
             if (!empty($NewState_id)) {
                 $RegistrationSql .= ' AND r.country=' . $NewCountry_id;
+                $RegistrationSql .= ' ORDER BY r.id DESC';
                 if (!empty($HomeFlag)) {
                     $RegistrationSql .= ' Limit 8';
                 }
@@ -841,7 +864,8 @@ class EventController extends Controller
                                 FROM communication_master
                                 WHERE status = 1 ';
                             //dd($insert_sSQL);
-                            DB::insert($insert_sSQL1,
+                            DB::insert(
+                                $insert_sSQL1,
                                 array(
                                     'eventId' => $EventId,
                                     'user_id' => $UserId
@@ -856,7 +880,8 @@ class EventController extends Controller
                                 FROM communication_master
                                 WHERE status = 0 ';
                             //dd($insert_sSQL);
-                            DB::insert($insert_sSQL2,
+                            DB::insert(
+                                $insert_sSQL2,
                                 array(
                                     'eventId' => $EventId,
                                     'user_id' => $UserId
@@ -1125,7 +1150,7 @@ class EventController extends Controller
             //----------
             $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "Races2.0_Web" AND TABLE_NAME = "users" ';
             $ResponseData['field_mapping_details'] = DB::select($sSQL, array());
-            
+
 
             // ---------- get communication tab details
             $sql1 = "SELECT id,subject_name,message_content,status FROM event_communication WHERE event_id=:event_id AND user_id=:user_id ";
@@ -1140,7 +1165,7 @@ class EventController extends Controller
                         $res->status = false;
                     }
 
-                    if($res->status == 1){
+                    if ($res->status == 1) {
                         $is_comm_selected = 1;
                     }
 
@@ -1162,7 +1187,7 @@ class EventController extends Controller
                         $res->status = false;
                     }
 
-                    if($res->status == 1){
+                    if ($res->status == 1) {
                         $is_one_selected = 1;
                     }
 
