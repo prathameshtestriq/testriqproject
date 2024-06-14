@@ -1350,6 +1350,8 @@ class EventController extends Controller
                     $FinalRegistrationEndTime = strtotime($RegistrationEndDate);
                 }
                 $PinCode = isset($request->pincode) ? $request->pincode : "";
+                $Latitude = isset($request->latitude) ? $request->latitude : "";
+                $Longitude = isset($request->longitude) ? $request->longitude : "";
 
                 $Bindings = array(
                     "timezone_id" => $Timezone,
@@ -1366,6 +1368,8 @@ class EventController extends Controller
                     "address" => $Address,
                     "registration_start_time" => $FinalRegistrationStartTime,
                     "registration_end_time" => $FinalRegistrationEndTime,
+                    "latitude" => $Latitude,
+                    "longitude" => $Longitude,
                     "id" => $EventId
                 );
                 $sql = 'UPDATE events SET
@@ -1382,7 +1386,9 @@ class EventController extends Controller
                 city=:city,
                 address=:address,
                 registration_start_time=:registration_start_time,
-                registration_end_time=:registration_end_time
+                registration_end_time=:registration_end_time,
+                latitude=:latitude,
+                longitude=:longitude
                 WHERE id=:id';
                 DB::update($sql, $Bindings);
 

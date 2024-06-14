@@ -133,6 +133,8 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_coupons', 'getCoupons');
     Route::post('get_age_criteria','GetAgeCriteria');
     Route::post('resend_email_to_attendee','ResendEmailToAttendee');
+    Route::post('send_email_payment_success','SendEmailPaymentSuccess');
+
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {
