@@ -1110,7 +1110,7 @@ class EventTicketController extends Controller
         // dd($ConfirmationEmail);
         $Subject = "";
         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND UPPER(subject_name)=:subject_name";
-        $Communications = DB::select($sql, ["event_id" => $EventId, "subject_name" => strtoupper("Confirmation Email")]);
+        $Communications = DB::select($sql, ["event_id" => $EventId, "subject_name" => strtoupper("Registration Confirmation for SV Run")]);
         if (count($Communications) > 0) {
             $MessageContent = $Communications[0]->message_content;
             $Subject = $Communications[0]->subject_name;
