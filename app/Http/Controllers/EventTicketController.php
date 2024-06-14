@@ -1663,7 +1663,7 @@ Best regards,<br/>
                 $SQL = "SELECT email,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
-                $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? $attendeeResult[0]->ticket_amount : '';
+                $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? '₹ '.$attendeeResult[0]->ticket_amount : '';
 
                 if(!empty($attendee_email)){
                    // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
