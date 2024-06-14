@@ -1103,7 +1103,8 @@ class EventTicketController extends Controller
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
-            "TOTALAMOUNT"=> $TotalPrice
+            "TOTALAMOUNT"=> $TotalPrice,
+            "TICKETAMOUNT"=> $TotalPrice
 
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
