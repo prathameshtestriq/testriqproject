@@ -145,7 +145,12 @@ Team YouTooCanRun";
         try {
             $response = $sendgrid->send($email);
             // send mail
-            $type = "ticket_booking";
+            if($Subject == "Welcome to RACES - Organiser Onboarding Successful"){
+                $type = "Organiser Email";
+            }else{
+                $type = "Ticket Booking";
+            }
+           
             $send_mail_to = $UserEmail;
             $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response);
 
