@@ -121,7 +121,7 @@ class LoginController extends Controller
                                             $data = DB::table('users')->where('id', $lastInsertedId)->update(['email_otp' => $email_otp]);
                                             #SEND OTP MAIL
                                             $Email = new Emails();
-                                            $Email->post_email($aPost['email'], $email_otp,$aPost['firstname'],$aPost['lastname']);
+                                            $Email->post_email($aPost['email'], $email_otp, $aPost['firstname'], $aPost['lastname']);
                                         }
 
                                         $mobile_otp = rand(1000, 9999);
@@ -294,7 +294,7 @@ class LoginController extends Controller
                     $ResponseData['modules'] = $aModules;
 
                     $Email = new Emails();
-                    $Email->registered_email($aResult[0]->email,$aResult[0]->firstname,$aResult[0]->lastname);
+                    $Email->registered_email($aResult[0]->email, $aResult[0]->firstname, $aResult[0]->lastname);
 
                     $ResposneCode = 200;
                     $message = 'OTP validate successfully';
@@ -310,6 +310,65 @@ class LoginController extends Controller
             $ResposneCode = 400;
             $message = $field . ' is empty';
         }
+        $response = [
+            'status' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function resendOtp(Request $request)
+    {
+        $aPost = $request->all();
+        //dd($aPost);
+        $Auth = new Authenticate();
+        $Auth->apiLog($request);
+
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = '';
+        $EmailField = $MobileField = '';
+        if (empty($aPost['UserId'])) {
+            $empty = true;
+            $field = 'UserId';
+        }
+
+        if (!$empty) {
+            $UserId = $aPost["UserId"];
+            $EmailFlag = $MobileFlag = false;
+
+            $sql1 = 'SELECT id,firstname,email,mobile,lastname FROM users WHERE id = :id';
+            $aResult = DB::select($sql1, array('id' => $UserId));
+            if (count($aResult) > 0) {
+                $email_otp = rand(1000, 9999);
+                if (!empty($email_otp)) {
+                    $data = DB::table('users')->where('id', $aResult[0]->id)->update(['email_otp' => $email_otp]);
+                    #SEND OTP MAIL
+                    $Email = new Emails();
+                    $Email->post_email($aResult[0]->email, $email_otp, $aResult[0]->firstname, $aResult[0]->lastname);
+                }
+
+                $mobile_otp = rand(1000, 9999);
+                if (!empty($mobile_otp)) {
+                    $data = DB::table('users')->where('id', $aResult[0]->id)->update(['mobile_otp' => $mobile_otp]);
+                    #SEND OTP MESSAGE
+                    $SmsObj = new SmsApis();
+                    $SmsObj->post_sms($aResult[0]->mobile, $mobile_otp);
+                }
+
+                $ResposneCode = 200;
+                $message = 'Resend OTP';
+               
+            }
+        } else {
+            $ResposneCode = 400;
+            $message = $field . ' is empty';
+        }
+
         $response = [
             'status' => $ResposneCode,
             'data' => $ResponseData,
@@ -403,7 +462,7 @@ class LoginController extends Controller
                                     $data = DB::table('users')->where('id', $aResult[0]->id)->update(['email_otp' => $email_otp]);
                                     #SEND OTP MAIL
                                     $Email = new Emails();
-                                    $Email->post_email($aResult[0]->email, $email_otp,$aResult[0]->firstname,$aResult[0]->lastname);
+                                    $Email->post_email($aResult[0]->email, $email_otp, $aResult[0]->firstname, $aResult[0]->lastname);
                                 }
 
                                 $mobile_otp = rand(1000, 9999);
@@ -689,7 +748,7 @@ class LoginController extends Controller
             if (filter_var($EmailId, FILTER_VALIDATE_EMAIL)) {
 
                 #EXIST CHECK
-                $SQL1 = 'SELECT id,password FROM users WHERE email=:email AND is_deleted = 0';
+                $SQL1 = 'SELECT id,password,firstname,lastname FROM users WHERE email=:email AND is_deleted = 0';
                 $Exist = DB::select($SQL1, array('email' => $EmailId));
 
                 if (sizeof($Exist) > 0) {
@@ -699,7 +758,7 @@ class LoginController extends Controller
 
                     // #SEND PASSWORD MAIL
                     // $Email = new Emails();
-                    // $Email->post_email_pwd($aPost['email'], $Url);
+                    // $Email->post_email_pwd($aPost['email'],$aPost['firstname'],$aPost['lastname'], $Url);
 
 
                     $SQL3 = 'SELECT * FROM users WHERE id =:id';

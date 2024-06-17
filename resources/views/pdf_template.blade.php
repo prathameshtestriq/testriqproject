@@ -239,7 +239,7 @@
                         <td><a>{{ $EventLink }}</a></td>
                     </tr>
                     <tr>
-                        <th colspan="2">Booking Details</th>
+                        <th colspan="2">Registration Details</th>
                     </tr>
                     <tr>
                         <td>Registered By</td>
@@ -257,7 +257,7 @@
                     </tr>
 
                     <tr>
-                        <td>Booking Date &amp; Time</td>
+                        <td>Registration Date &amp; Time</td>
                         <td>{{ isset($ticket_details['booking_start_date']) ? $ticket_details['booking_start_date'] : "" }}
                             {{ isset($ticket_details['booking_time']) ? $ticket_details['booking_time'] : "" }}
                         </td>
@@ -313,9 +313,9 @@
 
 
         <div class="booking-conformation">
-            <h4 class="title">Booking Conformation</h4>
+            <h4 class="title">Registration Confirmation</h4>
             <hr>
-            <h3 class="booking-number">Booking Number :
+            <h3 class="booking-number">Registration Number :
                 {{ isset($ticket_details['unique_ticket_id']) ? $ticket_details['unique_ticket_id'] : "" }}
             </h3>
         </div>

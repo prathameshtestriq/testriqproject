@@ -1174,7 +1174,7 @@ class EventTicketController extends Controller
             "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
             "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
             "EVENTENDTIME" => (!empty($Event[0]->end_time)) ? date('H:i A', ($Event[0]->end_time)) : "",
-            "YTCRTEAM" => "Ytcr Team",
+            "YTCRTEAM" => "YouTooCanRun Team",
             "EVENTURL" => $EventUrl,
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
@@ -1329,6 +1329,7 @@ Best regards,<br/>
                 (SELECT ticket_name FROM event_tickets WHERE id=bd.ticket_id AND a.ticket_id=id AND event_id=bd.event_id) AS TicketName,
                 (SELECT ticket_status FROM event_tickets WHERE id=bd.ticket_id AND a.ticket_id=id AND event_id=bd.event_id) AS TicketStatus,
                 (SELECT name FROM events WHERE id=bd.event_id) AS EventName,
+                (SELECT start_time FROM events WHERE id=bd.event_id) AS EventStartDateTime,
                 (SELECT banner_image FROM events WHERE id=bd.event_id) AS banner_image
                 FROM attendee_booking_details AS a
                 LEFT JOIN booking_details AS bd ON bd.id=a.booking_details_id
@@ -1340,8 +1341,8 @@ Best regards,<br/>
                 foreach ($BookingData as $event) {
 
                     $event->TicketName = !empty($event->TicketName) ? (strlen($event->TicketName) > 40 ? ucwords(substr($event->TicketName, 0, 40)) . "..." : ucwords($event->TicketName)) : "";
-                    $event->booking_start_date = (!empty($event->booking_date)) ? gmdate("d M Y", $event->booking_date) : 0;
-                    $event->booking_time = (!empty($event->booking_date)) ? date("h:i A", $event->booking_date) : "";
+                    $event->event_start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
+                    $event->event_time = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
 
                     // $event->strike_out_price = 0;
                     $event->strike_out_price = ($event->ticket_discount != 0) ? ($event->ticket_amount - $event->ticket_discount) : $event->ticket_amount;

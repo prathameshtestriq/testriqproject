@@ -67,6 +67,8 @@ Route::controller(LoginController::class)->group(function () {
     Route::post('reset_password/{token}', 'reset_password');
     Route::post('update_password', 'update_password');
     Route::post('validate_otp', 'validateOtp');
+    Route::post('resend_otp', 'resendOtp');
+
 });
 
 Route::controller(EventController::class)->group(function () {

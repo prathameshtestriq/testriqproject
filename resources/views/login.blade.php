@@ -9,7 +9,7 @@
     <meta name="description" content="vts">
     <meta name="keywords" content="vts, nashik">
     <meta name="author" content="swt">
-    <title>Login -YTCR </title>
+    <title>Login -YouTooCanRun </title>
     {{-- <link rel="apple-touch-icon" href={{ asset('app-assets/images/ico/apple-icon-120.png')}}> --}}
     <link rel="shortcut icon" type="image/x-icon" href={{ asset('app-assets/images/logo/logo.jpg')}}>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600"
