@@ -194,7 +194,7 @@
             <table>
                 <tbody>
                     <tr>
-                        <th colspan="2">Attendee Details</th>
+                        <th colspan="2">Participant Details</th>
                     </tr>
 
                     <tr>
