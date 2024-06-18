@@ -56,6 +56,13 @@ return [
             'throw' => false,
         ],
 
+        'excel_uploads' => [
+            'driver' => 'local',
+            'root' => public_path(),
+            'url' => env('APP_URL'),
+            'visibility' => 'public',
+        ],
+
     ],
 
     /*

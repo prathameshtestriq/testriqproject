@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
+use \stdClass;
 
 class PaymentGatwayController extends Controller
 {
@@ -69,7 +70,7 @@ class PaymentGatwayController extends Controller
     public function booking_payment_process(Request $request)
     {
 
-        // dd($request);
+       // dd($request);
         $response['data'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
@@ -171,13 +172,47 @@ class PaymentGatwayController extends Controller
                 $ExtraPricing    = !empty($BookTicketArray['ExtraPricing']) ? $BookTicketArray['ExtraPricing'] : "";
                 $EventUrl        = !empty($BookTicketArray['EventUrl']) ? $BookTicketArray['EventUrl'] : "";
                 $UtmCampaign     = !empty($BookTicketArray['UtmCampaign']) ? $BookTicketArray['UtmCampaign'] : "";  
-                $GstArray        = !empty($BookTicketArray['GstArray']) ? $BookTicketArray['GstArray'] : [];  
+                $GstArray        = !empty($BookTicketArray['GstArray']) ? $BookTicketArray['GstArray'] : []; 
 
+                //------------- new create form question array  
+                 //dd($FormQuestions);
+                $emptyOptionTypes = array("countries","states","cities");
+                $MainFormQuestions = []; 
+                $newResult = [];
+                if(!empty($FormQuestions)){ 
+                    foreach ($FormQuestions as $formId => $questions) {
+                        // dd($formId);
+                        foreach ($questions as $que => $question) {
+                            // dd($que);
+                            foreach ($question as $key => $value) {
+                            $result = [];
+                                $result = [
+                                    'id' => $value['id'],
+                                    'ActualValue' => $value['ActualValue'],
+                                    'question_label' => $value['question_label'],
+                                    'general_form_id' => $value['general_form_id'],
+                                    'question_form_type' => $value['question_form_type'],
+                                    'question_form_name' => $value['question_form_name'],
+                                    'question_form_option' => in_array($value['question_form_type'], $emptyOptionTypes) ? "" 
+                                     : $value['question_form_option'],
+                                    'ticket_details' => $value['ticket_details'],
+                                    'TicketId' => $value['TicketId'],
+                                    'child_question_ids' => $value['child_question_ids'],
+                                    'apply_ticket' => $value['apply_ticket'],
+
+                                ];
+                            $newResult[$formId][$que][] = $result; 
+                            }
+                        }
+                    }
+                }
+                //dd($newResult);
+ 
                 $Binding =  array(
                                 "event_id" => $EventId,
                                 "booking_pay_id" => $last_inserted_id,
                                 "total_attendees" => $total_attendees,
-                                "FormQuestions" => !empty($FormQuestions) ? json_encode($FormQuestions) : '', 
+                                "FormQuestions" => !empty($FormQuestions) && !empty($newResult) ? json_encode($newResult) : '', 
                                 "TotalPrice" => $TotalPrice,
                                 "TotalDiscount" => $TotalDiscount,
                                 "AllTickets" => !empty($AllTickets) ? json_encode($AllTickets) : '', 
@@ -201,6 +236,44 @@ class PaymentGatwayController extends Controller
         }
 
         return response()->json($response, $ResposneCode);
+    }
+
+    public function payment_verify_status(Request $request)
+    {
+        $pay_id = !empty($request->pay_id) ? $request->pay_id : 0;
+        //dd($pay_id);
+
+        $url = 'https://info.payu.in/merchant/postservice?form=Ytcr-6';
+
+        $postData = [
+            'merchant_key' => 'ozLEHc',
+            'param2' => 'value2',
+        ];
+
+        // Initialize cURL session
+        $ch = curl_init();
+
+        // Set the cURL options
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true); // Set HTTP method as POST
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData)); // Set POST data
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as string
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); // Skip SSL host verification (remove this in production)
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); // Skip SSL peer verification (remove this in production)
+
+        // Execute cURL session and fetch response
+        $response = curl_exec($ch);
+
+        // Check for cURL errors
+        if (curl_errno($ch)) {
+            $error = curl_error($ch);
+            echo "cURL Error: " . $error;
+        }
+
+        // Close cURL session
+        curl_close($ch);
+        dd($response);
+
     }
 
 

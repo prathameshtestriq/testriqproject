@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
-
+use \stdClass;
+use App\Exports\AttendeeDetailsDataExport;
+use Excel;
+use App\Models\Master;
 
 class EventDashboardController extends Controller
 {
@@ -231,6 +234,13 @@ class EventDashboardController extends Controller
                 $TicketData = DB::select($sql, array('event_id' => $EventId));
                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
 
+                //------------- Attendee details excel generate
+                if(!empty($AttendeeData)){
+                    $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData,$EventId);
+                }else{
+                    $ResponseData['attendee_details_excel'] = '';
+                } 
+               
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
             } else {
@@ -346,4 +356,69 @@ class EventDashboardController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+
+    function attendeeNetsalesExcellData($AttendeeData,$EventId)
+    {
+        //dd($AttendeeData);
+        $master = new Master();
+        $excel_url = '';
+        if(!empty($AttendeeData)){
+                
+                $ExcellDataArray = [];
+                $sql = "SELECT id,question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1";
+                $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
+
+                $label = '';
+                foreach($AttendeeData as $key=>$res1){
+                        $attendee_details_array = json_decode($res1->attendee_details, true);
+
+                        // dd(json_decode($attendee_details_array));
+                        foreach(json_decode($attendee_details_array) as $val){
+                            if(isset($val->question_label)){
+                                
+                                $aTemp = new stdClass;
+                                $aTemp->question_label  = $val->question_label;
+                               
+                                if(!empty($val->question_form_option)){
+                                    $question_form_option = json_decode($val->question_form_option, true);
+                                    // dd($question_form_option);
+                                    foreach ($question_form_option as $option) {
+                                        //dd($val->ActualValue);
+                                        if ($option['id'] === (int)$val->ActualValue) {
+                                            $label = $option['label'];
+                                            break;
+                                        }
+                                    }
+                                    $aTemp->answer_value    = $label;
+                                }else{
+                                    if($val->question_form_type == "countries"){
+                                        $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCountryName($val->ActualValue) : "";
+                                    }else if($val->question_form_type == "states"){
+                                        $aTemp->answer_value = !empty($val->ActualValue) ? $master->getStateName($val->ActualValue) : "";
+                                    }else if($val->question_form_type == "cities"){
+                                        $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
+                                    }else{
+                                        $aTemp->answer_value = $val->ActualValue;
+                                    }
+                                   
+                                }
+                                $ExcellDataArray[$key][] = $aTemp;
+                            }
+                        }
+                }
+                // dd($ExcellDataArray);
+               
+                $url = env('APP_URL') . '/public/';
+                //dd($url);
+       
+                // $filename = "attendee_sheet_".time();
+                $filename = "attendee_sheet_".$EventId;
+                $path = 'attendee_details_excell/';
+                $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $EventQuestionData), $path.'/'.$filename.'.xlsx', 'excel_uploads');
+                $excel_url = url($path)."/".$filename.".xlsx";
+               
+            }
+        return $excel_url;       
+    }
+
 }

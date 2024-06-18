@@ -43,6 +43,7 @@ Route::controller(EventDashboardController::class)->group(function (){
     Route::post('get_registered_users', 'getRegisteredUsers');
     Route::post('get_netsales', 'getNetSales'); //attendees
     Route::post('get_booking_details', 'getBookingDetails'); 
+    Route::post('attendee_netsales_excell_data', 'attendeeNetsalesExcellData'); 
 });
 
 Route::controller(MasterController::class)->group(function () {
@@ -209,5 +210,5 @@ Route::controller(FormQuestionsController::class)->group(function () {
 Route::controller(PaymentGatwayController::class)->group(function () {
     Route::post('/paymentByUserDetails', 'payment_by_user_details');
     Route::post('/bookingPaymentProcess', 'booking_payment_process');
-    //Route::post('/PaymentProcess', 'payment_process');
+    Route::post('/paymentVerifyStatus', 'payment_verify_status');
 });
