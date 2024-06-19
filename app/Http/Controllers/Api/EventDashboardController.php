@@ -188,14 +188,16 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
                 $user_id = isset($aPost['user_id']) ? $aPost['user_id'] : 0;
-                $TicketId = isset($aPost['ticket_id']) ? $aPost['ticket_id'] : 0;
 
                 // EventBookingId
                 $EventBookingId = isset($aPost['EventBookingId']) ? $aPost['EventBookingId'] : 0;
-
+                $ParticipantName = isset($aPost['participant_name']) ? $aPost['participant_name'] : 0;
+                $RegistrationID = isset($aPost['reg_id']) ? $aPost['reg_id'] : 0;
+                $MobileNumber = isset($aPost['mobile_number']) ? $aPost['mobile_number'] : 0;
+                $Email = isset($aPost['email']) ? $aPost['email'] : 0;
+                $TicketId = isset($aPost['ticket_id']) ? $aPost['ticket_id'] : 0;
                 $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
-                $now = strtotime("now");
 
                 $sql = "SELECT *,a.id AS aId,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
@@ -205,7 +207,30 @@ class EventDashboardController extends Controller
                 if (!empty($EventBookingId)) {
                     $sql .= " AND b.booking_id =" . $EventBookingId;
                 }
-                // dd($sql);
+                if (!empty($ParticipantName)) {
+                    $sql .= " AND (a.firstname LIKE '%" . $ParticipantName . "%' OR a.lastname LIKE '%" . $ParticipantName . "%')";
+                }
+                // if (!empty($ParticipantName)) {
+                //     $nameParts = explode(' ', $ParticipantName);
+                //     $sql .= " AND (";
+                //     foreach ($nameParts as $index => $namePart) {
+                //         if ($index > 0) {
+                //             $sql .= " OR ";
+                //         }
+                //         $sql .= "(a.firstname LIKE '%" . $ParticipantName . "%'"." OR a.lastname LIKE '%" . $ParticipantName . "%'".")";
+                //     }
+                //     $sql .= ")";
+                // }
+                if (!empty($RegistrationID)) {
+                    $sql .= " AND a.registration_id LIKE '%" . $RegistrationID . "%'";
+                }
+
+                if (!empty($MobileNumber)) {
+                    $sql .= " AND a.mobile_number = " . $MobileNumber;
+                }
+                if (!empty($Email)) {
+                    $sql .= " AND a.email LIKE '%" . $Email . "%'";
+                }
                 if (!empty($TicketId)) {
                     $sql .= " AND a.ticket_id =" . $TicketId;
                 }
@@ -235,12 +260,12 @@ class EventDashboardController extends Controller
                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
 
                 //------------- Attendee details excel generate
-                if(!empty($AttendeeData)){
-                    $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData,$EventId);
-                }else{
+                if (!empty($AttendeeData)) {
+                    $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
+                } else {
                     $ResponseData['attendee_details_excel'] = '';
-                } 
-               
+                }
+
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
             } else {
@@ -357,68 +382,68 @@ class EventDashboardController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function attendeeNetsalesExcellData($AttendeeData,$EventId)
+    function attendeeNetsalesExcellData($AttendeeData, $EventId)
     {
         //dd($AttendeeData);
         $master = new Master();
         $excel_url = '';
-        if(!empty($AttendeeData)){
-                
-                $ExcellDataArray = [];
-                $sql = "SELECT id,question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1";
-                $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
+        if (!empty($AttendeeData)) {
 
-                $label = '';
-                foreach($AttendeeData as $key=>$res1){
-                        $attendee_details_array = json_decode($res1->attendee_details, true);
+            $ExcellDataArray = [];
+            $sql = "SELECT id,question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1";
+            $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
 
-                        // dd(json_decode($attendee_details_array));
-                        foreach(json_decode($attendee_details_array) as $val){
-                            if(isset($val->question_label)){
-                                
-                                $aTemp = new stdClass;
-                                $aTemp->question_label  = $val->question_label;
-                               
-                                if(!empty($val->question_form_option)){
-                                    $question_form_option = json_decode($val->question_form_option, true);
-                                    // dd($question_form_option);
-                                    foreach ($question_form_option as $option) {
-                                        //dd($val->ActualValue);
-                                        if ($option['id'] === (int)$val->ActualValue) {
-                                            $label = $option['label'];
-                                            break;
-                                        }
-                                    }
-                                    $aTemp->answer_value    = $label;
-                                }else{
-                                    if($val->question_form_type == "countries"){
-                                        $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCountryName($val->ActualValue) : "";
-                                    }else if($val->question_form_type == "states"){
-                                        $aTemp->answer_value = !empty($val->ActualValue) ? $master->getStateName($val->ActualValue) : "";
-                                    }else if($val->question_form_type == "cities"){
-                                        $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
-                                    }else{
-                                        $aTemp->answer_value = $val->ActualValue;
-                                    }
-                                   
+            $label = '';
+            foreach ($AttendeeData as $key => $res1) {
+                $attendee_details_array = json_decode($res1->attendee_details, true);
+
+                // dd(json_decode($attendee_details_array));
+                foreach (json_decode($attendee_details_array) as $val) {
+                    if (isset($val->question_label)) {
+
+                        $aTemp = new stdClass;
+                        $aTemp->question_label = $val->question_label;
+
+                        if (!empty($val->question_form_option)) {
+                            $question_form_option = json_decode($val->question_form_option, true);
+                            // dd($question_form_option);
+                            foreach ($question_form_option as $option) {
+                                //dd($val->ActualValue);
+                                if ($option['id'] === (int) $val->ActualValue) {
+                                    $label = $option['label'];
+                                    break;
                                 }
-                                $ExcellDataArray[$key][] = $aTemp;
                             }
+                            $aTemp->answer_value = $label;
+                        } else {
+                            if ($val->question_form_type == "countries") {
+                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCountryName($val->ActualValue) : "";
+                            } else if ($val->question_form_type == "states") {
+                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getStateName($val->ActualValue) : "";
+                            } else if ($val->question_form_type == "cities") {
+                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
+                            } else {
+                                $aTemp->answer_value = $val->ActualValue;
+                            }
+
                         }
+                        $ExcellDataArray[$key][] = $aTemp;
+                    }
                 }
-                // dd($ExcellDataArray);
-               
-                $url = env('APP_URL') . '/public/';
-                //dd($url);
-       
-                // $filename = "attendee_sheet_".time();
-                $filename = "attendee_sheet_".$EventId;
-                $path = 'attendee_details_excell/';
-                $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $EventQuestionData), $path.'/'.$filename.'.xlsx', 'excel_uploads');
-                $excel_url = url($path)."/".$filename.".xlsx";
-               
             }
-        return $excel_url;       
+            // dd($ExcellDataArray);
+
+            $url = env('APP_URL') . '/public/';
+            //dd($url);
+
+            // $filename = "attendee_sheet_".time();
+            $filename = "attendee_sheet_" . $EventId;
+            $path = 'attendee_details_excell/';
+            $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $EventQuestionData), $path . '/' . $filename . '.xlsx', 'excel_uploads');
+            $excel_url = url($path) . "/" . $filename . ".xlsx";
+
+        }
+        return $excel_url;
     }
 
 }

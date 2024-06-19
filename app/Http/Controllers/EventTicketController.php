@@ -589,7 +589,7 @@ class EventTicketController extends Controller
                                     WHERE event_id = :event_id 
                                     AND FIND_IN_SET(:ticket_id, ticket_details)
                                     AND question_status = 1 
-                                    ORDER BY sort_order';
+                                    ORDER BY sort_order,parent_question_id';
 
                         $FormQuestions = DB::select($sSQL, [
                             'event_id' => $aPost['event_id'],
@@ -598,7 +598,7 @@ class EventTicketController extends Controller
 
                         if (count($FormQuestions) > 0) {
                         } else {
-                            $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
+                            $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order,parent_question_id';
                             $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
                         }
 
@@ -658,7 +658,6 @@ class EventTicketController extends Controller
                         }
 
                         // dd($FormQuestions);
-
                         for ($i = 0; $i < $ticket['count']; $i++) {
                             if (count($FormQuestions) > 0)
                                 $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
@@ -820,22 +819,6 @@ class EventTicketController extends Controller
                     $UtmCampaign = $BookingPayment[0]->UtmCampaign;
                     $GstArray = !empty($BookingPayment[0]->GstArray) ? json_decode($BookingPayment[0]->GstArray) : [];
                     $TransactionStatus = 0; //Initiated Transaction
-                    // dd($FormQuestions);
-                    // if (count($Status) > 0) {
-                    //     if ($Status[0]->payment_status == 'success') $TransactionStatus = 1;
-                    //     else if ($Status[0]->payment_status == 'failure') $TransactionStatus = 2;
-                    // }
-
-                    // dd($EventId);
-                    // $EventId = isset($aPost['event_id']) && !empty($aPost['event_id']) ? $aPost['event_id'] : 0;
-                    // $TotalAttendee = isset($request->total_attendees) && !empty($request->total_attendees) ? $request->total_attendees : 0;
-                    // $FormQuestions = isset($request->FormQuestions) && !empty($request->FormQuestions) ? $request->FormQuestions : [];
-                    // $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
-                    // $TotalPrice = isset($request->TotalPrice) && !empty($request->TotalPrice) ? $request->TotalPrice : 0;
-                    // $TotalDiscount = isset($request->TotalDiscount) && !empty($request->TotalDiscount) ? $request->TotalDiscount : 0;
-                    // $ExtraPricing = isset($request->ExtraPricing) && !empty($request->ExtraPricing) ? $request->ExtraPricing : [];
-                    // $UtmCampaign = isset($request->UtmCampaign) && !empty($request->UtmCampaign) ? $request->UtmCampaign : "";
-                    // $GstArray = isset($request->GstArray) && !empty($request->GstArray) ? $request->GstArray : [];
 
                     $UserId = $aToken["data"]->ID;
                     $UserEmail = $aToken["data"]->email;
@@ -1058,6 +1041,21 @@ class EventTicketController extends Controller
                             "created_at" => strtotime("now")
                         );
                         DB::insert($sql, $Bind1);
+                        $attendeeId = DB::getPdo()->lastInsertId();
+                        // dd($attendeeId);
+
+                        $booking_date = 0;
+                        $bd_sql = "SELECT booking_date FROM booking_details WHERE id = :booking_details_id";
+                        $bd_bind = DB::select($bd_sql, array("booking_details_id" => $IdBookingDetails));
+                        if (count($bd_bind) > 0) {
+                            $booking_date = $bd_bind[0]->booking_date;
+                        }
+                        $uniqueId = 0;
+                        $uniqueId = $EventId . "-" . $attendeeId . "-" . $booking_date;
+                        // dd($uniqueId,$IdBookingDetails,$booking_date);
+                        $u_sql = "UPDATE attendee_booking_details SET registration_id=:registration_id WHERE id=:id";
+                        $u_bind = DB::update($u_sql, array("registration_id" => $uniqueId, 'id' => $attendeeId));
+
                     }
                     // -------------------------------------------END ATTENDEE DETAIL
                     foreach ($FormQuestions as $Form) {
@@ -1832,7 +1830,7 @@ Best regards,<br/>
 
         return response()->json($response, $ResposneCode);
     }
-    
+
     //-------- To send email organiser
     public function SendEmailOrganiserOnboardingConfirmation(Request $request)
     {
@@ -1848,17 +1846,17 @@ Best regards,<br/>
             $aPost = $request->all();
 
             $UserId = $aToken['data']->ID;
-            
+
             $sql3 = "SELECT name,send_email_flag,(select email from users where id = organizer.user_id) as email FROM organizer WHERE user_id=:user_id";
             $Organizer = DB::select($sql3, ['user_id' => $UserId]);
-            
-            $Organizer_name   = !empty($Organizer) && !empty($Organizer[0]->name) ? $Organizer[0]->name : '';
-            $UserEmail        = !empty($Organizer) && $Organizer[0]->email ? $Organizer[0]->email : '';
-            $SendEmailFlag    = !empty($Organizer) && $Organizer[0]->send_email_flag ? $Organizer[0]->send_email_flag : 0;
+
+            $Organizer_name = !empty($Organizer) && !empty($Organizer[0]->name) ? $Organizer[0]->name : '';
+            $UserEmail = !empty($Organizer) && $Organizer[0]->email ? $Organizer[0]->email : '';
+            $SendEmailFlag = !empty($Organizer) && $Organizer[0]->send_email_flag ? $Organizer[0]->send_email_flag : 0;
 
             $Subject = "Welcome to RACES - Organiser Onboarding Successful";
 
-            $MessageContent = "Dear ".$Organizer_name.",<br/><br/>
+            $MessageContent = "Dear " . $Organizer_name . ",<br/><br/>
  
             Congratulations! Your onboarding as an organiser on RACES is now complete. We are excited to have you as part of our platform.<br/><br/>
              
@@ -1872,19 +1870,22 @@ Best regards,<br/>
              
             (For RACES)<br/>
             Team YouTooCanRun";
-                
-            if($SendEmailFlag == 0){
+
+            if ($SendEmailFlag == 0) {
                 // dd($MessageContent);
                 $Email = new Emails();
                 $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject);
 
                 //--------
                 $up_sSQL = 'UPDATE organizer SET `send_email_flag` =:sendEmailFlag WHERE `user_id`=:user_id ';
-                DB::update($up_sSQL,array(
-                    'sendEmailFlag' => 1,
-                    'user_id' => $UserId
-                )); 
- 
+                DB::update(
+                    $up_sSQL,
+                    array(
+                        'sendEmailFlag' => 1,
+                        'user_id' => $UserId
+                    )
+                );
+
                 $ResponseData['data'] = 1;
                 $message = "Email send successfully";
                 $ResposneCode = 200;
