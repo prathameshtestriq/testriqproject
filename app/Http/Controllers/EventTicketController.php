@@ -589,7 +589,7 @@ class EventTicketController extends Controller
                                     WHERE event_id = :event_id 
                                     AND FIND_IN_SET(:ticket_id, ticket_details)
                                     AND question_status = 1 
-                                    ORDER BY sort_order';
+                                    ORDER BY sort_order,parent_question_id';
 
                         $FormQuestions = DB::select($sSQL, [
                             'event_id' => $aPost['event_id'],
@@ -598,7 +598,7 @@ class EventTicketController extends Controller
 
                         if (count($FormQuestions) > 0) {
                         } else {
-                            $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order';
+                            $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order,parent_question_id';
                             $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
                         }
 
@@ -658,7 +658,6 @@ class EventTicketController extends Controller
                         }
 
                         // dd($FormQuestions);
-
                         for ($i = 0; $i < $ticket['count']; $i++) {
                             if (count($FormQuestions) > 0)
                                 $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
