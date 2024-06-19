@@ -171,11 +171,9 @@ Thank you for registering with RACES! We are excited to have you join our commun
 If you have any questions or need assistance, feel free to reach out to our support team.
  <br/><br/>
  Email: support@youtoocanrun.com<br/>
-Pone Number:+91 9920142195
+Phone Number:+91 9920142195
  <br/><br/>
 Welcome aboard!
- <br/><br/>
-Best regards,
  <br/><br/>
 <p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
         $email = new \SendGrid\Mail\Mail();
