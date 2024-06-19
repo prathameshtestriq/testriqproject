@@ -211,4 +211,5 @@ Route::controller(PaymentGatwayController::class)->group(function () {
     Route::post('/paymentByUserDetails', 'payment_by_user_details');
     Route::post('/bookingPaymentProcess', 'booking_payment_process');
     Route::post('/paymentVerifyStatus', 'payment_verify_status');
+    Route::post('/paymentVerifyStatus', 'payment_verify_status');
 });

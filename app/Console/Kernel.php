@@ -13,6 +13,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+
+        //Run the task every minute
+        $schedule->command('app:verify-payment-status')
+                ->everyFiveMinutes();
     }
 
     /**

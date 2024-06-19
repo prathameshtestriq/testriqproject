@@ -242,7 +242,7 @@ class FormQuestionsController extends Controller
             $GeneralFormId = !empty($request->general_form_id) ? $request->general_form_id : 0;
             $QuestionMandatory = !empty($request->question_mandatory_status) ? $request->question_mandatory_status : 0;
             $DisplayLabel = !empty($request->display_label_name) ? $request->display_label_name : 0;
-            $LimitLengthCheck = !empty($request->limit_length_check) && ($request->limit_length_check) == true ? 1 : 0;
+            $LimitLengthCheck = !empty($request->limit_length_check) && $request->limit_length_check == "true" ? 1 : 0;
             $MinLength = !empty($request->min_length) ? $request->min_length : '';
             $MaxLength = !empty($request->max_length) ? $request->max_length : '';
             $FieldMapping = !empty($request->field_mapping) ? $request->field_mapping : '';
@@ -363,8 +363,9 @@ class FormQuestionsController extends Controller
                     'createdBy'        => $userId,
                     'questionHint'     => $MainQuestionHint
                 ));
+                $last_eventFormQue_id = DB::getPdo()->lastInsertId();
 
-                //-------------- child ids
+                //-------------- child ids update
 
                 if(empty($QuestionFormOptionArray)){
                       
@@ -437,12 +438,6 @@ class FormQuestionsController extends Controller
                         }
                     }
                     
-                    // temp hide this code
-                    // if($SubQuestionOtherAmountFlag == 1 && !empty($QuestionFormOptionArray)){
-                    //     $other_amt_array = array(array("id" => $i, "label" => "Other Amount", "price" => 0));
-                    //     $new_array = array_merge($new_array, $other_amt_array);
-                    // }
-
                     // dd($new_array);
 
                     $SubQuestionOptionArray = !empty($new_array) ? json_encode($new_array) : '';
@@ -544,7 +539,40 @@ class FormQuestionsController extends Controller
                             'generalFormId' => $ParentGeneralFormId,
                             'eventId' => $EventId
                         )); 
+                        
+                        //--------------- new added for subquestion directly add in event form question 19-06-24
 
+                        $SQL1 = "SELECT sort_order as last_sort_order FROM event_form_question WHERE created_by=:user_id AND event_id=:event_id AND id =:id";
+                        $aResultSortOrder1 = DB::select($SQL1, array('user_id' => $userId, 'event_id' => $EventId, 'id' => $last_eventFormQue_id));
+                      
+                        $event_sort_order = !empty($aResultSortOrder1) && !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
+                        
+
+                        $sSQL1 = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, limit_length, child_question_ids, form_id, apply_ticket, ticket_details, created_by, question_hint, sort_order) VALUES (:eventId, :general_form_id, :questionLabel, :questionFormType, :questionFormName, :questionFormOption, :isManadatory, :questionStatus, :isCustomForm, :parentQusId, :is_compulsory, :is_custom_form, :limit_check, :limit_length, :child_question_ids, :form_id, :applyTicket, :ticketDetails, :createdBy, :questionHint, :sort_order)';
+
+                        DB::insert($sSQL1,array(
+                            'eventId'           => $EventId,
+                            'general_form_id'   => $last_inserted_id,
+                            'questionLabel'     => $SubQuestionTitle,
+                            'questionFormType'  => $SubQuestionFormType, // ex. t-shirt size
+                            'questionFormName'  => 'sub_question',
+                            'questionFormOption' => $SubQuestionOptionArray,
+                            'isManadatory'      => $SubQuestionMandatory,
+                            'questionStatus'    => 1,
+                            'isCustomForm'      => 1,
+                            'parentQusId'       => $GeneralFormId, 
+                            'is_compulsory'     => 0,
+                            'is_custom_form'    => 0,
+                            'limit_check'       => 0,
+                            'limit_length'      => '',
+                            'child_question_ids' => '',
+                            'form_id'           => $FormId,
+                            'applyTicket'       => $ApplyTicket,
+                            'ticketDetails'     => $ticket_ids,
+                            'createdBy'         => $userId,
+                            'questionHint'      => $questionHint,
+                            'sort_order'        => $event_sort_order
+                        ));
 
                         //------------ add general form entry for check other amount
                         if($SubQuestionOtherAmountFlag == 1 && !empty($QuestionFormOptionArray)){
@@ -582,7 +610,52 @@ class FormQuestionsController extends Controller
                                 'questionFormOption' => $SubQuestionOptionArray,
                                 'generalFormId' => $last_inserted_id
                             ));
-                          
+                            
+                            // //--------- event question form option array update
+                            $up_sSQL1 = 'UPDATE event_form_question SET `question_form_option` =:questionFormOption, `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId ';
+                            DB::update($up_sSQL1,array(
+                                'questionFormOption' => $SubQuestionOptionArray,
+                                'childQuestionIds'  => $last_inserted_id1,
+                                'generalFormId' => $last_inserted_id
+                            ));
+
+                            //-------------
+                      
+                            $sSQL1 = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, limit_length, child_question_ids, form_id, apply_ticket, ticket_details, created_by, question_hint, sort_order) VALUES (:eventId, :general_form_id, :questionLabel, :questionFormType, :questionFormName, :questionFormOption, :isManadatory, :questionStatus, :isCustomForm, :parentQusId, :is_compulsory, :is_custom_form, :limit_check, :limit_length, :child_question_ids, :form_id, :applyTicket, :ticketDetails, :createdBy, :questionHint, :sort_order)';
+                            
+                            DB::insert($sSQL1,array(
+                                'eventId'           => $EventId,
+                                'general_form_id'   => $last_inserted_id1,
+                                'questionLabel'     => 'Other Amount',
+                                'questionFormType'  => 'amount', // ex. t-shirt size
+                                'questionFormName'  => 'sub_question',
+                                'questionFormOption' => '',
+                                'isManadatory'      => 0,
+                                'questionStatus'    => 1,
+                                'isCustomForm'      => 1, // sub question
+                                'parentQusId'       => $last_inserted_id1,  //$GeneralFormId
+                                'is_compulsory'     => 0,
+                                'is_custom_form'    => 0,
+                                'limit_check'       => 0,
+                                'limit_length'      => '',
+                                'child_question_ids' => '',
+                                'form_id'           => $FormId,
+                                'applyTicket'       => $ApplyTicket,
+                                'ticketDetails'     => $ticket_ids,
+                                'createdBy'         => $userId,
+                                'questionHint'      => '',
+                                'sort_order'        => $event_sort_order
+                            ));
+
+                            //----------- update new child ids
+                            $up_sSQL = 'UPDATE event_form_question SET `child_question_ids` =:childQuestionIds WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
+                            DB::update($up_sSQL,array(
+                                'childQuestionIds' => $last_inserted_id.','.$last_inserted_id1,
+                                'generalFormId' => $GeneralFormId,
+                                'eventId' => $EventId
+                            )); 
+
+
                         }
 
                     }
@@ -742,7 +815,12 @@ class FormQuestionsController extends Controller
             if(!empty($questionFormOption)){
                 foreach($questionFormOption as $key=>$res){
                     //dd($res);
-                    $new_array[] = array("id" => $i, "label" => $res);
+                    if($questionFormType == 'checkbox'){
+                        $new_array[] = array("id" => $i, "label" => $res, "checked" => false);
+                    }else{
+                        $new_array[] = array("id" => $i, "label" => $res);
+                    }
+                    
                     $i++;
                 }
             }
