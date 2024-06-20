@@ -1205,7 +1205,9 @@ class EventTicketController extends Controller
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
             "TOTALAMOUNT" => $TotalPrice,
-            "TICKETAMOUNT" => $TotalPrice
+            "TICKETAMOUNT" => $TotalPrice,
+            "REGISTRATIONID" => "12",
+            "RACECATEGORY" => "1"
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
         // dd($ConfirmationEmail);
@@ -1237,8 +1239,10 @@ Best regards,<br/>
         }
 
         foreach ($ConfirmationEmail as $key => $value) {
-            $placeholder = '{' . $key . '}';
-            $MessageContent = str_replace($placeholder, $value, $MessageContent);
+            if(isset($key)){
+                $placeholder = '{' . $key . '}';
+                $MessageContent = str_replace($placeholder, $value, $MessageContent);
+            }
         }
 
         // Output the filled message
