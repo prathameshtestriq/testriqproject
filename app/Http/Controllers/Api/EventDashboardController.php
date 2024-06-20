@@ -94,7 +94,7 @@ class EventDashboardController extends Controller
 
 
                 // Sold Tickets
-                $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details AS bd
+                $sql = "SELECT IFNULL(SUM(quantity),0) AS TotalBookedTickets FROM booking_details AS bd
                 LEFT JOIN event_booking AS eb ON bd.booking_id = eb.id
                 WHERE bd.event_id=:event_id AND eb.transaction_status IN (1,3)";
                 $TotalBookedTickets = DB::select($sql, array("event_id" => $EventId));
@@ -468,7 +468,7 @@ class EventDashboardController extends Controller
             $ExcellDataArray = [];
             $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1";
             $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
-            
+
             $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
 
             $label = '';
@@ -515,7 +515,7 @@ class EventDashboardController extends Controller
             //dd($url);
 
             // $filename = "attendee_sheet_".time();
-            $filename = "attendee_".$event_name.'_'.time();
+            $filename = "attendee_" . $event_name . '_' . time();
             $path = 'attendee_details_excell/';
             $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $EventQuestionData), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
@@ -548,16 +548,16 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
 
-                $sql = "SELECT *,u.id,u.firstname,u.lastname,u.email FROM booking_payment_details AS p 
-                        LEFT JOIN booking_payment_log AS l ON l.booking_det_id=p.id 
+                $sql = "SELECT p.id AS paymentId,p.txnid,p.amount,p.payment_status,p.created_datetime,u.id AS userId,u.firstname,u.lastname,u.email,u.mobile 
+                        FROM booking_payment_details AS p 
                         LEFT JOIN users AS u ON u.id=p.created_by
-                        WHERE p.event_id=:event_id ORDER BY l.id DESC";
-                $UserData = DB::select($sql, array('event_id' => $EventId));
+                        WHERE p.event_id=:event_id ORDER BY p.id DESC";
+                $PaymentData = DB::select($sql, array('event_id' => $EventId));
 
-                foreach ($UserData as $key => $value) {
-                    $value->booking_date = !empty($value->booking_date) ? date("Y-m-d H:i A", ($value->booking_date)) : '';
+                foreach ($PaymentData as $key => $value) {
+                    $value->created_datetime = !empty($value->created_datetime) ? date("Y-m-d H:i A", ($value->created_datetime)) : '';
                 }
-                $ResponseData['UserData'] = (count($UserData) > 0) ? $UserData : [];
+                $ResponseData['PaymentData'] = (count($PaymentData) > 0) ? $PaymentData : [];
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';

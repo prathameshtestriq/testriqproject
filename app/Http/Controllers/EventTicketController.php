@@ -1344,8 +1344,8 @@ Best regards,<br/>
                 foreach ($BookingData as $event) {
 
                     $event->TicketName = !empty($event->TicketName) ? (strlen($event->TicketName) > 40 ? ucwords(substr($event->TicketName, 0, 40)) . "..." : ucwords($event->TicketName)) : "";
-                    $event->event_start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
-                    $event->event_time = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
+                    $event->event_start_date = (!empty($event->EventStartDateTime)) ? gmdate("d M Y", $event->EventStartDateTime) : 0;
+                    $event->event_time = (!empty($event->EventStartDateTime)) ? date("h:i A", $event->EventStartDateTime) : "";
 
                     // $event->strike_out_price = 0;
                     $event->strike_out_price = ($event->ticket_discount != 0) ? ($event->ticket_amount - $event->ticket_discount) : $event->ticket_amount;
@@ -1446,6 +1446,14 @@ Best regards,<br/>
                 $Venue = "";
                 $TicketArr = isset($request->ticket) ? $request->ticket : []; // ticket array
                 // dd($TicketArr);
+                foreach($TicketArr as $value){
+                    // dd($value);
+                    // if (is_array($value)) {
+                    //     $value["booking_start_date"] = (!empty($value["booking_date"]))? date("d M Y", $value["booking_date"]) : 0;
+                    //     $value["booking_time"] = (!empty($value["booking_date"]))? date("h:i A", $value["booking_date"]) : "";
+                    // } 
+                }
+               
 
                 $EventId = isset($TicketArr["event_id"]) ? $TicketArr["event_id"] : 0;
                 $TicketId = isset($TicketArr["ticket_id"]) ? $TicketArr["ticket_id"] : 0;
@@ -1483,8 +1491,9 @@ Best regards,<br/>
                     }
                 }
                 // dd($amount_details,$extra_details);
+                $created_by = 0;
                 if (!empty($EventId)) {
-                    $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode FROM events WHERE id=:event_id";
+                    $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode,created_by FROM events WHERE id=:event_id";
                     $Event = DB::select($sql2, ['event_id' => $EventId]);
                     // dd($Event);
                     if (sizeof($Event) > 0) {
@@ -1503,11 +1512,16 @@ Best regards,<br/>
 
                             $event->Venue = $Venue;
                         }
+                        $created_by = $Event[0]->created_by;
                     }
                 }
 
-                $sql3 = "SELECT id,name,logo_image FROM organizer WHERE user_id=:user_id";
-                $Organizer = DB::select($sql3, ['user_id' => $UserId]);
+                $Organizer = [];
+                if(!empty($created_by)){
+                    $sql3 = "SELECT id,name,logo_image FROM organizer WHERE user_id=:user_id";
+                    $Organizer = DB::select($sql3, ['user_id' => $created_by]);
+                }
+               
                 // dd($Organizer[0]);
 
                 if (count($Organizer) > 0) {
@@ -1519,6 +1533,7 @@ Best regards,<br/>
                 // Generate QR code
                 $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($TicketArr['unique_ticket_id']));
                 // $qrCode = "";
+                // dd($TicketArr["booking_start_date"]);
                 $data = [
                     'ticket_details' => $TicketArr,
                     'event_details' => (sizeof($Event) > 0) ? $Event[0] : [],

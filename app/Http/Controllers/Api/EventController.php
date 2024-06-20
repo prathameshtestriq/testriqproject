@@ -25,8 +25,8 @@ class EventController extends Controller
             $event->display_name = !empty($event->name) ? (strlen($event->name) > 40 ? ucwords(substr($event->name, 0, 40)) . "..." : ucwords($event->name)) : "";
             // $event->event_description = !empty($event->event_description) ? html_entity_decode(strip_tags($event->event_description)) : "";
 
-            $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
-            $event->end_date = (!empty($event->end_time)) ? gmdate("d M Y", $event->end_time) : 0;
+            $event->start_date = (!empty($event->start_time)) ? date("d M Y", $event->start_time) : 0;
+            $event->end_date = (!empty($event->end_time)) ? date("d M Y", $event->end_time) : 0;
             $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
             $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
 
@@ -744,11 +744,17 @@ class EventController extends Controller
         if ($EventName !== "") {
             $EventSql = "SELECT * FROM events AS e WHERE e.name=:event_name";
             $Events = DB::select($EventSql, array('event_name' => $EventName));
+            $EventId = sizeof($Events) > 0 ? $Events[0]->id : 0;
         }
+
+        // Get Event Tickets 
+        $sSQL = 'SELECT id,ticket_name FROM event_tickets WHERE event_id =:event_id AND is_deleted = 0 AND active = 1';
+        $AllTickets = DB::select($sSQL, array('event_id' => $EventId));
+        $ResponseData['AllTickets'] = $AllTickets ? $AllTickets : [];
 
         // dd($Events);
         $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
-        $ResponseData['EventDetailId'] = $EventId = sizeof($Events) > 0 ? $Events[0]->id : 0;
+        $ResponseData['EventDetailId'] = $EventId ? $EventId : 0;
         $ResponseData['FAQ'] = [];
 
         if (!empty($EventId)) {

@@ -258,8 +258,7 @@
 
                     <tr>
                         <td>Registration Date &amp; Time</td>
-                        <td>{{ isset($ticket_details['booking_start_date']) ? $ticket_details['booking_start_date'] : "" }}
-                            {{ isset($ticket_details['booking_time']) ? $ticket_details['booking_time'] : "" }}
+                        <td>{{(!empty($ticket_details["booking_date"]))? date("d M Y h:i A", $ticket_details["booking_date"]) : ""}}
                         </td>
                     </tr>
 
