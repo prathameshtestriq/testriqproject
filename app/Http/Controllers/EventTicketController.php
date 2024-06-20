@@ -273,104 +273,126 @@ class EventTicketController extends Controller
 
                     if (!empty($TicketId)) {   // update data
                         // dd("here");
-                        $Binding = array(
-                            // 'event_id' => $aPost['event_id'],
-                            'ticket_name' => isset($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
-                            'ticket_status' => isset($aPost['ticket_status']) ? $aPost['ticket_status'] : 2,
-                            'total_quantity' => isset($aPost['total_quantity']) ? $aPost['total_quantity'] : 0,
-                            'ticket_price' => isset($aPost['ticket_price']) ? $aPost['ticket_price'] : 0,
-                            'payment_to_you' => isset($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
-                            'ticket_sale_start_date' => $TicketStartTime,
-                            'ticket_sale_end_date' => $TicketEndTime,
-                            'advanced_settings' => isset($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
-                            'player_of_fee' => isset($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
-                            'player_of_gateway_fee' => isset($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
-                            'min_booking' => isset($aPost['min_booking']) ? $aPost['min_booking'] : 0,
-                            'max_booking' => isset($aPost['max_booking']) ? $aPost['max_booking'] : 0,
-                            'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
-                            'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
-                            'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
-                            'early_bird' => isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
-                            'no_of_tickets' => isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
-                            'start_time' => $EBStartTime,
-                            'end_time' => $EBEndTime,
-                            'discount' => isset($aPost['discount']) ? $aPost['discount'] : 0,
-                            'discount_value' => isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
-                            'category' => isset($aPost['category']) ? $aPost['category'] : 0,
-                            'apply_age_limit' => isset($aPost['apply_age_limit']) ? $aPost['apply_age_limit'] : 0,
-                            'age_start' => isset($aPost['age_start']) ? $aPost['age_start'] : 0,
-                            'age_end' => isset($aPost['age_end']) ? $aPost['age_end'] : 0,
-                            'id' => $TicketId
-                        );
 
-                        // dd($Binding);
-                        $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_status = :ticket_status,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,advanced_settings=:advanced_settings,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount,early_bird=:early_bird,no_of_tickets=:no_of_tickets,start_time=:start_time,end_time=:end_time,discount=:discount,discount_value=:discount_value,category=:category,apply_age_limit=:apply_age_limit,age_start=:age_start,age_end=:age_end WHERE id=:id';
-                        DB::update($SQL, $Binding);
+                        $SQL = "SELECT ticket_name FROM event_tickets WHERE LOWER(ticket_name) = :ticket_name AND event_id = :event_id AND id != :edit_id";
+                        $IsExist = DB::select($SQL, array('ticket_name' => strtolower($aPost['ticket_name']), "event_id" => $EventId, "edit_id" => $TicketId));
+         
+                        if(empty($IsExist)){
 
-                        $ResposneCode = 200;
-                        $message = 'Event Ticket Updated Successfully';
+                            $Binding = array(
+                                // 'event_id' => $aPost['event_id'],
+                                'ticket_name' => isset($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
+                                'ticket_status' => isset($aPost['ticket_status']) ? $aPost['ticket_status'] : 2,
+                                'total_quantity' => isset($aPost['total_quantity']) ? $aPost['total_quantity'] : 0,
+                                'ticket_price' => isset($aPost['ticket_price']) ? $aPost['ticket_price'] : 0,
+                                'payment_to_you' => isset($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
+                                'ticket_sale_start_date' => $TicketStartTime,
+                                'ticket_sale_end_date' => $TicketEndTime,
+                                'advanced_settings' => isset($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
+                                'player_of_fee' => isset($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
+                                'player_of_gateway_fee' => isset($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
+                                'min_booking' => isset($aPost['min_booking']) ? $aPost['min_booking'] : 0,
+                                'max_booking' => isset($aPost['max_booking']) ? $aPost['max_booking'] : 0,
+                                'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
+                                'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
+                                'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
+                                'early_bird' => isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
+                                'no_of_tickets' => isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
+                                'start_time' => $EBStartTime,
+                                'end_time' => $EBEndTime,
+                                'discount' => isset($aPost['discount']) ? $aPost['discount'] : 0,
+                                'discount_value' => isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
+                                'category' => isset($aPost['category']) ? $aPost['category'] : 0,
+                                'apply_age_limit' => isset($aPost['apply_age_limit']) ? $aPost['apply_age_limit'] : 0,
+                                'age_start' => isset($aPost['age_start']) ? $aPost['age_start'] : 0,
+                                'age_end' => isset($aPost['age_end']) ? $aPost['age_end'] : 0,
+                                'id' => $TicketId
+                            );
 
-                    } else {                // insert data
-                        $Binding = array(
-                            'event_id' => $EventId,
-                            'ticket_name' => isset($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
-                            'ticket_status' => isset($aPost['ticket_status']) ? $aPost['ticket_status'] : 2,
-                            'total_quantity' => isset($aPost['total_quantity']) ? $aPost['total_quantity'] : 0,
-                            'ticket_price' => isset($aPost['ticket_price']) ? $aPost['ticket_price'] : 0,
-                            'payment_to_you' => isset($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
-                            'ticket_sale_start_date' => $TicketStartTime,
-                            'ticket_sale_end_date' => $TicketEndTime,
-                            'advanced_settings' => isset($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
-                            'player_of_fee' => isset($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
-                            'player_of_gateway_fee' => isset($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
-                            'min_booking' => isset($aPost['min_booking']) ? $aPost['min_booking'] : 0,
-                            'max_booking' => isset($aPost['max_booking']) ? $aPost['max_booking'] : 0,
-                            'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
-                            'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
-                            'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
-                            'early_bird' => isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
-                            'no_of_tickets' => isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
-                            'start_time' => $EBStartTime,
-                            'end_time' => $EBEndTime,
-                            'discount' => isset($aPost['discount']) ? $aPost['discount'] : 0,
-                            'discount_value' => isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
-                            'category' => isset($aPost['category']) ? $aPost['category'] : 0,
-                            'apply_age_limit' => isset($aPost['apply_age_limit']) ? $aPost['apply_age_limit'] : 0,
-                            'age_start' => isset($aPost['age_start']) ? $aPost['age_start'] : 0,
-                            'age_end' => isset($aPost['age_end']) ? $aPost['age_end'] : 0
-                        );
-                        // dd($Binding);
-                        $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,advanced_settings,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount,early_bird,no_of_tickets,start_time,end_time,discount,discount_value,category,apply_age_limit,age_start,age_end) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:advanced_settings,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount,:early_bird,:no_of_tickets,:start_time,:end_time,:discount,:discount_value,:category,:apply_age_limit,:age_start,:age_end)';
+                            // dd($Binding);
+                            $SQL = 'UPDATE event_tickets SET ticket_name=:ticket_name,ticket_status = :ticket_status,total_quantity = :total_quantity,ticket_price = :ticket_price,payment_to_you = :payment_to_you,ticket_sale_start_date = :ticket_sale_start_date,ticket_sale_end_date = :ticket_sale_end_date,advanced_settings=:advanced_settings,player_of_fee = :player_of_fee,player_of_gateway_fee = :player_of_gateway_fee,min_booking = :min_booking,max_booking = :max_booking,ticket_description = :ticket_description,msg_attendance = :msg_attendance,minimum_donation_amount= :minimum_donation_amount,early_bird=:early_bird,no_of_tickets=:no_of_tickets,start_time=:start_time,end_time=:end_time,discount=:discount,discount_value=:discount_value,category=:category,apply_age_limit=:apply_age_limit,age_start=:age_start,age_end=:age_end WHERE id=:id';
+                            DB::update($SQL, $Binding);
 
-                        DB::select($SQL2, $Binding);
-
-                        //---------- add form question to aplay new ticket id
-                        $last_inserted_id = DB::getPdo()->lastInsertId();
-
-                        $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and apply_ticket = 1 and event_id = ' . $EventId . '  ';
-                        $aResult = DB::select($Sql);
-
-                        if (!empty($aResult)) {
-                            foreach ($aResult as $res) {
-                                $new_tickets_ids = !empty($res->ticket_details) ? $res->ticket_details . ',' . $last_inserted_id : "";
-
-                                $up_sSQL = 'UPDATE event_form_question SET `ticket_details` =:ticketDetailsIds WHERE `event_id`=:eventId and `id` =:Id and apply_ticket = 1 ';
-                                DB::update(
-                                    $up_sSQL,
-                                    array(
-                                        'ticketDetailsIds' => $new_tickets_ids,
-                                        'eventId' => $EventId,
-                                        'Id' => $res->id
-                                    )
-                                );
-
-                            }
+                            $ResposneCode = 200;
+                            $message = 'Event Ticket Updated Successfully';
+                            $ResponseData = 0;
+                        }else{
+                            $ResposneCode = 200;
+                            $message = "Ticket name is already exists, please use another name.";
+                            $ResponseData = 1;
                         }
 
-                        //---------------------
+                    } else {                // insert data
+                        
+                        $SQL = "SELECT ticket_name FROM event_tickets WHERE LOWER(ticket_name) = :ticket_name AND event_id = :event_id";
+                        $IsExist = DB::select($SQL, array('ticket_name' => strtolower($aPost['ticket_name']), "event_id" => $EventId));
+                        
+                        if(empty($IsExist)){
 
-                        $ResposneCode = 200;
-                        $message = 'Event Ticket Inserted Successfully';
+                            $Binding = array(
+                                'event_id' => $EventId,
+                                'ticket_name' => isset($aPost['ticket_name']) ? $aPost['ticket_name'] : "",
+                                'ticket_status' => isset($aPost['ticket_status']) ? $aPost['ticket_status'] : 2,
+                                'total_quantity' => isset($aPost['total_quantity']) ? $aPost['total_quantity'] : 0,
+                                'ticket_price' => isset($aPost['ticket_price']) ? $aPost['ticket_price'] : 0,
+                                'payment_to_you' => isset($aPost['payment_to_you']) ? $aPost['payment_to_you'] : "",
+                                'ticket_sale_start_date' => $TicketStartTime,
+                                'ticket_sale_end_date' => $TicketEndTime,
+                                'advanced_settings' => isset($aPost['advanced_settings']) ? $aPost['advanced_settings'] : 0,
+                                'player_of_fee' => isset($aPost['player_of_fee']) ? $aPost['player_of_fee'] : 0,
+                                'player_of_gateway_fee' => isset($aPost['player_of_gateway_fee']) ? $aPost['player_of_gateway_fee'] : 0,
+                                'min_booking' => isset($aPost['min_booking']) ? $aPost['min_booking'] : 0,
+                                'max_booking' => isset($aPost['max_booking']) ? $aPost['max_booking'] : 0,
+                                'ticket_description' => isset($aPost['ticket_description']) ? $aPost['ticket_description'] : "",
+                                'msg_attendance' => isset($aPost['msg_attendance']) ? $aPost['msg_attendance'] : "",
+                                'minimum_donation_amount' => isset($aPost['minimum_donation_amount']) ? $aPost['minimum_donation_amount'] : 0,
+                                'early_bird' => isset($aPost['early_bird']) ? $aPost['early_bird'] : 0,
+                                'no_of_tickets' => isset($aPost['no_of_tickets']) ? $aPost['no_of_tickets'] : 0,
+                                'start_time' => $EBStartTime,
+                                'end_time' => $EBEndTime,
+                                'discount' => isset($aPost['discount']) ? $aPost['discount'] : 0,
+                                'discount_value' => isset($aPost['discount_value']) ? $aPost['discount_value'] : 0,
+                                'category' => isset($aPost['category']) ? $aPost['category'] : 0,
+                                'apply_age_limit' => isset($aPost['apply_age_limit']) ? $aPost['apply_age_limit'] : 0,
+                                'age_start' => isset($aPost['age_start']) ? $aPost['age_start'] : 0,
+                                'age_end' => isset($aPost['age_end']) ? $aPost['age_end'] : 0
+                            );
+                            // dd($Binding);
+                            $SQL2 = 'INSERT INTO event_tickets (event_id,ticket_name,ticket_status,total_quantity,ticket_price,payment_to_you,ticket_sale_start_date,ticket_sale_end_date,advanced_settings,player_of_fee,player_of_gateway_fee,min_booking,max_booking,ticket_description,msg_attendance,minimum_donation_amount,early_bird,no_of_tickets,start_time,end_time,discount,discount_value,category,apply_age_limit,age_start,age_end) VALUES(:event_id,:ticket_name,:ticket_status,:total_quantity,:ticket_price,:payment_to_you,:ticket_sale_start_date,:ticket_sale_end_date,:advanced_settings,:player_of_fee,:player_of_gateway_fee,:min_booking,:max_booking,:ticket_description,:msg_attendance,:minimum_donation_amount,:early_bird,:no_of_tickets,:start_time,:end_time,:discount,:discount_value,:category,:apply_age_limit,:age_start,:age_end)';
+
+                            DB::select($SQL2, $Binding);
+
+                            //---------- add form question to aplay new ticket id
+                            $last_inserted_id = DB::getPdo()->lastInsertId();
+
+                            $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and apply_ticket = 1 and event_id = ' . $EventId . '  ';
+                            $aResult = DB::select($Sql);
+
+                            if (!empty($aResult)) {
+                                foreach ($aResult as $res) {
+                                    $new_tickets_ids = !empty($res->ticket_details) ? $res->ticket_details . ',' . $last_inserted_id : "";
+
+                                    $up_sSQL = 'UPDATE event_form_question SET `ticket_details` =:ticketDetailsIds WHERE `event_id`=:eventId and `id` =:Id and apply_ticket = 1 ';
+                                    DB::update(
+                                        $up_sSQL,
+                                        array(
+                                            'ticketDetailsIds' => $new_tickets_ids,
+                                            'eventId' => $EventId,
+                                            'Id' => $res->id
+                                        )
+                                    );
+
+                                }
+                            }
+
+                            $ResposneCode = 200;
+                            $message = 'Event Ticket Inserted Successfully';
+                            $ResponseData = 0;
+                        }else{
+                            $ResposneCode = 200;
+                            $message = "Ticket name is already exists, please use another name.";
+                            $ResponseData = 1;
+                        }
 
                     }
                 } else {
@@ -1189,7 +1211,7 @@ class EventTicketController extends Controller
         // dd($ConfirmationEmail);
         $Subject = "";
         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND UPPER(subject_name)=:subject_name";
-        $Communications = DB::select($sql, ["event_id" => $EventId, "subject_name" => strtoupper("Registration Confirmation for SV Run")]);
+        $Communications = DB::select($sql, ["event_id" => $EventId, "subject_name" => strtoupper("Registration Confirmation")]);
         if (count($Communications) > 0) {
             $MessageContent = $Communications[0]->message_content;
             $Subject = $Communications[0]->subject_name;
