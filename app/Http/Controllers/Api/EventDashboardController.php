@@ -522,4 +522,58 @@ class EventDashboardController extends Controller
         return $excel_url;
     }
 
+    function getPaymentLog(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
+
+                $sql = "SELECT *,u.id,u.firstname,u. FROM booking_payment_details AS p 
+                        LEFT JOIN booking_payment_log AS l ON l.booking_det_id=p.id 
+                        LEFT JOIN users AS u ON u.id=p.created_by
+                        WHERE p.event_id=:event_id ORDER BY l.id DESC";
+                $UserData = DB::select($sql, array('event_id' => $EventId));
+
+                foreach ($UserData as $key => $value) {
+                    $value->booking_date = !empty($value->booking_date) ? date("Y-m-d H:i A", ($value->booking_date)) : '';
+                }
+                $ResponseData['UserData'] = (count($UserData) > 0) ? $UserData : [];
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
 }
