@@ -4,7 +4,7 @@
 
 //-------------------
 // Database connection parameters
-$flag = 3; // prime - 1 / live - 2 / local - 3 
+$flag = 1; // prime - 1 / live - 2 / local - 3 
 
 if($flag == 1){                   // prime
     $servername = 'localhost'; 
