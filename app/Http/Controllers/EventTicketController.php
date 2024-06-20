@@ -1210,8 +1210,9 @@ class EventTicketController extends Controller
         );
         // dd($ConfirmationEmail);
         $Subject = "";
-        $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND UPPER(subject_name)=:subject_name";
-        $Communications = DB::select($sql, ["event_id" => $EventId, "subject_name" => strtoupper("Registration Confirmation")]);
+        $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
+        $Communications = DB::select($sql, ["event_id" => $EventId ]); // "subject_name" => strtoupper("Registration Confirmation")
+        // dd($Communications);
         if (count($Communications) > 0) {
             $MessageContent = $Communications[0]->message_content;
             $Subject = $Communications[0]->subject_name;
@@ -1840,7 +1841,7 @@ Best regards,<br/>
                 $SQL1 = "SELECT total_attendees as no_of_tickets,TotalPrice as total_price FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                 $TicketDetailsResult = DB::select($SQL1, array('booking_pay_id' => $BookingPayId));
 
-
+                //dd($TicketDetailsResult,$user_email,$event_url);
                 $no_of_tickets = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
                 $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? '₹ ' . $TicketDetailsResult[0]->total_price : 0;
 
