@@ -135,7 +135,7 @@ class PaymentGatwayController extends Controller
                             "created_by" => $UserId,
                             "created_datetime" => $Datetime,
                             "counter" => $last_count,
-                            "payment_status" => 'initiate'
+                            "payment_status" => !empty($Amount) && $Amount != '0.00' ? 'initiate' : 'free'
                         );
             //dd($Bindings);
             //-----------------
@@ -154,7 +154,7 @@ class PaymentGatwayController extends Controller
                             "request_data" => $post_data,
                             "created_by" => $UserId,
                             "request_datetime" => $request_datetime,
-                            "payment_status" => 'initiate'
+                            "payment_status" => !empty($Amount) && $Amount != '0.00' ? 'initiate' : 'free'
                         );
             $insert_SQL1 = "INSERT INTO booking_payment_log (event_id,booking_det_id,txnid,amount,request_data,created_by,request_datetime,payment_status) VALUES(:event_id,:booking_det_id,:txnid,:amount,:request_data,:created_by,:request_datetime,:payment_status)";
             DB::insert($insert_SQL1, $Binding);
@@ -166,7 +166,7 @@ class PaymentGatwayController extends Controller
 
                 $total_attendees = !empty($BookTicketArray['total_attendees']) ? $BookTicketArray['total_attendees'] : "";
                 $FormQuestions   = !empty($BookTicketArray['FormQuestions']) ? $BookTicketArray['FormQuestions'] : "";
-                $TotalPrice      = !empty($BookTicketArray['TotalPrice']) ? $BookTicketArray['TotalPrice'] : "";
+                $TotalPrice      = !empty($BookTicketArray['TotalPrice']) ? $BookTicketArray['TotalPrice'] : "0.00";
                 $TotalDiscount   = !empty($BookTicketArray['TotalDiscount']) ? $BookTicketArray['TotalDiscount'] : "";
                 $AllTickets      = !empty($BookTicketArray['AllTickets']) ? $BookTicketArray['AllTickets'] : "";
                 $ExtraPricing    = !empty($BookTicketArray['ExtraPricing']) ? $BookTicketArray['ExtraPricing'] : "";

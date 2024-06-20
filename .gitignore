@@ -4,6 +4,9 @@
 /public/hot
 /public/storage
 /public/uploads
+/Transcation
+/Transcation/Payment_process.php
+/public/attendee_details_excell
 /storage/*.key
 /vendor
 .env
@@ -19,4 +22,3 @@ yarn-error.log
 /.idea
 /.vscode
 /public/ticket_pdf
-/Transcation
