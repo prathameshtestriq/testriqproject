@@ -1190,7 +1190,7 @@ class EventTicketController extends Controller
 
         $ConfirmationEmail = array(
             // "USERID" => $UserId,
-            // "EMAIL" => $UserEmail,
+            "USERNAME" => $User[0]->firstname . " " . $User[0]->lastname,
             "FIRSTNAME" => $User[0]->firstname,
             "LASTNAME" => $User[0]->lastname,
             "EVENTID" => $EventId,

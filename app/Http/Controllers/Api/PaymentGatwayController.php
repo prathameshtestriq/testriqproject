@@ -188,7 +188,7 @@ class PaymentGatwayController extends Controller
                             $result = [];
                                 $result = [
                                     'id' => $value['id'],
-                                    'ActualValue' => $value['ActualValue'],
+                                    'ActualValue' => isset($value['ActualValue']) ? $value['ActualValue'] : '',
                                     'question_label' => $value['question_label'],
                                     'general_form_id' => $value['general_form_id'],
                                     'question_form_type' => $value['question_form_type'],
