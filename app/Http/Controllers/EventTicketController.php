@@ -76,9 +76,10 @@ class EventTicketController extends Controller
 
                     $value->display_ticket_name = !empty($value->ticket_name) ? (strlen($value->ticket_name) > 40 ? ucwords(substr($value->ticket_name, 0, 80)) . "..." : ucwords($value->ticket_name)) : "";
 
-                    // $sql = "SELECT COUNT(id) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
-                    // $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
-                    $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                    // $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
+                    $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details AS bd
+                            LEFT JOIN event_booking AS eb ON bd.booking_id = eb.id
+                            WHERE bd.event_id=:event_id AND eb.transaction_status=1";
                     $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
 
                     $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
@@ -820,6 +821,10 @@ class EventTicketController extends Controller
                     $GstArray = !empty($BookingPayment[0]->GstArray) ? json_decode($BookingPayment[0]->GstArray) : [];
                     $TransactionStatus = 0; //Initiated Transaction
 
+                    if (empty($TotalPrice) || $TotalPrice == 0 || $TotalPrice == '0.00' || $TotalPrice == '0') {
+                        $TransactionStatus = 3; // Free Transaction
+                    }
+
                     $UserId = $aToken["data"]->ID;
                     $UserEmail = $aToken["data"]->email;
                     // dd($UserEmail);
@@ -1250,7 +1255,7 @@ Best regards,<br/>
                 (SELECT banner_image FROM events WHERE id=eb.event_id) AS banner_image
                     FROM event_booking AS eb
                     WHERE eb.user_id=:user_id
-                    AND eb.transaction_status = 1
+                    AND eb.transaction_status IN (1,3)
                     GROUP BY eb.event_id";
                 $BookingData = DB::select($SQL, array('user_id' => $UserId));
 
