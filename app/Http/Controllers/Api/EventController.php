@@ -1091,6 +1091,8 @@ class EventController extends Controller
                 "event_name" => (isset($Events[0]->name) && !empty($Events[0]->name)) ? (strlen($Events[0]->name) > 40 ? ucwords(substr($Events[0]->name, 0, 40)) . "..." : ucwords($Events[0]->name)) : "",
                 "start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("M", $Events[0]->start_time) : gmdate("M", strtotime('now')),
                 "start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("d", $Events[0]->start_time) : gmdate("d", strtotime('now')),
+                "pre_start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("M", $Events[0]->start_time) : date("M", strtotime('now')),
+                "pre_start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("d", $Events[0]->start_time) : date("d", strtotime('now')),
                 // "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('now')),
                 "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? date("d F Y", $event->registration_end_time) : date("d F Y", strtotime('now')),
 
