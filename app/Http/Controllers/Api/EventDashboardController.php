@@ -548,7 +548,7 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
 
-                $sql = "SELECT *,u.id,u.firstname,u. FROM booking_payment_details AS p 
+                $sql = "SELECT *,u.id,u.firstname,u.lastname,u.email FROM booking_payment_details AS p 
                         LEFT JOIN booking_payment_log AS l ON l.booking_det_id=p.id 
                         LEFT JOIN users AS u ON u.id=p.created_by
                         WHERE p.event_id=:event_id ORDER BY l.id DESC";

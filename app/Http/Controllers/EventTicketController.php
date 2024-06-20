@@ -79,7 +79,7 @@ class EventTicketController extends Controller
                     // $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
                     $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details AS bd
                             LEFT JOIN event_booking AS eb ON bd.booking_id = eb.id
-                            WHERE bd.event_id=:event_id AND ticket_id=:ticket_id AND eb.transaction_status=1";
+                            WHERE bd.event_id=:event_id AND bd.ticket_id=:ticket_id AND eb.transaction_status IN (1,3)";
                     $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
 
                     $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
