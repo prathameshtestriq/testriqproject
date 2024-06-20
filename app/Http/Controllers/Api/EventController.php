@@ -1198,8 +1198,8 @@ class EventController extends Controller
             $ResponseData['comm_selected_flag'] = $is_comm_selected;
             $ResponseData['faq_details'] = !empty($FAQResult) ? $FAQResult : [];
 
-            // ---------- get Tickets details
-            $sql1 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id AND ticket_status = 1 AND is_deleted = 0";
+            // ---------- get Tickets details ticket_status = 1
+            $sql1 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0";
             $TicketResult = DB::select($sql1, array('event_id' => $EventId));
             //dd($CommResult);
             if (!empty($TicketResult)) {
@@ -1208,6 +1208,16 @@ class EventController extends Controller
                 }
             }
             $ResponseData['tickets_details'] = !empty($TicketResult) ? $TicketResult : [];
+
+            $sql2 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id AND active = 1 AND ticket_status = 1 AND is_deleted = 0";
+            $TicketResult1 = DB::select($sql2, array('event_id' => $EventId));
+            //dd($CommResult);
+            if (!empty($TicketResult1)) {
+                foreach ($TicketResult1 as $res) {
+                    $res->checked = false;
+                }
+            }
+            $ResponseData['coupon_tickets_details'] = !empty($TicketResult1) ? $TicketResult1 : [];
 
             $sql2 = "SELECT id,ticket_name FROM event_tickets WHERE event_id=:event_id AND is_deleted = 0";
             $TicketResult1 = DB::select($sql2, array('event_id' => $EventId));
