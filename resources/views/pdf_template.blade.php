@@ -5,7 +5,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Races Registration Ticket</title>
+    <title>Races Registration</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/img/ico/favicon.ico') }}">
 
     <style>
@@ -210,7 +210,7 @@
                         <th colspan="2">Event Details</th>
                     </tr>
                     <tr>
-                        <td>Organizer</td>
+                        <td>Organiser</td>
                         <td>{{ isset($org_details->name) ? $org_details->name : '' }}</td>
                     </tr>
 
