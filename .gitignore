@@ -20,3 +20,4 @@ yarn-error.log
 /.vscode
 /public/ticket_pdf
 /Transcation
+/public/attendee_details_excell

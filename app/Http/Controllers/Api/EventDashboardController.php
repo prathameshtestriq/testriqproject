@@ -390,8 +390,10 @@ class EventDashboardController extends Controller
         if (!empty($AttendeeData)) {
 
             $ExcellDataArray = [];
-            $sql = "SELECT id,question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1";
+            $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1";
             $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
+            
+            $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
 
             $label = '';
             foreach ($AttendeeData as $key => $res1) {
@@ -437,7 +439,7 @@ class EventDashboardController extends Controller
             //dd($url);
 
             // $filename = "attendee_sheet_".time();
-            $filename = "attendee_sheet_" . $EventId;
+            $filename = "attendee_".$event_name.'_'.time();
             $path = 'attendee_details_excell/';
             $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $EventQuestionData), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
