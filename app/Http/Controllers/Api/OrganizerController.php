@@ -363,7 +363,7 @@ class OrganizerController extends Controller
             $master = new Master();
             foreach ($Events as $event) {
                 $event->checked = 0;
-                $event->start_date = (!empty($event->start_time)) ? gmdate("d-m-Y", $event->start_time) : 0;
+                $event->start_date = (!empty($event->start_time)) ? date("d-m-Y", $event->start_time) : 0;
                 $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
             }
             $ResponseData['events'] = $Events;
@@ -415,7 +415,7 @@ class OrganizerController extends Controller
             foreach ($Organizer as $value) {
                 // dd($value->id);
                 $value->is_follow = !empty($LoggedUserId) ? $e->isOrgFollowed($value->id, $LoggedUserId) : 0;
-                $value->join_on = !empty($value->created_at) ? gmdate("F d, Y", $value->created_at) : 0;
+                $value->join_on = !empty($value->created_at) ? date("F d, Y", $value->created_at) : 0;
                 $value->banner_image = (!empty($value->banner_image)) ? url('/') . "/organiser/banner_image/" . $value->banner_image . '' : '';
                 $value->logo_image = (!empty($value->logo_image)) ? url('/') . "/organiser/logo_image/" . $value->logo_image . '' : '';
             }

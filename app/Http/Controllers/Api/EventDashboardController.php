@@ -404,7 +404,7 @@ class EventDashboardController extends Controller
                     $value->unique_ticket_id = $uniqueId;
 
                     //Booking date
-                    $value->booking_start_date = (!empty($value->booking_date)) ? gmdate("d M Y", $value->booking_date) : 0;
+                    $value->booking_start_date = (!empty($value->booking_date)) ? date("d M Y", $value->booking_date) : 0;
                     $value->booking_time = (!empty($value->booking_date)) ? date("h:i A", $value->booking_date) : "";
 
                     // get extra amounts

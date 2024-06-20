@@ -47,16 +47,16 @@ class EventController extends Controller
             $event->TicketDetails = $e->getEventTicketDetails($event->id);
 
             //event start month
-            $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : 0;
+            $event->start_event_month = (!empty($event->start_time)) ? date("M", $event->start_time) : 0;
             //event start d
-            $event->start_event_date = (!empty($event->start_time)) ? gmdate("d", $event->start_time) : 0;
+            $event->start_event_date = (!empty($event->start_time)) ? date("d", $event->start_time) : 0;
 
             //registration starting date
-            $event->registration_start_date = (!empty($event->registration_start_time)) ? gmdate("d F Y", $event->registration_start_time) : 0;
+            $event->registration_start_date = (!empty($event->registration_start_time)) ? date("d F Y", $event->registration_start_time) : 0;
             $event->registration_start_date_time = (!empty($event->registration_start_time)) ? date("h:i A", $event->registration_start_time) : "";
 
             //registration closing date
-            $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : 0;
+            $event->registration_end_date = (!empty($event->registration_end_time)) ? date("d F Y", $event->registration_end_time) : 0;
             $event->registration_end_date_time = (!empty($event->registration_end_time)) ? date("h:i A", $event->registration_end_time) : "";
 
             // registration button show flag
@@ -1062,12 +1062,12 @@ class EventController extends Controller
                 $event->no_of_tickets = (sizeof($Tickets) > 0) ? $Tickets[0]->no_of_tickets : 0;
                 $event->early_bird = (sizeof($Tickets) > 0) ? $Tickets[0]->early_bird : 0;
                 //event start month
-                $event->start_event_month = (!empty($event->start_time)) ? gmdate("M", $event->start_time) : "";
+                $event->start_event_month = (!empty($event->start_time)) ? date("M", $event->start_time) : "";
                 //event start d
-                $event->start_event_date = (!empty($event->start_time)) ? gmdate("d", $event->start_time) : "";
+                $event->start_event_date = (!empty($event->start_time)) ? date("d", $event->start_time) : "";
 
                 //registration closing date
-                $event->registration_end_date = (!empty($event->registration_end_time)) ? gmdate("d M Y", $event->registration_end_time) : "";
+                $event->registration_end_date = (!empty($event->registration_end_time)) ? date("d M Y", $event->registration_end_time) : "";
 
                 $event->diplay_registration_start_date = (!empty($event->registration_start_time)) ? date("Y-m-d", $event->registration_start_time) : 0;
                 $event->diplay_registration_start_time = (!empty($event->registration_start_time)) ? date("H:i", $event->registration_start_time) : 0;
@@ -1095,11 +1095,11 @@ class EventController extends Controller
                 "start_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("F d, Y", $Events[0]->start_time) : 0,
                 "city" => (isset($Events[0]->city) && !empty($Events[0]->city)) ? $master->getCityName($Events[0]->city) : "",
                 "event_name" => (isset($Events[0]->name) && !empty($Events[0]->name)) ? (strlen($Events[0]->name) > 40 ? ucwords(substr($Events[0]->name, 0, 40)) . "..." : ucwords($Events[0]->name)) : "",
-                "start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("M", $Events[0]->start_time) : gmdate("M", strtotime('now')),
-                "start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? gmdate("d", $Events[0]->start_time) : gmdate("d", strtotime('now')),
+                "start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("M", $Events[0]->start_time) : date("M", strtotime('now')),
+                "start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("d", $Events[0]->start_time) : date("d", strtotime('now')),
                 "pre_start_event_month" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("M", $Events[0]->start_time) : date("M", strtotime('now')),
                 "pre_start_event_date" => (isset($Events[0]->start_time) && (!empty($Events[0]->start_time))) ? date("d", $Events[0]->start_time) : date("d", strtotime('now')),
-                // "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? gmdate("d F Y", $event->registration_end_time) : gmdate("d F Y", strtotime('now')),
+                // "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? date("d F Y", $event->registration_end_time) : date("d F Y", strtotime('now')),
                 "registration_end_date" => (isset($Events[0]->registration_end_time) && !empty($Events[0]->registration_end_time)) ? date("d F Y", $event->registration_end_time) : date("d F Y", strtotime('now')),
 
                 "min_price" => (sizeof($Tickets) > 0) ? $Tickets[0]->min_price : 0,

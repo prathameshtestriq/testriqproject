@@ -122,7 +122,7 @@ class EventTicketController extends Controller
                 $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
                 foreach ($EventData as $key => $event) {
                     $event->display_name = !empty($event->name) ? $event->name : "";
-                    $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
+                    $event->start_date = (!empty($event->start_time)) ? date("d M Y", $event->start_time) : 0;
                     $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
                 }
                 $ResponseData['EventData'] = $EventData;
@@ -1264,7 +1264,7 @@ Best regards,<br/>
                 foreach ($BookingData as $event) {
                     $event->name = !empty($event->EventName) ? ucwords($event->EventName) : "";
                     $event->display_name = !empty($event->EventName) ? (strlen($event->EventName) > 40 ? ucwords(substr($event->EventName, 0, 40)) . "..." : ucwords($event->EventName)) : "";
-                    $event->start_date = (!empty($event->EventStartTime)) ? gmdate("d M Y", $event->EventStartTime) : 0;
+                    $event->start_date = (!empty($event->EventStartTime)) ? date("d M Y", $event->EventStartTime) : 0;
                     $event->start_time_event = (!empty($event->EventStartTime)) ? date("h:i A", $event->EventStartTime) : "";
                     $event->city_name = !empty($event->EventCity) ? $master->getCityName($event->EventCity) : "";
                     $event->banner_image = !empty($event->banner_image) ? url('/') . '/uploads/banner_image/' . $event->banner_image . '' : '';
@@ -1344,7 +1344,7 @@ Best regards,<br/>
                 foreach ($BookingData as $event) {
 
                     $event->TicketName = !empty($event->TicketName) ? (strlen($event->TicketName) > 40 ? ucwords(substr($event->TicketName, 0, 40)) . "..." : ucwords($event->TicketName)) : "";
-                    $event->event_start_date = (!empty($event->EventStartDateTime)) ? gmdate("d M Y", $event->EventStartDateTime) : 0;
+                    $event->event_start_date = (!empty($event->EventStartDateTime)) ? date("d M Y", $event->EventStartDateTime) : 0;
                     $event->event_time = (!empty($event->EventStartDateTime)) ? date("h:i A", $event->EventStartDateTime) : "";
 
                     // $event->strike_out_price = 0;
@@ -1499,8 +1499,8 @@ Best regards,<br/>
                     if (sizeof($Event) > 0) {
                         foreach ($Event as $key => $event) {
                             $event->name = (!empty($event->name)) ? $event->name : '';
-                            $event->start_date = (!empty($event->start_time)) ? gmdate("d M Y", $event->start_time) : 0;
-                            $event->end_date = (!empty($event->end_time)) ? gmdate("d M Y", $event->end_time) : 0;
+                            $event->start_date = (!empty($event->start_time)) ? date("d M Y", $event->start_time) : 0;
+                            $event->end_date = (!empty($event->end_time)) ? date("d M Y", $event->end_time) : 0;
                             $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
                             $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
 

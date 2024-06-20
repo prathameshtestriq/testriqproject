@@ -944,9 +944,9 @@ class FormQuestionsController extends Controller
                 $res->event_status   = !empty($res->active) ? true : false;
                 $res->event_name   = !empty($res->name) && $res->name != null ? ucfirst($res->name) : '';
                 $res->display_name = !empty($res->display_name) && $res->display_name != null ? ucfirst($res->display_name) : '';
-                $res->registration_end_date = !empty($res->registration_end_time) ? gmdate("d F Y", $res->registration_end_time) : '';
-                $res->start_event_month = (!empty($res->start_time)) ? gmdate("M", $res->start_time) : '';
-                $res->start_event_date = (!empty($res->start_time)) ? gmdate("d", $res->start_time) : '';
+                $res->registration_end_date = !empty($res->registration_end_time) ? date("d F Y", $res->registration_end_time) : '';
+                $res->start_event_month = (!empty($res->start_time)) ? date("M", $res->start_time) : '';
+                $res->start_event_date = (!empty($res->start_time)) ? date("d", $res->start_time) : '';
 
                 #GET ALL TICKETS
                 $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price, early_bird FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
