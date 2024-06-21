@@ -1165,6 +1165,9 @@ class EventTicketController extends Controller
 
     function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_array)
     {
+        $Email1 = new Emails();
+        $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $UserEmail, $flag);
+
         // dd($BookingPayId);
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
@@ -1279,19 +1282,17 @@ class EventTicketController extends Controller
             }
         }
         
-        $msg = $UserId.'---'.$tAttendeeResult.'---'.$MessageContent.'---'.$Subject.'---'.$flag.'---'.$UserEmail;
-
-        $Email2 = new Emails();
-        $Email2->save_email_log('test email1', 'startshant@gmail.com', 'log test', $msg, '');
+       
 
         // Output the filled message
         //dd($MessageContent);
         $Email = new Emails();
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
-        
-        //dd($Subject);
-        $Email1 = new Emails();
-        $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $res->registration_id, '');
+       
+        $msg = $UserId.'---'.$tAttendeeResult.'---'.$MessageContent.'---'.$Subject.'---'.$flag.'---'.$UserEmail;
+
+        $Email2 = new Emails();
+        $Email2->save_email_log('test email1', 'startshant@gmail.com', 'log test', $msg, '');
       
         //--------- Send emails to participants also along with registering person
         // dd($tAttendeeResult);
