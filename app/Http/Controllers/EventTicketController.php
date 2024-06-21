@@ -1163,7 +1163,7 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag)
+    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_username)
     {
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
@@ -1209,7 +1209,7 @@ class EventTicketController extends Controller
 
         $ConfirmationEmail = array(
             // "USERID" => $UserId,
-            "USERNAME" => $User[0]->firstname . " " . $User[0]->lastname,
+            "USERNAME" => $flag == 2 && !empty($attendee_username) ? $attendee_username : $User[0]->firstname . " " . $User[0]->lastname,
             "FIRSTNAME" => $User[0]->firstname,
             "LASTNAME" => $User[0]->lastname,
             "EVENTID" => $EventId,
@@ -1809,14 +1809,16 @@ Best regards,<br/>
 
             if (!empty($attendee_id)) {
 
-                $SQL = "SELECT email,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount FROM attendee_booking_details WHERE id =:id";
+                $SQL = "SELECT email,CONCAT(firstname, ' ', lastname) AS username,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
+                $attendee_username = !empty($attendeeResult) && $attendeeResult[0]->username ? $attendeeResult[0]->username : '';
                 $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? '₹ ' . $attendeeResult[0]->ticket_amount : '';
+                //dd($attendee_username);
 
                 if (!empty($attendee_email)) {
                     // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
-                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 54, $falg=0);
+                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 54, $falg=2, $attendee_username);
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
@@ -1880,7 +1882,7 @@ Best regards,<br/>
 
                 if (!empty($user_email)) {
 
-                    $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1);
+                    $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1, '');
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
