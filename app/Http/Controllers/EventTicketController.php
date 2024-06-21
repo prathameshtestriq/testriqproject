@@ -1243,7 +1243,11 @@ class EventTicketController extends Controller
             "RACECATEGORY" => $ticket_names, // !empty($ticket_names) ? $ticket_names : ''
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
-        // dd($ConfirmationEmail);
+
+        $Email = new Emails();
+        $Email->save_email_log('test email3', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+
+       // dd($ConfirmationEmail);
         $Subject = "";
         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
         $Communications = DB::select($sql, ["event_id" => $EventId ]); // "subject_name" => strtoupper("Registration Confirmation")
@@ -1278,11 +1282,17 @@ Best regards,<br/>
             }
         }
 
+        $Email = new Emails();
+        $Email->save_email_log('test email4', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+
         // Output the filled message
         //dd($MessageContent);
-        $Email = new Emails();
+       // $Email = new Emails();
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
         
+      //  $Email = new Emails();
+        $Email->save_email_log('test email5', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+
         //dd($Subject);
         //--------- Send emails to participants also along with registering person
         // if(!empty($tAttendeeResult)){
@@ -1867,6 +1877,9 @@ Best regards,<br/>
 
     public function SendEmailPaymentSuccess(Request $request)
     {
+        $Email = new Emails();
+        $Email->save_email_log('test email1', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
@@ -1905,6 +1918,10 @@ Best regards,<br/>
 
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1, $attendee_array);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
+
+                    $Email = new Emails();
+                    $Email->save_email_log('test email2', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
