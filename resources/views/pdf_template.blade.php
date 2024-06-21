@@ -7,7 +7,8 @@
     <meta charset="UTF-8">
     <title>Races Registration</title>
     <!-- <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/img/ico/favicon.ico') }}"> -->
-    <link rel="shortcut icon" type="image/x-icon" href="https://racesregistrations.com/assets/img/favicon.ico">
+    <!-- <link rel="shortcut icon" type="image/x-icon" href="https://racesregistrations.com/assets/img/favicon.ico"> -->
+    <link rel="shortcut icon" type="image/x-icon" href="/var/www/html/races/public/assets/img/ico/favicon.ico">
 
     <style>
         @font-face {
