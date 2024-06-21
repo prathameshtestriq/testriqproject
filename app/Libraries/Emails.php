@@ -203,11 +203,12 @@ Welcome aboard!
 
     public function save_email_log($type, $send_mail_to, $subject, $message, $response)
     {
-        $responseData = [
-            'statusCode' => $response->statusCode(),
-            'body' => $response->body(),
-            'headers' => $response->headers(),
-        ];
+        // $responseData = [
+        //     'statusCode' => $response->statusCode(),
+        //     'body' => $response->body(),
+        //     'headers' => $response->headers(),
+        // ];
+         $responseData = [];
 
         $email_log = new EmailLog();
         $email_log->type = $type;

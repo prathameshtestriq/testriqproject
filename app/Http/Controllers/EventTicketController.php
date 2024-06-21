@@ -1282,16 +1282,16 @@ Best regards,<br/>
             }
         }
 
-        $Email = new Emails();
-        $Email->save_email_log('test email4', 'startshant@gmail.com', 'log test', '', '');
+        $Email4 = new Emails();
+        $Email4->save_email_log('test email4', 'startshant@gmail.com', 'log test', '', '');
 
         // Output the filled message
         //dd($MessageContent);
-       // $Email = new Emails();
+        $Email = new Emails();
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
         
-      //  $Email = new Emails();
-        $Email->save_email_log('test email5', 'startshant@gmail.com', 'log test', '', '');
+        $Email5 = new Emails();
+        $Email5->save_email_log('test email5', 'startshant@gmail.com', 'log test', '', '');
 
         //dd($Subject);
         //--------- Send emails to participants also along with registering person
@@ -1877,8 +1877,8 @@ Best regards,<br/>
 
     public function SendEmailPaymentSuccess(Request $request)
     {
-        $Email = new Emails();
-        $Email->save_email_log('test email1', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+        $Email1 = new Emails();
+        $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
 
         $ResponseData = [];
         $response['message'] = "";
@@ -1919,8 +1919,8 @@ Best regards,<br/>
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1, $attendee_array);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
 
-                    $Email = new Emails();
-                    $Email->save_email_log('test email2', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+                    $Email2 = new Emails();
+                    $Email2->save_email_log('test email2', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
 
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
