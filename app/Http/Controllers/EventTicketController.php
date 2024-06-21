@@ -1245,7 +1245,7 @@ class EventTicketController extends Controller
         );
 
         $Email = new Emails();
-        $Email->save_email_log('test email3', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+        $Email->save_email_log('test email3', 'startshant@gmail.com', 'log test', '', '');
 
        // dd($ConfirmationEmail);
         $Subject = "";
@@ -1283,7 +1283,7 @@ Best regards,<br/>
         }
 
         $Email = new Emails();
-        $Email->save_email_log('test email4', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+        $Email->save_email_log('test email4', 'startshant@gmail.com', 'log test', '', '');
 
         // Output the filled message
         //dd($MessageContent);
@@ -1291,7 +1291,7 @@ Best regards,<br/>
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
         
       //  $Email = new Emails();
-        $Email->save_email_log('test email5', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
+        $Email->save_email_log('test email5', 'startshant@gmail.com', 'log test', '', '');
 
         //dd($Subject);
         //--------- Send emails to participants also along with registering person
