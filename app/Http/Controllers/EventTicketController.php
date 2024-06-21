@@ -1253,22 +1253,22 @@ class EventTicketController extends Controller
             $MessageContent = $Communications[0]->message_content;
             $Subject = $Communications[0]->subject_name;
         } else {
-            $MessageContent = "Dear " . $User[0]->firstname . " " . $User[0]->lastname . ",
- <br/><br/>
-Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
- <br/><br/>
-Event Details:
- <br/><br/>
-● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
-● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
-● Location: " . $Venue . "<br/>
-<br/><br/>
-Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
- <br/><br/>
-We look forward to seeing you at the event!
- <br/><br/>
-Best regards,<br/>
-" . $Event[0]->name . " Team";
+            $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                 <br/><br/>
+                Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                 <br/><br/>
+                Event Details:
+                 <br/><br/>
+                ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
+                ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
+                ● Location: " . $Venue . "<br/>
+                <br/><br/>
+                Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
+                 <br/><br/>
+                We look forward to seeing you at the event!
+                 <br/><br/>
+                Best regards,<br/>
+                " . $Event[0]->name . " Team";
             $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
         }
 
@@ -1285,36 +1285,84 @@ Best regards,<br/>
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
         
         //dd($Subject);
+        $Email1 = new Emails();
+        $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', '', '');
+      
         //--------- Send emails to participants also along with registering person
-        // if(!empty($tAttendeeResult)){
-        //    foreach($tAttendeeResult as $res){
+        // dd($tAttendeeResult);
+        if(!empty($tAttendeeResult)){
+           foreach($tAttendeeResult as $res){
+
+                $attendee_email = !empty($res->email) ? $res->email : '';
                
-        //         $ConfirmationEmail = array(
-        //             // "USERID" => $UserId,
-        //             "USERNAME" => $user_name,
-        //             "FIRSTNAME" => $first_name,
-        //             "LASTNAME" =>  $last_name,
-        //             "EVENTID" => $EventId,
-        //             "EVENTNAME" => $Event[0]->name,
-        //             "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
-        //             "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
-        //             "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
-        //             "EVENTENDTIME" => (!empty($Event[0]->end_time)) ? date('H:i A', ($Event[0]->end_time)) : "",
-        //             "YTCRTEAM" => "YouTooCanRun Team",
-        //             "EVENTURL" => $EventUrl,
-        //             "COMPANYNAME" => $OrgName,
-        //             "TOTALTICKETS" => $TotalNoOfTickets,
-        //             "VENUE" => $Venue,
-        //             "TOTALAMOUNT" => $TotalPrice,
-        //             "TICKETAMOUNT" => $TotalPrice,
-        //             "REGISTRATIONID" => $registration_id, //!empty($registration_ids) ? $registration_ids : '',
-        //             "RACECATEGORY" => $ticket_names, // !empty($ticket_names) ? $ticket_names : ''
-        //             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
-        //         );
+                $ConfirmationEmail = array(
+                    // "USERID" => $UserId,
+                    "USERNAME"  => !empty($res->firstname) && !empty($res->lastname) ? $res->firstname.' '.$res->lastname : $user_name,
+                    "FIRSTNAME" => !empty($res->firstname) ? $res->firstname : $first_name,
+                    "LASTNAME"  => !empty($res->lastname) ? $res->lastname : $last_name,
+                    "EVENTID" => $EventId,
+                    "EVENTNAME" => $Event[0]->name,
+                    "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
+                    "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
+                    "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
+                    "EVENTENDTIME" => (!empty($Event[0]->end_time)) ? date('H:i A', ($Event[0]->end_time)) : "",
+                    "YTCRTEAM" => "YouTooCanRun Team",
+                    "EVENTURL" => $EventUrl,
+                    "COMPANYNAME" => $OrgName,
+                    "TOTALTICKETS" => $TotalNoOfTickets,
+                    "VENUE" => $Venue,
+                    "TOTALAMOUNT" => $TotalPrice,
+                    "TICKETAMOUNT" => $TotalPrice,
+                    "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : $registration_id,
+                    "RACECATEGORY" => !empty($res->ticket_name) ? $res->ticket_name : $ticket_names,
+                    // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
+                );
+                
+                $Subject = "";
+                $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
+                $Communications = DB::select($sql, ["event_id" => $EventId ]); // "subject_name" => strtoupper("Registration Confirmation")
+               // dd($Communications);
+                if (count($Communications) > 0) {
+                    $MessageContent = $Communications[0]->message_content;
+                    $Subject = $Communications[0]->subject_name;
+                } else {
+                    $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                         <br/><br/>
+                        Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                         <br/><br/>
+                        Event Details:
+                         <br/><br/>
+                        ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
+                        ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
+                        ● Location: " . $Venue . "<br/>
+                        <br/><br/>
+                        Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
+                         <br/><br/>
+                        We look forward to seeing you at the event!
+                         <br/><br/>
+                        Best regards,<br/>
+                        " . $Event[0]->name . " Team";
+                    $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+                }
 
-        //    }
-        // }
+                foreach ($ConfirmationEmail as $key => $value) {
+                    if(isset($key)){
+                        $placeholder = '{' . $key . '}';
+                        $MessageContent = str_replace($placeholder, $value, $MessageContent);
+                    }
+                }
+                
+                // echo $MessageContent.'<br><br>';
+                if(!empty($attendee_email)){
+                    $Email = new Emails();
+                    $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
+                }
 
+                $Email2 = new Emails();
+                $Email2->save_email_log('test email2', 'startshant@gmail.com', 'log test', $res->registration_id, '');
+                
+           }//die;
+        }
 
         return;
     }
