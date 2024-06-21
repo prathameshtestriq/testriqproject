@@ -1163,8 +1163,9 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_username)
+    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_array)
     {
+        // dd($attendee_array);
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
         $User = DB::select($sql1, ['user_id' => $UserId]);
@@ -1209,9 +1210,9 @@ class EventTicketController extends Controller
 
         $ConfirmationEmail = array(
             // "USERID" => $UserId,
-            "USERNAME" => $flag == 2 && !empty($attendee_username) ? $attendee_username : $User[0]->firstname . " " . $User[0]->lastname,
-            "FIRSTNAME" => $User[0]->firstname,
-            "LASTNAME" => $User[0]->lastname,
+            "USERNAME" => $flag == 2 && !empty($attendee_array) ? $attendee_array['username'] : $User[0]->firstname . " " . $User[0]->lastname,
+            "FIRSTNAME" => $flag == 2 && !empty($attendee_array) ? $attendee_array['firstname'] : $User[0]->firstname,
+            "LASTNAME" =>  $flag == 2 && !empty($attendee_array) ? $attendee_array['lastname'] : $User[0]->lastname,
             "EVENTID" => $EventId,
             "EVENTNAME" => $Event[0]->name,
             "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
@@ -1225,8 +1226,10 @@ class EventTicketController extends Controller
             "VENUE" => $Venue,
             "TOTALAMOUNT" => $TotalPrice,
             "TICKETAMOUNT" => $TotalPrice,
-            "REGISTRATIONID" => !empty($registration_ids) ? $registration_ids : '',
-            "RACECATEGORY" => !empty($ticket_names) ? $ticket_names : ''
+            "REGISTRATIONID" => $flag == 2 && !empty($attendee_array) ? $attendee_array['registration_id'] : $registration_ids,  
+            //!empty($registration_ids) ? $registration_ids : '',
+            "RACECATEGORY" => $flag == 2 && !empty($attendee_array) ? $attendee_array['ticket_name'] : $ticket_names,
+            // !empty($ticket_names) ? $ticket_names : ''
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
         // dd($ConfirmationEmail);
@@ -1809,16 +1812,22 @@ Best regards,<br/>
 
             if (!empty($attendee_id)) {
 
-                $SQL = "SELECT email,CONCAT(firstname, ' ', lastname) AS username,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount FROM attendee_booking_details WHERE id =:id";
+                $SQL = "SELECT email,CONCAT(firstname, ' ', lastname) AS username,firstname,lastname,registration_id,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
                 $attendee_username = !empty($attendeeResult) && $attendeeResult[0]->username ? $attendeeResult[0]->username : '';
                 $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? '₹ ' . $attendeeResult[0]->ticket_amount : '';
+                $attendee_firstname = !empty($attendeeResult) && $attendeeResult[0]->firstname ? $attendeeResult[0]->firstname : '';
+                $attendee_lastname = !empty($attendeeResult) && $attendeeResult[0]->lastname ? $attendeeResult[0]->lastname : '';
+                $attendee_registration_id = !empty($attendeeResult) && $attendeeResult[0]->registration_id ? $attendeeResult[0]->registration_id : '';
+                $attendee_ticket_name = !empty($attendeeResult) && $attendeeResult[0]->ticket_name ? $attendeeResult[0]->ticket_name : '';
                 //dd($attendee_username);
+
+                $attendee_array = array("firstname" => $attendee_firstname, "lastname" => $attendee_lastname, "username" => $attendee_username, "registration_id" => $attendee_registration_id, "ticket_name" => $attendee_ticket_name);
 
                 if (!empty($attendee_email)) {
                     // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
-                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 54, $falg=2, $attendee_username);
+                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 54, $falg=2, $attendee_array);
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
