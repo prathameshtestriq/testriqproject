@@ -1189,9 +1189,9 @@ class EventTicketController extends Controller
         }
 
         //------ ticket registration id and race category
-        $sql2 = "select bd.id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE eb.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id GROUP BY bd.booking_id  ";
+        $sql2 = "select bd.id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE eb.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id AND bd.quantity != 0 GROUP BY bd.booking_id  ";
         $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookingPayId));
-        // dd($booking_detail_Result);
+        dd($booking_detail_Result);
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
         
         $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
@@ -1816,7 +1816,7 @@ Best regards,<br/>
 
                 if (!empty($attendee_email)) {
                     // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
-                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount);
+                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 54, $falg=0);
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
