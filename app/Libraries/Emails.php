@@ -132,7 +132,7 @@ Thank you for your attention to this matter.<br/>";
     }
 
 
-    public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject)
+    public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0)
     {
         $email = new \SendGrid\Mail\Mail();
         $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
@@ -150,7 +150,9 @@ Thank you for your attention to this matter.<br/>";
             // send mail
             if ($Subject == "Welcome to RACES - Organiser Onboarding Successful") {
                 $type = "Organiser Email";
-            } else {
+            } else if($flag == 2){
+               $type = "Manual Attendee Email";
+            }else {
                 $type = "Ticket Booking";
             }
 

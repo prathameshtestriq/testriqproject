@@ -1279,9 +1279,9 @@ Best regards,<br/>
         }
 
         // Output the filled message
-        dd($MessageContent);
+        //dd($MessageContent);
         $Email = new Emails();
-        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject);
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
         
         //dd($Subject);
         //--------- Send emails to participants also along with registering person
