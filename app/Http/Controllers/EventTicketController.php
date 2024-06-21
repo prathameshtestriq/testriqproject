@@ -1360,7 +1360,7 @@ class EventTicketController extends Controller
                 // echo $MessageContent.'<br><br>';
                 if(!empty($attendee_email)){
                     $Email = new Emails();
-                    $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
+                    $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag);
                 }
 
                 // $Email2 = new Emails();
