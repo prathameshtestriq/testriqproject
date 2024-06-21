@@ -1192,12 +1192,12 @@ class EventTicketController extends Controller
         //------ ticket registration id and race category
         $sql2 = "select bd.id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
         $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookingPayId));
-        // dd($booking_detail_Result);
+        //dd($booking_detail_Result);
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
         
         $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
         $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
-        // dd($tAttendeeResult);
+       // dd($tAttendeeResult);
         $registration_ids = $ticket_names = '';
         if(!empty($tAttendeeResult)){
             $registration_ids_array = array_column($tAttendeeResult,"registration_id");
@@ -1244,9 +1244,6 @@ class EventTicketController extends Controller
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
 
-        $Email = new Emails();
-        $Email->save_email_log('test email3', 'startshant@gmail.com', 'log test', '', '');
-
        // dd($ConfirmationEmail);
         $Subject = "";
         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
@@ -1282,21 +1279,38 @@ Best regards,<br/>
             }
         }
 
-        $Email4 = new Emails();
-        $Email4->save_email_log('test email4', 'startshant@gmail.com', 'log test', '', '');
-
         // Output the filled message
         //dd($MessageContent);
         $Email = new Emails();
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
         
-        $Email5 = new Emails();
-        $Email5->save_email_log('test email5', 'startshant@gmail.com', 'log test', '', '');
-
         //dd($Subject);
         //--------- Send emails to participants also along with registering person
         // if(!empty($tAttendeeResult)){
         //    foreach($tAttendeeResult as $res){
+               
+        //         $ConfirmationEmail = array(
+        //             // "USERID" => $UserId,
+        //             "USERNAME" => $user_name,
+        //             "FIRSTNAME" => $first_name,
+        //             "LASTNAME" =>  $last_name,
+        //             "EVENTID" => $EventId,
+        //             "EVENTNAME" => $Event[0]->name,
+        //             "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
+        //             "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
+        //             "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
+        //             "EVENTENDTIME" => (!empty($Event[0]->end_time)) ? date('H:i A', ($Event[0]->end_time)) : "",
+        //             "YTCRTEAM" => "YouTooCanRun Team",
+        //             "EVENTURL" => $EventUrl,
+        //             "COMPANYNAME" => $OrgName,
+        //             "TOTALTICKETS" => $TotalNoOfTickets,
+        //             "VENUE" => $Venue,
+        //             "TOTALAMOUNT" => $TotalPrice,
+        //             "TICKETAMOUNT" => $TotalPrice,
+        //             "REGISTRATIONID" => $registration_id, //!empty($registration_ids) ? $registration_ids : '',
+        //             "RACECATEGORY" => $ticket_names, // !empty($ticket_names) ? $ticket_names : ''
+        //             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
+        //         );
 
         //    }
         // }
@@ -1877,9 +1891,6 @@ Best regards,<br/>
 
     public function SendEmailPaymentSuccess(Request $request)
     {
-        $Email1 = new Emails();
-        $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
-
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
@@ -1915,17 +1926,12 @@ Best regards,<br/>
                 
                 $attendee_array = [];
 
-                $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price;
-                $Email2 = new Emails();
-                $Email2->save_email_log('test email22', 'startshant@gmail.com', 'log test', $message1, $request->booking_pay_id);
+               // $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price;
 
                 if (!empty($user_email)) {
 
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1, $attendee_array);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
-
-                    $Email2 = new Emails();
-                    $Email2->save_email_log('test email2', 'startshant@gmail.com', 'log test', $request->event_id, $request->booking_pay_id);
 
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";

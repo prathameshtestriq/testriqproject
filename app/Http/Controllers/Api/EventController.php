@@ -1399,6 +1399,8 @@ class EventController extends Controller
                 $Latitude = isset($request->latitude) ? $request->latitude : "";
                 $Longitude = isset($request->longitude) ? $request->longitude : "";
 
+                $GoogleMapLink = isset($request->google_map_link) ? $request->google_map_link : "";
+
                 $Bindings = array(
                     "timezone_id" => $Timezone,
                     "pincode" => $PinCode,
@@ -1416,6 +1418,7 @@ class EventController extends Controller
                     "registration_end_time" => $FinalRegistrationEndTime,
                     "latitude" => $Latitude,
                     "longitude" => $Longitude,
+                    "google_map_link" => $GoogleMapLink,
                     "id" => $EventId
                 );
                 $sql = 'UPDATE events SET
@@ -1434,7 +1437,8 @@ class EventController extends Controller
                 registration_start_time=:registration_start_time,
                 registration_end_time=:registration_end_time,
                 latitude=:latitude,
-                longitude=:longitude
+                longitude=:longitude,
+                google_map_link=:google_map_link
                 WHERE id=:id';
                 DB::update($sql, $Bindings);
 

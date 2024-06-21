@@ -24,9 +24,9 @@ Best regards,
 (For RACES)<br/>
 Team YouTooCanRun";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
+        $email->setFrom("support@youtoocantun.com", "RACES");
         $email->setSubject("Your OTP Code for Secure Access");
-        $email->addTo($athelete_email, "YouTooCanRun ");
+        $email->addTo($athelete_email, "RACES ");
         $email->addContent("text/plain", "Dear Customer, Your OTP is.");
         $email->addContent(
             "text/html",
@@ -53,9 +53,9 @@ We wanted to inform you that your password has been successfully reset. You can 
 If you did not initiate this password reset, please contact our support team immediately to ensure the security of your account.<br/>
 Thank you for your attention to this matter.<br/>";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
+        $email->setFrom("support@youtoocantun.com", "RACES ");
         $email->setSubject("Your Password Has Been Successfully Reset");
-        $email->addTo($athelete_email, "YouTooCanRun ");
+        $email->addTo($athelete_email, "RACES ");
         $email->addContent("text/plain", "Dear Customer, Your password is.");
         $email->addContent(
             "text/html",
@@ -79,8 +79,8 @@ Thank you for your attention to this matter.<br/>";
     {
         $message = "You have requested to reset your password. Please click the link below to reset your password.<br>" . $reset_link . "<br><p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
-        $email->setSubject("YouTooCanRun password");
+        $email->setFrom("support@youtoocantun.com", "RACES Registrations ");
+        $email->setSubject("RACES password");
         $email->addTo($athelete_email, "Reset Your Password");
         $email->addContent("text/plain", "Dear Customer, ");
         $email->addContent(
@@ -104,8 +104,8 @@ Thank you for your attention to this matter.<br/>";
     public function send_org_notification($fullname, $email, $contact_no, $message)
     {
         $mail = new \SendGrid\Mail\Mail();  // Renamed the variable to $mail to avoid conflict
-        $mail->setFrom("support@youtoocantun.com", "YouTooCanRun ");
-        $mail->setSubject("YouTooCanRun Organiser");
+        $mail->setFrom("support@youtoocantun.com", "RACES Registrations ");
+        $mail->setSubject("RACES Organiser");
         $mail->addTo($email, $fullname);  // Here $email is the recipient's email and $fullname is the recipient's name
         $mail->addContent("text/plain", "Dear Organiser, ");
         $mail->addContent(
@@ -122,7 +122,7 @@ Thank you for your attention to this matter.<br/>";
             // send mail
             $type = "organiser_contact";
             $send_mail_to = $email;
-            $subject = "YouTooCanRun Organiser";
+            $subject = "RACES Organiser";
             $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
 
             return $response;  // Return response for further processing or logging if needed
@@ -135,7 +135,7 @@ Thank you for your attention to this matter.<br/>";
     public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0)
     {
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
+        $email->setFrom("support@youtoocantun.com", "RACES Registrations ");
         $email->setSubject($Subject);
         $email->addTo($UserEmail, $Subject);
         $email->addContent("text/plain", "Dear, ");
@@ -179,7 +179,7 @@ Welcome aboard!
  <br/><br/>
 <p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocantun.com", "YouTooCanRun ");
+        $email->setFrom("support@youtoocantun.com", "RACES Registrations"); //YouTooCanRun
         $email->setSubject("Welcome to RACES!");
         $email->addTo($mail, "Registration");
         $email->addContent("text/plain", "Dear Customer, ");
@@ -203,13 +203,12 @@ Welcome aboard!
 
     public function save_email_log($type, $send_mail_to, $subject, $message, $response)
     {
-        // $responseData = [
-        //     'statusCode' => $response->statusCode(),
-        //     'body' => $response->body(),
-        //     'headers' => $response->headers(),
-        // ];
-         $responseData = [];
-
+        $responseData = [
+            'statusCode' => $response->statusCode(),
+            'body' => $response->body(),
+            'headers' => $response->headers(),
+        ];
+    
         $email_log = new EmailLog();
         $email_log->type = $type;
         $email_log->send_mail_to = $send_mail_to;
