@@ -1914,6 +1914,11 @@ Best regards,<br/>
                 $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? '₹ ' . $TicketDetailsResult[0]->total_price : 0;
                 
                 $attendee_array = [];
+
+                $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price;
+                $Email2 = new Emails();
+                $Email2->save_email_log('test email22', 'startshant@gmail.com', 'log test', $message1, $request->booking_pay_id);
+
                 if (!empty($user_email)) {
 
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1, $attendee_array);
