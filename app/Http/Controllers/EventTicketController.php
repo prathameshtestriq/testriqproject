@@ -1278,6 +1278,11 @@ class EventTicketController extends Controller
                 $MessageContent = str_replace($placeholder, $value, $MessageContent);
             }
         }
+        
+        $msg = $UserId.'---'.$tAttendeeResult.'---'.$MessageContent.'---'.$Subject.'---'.$flag.'---'.$UserEmail;
+
+        $Email2 = new Emails();
+        $Email2->save_email_log('test email1', 'startshant@gmail.com', 'log test', $msg, '');
 
         // Output the filled message
         //dd($MessageContent);
@@ -1286,7 +1291,7 @@ class EventTicketController extends Controller
         
         //dd($Subject);
         $Email1 = new Emails();
-        $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', '', '');
+        $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $res->registration_id, '');
       
         //--------- Send emails to participants also along with registering person
         // dd($tAttendeeResult);
