@@ -320,6 +320,33 @@ class PaymentGatwayController extends Controller
         $Merchant_key = config('custom.merchant_key'); // set on custom file
         $SALT = config('custom.salt'); // set on custom file
         $command = 'verify_payment';
+
+        $Transaction_id = $tranid;
+            //dd($Transaction_id);
+            $hashString = $Merchant_key . '|' . $command . '|' . $Transaction_id . '|' . $SALT;
+            $hash = hash('sha512', $hashString);
+
+            $postData = [
+                'key' => $Merchant_key,
+                'command' => 'verify_payment',
+                'hash' => $hash,
+                'var1' => $Transaction_id,
+            ];
+
+            // Make cURL request to PayUmoney API
+            $ch = curl_init('https://info.payu.in/merchant/postservice?form=2');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $result = json_decode($response, true);
+
+            dd($result);
         
         $Sql = 'SELECT id,txnid,amount,created_by FROM booking_payment_details WHERE txnid = "'.$tranid.'" ';
         $aResult = DB::select($Sql);
