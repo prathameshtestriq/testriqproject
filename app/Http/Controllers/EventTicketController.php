@@ -1984,9 +1984,9 @@ class EventTicketController extends Controller
 
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1, $attendee_array);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
-                    $up_sSQL = 'UPDATE booking_payment_details SET `send_email_flag` = 1 WHERE `booking_pay_id`=:booking_pay_id ';
+                    $up_sSQL = 'UPDATE booking_payment_details SET `send_email_flag` = 1 WHERE `id`=:booking_pay_id ';
                     DB::update($up_sSQL,array(
-                        'booking_pay_id' => $booking_pay_id
+                        'booking_pay_id' => $BookingPayId
                     ));
 
                     $ResponseData['data'] = 1;
