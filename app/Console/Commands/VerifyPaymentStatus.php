@@ -36,7 +36,7 @@ class VerifyPaymentStatus extends Command
         $SALT = config('custom.salt'); // set on custom file
         $command = 'verify_payment';
        
-        $Sql = 'SELECT txnid,amount FROM booking_payment_details WHERE 1=1';
+        $Sql = 'SELECT txnid,amount FROM booking_payment_details WHERE payment_status != "success" ';
         $aResult = DB::select($Sql);
      
         if(!empty($aResult)){
@@ -70,14 +70,16 @@ class VerifyPaymentStatus extends Command
                 $verify_payment_status = !empty($result['transaction_details'][$Transaction_id]['status']) ? $result['transaction_details'][$Transaction_id]['status'] : '';
                 $payment_sub_status = !empty($result['transaction_details'][$Transaction_id]['unmappedstatus']) ? $result['transaction_details'][$Transaction_id]['unmappedstatus'] : '';
                 $response_error_message = !empty($result['transaction_details'][$Transaction_id]['error_Message']) && isset($result['transaction_details'][$Transaction_id]['error_Message']) ? $result['transaction_details'][$Transaction_id]['error_Message'] : '';
+                $payment_mode = !empty($result['transaction_details'][$Transaction_id]['mode']) ? $result['transaction_details'][$Transaction_id]['mode'] : '';
             
                 //dd($verify_payment_status,$payment_sub_status);
                  
-                $up_sSQL = 'UPDATE booking_payment_details SET `verify_payment_status` =:verify_payment_status, `payment_sub_status` =:payment_sub_status, `response_error_message` =:response_error_message WHERE `txnid`=:Txnid ';
+                $up_sSQL = 'UPDATE booking_payment_details SET `verify_payment_status` =:verify_payment_status, `payment_sub_status` =:payment_sub_status, `response_error_message` =:response_error_message, `payment_mode` =:payment_mode WHERE `txnid`=:Txnid ';
                 DB::update($up_sSQL,array(
                     'verify_payment_status' => $verify_payment_status,
                     'payment_sub_status' => $payment_sub_status,
                     'response_error_message' => $response_error_message,
+                    'payment_mode' => $payment_mode,
                     'Txnid' => $Transaction_id
                 ));
                 

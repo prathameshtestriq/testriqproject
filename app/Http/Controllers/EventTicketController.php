@@ -1281,8 +1281,6 @@ class EventTicketController extends Controller
                 $MessageContent = str_replace($placeholder, $value, $MessageContent);
             }
         }
-        
-       
 
         // Output the filled message
         //dd($MessageContent);
@@ -1295,7 +1293,7 @@ class EventTicketController extends Controller
       
         //--------- Send emails to participants also along with registering person
         // dd($tAttendeeResult);
-        if(!empty($tAttendeeResult)){
+        if(!empty($tAttendeeResult) && $flag == 1){
            foreach($tAttendeeResult as $res){
 
                 $attendee_email = !empty($res->email) ? $res->email : '';
@@ -1358,7 +1356,7 @@ class EventTicketController extends Controller
                 }
                 
                 // echo $MessageContent.'<br><br>';
-                if(!empty($attendee_email)){
+                if(!empty($attendee_email) && $UserEmail != $attendee_email){
                     $Email = new Emails();
                     $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag);
                 }
@@ -1915,7 +1913,7 @@ class EventTicketController extends Controller
 
                 if (!empty($attendee_email)) {
                     // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
-                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 54, $falg=2, $attendee_array);
+                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 0, $falg=2, $attendee_array);
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
@@ -1970,12 +1968,13 @@ class EventTicketController extends Controller
                 $event_name = !empty($aResult) && $aResult[0]->event_name ? $aResult[0]->event_name : '';
                 $event_url = $EventUrl . '/' . $event_name;
 
-                $SQL1 = "SELECT total_attendees as no_of_tickets,TotalPrice as total_price FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
+                $SQL1 = "SELECT total_attendees as no_of_tickets,TotalPrice as total_price,booking_pay_id FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                 $TicketDetailsResult = DB::select($SQL1, array('booking_pay_id' => $BookingPayId));
 
                // dd($TicketDetailsResult,$user_email,$event_url);
                 $no_of_tickets = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
                 $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? '₹ ' . $TicketDetailsResult[0]->total_price : 0;
+                $booking_pay_id = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->booking_pay_id ? $TicketDetailsResult[0]->booking_pay_id : 0;
                 
                 $attendee_array = [];
 
@@ -1985,6 +1984,10 @@ class EventTicketController extends Controller
 
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1, $attendee_array);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
+                    $up_sSQL = 'UPDATE booking_payment_details SET `send_email_flag` = 1 WHERE `id`=:booking_pay_id ';
+                    DB::update($up_sSQL,array(
+                        'booking_pay_id' => $BookingPayId
+                    ));
 
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";

@@ -130,8 +130,11 @@ if ($conn->connect_error) {
         );
         // print_r($new_array); die;
         $jsonData = json_encode($transcation_array);
-     
     
+    //----------- responce log entry --------------
+    $insert_sql = "INSERT INTO payment_response_log(txnid, response_data, payment_status) VALUES ('$txnid', '$jsonData', '$status')";
+    $aResult = mysqli_query($conn, $insert_sql);
+
     // $mihpayid = '20080004972';
     // $txnid = 'Ytcr-5';
     // $amount = '1.00';
@@ -170,7 +173,7 @@ if ($conn->connect_error) {
    
 	// SQL query for insertion
 	//$sql = "INSERT INTO new_payment (status, post_data) VALUES ('$status', '$jsonData')";
-	$sql = "UPDATE booking_payment_details SET payment_status = '$status', post_data = '$jsonData' WHERE txnid = '$txnid' ";
+	$sql = "UPDATE booking_payment_details SET payment_status = '$status', post_data = '$jsonData', payment_mode = '$mode' WHERE txnid = '$txnid' ";
 
 	if ($conn->query($sql) === TRUE) {
 	    //echo "New record created successfully";
