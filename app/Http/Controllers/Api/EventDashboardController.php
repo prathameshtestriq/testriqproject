@@ -75,8 +75,9 @@ class EventDashboardController extends Controller
                 $NetSales = (count($TotalBooking) > 0) ? $TotalBooking[0]->NetSales : 0;
                 $ResponseData['NetSales'] = $NetSales;
 
+                // 79,105,110 DISTINCT(user_id) replace it with id
                 // -------------------------------------Registration && Net Earnings
-                $sql = "SELECT COUNT(DISTINCT(user_id)) AS TotalRegistration,SUM(total_amount) AS TotalAmount FROM event_booking WHERE event_id =:event_id AND transaction_status IN (1,3)";
+                $sql = "SELECT COUNT(id) AS TotalRegistration,SUM(total_amount) AS TotalAmount FROM event_booking WHERE event_id =:event_id AND transaction_status IN (1,3)";
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
                         $sql .= ' AND booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
@@ -102,12 +103,12 @@ class EventDashboardController extends Controller
 
                 // -------------------------------------Conversion Rate
                 // Total Registration Users
-                $sql = "SELECT COUNT(DISTINCT(user_id)) AS TotalRegistrationUsers FROM event_booking WHERE event_id =:event_id";
+                $sql = "SELECT COUNT(id) AS TotalRegistrationUsers FROM event_booking WHERE event_id =:event_id";
                 $TotalRegistration = DB::select($sql, array('event_id' => $EventId));
                 $TotalRegistrationCount = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistrationUsers : 0;
 
                 // Total Registration Users With Success
-                $sql = "SELECT COUNT(DISTINCT(user_id)) AS TotalRegistrationUsersWithSuccess FROM event_booking WHERE event_id =:event_id AND transaction_status IN (1,3)";
+                $sql = "SELECT COUNT(id) AS TotalRegistrationUsersWithSuccess FROM event_booking WHERE event_id =:event_id AND transaction_status IN (1,3)";
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
                         $sql .= ' AND booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
@@ -266,6 +267,7 @@ class EventDashboardController extends Controller
                 $user_id = isset($aPost['user_id']) ? $aPost['user_id'] : 0;
 
                 // EventBookingId
+                $TransactionStatus = isset($aPost['TransactionStatus']) ? $aPost['TransactionStatus'] : "";
                 $EventBookingId = isset($aPost['EventBookingId']) ? $aPost['EventBookingId'] : 0;
                 $ParticipantName = isset($aPost['participant_name']) ? $aPost['participant_name'] : 0;
                 $RegistrationID = isset($aPost['reg_id']) ? $aPost['reg_id'] : 0;
@@ -280,6 +282,15 @@ class EventDashboardController extends Controller
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
                 WHERE b.event_id = :event_id ";
                 // ORDER BY a.id DESC";
+
+                if (!empty($TransactionStatus)) {
+                    if ($TransactionStatus == 101)
+                        $TransactionStatus = 0;
+                    if ($TransactionStatus == 1)
+                        $TransactionStatus = "1,3";
+
+                    $sql .= " AND e.transaction_status IN (" . $TransactionStatus . ")";
+                }
                 if (!empty($EventBookingId)) {
                     $sql .= " AND b.booking_id =" . $EventBookingId;
                 }
