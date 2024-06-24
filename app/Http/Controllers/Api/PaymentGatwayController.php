@@ -320,33 +320,6 @@ class PaymentGatwayController extends Controller
         $Merchant_key = config('custom.merchant_key'); // set on custom file
         $SALT = config('custom.salt'); // set on custom file
         $command = 'verify_payment';
-
-        $Transaction_id = $tranid;
-            //dd($Transaction_id);
-            $hashString = $Merchant_key . '|' . $command . '|' . $Transaction_id . '|' . $SALT;
-            $hash = hash('sha512', $hashString);
-
-            $postData = [
-                'key' => $Merchant_key,
-                'command' => 'verify_payment',
-                'hash' => $hash,
-                'var1' => $Transaction_id,
-            ];
-
-            // Make cURL request to PayUmoney API
-            $ch = curl_init('https://info.payu.in/merchant/postservice?form=2');
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
-            $response = curl_exec($ch);
-            curl_close($ch);
-
-            $result = json_decode($response, true);
-
-            dd($result);
         
         $Sql = 'SELECT id,txnid,amount,created_by FROM booking_payment_details WHERE txnid = "'.$tranid.'" ';
         $aResult = DB::select($Sql);
@@ -395,6 +368,7 @@ class PaymentGatwayController extends Controller
             $payment_sub_status = !empty($result['transaction_details'][$Transaction_id]['unmappedstatus']) ? $result['transaction_details'][$Transaction_id]['unmappedstatus'] : '';
             $mih_pay_id = !empty($result['transaction_details'][$Transaction_id]['mihpayid']) ? $result['transaction_details'][$Transaction_id]['mihpayid'] : '';
             $payment_mode = !empty($result['transaction_details'][$Transaction_id]['mode']) ? $result['transaction_details'][$Transaction_id]['mode'] : '';
+            $amount = !empty($result['transaction_details'][$Transaction_id]['amt']) ? $result['transaction_details'][$Transaction_id]['amt'] : '';
         
             //dd($verify_payment_status,$payment_sub_status);
              
@@ -410,7 +384,7 @@ class PaymentGatwayController extends Controller
             // dd($post_data);
             $Binding = array(
                             "txnid" => $Transaction_id,
-                            "amount" => !empty($res->amount) ? $res->amount : 0,
+                            "amount" => !empty($amount) ? $amount : 0,
                             "post_data" => $post_data,
                             "verify_payment_status" => $verify_payment_status
                         );
