@@ -197,7 +197,6 @@ class EventDashboardController extends Controller
                     if ($TransactionStatus == 1)
                         $TransactionStatus = "1,3";
 
-
                     $sql .= " AND eb.transaction_status IN (" . $TransactionStatus . ")";
                 }
                 if ($SearchUser) {
@@ -569,6 +568,108 @@ class EventDashboardController extends Controller
                     $value->created_datetime = !empty($value->created_datetime) ? date("Y-m-d H:i A", ($value->created_datetime)) : '';
                 }
                 $ResponseData['PaymentData'] = (count($PaymentData) > 0) ? $PaymentData : [];
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    function getCategoryWiseData(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
+
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
+                $Filter = isset($aPost['filter']) ? $aPost['filter'] : "";
+
+                if (!empty($Filter)) {
+                    switch ($Filter) {
+                        case 'today':
+                            $StartDate = strtotime(date('Y-m-d 00:00:00'));
+                            $EndDate = strtotime(date('Y-m-d 23:59:59'));
+                            break;
+
+                        case 'week':
+                            $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
+                            $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('saturday this week')));
+                            break;
+
+                        case 'month':
+                            $StartDate = strtotime(date('Y-m-01'));
+                            $EndDate = strtotime(date('Y-m-t'));
+                            break;
+
+                        default:
+                            break;
+                    }
+                    // dd($StartDate, $EndDate);
+                }
+
+                $sql = "SELECT a.ticket_id,e.booking_date,COUNT(a.ticket_id) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT ticket_price FROM event_tickets WHERE id=a.ticket_id) AS TicketPrice
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $sql .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                $sql .= " GROUP BY a.ticket_id";
+                $params = array('event_id' => $EventId);
+                $BookingData = DB::select($sql, $params);
+                // dd($BookingDetails);
+                foreach ($BookingData as $key => $value) {
+                    $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
+                }
+                $ResponseData['BookingData'] = (count($BookingData) > 0) ? $BookingData : [];
+
+
+                // Bar Chart code-------------------------------------
+                // $BarData = [];
+
+                // foreach ($BookingData as $data) {
+                //     // dd($data);
+                //     $BarData[] = [
+                //         'date' => date('m/d/Y', ($data->booking_date)),
+                //         'TotalTicketCount' => $data->TicketCount
+                //     ];
+                // }
+                // dd($BarData);
+                // $ResponseData['BarData'] = (count($BarData) > 0) ? $BarData : [];
+                // ---------------------------------------------------
+
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
