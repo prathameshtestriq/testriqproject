@@ -345,7 +345,7 @@ class EventDashboardController extends Controller
                 $sql = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
                 $TicketData = DB::select($sql, array('event_id' => $EventId));
                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
-
+               // dd($ResponseData['AttendeeData']);
                 //------------- Attendee details excel generate
                 if (!empty($AttendeeData)) {
                     $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
@@ -471,14 +471,21 @@ class EventDashboardController extends Controller
 
     function attendeeNetsalesExcellData($AttendeeData, $EventId)
     {
-        //dd($AttendeeData);
+        // dd($AttendeeData);
         $master = new Master();
         $excel_url = '';
         if (!empty($AttendeeData)) {
 
             $ExcellDataArray = [];
-            $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1";
+            $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1 order by sort_order asc";
             $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
+           // dd($EventQuestionData);
+
+            // $new_array = array(array("id" => 101190, "question_label" => "Ticket Price", "question_form_type" => "text", "question_form_name" => "", "event_name" => ""));
+            // //dd(json_encode($new_array));
+            // $main_array = json_encode(array_merge($EventQuestionData,$new_array));
+            // dd(json_decode($main_array));
+            //-------------------------
 
             $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
 
