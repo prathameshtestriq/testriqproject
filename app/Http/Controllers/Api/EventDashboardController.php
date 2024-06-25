@@ -481,20 +481,39 @@ class EventDashboardController extends Controller
             $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
            // dd($EventQuestionData);
 
-            // $new_array = array(array("id" => 101190, "question_label" => "Ticket Price", "question_form_type" => "text", "question_form_name" => "", "event_name" => ""));
-            // //dd(json_encode($new_array));
-            // $main_array = json_encode(array_merge($EventQuestionData,$new_array));
-            // dd(json_decode($main_array));
+            $card_array = array(
+                                array("id" => 101190, "question_label" => "Transaction ID", "question_form_type" => "text", "ActualValue"=> ""),
+                                array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue"=> ""),
+                                array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
+                                array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
+                                array("id" => 101194, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue"=> ""),
+                                array("id" => 101195, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> "")
+                              );
+            //dd(json_encode($new_array));
+            $main_array = json_encode(array_merge($EventQuestionData,$card_array));
+            $header_data_array = json_decode($main_array);
+            // dd($header_data_array);
             //-------------------------
 
             $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
-
+           // dd($AttendeeData);
             $label = '';
             foreach ($AttendeeData as $key => $res1) {
-                $attendee_details_array = json_decode($res1->attendee_details, true);
-
-                // dd(json_decode($attendee_details_array));
-                foreach (json_decode($attendee_details_array) as $val) {
+                $attendee_details_array = json_decode(json_decode($res1->attendee_details), true);
+                // $attendee_details_array = $res1->attendee_details;
+                $final_attendee_details_array = json_encode(array_merge($attendee_details_array,$card_array));
+                
+                //-----------------------------
+                $sql = "SELECT txnid,payment_mode,payment_status,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
+                $paymentDetails = DB::select($sql, array('booking_pay_id' => $res1->booking_pay_id));
+                //dd($paymentDetails);
+                $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
+                $payment_mode = !empty($paymentDetails) ? $paymentDetails[0]->payment_mode : '';
+                $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
+                $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
+               
+                //-----------------------------
+                foreach (json_decode($final_attendee_details_array) as $val) {
                     if (isset($val->question_label)) {
 
                         $aTemp = new stdClass;
@@ -521,8 +540,33 @@ class EventDashboardController extends Controller
                             } else {
                                 $aTemp->answer_value = $val->ActualValue;
                             }
-
                         }
+                        //-------------------------------------
+                        if($val->question_label == 'Registration ID'){
+                            $aTemp->answer_value = !empty($res1->registration_id) ? $res1->registration_id : '';
+                        }
+
+                        if($val->question_label == 'Amount'){
+                            $aTemp->answer_value = !empty($res1->ticket_amount) ? number_format($res1->ticket_amount,2) : '';
+                        }
+
+                        if($val->question_label == 'Transaction ID'){
+                            $aTemp->answer_value = $tran_id;
+                        }
+
+                        if($val->question_label == 'Payment Mode'){
+                            $aTemp->answer_value = $payment_mode;
+                        }
+
+                        if($val->question_label == 'Payment Status'){
+                            $aTemp->answer_value = $payment_status;
+                        }
+
+                        if($val->question_label == 'Payu ID'){
+                            $aTemp->answer_value = $mihpayid;
+                        }
+                        
+                        //-------------------------------------
                         $ExcellDataArray[$key][] = $aTemp;
                     }
                 }
@@ -535,7 +579,7 @@ class EventDashboardController extends Controller
             // $filename = "attendee_sheet_".time();
             $filename = "attendee_" . $event_name . '_' . time();
             $path = 'attendee_details_excell/';
-            $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $EventQuestionData), $path . '/' . $filename . '.xlsx', 'excel_uploads');
+            $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $header_data_array), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
 
         }
@@ -566,7 +610,7 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
 
-                $sql = "SELECT p.id AS paymentId,p.txnid,p.amount,p.payment_status,p.created_datetime,u.id AS userId,u.firstname,u.lastname,u.email,u.mobile,(SELECT mihpayid FROM booking_payment_log WHERE p.id=booking_det_id) AS payId
+                $sql = "SELECT p.id AS paymentId,p.txnid,p.amount,p.payment_status,p.created_datetime,u.id AS userId,u.firstname,u.lastname,u.email,u.mobile 
                         FROM booking_payment_details AS p 
                         LEFT JOIN users AS u ON u.id=p.created_by
                         WHERE p.event_id=:event_id ORDER BY p.id DESC";
