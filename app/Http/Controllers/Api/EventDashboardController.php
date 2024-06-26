@@ -348,8 +348,10 @@ class EventDashboardController extends Controller
                 //------------- Attendee details excel generate
                 if (!empty($AttendeeData)) {
                     $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
+                   // $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
                 } else {
                     $ResponseData['attendee_details_excel'] = '';
+                    $ResponseData['remittance_details_excel'] = '';
                 }
 
                 $ResposneCode = 200;
@@ -594,6 +596,26 @@ class EventDashboardController extends Controller
         }
         return $excel_url;
     }
+
+    function remittanceDetailsExcellData($AttendeeData, $EventId)
+    {
+        // dd($AttendeeData);
+        $excel_url = '';
+        $AttendeeDataArray = []; 
+       
+        if (!empty($AttendeeData)) {
+           foreach ($AttendeeData as $key => $res) {
+                $aTemp = new stdClass;
+                $aTemp->firstname = $res->firstname;
+                $aTemp->lastname  = $res->lastname;
+                $aTemp->email     = $res->email;
+                $AttendeeDataArray[] = $aTemp;        
+           }
+        }
+        dd($AttendeeDataArray);
+    }
+
+    
 
     function getPaymentLog(Request $request)
     {
