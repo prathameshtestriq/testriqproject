@@ -1195,12 +1195,12 @@ class EventTicketController extends Controller
         //------ ticket registration id and race category
         $sql2 = "select bd.id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
         $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookingPayId));
-        //dd($booking_detail_Result);
+        // dd($booking_detail_Result);
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
         
         $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
         $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
-       // dd($tAttendeeResult);
+       //dd($tAttendeeResult, $BookingPayId , $booking_detail_id, $flag , $EventId);
         $registration_ids = $ticket_names = '';
         if(!empty($tAttendeeResult)){
             $registration_ids_array = array_column($tAttendeeResult,"registration_id");
@@ -1209,7 +1209,7 @@ class EventTicketController extends Controller
             $ticket_ids_array = array_column($tAttendeeResult,"ticket_name");
             $ticket_names = implode(", ",array_unique($ticket_ids_array));
         }
-        //dd($flag);
+        //dd($registration_ids,$ticket_names);
         if($flag == 2 && !empty($attendee_array)){
             $user_name  = $attendee_array['username'];
             $first_name = $attendee_array['firstname'];
@@ -1978,8 +1978,8 @@ class EventTicketController extends Controller
                 
                 $attendee_array = [];
 
-               // $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price;
-
+                // echo $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price; die;
+                
                 if (!empty($user_email)) {
 
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag=1, $attendee_array);
