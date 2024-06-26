@@ -10,6 +10,8 @@ use \stdClass;
 use App\Exports\AttendeeDetailsDataExport;
 use Excel;
 use App\Models\Master;
+use DateTime;
+
 
 class EventDashboardController extends Controller
 {
@@ -47,7 +49,7 @@ class EventDashboardController extends Controller
 
                         case 'week':
                             $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
-                            $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('saturday this week')));
+                            $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
                             break;
 
                         case 'month':
@@ -71,6 +73,7 @@ class EventDashboardController extends Controller
                         $sql .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
                     }
                 }
+                // dd($sql);
                 $TotalBooking = DB::select($sql, array('event_id' => $EventId));
                 $NetSales = (count($TotalBooking) > 0) ? $TotalBooking[0]->NetSales : 0;
                 $ResponseData['NetSales'] = $NetSales;
@@ -344,7 +347,7 @@ class EventDashboardController extends Controller
                 $sql = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
                 $TicketData = DB::select($sql, array('event_id' => $EventId));
                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
-               // dd($ResponseData['AttendeeData']);
+                // dd($ResponseData['AttendeeData']);
                 //------------- Attendee details excel generate
                 if (!empty($AttendeeData)) {
                     $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
@@ -480,7 +483,7 @@ class EventDashboardController extends Controller
             $ExcellDataArray = [];
             $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1 order by sort_order asc";
             $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
-           // dd($EventQuestionData);
+            // dd($EventQuestionData);
 
             $card_array = array(
                                // array("id" => 101190, "question_label" => "Transaction ID", "question_form_type" => "text", "ActualValue"=> ""),
@@ -498,13 +501,13 @@ class EventDashboardController extends Controller
             //-------------------------
 
             $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
-           // dd($AttendeeData);
+            // dd($AttendeeData);
             $label = '';
             foreach ($AttendeeData as $key => $res1) {
                 $attendee_details_array = json_decode(json_decode($res1->attendee_details), true);
                 // $attendee_details_array = $res1->attendee_details;
-                $final_attendee_details_array = json_encode(array_merge($attendee_details_array,$card_array));
-                
+                $final_attendee_details_array = json_encode(array_merge($attendee_details_array, $card_array));
+
                 //-----------------------------
                 $sql = "SELECT txnid,payment_mode,payment_status,created_datetime,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
                 $paymentDetails = DB::select($sql, array('booking_pay_id' => $res1->booking_pay_id));
@@ -736,7 +739,7 @@ class EventDashboardController extends Controller
 
                         case 'week':
                             $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
-                            $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('saturday this week')));
+                            $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
                             break;
 
                         case 'month':
@@ -750,9 +753,8 @@ class EventDashboardController extends Controller
                     // dd($StartDate, $EndDate);
                 }
 
-                $sql = "SELECT a.ticket_id,e.booking_date,COUNT(a.ticket_id) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT ticket_price FROM event_tickets WHERE id=a.ticket_id) AS TicketPrice
-                FROM attendee_booking_details AS a 
-                LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+                $sql = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice
+                FROM booking_details AS b
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
                 WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
                 if ($Filter !== "") {
@@ -760,30 +762,51 @@ class EventDashboardController extends Controller
                         $sql .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
                     }
                 }
-                $sql .= " GROUP BY a.ticket_id";
+                $sql .= " GROUP BY b.ticket_id";
                 $params = array('event_id' => $EventId);
                 $BookingData = DB::select($sql, $params);
-                // dd($BookingDetails);
+                // dd($BookingData);
                 foreach ($BookingData as $key => $value) {
+                    $value->TicketCount = (int)$value->TicketCount;
                     $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
                 }
                 $ResponseData['BookingData'] = (count($BookingData) > 0) ? $BookingData : [];
 
 
-                // Bar Chart code-------------------------------------
-                // $BarData = [];
+                $AllDates = [];
+                $FinalBarChartData = [];
 
-                // foreach ($BookingData as $data) {
-                //     // dd($data);
-                //     $BarData[] = [
-                //         'date' => date('m/d/Y', ($data->booking_date)),
-                //         'TotalTicketCount' => $data->TicketCount
-                //     ];
-                // }
-                // dd($BarData);
-                // $ResponseData['BarData'] = (count($BarData) > 0) ? $BarData : [];
-                // ---------------------------------------------------
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $currentDate = $StartDate;
 
+                        while ($currentDate <= $EndDate) {
+                            $AllDates[] = date('Y-m-d', $currentDate);
+                            $currentDate = strtotime('+1 day', $currentDate);
+                        }
+                       
+                        foreach ($AllDates as $key => $dates) {
+                            $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
+                            $BarChartData = [];
+                            $start_date = date('Y-m-d 00:00:00', strtotime($dates));
+                            $strtotime_start_today = strtotime($start_date);
+
+                            $end_date = date('Y-m-d 23:59:59', strtotime($dates));
+                            $strtotime_end_today = strtotime($end_date);
+
+                            $sSQL = "SELECT SUM(b.quantity) AS TicketCount
+                            FROM booking_details AS b
+                            LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                            WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND b.booking_date BETWEEN :strtotime_start_today AND :strtotime_end_today ";
+                            $params = array('event_id' => $EventId, 'strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
+                            $BarChartData = DB::select($sSQL, $params);
+                            
+                            // dd($BarChartData);
+                            $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int)$BarChartData[0]->TicketCount : 0];
+                        }
+                    }
+                }
+                $ResponseData['FinalBarChartData'] = $FinalBarChartData;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -803,5 +826,6 @@ class EventDashboardController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+
 
 }
