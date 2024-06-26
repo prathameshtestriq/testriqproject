@@ -1200,7 +1200,7 @@ class EventTicketController extends Controller
         
         $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
         $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
-       dd($tAttendeeResult, $BookingPayId , $booking_detail_id);
+       dd($tAttendeeResult, $BookingPayId , $booking_detail_id, $flag);
         $registration_ids = $ticket_names = '';
         if(!empty($tAttendeeResult)){
             $registration_ids_array = array_column($tAttendeeResult,"registration_id");
@@ -1978,7 +1978,7 @@ class EventTicketController extends Controller
                 
                 $attendee_array = [];
 
-                echo $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price; die;
+                // echo $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price; die;
                 
                 if (!empty($user_email)) {
 
