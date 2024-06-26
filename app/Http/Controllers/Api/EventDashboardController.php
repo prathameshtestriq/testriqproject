@@ -482,15 +482,16 @@ class EventDashboardController extends Controller
            // dd($EventQuestionData);
 
             $card_array = array(
-                                array("id" => 101190, "question_label" => "Transaction ID", "question_form_type" => "text", "ActualValue"=> ""),
+                               // array("id" => 101190, "question_label" => "Transaction ID", "question_form_type" => "text", "ActualValue"=> ""),
                                 array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue"=> ""),
-                                array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
-                                array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
+                                // array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
+                                // array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
                                 array("id" => 101194, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue"=> ""),
-                                array("id" => 101195, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> "")
+                                //array("id" => 101195, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> "")
+                                array("id" => 101195, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue"=> ""),
                               );
             //dd(json_encode($new_array));
-            $main_array = json_encode(array_merge($EventQuestionData,$card_array));
+            $main_array = json_encode(array_merge($card_array,$EventQuestionData));
             $header_data_array = json_decode($main_array);
             // dd($header_data_array);
             //-------------------------
@@ -504,13 +505,14 @@ class EventDashboardController extends Controller
                 $final_attendee_details_array = json_encode(array_merge($attendee_details_array,$card_array));
                 
                 //-----------------------------
-                $sql = "SELECT txnid,payment_mode,payment_status,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
+                $sql = "SELECT txnid,payment_mode,payment_status,created_datetime,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
                 $paymentDetails = DB::select($sql, array('booking_pay_id' => $res1->booking_pay_id));
                 //dd($paymentDetails);
                 $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
                 $payment_mode = !empty($paymentDetails) ? $paymentDetails[0]->payment_mode : '';
                 $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
+                $booking_datetime = !empty($paymentDetails) ? date('Y-m-d h:i:s A',$paymentDetails[0]->created_datetime) : '';
                
                 //-----------------------------
                 foreach (json_decode($final_attendee_details_array) as $val) {
@@ -518,54 +520,62 @@ class EventDashboardController extends Controller
 
                         $aTemp = new stdClass;
                         $aTemp->question_label = $val->question_label;
-
-                        if (!empty($val->question_form_option)) {
-                            $question_form_option = json_decode($val->question_form_option, true);
-                            // dd($question_form_option);
-                            foreach ($question_form_option as $option) {
-                                //dd($val->ActualValue);
-                                if ($option['id'] === (int) $val->ActualValue) {
-                                    $label = $option['label'];
-                                    break;
+                        
+                        if($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID'){
+                            if (!empty($val->question_form_option)) {
+                                $question_form_option = json_decode($val->question_form_option, true);
+                                // dd($question_form_option);
+                                foreach ($question_form_option as $option) {
+                                    //dd($val->ActualValue);
+                                    if ($option['id'] === (int) $val->ActualValue) {
+                                        $label = $option['label'];
+                                        break;
+                                    }
                                 }
-                            }
-                            $aTemp->answer_value = $label;
-                        } else {
-                            if ($val->question_form_type == "countries") {
-                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCountryName($val->ActualValue) : "";
-                            } else if ($val->question_form_type == "states") {
-                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getStateName($val->ActualValue) : "";
-                            } else if ($val->question_form_type == "cities") {
-                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
+                                $aTemp->answer_value = $label;
                             } else {
-                                $aTemp->answer_value = $val->ActualValue;
+                                if ($val->question_form_type == "countries") {
+                                    $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCountryName($val->ActualValue) : "";
+                                } else if ($val->question_form_type == "states") {
+                                    $aTemp->answer_value = !empty($val->ActualValue) ? $master->getStateName($val->ActualValue) : "";
+                                } else if ($val->question_form_type == "cities") {
+                                    $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
+                                } else {
+                                    $aTemp->answer_value = $val->ActualValue;
+                                }
                             }
                         }
                         //-------------------------------------
+                        
                         if($val->question_label == 'Registration ID'){
                             $aTemp->answer_value = !empty($res1->registration_id) ? $res1->registration_id : '';
-                        }
-
-                        if($val->question_label == 'Amount'){
-                            $aTemp->answer_value = !empty($res1->ticket_amount) ? number_format($res1->ticket_amount,2) : '';
-                        }
-
-                        if($val->question_label == 'Transaction ID'){
-                            $aTemp->answer_value = $tran_id;
-                        }
-
-                        if($val->question_label == 'Payment Mode'){
-                            $aTemp->answer_value = $payment_mode;
-                        }
-
-                        if($val->question_label == 'Payment Status'){
-                            $aTemp->answer_value = $payment_status;
                         }
 
                         if($val->question_label == 'Payu ID'){
                             $aTemp->answer_value = $mihpayid;
                         }
+
+                        if($val->question_label == 'Booking Date/Time'){
+                            $aTemp->answer_value = $booking_datetime;
+                        }
                         
+                        // if($val->question_label == 'Amount'){
+                        //     $aTemp->answer_value = !empty($res1->ticket_amount) ? number_format($res1->ticket_amount,2) : '';
+                        // }
+
+                        // if($val->question_label == 'Transaction ID'){
+                        //     $aTemp->answer_value = $tran_id;
+                        // }
+
+                        // if($val->question_label == 'Payment Mode'){
+                        //     $aTemp->answer_value = $payment_mode;
+                        // }
+
+                        // if($val->question_label == 'Payment Status'){
+                        //     $aTemp->answer_value = $payment_status;
+                        // }
+
+                       
                         //-------------------------------------
                         $ExcellDataArray[$key][] = $aTemp;
                     }

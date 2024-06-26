@@ -2,6 +2,7 @@
 <table>
     <thead>
         <tr>
+            <th style="text-align: center; font-weight: bold;">Sr.No</th>
             <?php
                 if(!empty($EventQuestionData)){
                    foreach($EventQuestionData as $res){
@@ -13,9 +14,10 @@
         </tr>
     </thead>
     <tbody>
-           <?php foreach ($ExcellDataArray as $res): ?>
+           <?php $i=1;
+                 foreach ($ExcellDataArray as $res): ?>
                 <tr>
-                   
+                   <td style="text-align: center;"><?php echo $i; ?></td>
                     <?php foreach ($EventQuestionData as $val): ?>
                         <?php
                             $answerValue = '';
@@ -29,7 +31,7 @@
                         <td><?= $answerValue ?></td>
                     <?php endforeach; ?>
                 </tr>
-            <?php endforeach; ?>
+            <?php $i++; endforeach; ?>
 
     </tbody>
 </table>
