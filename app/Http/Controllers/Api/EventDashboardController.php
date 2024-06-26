@@ -605,11 +605,42 @@ class EventDashboardController extends Controller
        
         if (!empty($AttendeeData)) {
            foreach ($AttendeeData as $key => $res) {
+               
+                $sql = "SELECT txnid,payment_status,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
+                $paymentDetails = DB::select($sql, array('booking_pay_id' => $res->booking_pay_id));
+                //dd($paymentDetails);
+               // $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
+                $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
+                $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
+
+                $card_details_array = json_decode($res->cart_details);
+                // dd($card_details_array);
+
                 $aTemp = new stdClass;
                 $aTemp->firstname = $res->firstname;
                 $aTemp->lastname  = $res->lastname;
                 $aTemp->email     = $res->email;
-                $AttendeeDataArray[] = $aTemp;        
+                $aTemp->registration_id  = $res->registration_id;
+                $aTemp->booking_date     = $res->booking_date;
+                $aTemp->payu_id          = $payment_status;
+                $aTemp->payment_status   = $mihpayid;
+
+                $Convenience_fee = !empty($card_details_array[0]->YtcrFee) ? $card_details_array[0]->YtcrFee : 0 ;
+                $cf_gst          = !empty($card_details_array[0]->YtcrAmount) ? ($card_details_array[0]->YtcrFee * (18 / 100)) : '0.00' ;
+                $pg_gst          = !empty($card_details_array[0]->PaymentGatewayGstPercentage) ? $card_details_array[0]->PaymentGatewayGstPercentage : '0.00' ;
+                
+                $platform_charges_gst = !empty($card_details_array[0]->RegistrationGstPercentage) ? $card_details_array[0]->RegistrationGstPercentage : '0.00' ;
+                $platform_charges = !empty($card_details_array[0]->ticket_price) ? ($card_details_array[0]->ticket_price * ($platform_charges_gst / 100)) : '0.00';
+              
+                $aTemp->Convenience_fee        = $Convenience_fee;
+                $aTemp->cf_gst                 = $cf_gst;
+                $aTemp->pg_gst                 = $pg_gst;
+                $aTemp->platform_charges       = $platform_charges;
+                $aTemp->pc_gst                 = '';
+                $aTemp->total_service_charges  = '';
+                $aTemp->final_organiser_amount = !empty($card_details_array[0]->OrgPayment) ? $card_details_array[0]->OrgPayment : '0.00' ;
+              
+                $AttendeeDataArray[]     = $aTemp;        
            }
         }
         dd($AttendeeDataArray);
