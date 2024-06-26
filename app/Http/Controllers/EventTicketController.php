@@ -1481,7 +1481,7 @@ class EventTicketController extends Controller
                 FROM attendee_booking_details AS a
                 LEFT JOIN booking_details AS bd ON bd.id=a.booking_details_id
                 LEFT JOIN event_booking AS e ON e.id=bd.booking_id
-                WHERE bd.event_id=:event_id AND e.event_id=:event_id1 AND bd.quantity !=0 AND bd.user_id=:user_id AND e.transaction_status=1";
+                WHERE bd.event_id=:event_id AND e.event_id=:event_id1 AND bd.quantity !=0 AND bd.user_id=:user_id AND e.transaction_status IN (1,3)";
                 // dd($sql);
                 $BookingData = DB::select($sql, array('user_id' => $UserId, 'event_id' => $EventId, 'event_id1' => $EventId));
                 // dd($BookingData);
