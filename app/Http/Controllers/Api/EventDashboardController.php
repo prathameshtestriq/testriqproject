@@ -869,6 +869,7 @@ class EventDashboardController extends Controller
 
                 $maleCount = 0;
                 $femaleCount = 0;
+                $otherCount = 0;
 
                 foreach ($PieChartData as $item) {
                     $attendeeDetails = json_decode(json_decode($item->attendee_details, true));
@@ -884,6 +885,8 @@ class EventDashboardController extends Controller
                                         $maleCount++;
                                     } elseif ($option['label'] == 'Female') {
                                         $femaleCount++;
+                                    } elseif ($option['label'] == 'Other') {
+                                        $otherCount++;
                                     }
                                 }
                             }
@@ -892,6 +895,8 @@ class EventDashboardController extends Controller
                 }
                 $ResponseData['maleCount'] = $maleCount;
                 $ResponseData['femaleCount'] = $femaleCount;
+                $ResponseData['otherCount'] = $otherCount;
+
 
                 // dd($maleCount,$femaleCount);
 
