@@ -1764,6 +1764,13 @@ class EventTicketController extends Controller
                     AND ecd.discount_to_datetime >= :now2
                     HAVING ecd.no_of_discount > coupon_count";
 
+                    // dd($SQL,[
+                    //     "event_id" => $EventId,
+                    //     "ticket_id" =>14,
+                    //     "now1" => $now,
+                    //     "now2" => $now
+                    // ]);
+
                     foreach ($TicketIds as $ticketId) {
                         $result = DB::select($SQL, [
                             "event_id" => $EventId,
