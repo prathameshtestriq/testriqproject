@@ -644,8 +644,8 @@ class EventDashboardController extends Controller
                 $aTemp->cf_gst                 = $cf_gst;
                 $aTemp->pg_gst                 = $pg_gst;
                 $aTemp->platform_charges       = $platform_charges;
-                $aTemp->pc_gst                 = '';
-                $aTemp->total_service_charges  = '';
+                $aTemp->pc_gst                 = '0.00';
+                $aTemp->total_service_charges  = '0.00';
                 $aTemp->final_organiser_amount = !empty($card_details_array[0]->OrgPayment) ? $card_details_array[0]->OrgPayment : '0.00' ;
               
                 $AttendeeDataArray[]     = $aTemp;        
