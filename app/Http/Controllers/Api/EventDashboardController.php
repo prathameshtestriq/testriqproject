@@ -39,6 +39,10 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
                 $Filter = isset($aPost['filter']) ? $aPost['filter'] : "";
+                $Ticket = isset($aPost['Ticket']) ? $aPost['Ticket'] : 0;
+                $FromDate = isset($aPost['from_date']) ? strtotime($aPost['from_date']) : 0;
+                $ToDate = isset($aPost['to_date']) ? strtotime($aPost['to_date']) : 0;
+
 
                 if (!empty($Filter)) {
                     switch ($Filter) {
@@ -64,29 +68,43 @@ class EventDashboardController extends Controller
                 }
 
                 // -------------------------------------Net Sales && Total Participants
-                $sql = "SELECT IFNULL(SUM(b.quantity), 0) AS NetSales 
+                $SQL1 = "SELECT IFNULL(SUM(b.quantity), 0) AS NetSales 
                     FROM booking_details AS b
                     LEFT JOIN event_booking AS e ON b.booking_id = e.id
                     WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
-                        $sql .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+                        $SQL1 .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
                     }
                 }
-                // dd($sql);
-                $TotalBooking = DB::select($sql, array('event_id' => $EventId));
+                if(!empty($Ticket)){
+                    $SQL1 .= ' AND b.ticket_id ='.$Ticket;
+                }
+                if(!empty($FromDate) && !empty($ToDate)){
+                    $SQL1 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                }
+                // dd($SQL1);
+                $TotalBooking = DB::select($SQL1, array('event_id' => $EventId));
                 $NetSales = (count($TotalBooking) > 0) ? $TotalBooking[0]->NetSales : 0;
                 $ResponseData['NetSales'] = $NetSales;
 
                 // 79,105,110 DISTINCT(user_id) replace it with id
                 // -------------------------------------Registration && Net Earnings
-                $sql = "SELECT COUNT(id) AS TotalRegistration,SUM(total_amount) AS TotalAmount FROM event_booking WHERE event_id =:event_id AND transaction_status IN (1,3)";
+                $SQL2 = "SELECT COUNT(e.id) AS TotalRegistration,SUM(e.total_amount) AS TotalAmount FROM event_booking AS e 
+                LEFT JOIN booking_details AS b ON b.booking_id = e.id
+                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3)";
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
-                        $sql .= ' AND booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+                        $SQL2 .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
                     }
                 }
-                $TotalRegistration = DB::select($sql, array('event_id' => $EventId));
+                if(!empty($Ticket)){
+                    $SQL2 .= ' AND b.ticket_id ='.$Ticket;
+                }
+                if(!empty($FromDate) && !empty($ToDate)){
+                    $SQL2 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                }
+                $TotalRegistration = DB::select($SQL2, array('event_id' => $EventId));
                 $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistration : 0;
                 $ResponseData['TotalAmount'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalAmount : 0;
 
@@ -111,11 +129,19 @@ class EventDashboardController extends Controller
                 $TotalRegistrationCount = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistrationUsers : 0;
 
                 // Total Registration Users With Success
-                $sql = "SELECT COUNT(id) AS TotalRegistrationUsersWithSuccess FROM event_booking WHERE event_id =:event_id AND transaction_status IN (1,3)";
+                $sql = "SELECT COUNT(e.id) AS TotalRegistrationUsersWithSuccess FROM event_booking AS e 
+                LEFT JOIN booking_details AS b ON b.booking_id = e.id
+                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3)";
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
-                        $sql .= ' AND booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+                        $sql .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
                     }
+                }
+                if(!empty($Ticket)){
+                    $SQL2 .= ' AND b.ticket_id ='.$Ticket;
+                }
+                if(!empty($FromDate) && !empty($ToDate)){
+                    $SQL2 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
                 }
                 $TotalRegistrationUsersWithSuccess = DB::select($sql, array('event_id' => $EventId));
                 $TotalRegistrationUsersWithSuccessCount = (count($TotalRegistrationUsersWithSuccess) > 0) ? $TotalRegistrationUsersWithSuccess[0]->TotalRegistrationUsersWithSuccess : 0;
@@ -654,8 +680,6 @@ class EventDashboardController extends Controller
         dd($AttendeeDataArray);
     }
 
-
-
     function getPaymentLog(Request $request)
     {
         $ResponseData = [];
@@ -734,6 +758,9 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
                 $Filter = isset($aPost['filter']) ? $aPost['filter'] : "";
+                $Ticket = isset($aPost['Ticket']) ? $aPost['Ticket'] : 0;
+                $FromDate = isset($aPost['from_date']) ? strtotime($aPost['from_date']) : 0;
+                $ToDate = isset($aPost['to_date']) ? strtotime($aPost['to_date']) : 0;
 
                 if (!empty($Filter)) {
                     switch ($Filter) {
@@ -758,18 +785,24 @@ class EventDashboardController extends Controller
                     // dd($StartDate, $EndDate);
                 }
 
-                $sql = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice
+                $SQL1 = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice
                 FROM booking_details AS b
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
                 WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
-                        $sql .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                        $SQL1 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
                     }
                 }
-                $sql .= " GROUP BY b.ticket_id";
+                if(!empty($Ticket)){
+                    $SQL1 .= ' AND b.ticket_id ='.$Ticket;
+                }
+                if(!empty($FromDate) && !empty($ToDate)){
+                    $SQL1 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                }
+                $SQL1 .= " GROUP BY b.ticket_id";
                 $params = array('event_id' => $EventId);
-                $BookingData = DB::select($sql, $params);
+                $BookingData = DB::select($SQL1, $params);
                 // dd($BookingData);
                 foreach ($BookingData as $key => $value) {
                     $value->TicketCount = (int) $value->TicketCount;
@@ -814,13 +847,24 @@ class EventDashboardController extends Controller
                 $ResponseData['FinalBarChartData'] = $FinalBarChartData;
 
                 // male female graph
-                $sql = "SELECT a.ticket_id,a.attendee_details,b.event_id
+                $SQL2 = "SELECT a.ticket_id,a.attendee_details,b.event_id
                 FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
                 WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL2 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                if(!empty($Ticket)){
+                    $SQL2 .= ' AND b.ticket_id ='.$Ticket;
+                }
+                if(!empty($FromDate) && !empty($ToDate)){
+                    $SQL2 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                }
                 $params = array('event_id' => $EventId);
-                $PieChartData = DB::select($sql, $params);
+                $PieChartData = DB::select($SQL2, $params);
                 // dd($PieChartData);
 
                 $maleCount = 0;
