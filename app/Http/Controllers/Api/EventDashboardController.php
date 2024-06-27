@@ -382,7 +382,7 @@ class EventDashboardController extends Controller
                 // dd($ResponseData['AttendeeData']);
                 //------------- Attendee details excel generate
                 if (!empty($AttendeeData)) {
-                   // $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
+                    $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
                     $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
 
                 } else {
