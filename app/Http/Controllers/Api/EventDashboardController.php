@@ -128,6 +128,11 @@ class EventDashboardController extends Controller
                 $ResponseData['TotalRegistrationUsersWithSuccess'] = $TotalRegistrationUsersWithSuccessCount;
                 $ResponseData['SuccessPercentage'] = $percentage;
 
+                 // ALL TICKETS
+                 $sql = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
+                 $TicketData = DB::select($sql, array('event_id' => $EventId));
+                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
+
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
