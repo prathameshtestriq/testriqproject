@@ -8,6 +8,7 @@ use App\Libraries\Authenticate;
 use Illuminate\Support\Facades\DB;
 use \stdClass;
 use App\Exports\AttendeeDetailsDataExport;
+use App\Exports\RemittanceDetailsDataExport;
 use Excel;
 use App\Models\Master;
 use DateTime;
@@ -128,10 +129,10 @@ class EventDashboardController extends Controller
                 $ResponseData['TotalRegistrationUsersWithSuccess'] = $TotalRegistrationUsersWithSuccessCount;
                 $ResponseData['SuccessPercentage'] = $percentage;
 
-                 // ALL TICKETS
-                 $sql = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
-                 $TicketData = DB::select($sql, array('event_id' => $EventId));
-                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
+                // ALL TICKETS
+                $sql = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
+                $TicketData = DB::select($sql, array('event_id' => $EventId));
+                $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
 
 
                 $ResposneCode = 200;
@@ -355,8 +356,9 @@ class EventDashboardController extends Controller
                 // dd($ResponseData['AttendeeData']);
                 //------------- Attendee details excel generate
                 if (!empty($AttendeeData)) {
-                    $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
+                   // $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
                     $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
+
                 } else {
                     $ResponseData['attendee_details_excel'] = '';
                     $ResponseData['remittance_details_excel'] = '';
@@ -491,16 +493,16 @@ class EventDashboardController extends Controller
             // dd($EventQuestionData);
 
             $card_array = array(
-                               // array("id" => 101190, "question_label" => "Transaction ID", "question_form_type" => "text", "ActualValue"=> ""),
-                                array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue"=> ""),
-                                // array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
-                                // array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
-                                array("id" => 101194, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue"=> ""),
-                                //array("id" => 101195, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> "")
-                                array("id" => 101195, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue"=> ""),
-                              );
+                // array("id" => 101190, "question_label" => "Transaction ID", "question_form_type" => "text", "ActualValue"=> ""),
+                array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
+                // array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
+                // array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
+                array("id" => 101194, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue" => ""),
+                //array("id" => 101195, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> "")
+                array("id" => 101195, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
+            );
             //dd(json_encode($new_array));
-            $main_array = json_encode(array_merge($card_array,$EventQuestionData));
+            $main_array = json_encode(array_merge($card_array, $EventQuestionData));
             $header_data_array = json_decode($main_array);
             // dd($header_data_array);
             //-------------------------
@@ -521,16 +523,16 @@ class EventDashboardController extends Controller
                 $payment_mode = !empty($paymentDetails) ? $paymentDetails[0]->payment_mode : '';
                 $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
-                $booking_datetime = !empty($paymentDetails) ? date('Y-m-d h:i:s A',$paymentDetails[0]->created_datetime) : '';
-               
+                $booking_datetime = !empty($paymentDetails) ? date('Y-m-d h:i:s A', $paymentDetails[0]->created_datetime) : '';
+
                 //-----------------------------
                 foreach (json_decode($final_attendee_details_array) as $val) {
                     if (isset($val->question_label)) {
 
                         $aTemp = new stdClass;
                         $aTemp->question_label = $val->question_label;
-                        
-                        if($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID'){
+
+                        if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
                             if (!empty($val->question_form_option)) {
                                 $question_form_option = json_decode($val->question_form_option, true);
                                 // dd($question_form_option);
@@ -555,19 +557,19 @@ class EventDashboardController extends Controller
                             }
                         }
                         //-------------------------------------
-                        
-                        if($val->question_label == 'Registration ID'){
+
+                        if ($val->question_label == 'Registration ID') {
                             $aTemp->answer_value = !empty($res1->registration_id) ? $res1->registration_id : '';
                         }
 
-                        if($val->question_label == 'Payu ID'){
+                        if ($val->question_label == 'Payu ID') {
                             $aTemp->answer_value = $mihpayid;
                         }
 
-                        if($val->question_label == 'Booking Date/Time'){
+                        if ($val->question_label == 'Booking Date/Time') {
                             $aTemp->answer_value = $booking_datetime;
                         }
-                        
+
                         // if($val->question_label == 'Amount'){
                         //     $aTemp->answer_value = !empty($res1->ticket_amount) ? number_format($res1->ticket_amount,2) : '';
                         // }
@@ -584,7 +586,7 @@ class EventDashboardController extends Controller
                         //     $aTemp->answer_value = $payment_status;
                         // }
 
-                       
+
                         //-------------------------------------
                         $ExcellDataArray[$key][] = $aTemp;
                     }
@@ -609,15 +611,15 @@ class EventDashboardController extends Controller
     {
         // dd($AttendeeData);
         $excel_url = '';
-        $AttendeeDataArray = []; 
-       
+        $AttendeeDataArray = [];
+
         if (!empty($AttendeeData)) {
-           foreach ($AttendeeData as $key => $res) {
-               
+            foreach ($AttendeeData as $key => $res) {
+
                 $sql = "SELECT txnid,payment_status,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
                 $paymentDetails = DB::select($sql, array('booking_pay_id' => $res->booking_pay_id));
                 //dd($paymentDetails);
-               // $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
+                // $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
                 $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
 
@@ -626,35 +628,43 @@ class EventDashboardController extends Controller
 
                 $aTemp = new stdClass;
                 $aTemp->firstname = $res->firstname;
-                $aTemp->lastname  = $res->lastname;
-                $aTemp->email     = $res->email;
-                $aTemp->registration_id  = $res->registration_id;
-                $aTemp->booking_date     = $res->booking_date;
-                $aTemp->payu_id          = $payment_status;
-                $aTemp->payment_status   = $mihpayid;
+                $aTemp->lastname = $res->lastname;
+                $aTemp->email = $res->email;
+                $aTemp->registration_id = $res->registration_id;
+                $aTemp->booking_date = $res->booking_date;
+                $aTemp->payu_id = $mihpayid;
+                $aTemp->payment_status = $payment_status; 
 
-                $Convenience_fee = !empty($card_details_array[0]->YtcrFee) ? $card_details_array[0]->YtcrFee : 0 ;
-                $cf_gst          = !empty($card_details_array[0]->YtcrAmount) ? ($card_details_array[0]->YtcrFee * (18 / 100)) : '0.00' ;
-                $pg_gst          = !empty($card_details_array[0]->PaymentGatewayGstPercentage) ? $card_details_array[0]->PaymentGatewayGstPercentage : '0.00' ;
-                
-                $platform_charges_gst = !empty($card_details_array[0]->RegistrationGstPercentage) ? $card_details_array[0]->RegistrationGstPercentage : '0.00' ;
+                $Convenience_fee = !empty($card_details_array[0]->YtcrFee) ? $card_details_array[0]->YtcrFee : 0;
+                $cf_gst = !empty($card_details_array[0]->YtcrAmount) ? ($card_details_array[0]->YtcrFee * (18 / 100)) : '0.00';
+                $pg_gst = !empty($card_details_array[0]->PaymentGatewayGstPercentage) ? $card_details_array[0]->PaymentGatewayGstPercentage : '0.00';
+
+                $platform_charges_gst = !empty($card_details_array[0]->RegistrationGstPercentage) ? $card_details_array[0]->RegistrationGstPercentage : '0.00';
                 $platform_charges = !empty($card_details_array[0]->ticket_price) ? ($card_details_array[0]->ticket_price * ($platform_charges_gst / 100)) : '0.00';
-              
-                $aTemp->Convenience_fee        = $Convenience_fee;
-                $aTemp->cf_gst                 = $cf_gst;
-                $aTemp->pg_gst                 = $pg_gst;
-                $aTemp->platform_charges       = $platform_charges;
-                $aTemp->pc_gst                 = '0.00';
-                $aTemp->total_service_charges  = '0.00';
-                $aTemp->final_organiser_amount = !empty($card_details_array[0]->OrgPayment) ? $card_details_array[0]->OrgPayment : '0.00' ;
-              
-                $AttendeeDataArray[]     = $aTemp;        
-           }
+
+                $aTemp->Convenience_fee = $Convenience_fee;
+                $aTemp->cf_gst = $cf_gst;
+                $aTemp->pg_gst = $pg_gst;
+                $aTemp->platform_charges = $platform_charges;
+                $aTemp->pc_gst = '0.00';
+                $aTemp->total_service_charges = '0.00';
+                $aTemp->final_organiser_amount = !empty($card_details_array[0]->OrgPayment) ? $card_details_array[0]->OrgPayment : '0.00';
+
+                $AttendeeDataArray[] = $aTemp;
+            }
+
+            $url = env('APP_URL') . '/public/';
+            $filename = "remittance_". time();
+            $path = 'attendee_details_excell/';
+            $data = Excel::store(new RemittanceDetailsDataExport($AttendeeDataArray), $path . '/' . $filename . '.xlsx', 'excel_uploads');
+            $excel_url = url($path) . "/" . $filename . ".xlsx";
+
         }
-        dd($AttendeeDataArray);
+       // dd($AttendeeDataArray);
+        return $excel_url;
     }
 
-    
+
 
     function getPaymentLog(Request $request)
     {
@@ -772,7 +782,7 @@ class EventDashboardController extends Controller
                 $BookingData = DB::select($sql, $params);
                 // dd($BookingData);
                 foreach ($BookingData as $key => $value) {
-                    $value->TicketCount = (int)$value->TicketCount;
+                    $value->TicketCount = (int) $value->TicketCount;
                     $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
                 }
                 $ResponseData['BookingData'] = (count($BookingData) > 0) ? $BookingData : [];
@@ -789,7 +799,7 @@ class EventDashboardController extends Controller
                             $AllDates[] = date('Y-m-d', $currentDate);
                             $currentDate = strtotime('+1 day', $currentDate);
                         }
-                       
+
                         foreach ($AllDates as $key => $dates) {
                             $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
                             $BarChartData = [];
@@ -805,13 +815,51 @@ class EventDashboardController extends Controller
                             WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND b.booking_date BETWEEN :strtotime_start_today AND :strtotime_end_today ";
                             $params = array('event_id' => $EventId, 'strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
                             $BarChartData = DB::select($sSQL, $params);
-                            
+
                             // dd($BarChartData);
-                            $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int)$BarChartData[0]->TicketCount : 0];
+                            $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
                         }
                     }
                 }
                 $ResponseData['FinalBarChartData'] = $FinalBarChartData;
+
+                // male female graph
+                $sql = "SELECT a.ticket_id,a.attendee_details,b.event_id
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+                $params = array('event_id' => $EventId);
+                $PieChartData = DB::select($sql, $params);
+                // dd($PieChartData);
+
+                $maleCount = 0;
+                $femaleCount = 0;
+
+                foreach ($PieChartData as $item) {
+                    $attendeeDetails = json_decode(json_decode($item->attendee_details, true));
+
+                    foreach ($attendeeDetails as $detail) {
+                        if ($detail->question_form_name == 'gender') {
+                            $genderOptions = json_decode($detail->question_form_option, true);
+                            $actualValue = $detail->ActualValue;
+                            
+                            foreach ($genderOptions as $option) {
+                                if ($option['id'] == $actualValue) {
+                                    if ($option['label'] == 'Male') {
+                                        $maleCount++;
+                                    } elseif ($option['label'] == 'Female') {
+                                        $femaleCount++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                $ResponseData['maleCount'] = $maleCount;
+                $ResponseData['femaleCount'] = $femaleCount;
+
+                // dd($maleCount,$femaleCount);
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
