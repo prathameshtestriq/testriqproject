@@ -78,11 +78,11 @@ class EventDashboardController extends Controller
                         $SQL1 .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
                     }
                 }
-                if(!empty($Ticket)){
-                    $SQL1 .= ' AND b.ticket_id ='.$Ticket;
+                if (!empty($Ticket)) {
+                    $SQL1 .= ' AND b.ticket_id =' . $Ticket;
                 }
-                if(!empty($FromDate) && !empty($ToDate)){
-                    $SQL1 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL1 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
                 }
                 // dd($SQL1);
                 $TotalBooking = DB::select($SQL1, array('event_id' => $EventId));
@@ -99,11 +99,11 @@ class EventDashboardController extends Controller
                         $SQL2 .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
                     }
                 }
-                if(!empty($Ticket)){
-                    $SQL2 .= ' AND b.ticket_id ='.$Ticket;
+                if (!empty($Ticket)) {
+                    $SQL2 .= ' AND b.ticket_id =' . $Ticket;
                 }
-                if(!empty($FromDate) && !empty($ToDate)){
-                    $SQL2 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
                 }
                 $TotalRegistration = DB::select($SQL2, array('event_id' => $EventId));
                 $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistration : 0;
@@ -138,11 +138,11 @@ class EventDashboardController extends Controller
                         $sql .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
                     }
                 }
-                if(!empty($Ticket)){
-                    $SQL2 .= ' AND b.ticket_id ='.$Ticket;
+                if (!empty($Ticket)) {
+                    $SQL2 .= ' AND b.ticket_id =' . $Ticket;
                 }
-                if(!empty($FromDate) && !empty($ToDate)){
-                    $SQL2 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
                 }
                 $TotalRegistrationUsersWithSuccess = DB::select($sql, array('event_id' => $EventId));
                 $TotalRegistrationUsersWithSuccessCount = (count($TotalRegistrationUsersWithSuccess) > 0) ? $TotalRegistrationUsersWithSuccess[0]->TotalRegistrationUsersWithSuccess : 0;
@@ -252,7 +252,7 @@ class EventDashboardController extends Controller
                 $UserData = DB::select($sql, array('event_id' => $EventId));
 
                 foreach ($UserData as $key => $value) {
-                    $value->booking_date = !empty($value->booking_date) ? date("Y-m-d H:i A", ($value->booking_date)) : '';
+                    $value->booking_date = !empty($value->booking_date) ? date("d-m-Y H:i A", ($value->booking_date)) : '';
                 }
                 $ResponseData['UserData'] = (count($UserData) > 0) ? $UserData : [];
 
@@ -347,7 +347,7 @@ class EventDashboardController extends Controller
                 }
 
                 if (!empty($MobileNumber)) {
-                    $sql .= " AND a.mobile_number = " . $MobileNumber;
+                    $sql .= " AND a.mobile = " . $MobileNumber;
                 }
                 if (!empty($Email)) {
                     $sql .= " AND a.email LIKE '%" . $Email . "%'";
@@ -370,7 +370,7 @@ class EventDashboardController extends Controller
                 $sql .= " ORDER BY a.id DESC";
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
                 foreach ($AttendeeData as $key => $value) {
-                    $value->booking_date = !empty($value->created_at) ? date("Y-m-d H:i A", ($value->created_at)) : '';
+                    $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
                 }
 
                 $ResponseData['AttendeeData'] = (count($AttendeeData) > 0) ? $AttendeeData : [];
@@ -659,7 +659,7 @@ class EventDashboardController extends Controller
                 $aTemp->registration_id = $res->registration_id;
                 $aTemp->booking_date = $res->booking_date;
                 $aTemp->payu_id = $mihpayid;
-                $aTemp->payment_status = $payment_status; 
+                $aTemp->payment_status = $payment_status;
 
                 $Convenience_fee = !empty($card_details_array[0]->YtcrFee) ? $card_details_array[0]->YtcrFee : 0;
                 $cf_gst = !empty($card_details_array[0]->YtcrAmount) ? ($card_details_array[0]->YtcrFee * (18 / 100)) : '0.00';
@@ -680,13 +680,13 @@ class EventDashboardController extends Controller
             }
 
             $url = env('APP_URL') . '/public/';
-            $filename = "remittance_". time();
+            $filename = "remittance_" . time();
             $path = 'attendee_details_excell/';
             $data = Excel::store(new RemittanceDetailsDataExport($AttendeeDataArray), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
 
         }
-       // dd($AttendeeDataArray);
+        // dd($AttendeeDataArray);
         return $excel_url;
     }
 
@@ -721,7 +721,7 @@ class EventDashboardController extends Controller
                 $PaymentData = DB::select($sql, array('event_id' => $EventId));
 
                 foreach ($PaymentData as $key => $value) {
-                    $value->created_datetime = !empty($value->created_datetime) ? date("Y-m-d H:i A", ($value->created_datetime)) : '';
+                    $value->created_datetime = !empty($value->created_datetime) ? date("d-m-Y H:i A", ($value->created_datetime)) : '';
                 }
                 $ResponseData['PaymentData'] = (count($PaymentData) > 0) ? $PaymentData : [];
 
@@ -804,11 +804,11 @@ class EventDashboardController extends Controller
                         $SQL1 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
                     }
                 }
-                if(!empty($Ticket)){
-                    $SQL1 .= ' AND b.ticket_id ='.$Ticket;
+                if (!empty($Ticket)) {
+                    $SQL1 .= ' AND b.ticket_id =' . $Ticket;
                 }
-                if(!empty($FromDate) && !empty($ToDate)){
-                    $SQL1 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL1 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
                 }
                 $SQL1 .= " GROUP BY b.ticket_id";
                 $params = array('event_id' => $EventId);
@@ -867,11 +867,11 @@ class EventDashboardController extends Controller
                         $SQL2 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
                     }
                 }
-                if(!empty($Ticket)){
-                    $SQL2 .= ' AND b.ticket_id ='.$Ticket;
+                if (!empty($Ticket)) {
+                    $SQL2 .= ' AND b.ticket_id =' . $Ticket;
                 }
-                if(!empty($FromDate) && !empty($ToDate)){
-                    $SQL2 .= ' AND b.booking_date BETWEEN '.$FromDate.' AND '.$ToDate;
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
                 }
                 $params = array('event_id' => $EventId);
                 $PieChartData = DB::select($SQL2, $params);
@@ -888,7 +888,7 @@ class EventDashboardController extends Controller
                         if ($detail->question_form_name == 'gender') {
                             $genderOptions = json_decode($detail->question_form_option, true);
                             $actualValue = $detail->ActualValue;
-                            
+
                             foreach ($genderOptions as $option) {
                                 if ($option['id'] == $actualValue) {
                                     if ($option['label'] == 'Male') {
@@ -907,8 +907,34 @@ class EventDashboardController extends Controller
                 $ResponseData['femaleCount'] = $femaleCount;
                 $ResponseData['otherCount'] = $otherCount;
 
+                // Utm code Functionality Dashboard: Analysis of how registrants found the event (social media, direct link, email campaigns)
+                $SQL3 = "SELECT e.utm_campaign, SUM(b.quantity) AS total_quantity
+                        FROM booking_details AS b 
+                        LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                        WHERE b.event_id = :event_id 
+                        AND e.transaction_status IN (1, 3) 
+                        AND e.utm_campaign IS NOT NULL
+                        AND e.utm_campaign <> ''";
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL3 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                if (!empty($Ticket)) {
+                    $SQL3 .= ' AND b.ticket_id =' . $Ticket;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL3 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                }
+                $SQL3 .= " GROUP BY e.utm_campaign";
 
-                // dd($maleCount,$femaleCount);
+                $utmCode = DB::select($SQL3, array('event_id' => $EventId));
+                $ResponseData['utmCode'] = $utmCode;
+
+                // dd($utmCode);
+
+                // Coupon Code Data
+                // $SQL4 = "SELECT b.coupon_code, SUM(b.quantity) AS total_quantity
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
