@@ -208,18 +208,16 @@ Welcome aboard!
         $message .= 'Lastname:- '.$lastname.' <br>';
         $message .= 'Email:- '.$user_email.' <br>';
         $message .= 'Contact No:- '.$contact_no.' <br>';
-        $message .= 'Message:- '.$user_message.' <br>';
+        $message .= 'Message:- '.$user_message.' <br><br><br><br><br>';
+        $message .= "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
 
         // $message = "Dear " . $firstname . " " . $lastname . ", <br/>".$user_message.".<br/>";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocanrun.com", "RACES ");
+        $email->setFrom($user_email, $firstname);
         $email->setSubject("New Inquiry From Contact Page");
-        $email->addTo($user_email, "RACES ");
-        $email->addContent("text/plain", "Dear Customer,");
-        $email->addContent(
-            "text/html",
-            $message . "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>"
-        );
+        $email->addTo("support@youtoocanrun.com", "RACES ");
+        // $email->addContent("text/plain", "Dear Customer,");
+        $email->addContent("text/html",$message);
 
         $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
         // try {
