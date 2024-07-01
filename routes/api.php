@@ -141,6 +141,7 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('send_email_payment_success','SendEmailPaymentSuccess');
     Route::post('get_event_term_and_conditions','GetEventTermsConditions');
     Route::post('send_email_organiser_confirmation','SendEmailOrganiserOnboardingConfirmation');
+    Route::post('send_email_contact_us','SendEmailContactUs');
     
 });
 

@@ -201,6 +201,29 @@ Welcome aboard!
         }
     }
 
+    public function send_contactUs_mail($firstname, $lastname, $user_email, $user_message)
+    {
+        $message = "Dear " . $firstname . " " . $lastname . ", <br/>".$user_message.".<br/>";
+        $email = new \SendGrid\Mail\Mail();
+        $email->setFrom("support@youtoocanrun.com", "RACES ");
+        $email->setSubject("New Inquiry From Contact Page");
+        $email->addTo($user_email, "RACES ");
+        $email->addContent("text/plain", "Dear Customer,");
+        $email->addContent(
+            "text/html",
+            $message . "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>"
+        );
+
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+        // try {
+        $response = $sendgrid->send($email);
+        // send mail
+        $type = "contact us";
+        $send_mail_to = $user_message;
+        $subject = "New Inquiry From Contact Page";
+        $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
+    }
+
     public function save_email_log($type, $send_mail_to, $subject, $message, $response)
     {
         $responseData = [
