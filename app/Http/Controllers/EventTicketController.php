@@ -2136,7 +2136,7 @@ class EventTicketController extends Controller
             if (!$empty) {
 
                 $Email = new Emails();
-                $Email->send_contactUs_mail($aPost['first_name'], $aPost['last_name'], $aPost['email'], $aPost['message']);
+                $Email->send_contactUs_mail($aPost['first_name'], $aPost['last_name'], $aPost['email'], $aPost['contact_no'], $aPost['message']);
 
                 $ResponseData['data'] = 1;
                 $message = "Email send successfully";
