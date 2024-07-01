@@ -886,15 +886,18 @@ class EventDashboardController extends Controller
                 $maleCount = 0;
                 $femaleCount = 0;
                 $otherCount = 0;
+                $ageCategoryCount = 0;
+                $ageCategory = [];
 
-                foreach ($PieChartData as $item) {
+                foreach ($PieChartData as $k => $item) {
                     $attendeeDetails = json_decode(json_decode($item->attendee_details, true));
 
                     foreach ($attendeeDetails as $detail) {
+
                         if ($detail->question_form_name == 'gender') {
                             $genderOptions = json_decode($detail->question_form_option, true);
                             $actualValue = $detail->ActualValue;
-
+                            // dd($detail);
                             foreach ($genderOptions as $option) {
                                 if ($option['id'] == $actualValue) {
                                     if ($option['label'] == 'Male') {
@@ -907,11 +910,47 @@ class EventDashboardController extends Controller
                                 }
                             }
                         }
+
+                        if ($detail->question_form_type == 'age_category') {
+                            $ageCategoryCount++;
+                            $ageCategory[$k] = $detail->data[0];
+                        }
+
+                        // if ($detail->question_form_name == 'question_form_name' && $detail->is_subquestion == 1) {
+                        //     $subQuestion = json_decode($detail->question_form_option, true);
+
+                        //     dd($subQuestion);
+                        //     $subQuestionName = $subQuestion[0]['label'];
+                        //     $subQuestionId = $subQuestion[0]['id'];
+                        //     $subQuestionValue = $detail->ActualValue;
+                        //     $subQuestionCount = 0;
+
+                        // }
                     }
                 }
+
+                $result = [];
+                $countMap = [];
+
+                foreach ($ageCategory as $key => $value) {
+                    if (isset($countMap[$value->id])) {
+                        $countMap[$value->id]->count++;
+                    } else {
+                        $value->count = 1;
+                        $countMap[$value->id] = $value;
+                        $result[$key] = $value;
+                    }
+                }
+
+                // Reset keys to be sequential if needed
+                $result = array_values($result);
+                // dd($ageCategoryCount,$result);
+
                 $ResponseData['maleCount'] = $maleCount;
                 $ResponseData['femaleCount'] = $femaleCount;
                 $ResponseData['otherCount'] = $otherCount;
+                $ResponseData['ageCategoryCount'] = $ageCategoryCount;
+                $ResponseData['ageCategory'] = $result;
 
                 // Utm code Functionality Dashboard: Analysis of how registrants found the event (social media, direct link, email campaigns)
                 $SQL3 = "SELECT e.utm_campaign, SUM(b.quantity) AS total_quantity
@@ -940,10 +979,21 @@ class EventDashboardController extends Controller
                 // dd($utmCode);
 
                 // Coupon Code Data
-                $SQL4 = "SELECT COUNT(coupon_id) AS CouponCount, (SELECT discount_name FROM event_coupon WHERE id=coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS DiscountCode
+                $SQL4 = "SELECT COUNT(coupon_id) AS CouponCount, (SELECT discount_name FROM event_coupon WHERE id=coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
                         FROM applied_coupons 
-                        WHERE event_id=:event_id 
-                        GROUP BY coupon_id";
+                        WHERE event_id=:event_id";
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL4 .= " AND created_at BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                if (!empty($Ticket)) {
+                    $SQL4 .= ' AND ticket_ids =' . $Ticket;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL4 .= ' AND created_at BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                }
+                $SQL4 .= " GROUP BY coupon_id";
                 $CouponCodes = DB::select($SQL4, array('event_id' => $EventId));
                 $ResponseData['CouponCodes'] = $CouponCodes;
                 // dd($CouponCodes);
