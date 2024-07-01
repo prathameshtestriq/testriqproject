@@ -2103,6 +2103,64 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    //-------- To send email contact us
+    public function SendEmailContactUs(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $message = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $EventUrl = !empty($request->event_url) ? $request->event_url : '';
+
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['first_name'])) {
+                $empty = true;
+                $field = 'First Name';
+            }
+            if (empty($aPost['last_name'])) {
+                $empty = true;
+                $field = 'Last Name';
+            }
+            if (empty($aPost['email'])) {
+                $empty = true;
+                $field = 'Email';
+            }
+          
+            if (!$empty) {
+
+                $Email = new Emails();
+                $Email->send_contactUs_mail($aPost['first_name'], $aPost['last_name'], $aPost['email'], $aPost['contact_no'], $aPost['message']);
+
+                $ResponseData['data'] = 1;
+                $message = "Email send successfully";
+                $ResposneCode = 200;
+            } else {
+                $ResponseData['data'] = 0;
+                $message = "Email Not Found";
+                $ResposneCode = 401;
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
 }
 
 

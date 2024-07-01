@@ -201,6 +201,34 @@ Welcome aboard!
         }
     }
 
+    public function send_contactUs_mail($firstname, $lastname, $user_email, $contact_no, $user_message)
+    {   
+        $message = 'Hello RACES Team, <br> You have recieved new contact request.<br><br>';
+        $message .= 'Firstname:- '.$firstname.' <br>';
+        $message .= 'Lastname:- '.$lastname.' <br>';
+        $message .= 'Email:- '.$user_email.' <br>';
+        $message .= 'Contact No:- '.$contact_no.' <br>';
+        $message .= 'Message:- '.$user_message.' <br><br><br><br><br>';
+        $message .= "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
+
+        // $message = "Dear " . $firstname . " " . $lastname . ", <br/>".$user_message.".<br/>";
+        $email = new \SendGrid\Mail\Mail();
+        $email->setFrom($user_email, $firstname);
+        $email->setSubject("New Inquiry From Contact Page");
+        $email->addTo("support@youtoocanrun.com", "RACES ");
+        // $email->addContent("text/plain", "Dear Customer,");
+        $email->addContent("text/html",$message);
+
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+        // try {
+        $response = $sendgrid->send($email);
+        // send mail
+        $type = "contact us";
+        $send_mail_to = $user_message;
+        $subject = "New Inquiry From Contact Page";
+        $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
+    }
+
     public function save_email_log($type, $send_mail_to, $subject, $message, $response)
     {
         $responseData = [
