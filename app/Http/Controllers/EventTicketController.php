@@ -1060,7 +1060,7 @@ class EventTicketController extends Controller
                         }
                         // die;
                         $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
-                        $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,mobile,created_at) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:created_at)";
+                        $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,mobile,created_at) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:mobile,:created_at)";
                         $Bind1 = array(
                             "booking_details_id" => $IdBookingDetails,
                             "ticket_id" => $TicketId,

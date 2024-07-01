@@ -824,36 +824,42 @@ class EventDashboardController extends Controller
                 $AllDates = [];
                 $FinalBarChartData = [];
 
-                if ($Filter !== "") {
-                    if (isset($StartDate) && isset($EndDate)) {
-                        $currentDate = $StartDate;
 
-                        while ($currentDate <= $EndDate) {
-                            $AllDates[] = date('Y-m-d', $currentDate);
-                            $currentDate = strtotime('+1 day', $currentDate);
-                        }
+                $start_date_time = $end_date_time = "";
+                if ($Filter == "") {
+                    $start_date_time = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
+                    $end_date_time = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
+                }
 
-                        foreach ($AllDates as $key => $dates) {
-                            $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
-                            $BarChartData = [];
-                            $start_date = date('Y-m-d 00:00:00', strtotime($dates));
-                            $strtotime_start_today = strtotime($start_date);
+                // if (isset($StartDate) && isset($EndDate)) {
+                $currentDate = isset($StartDate) ? $StartDate : $start_date_time;
+                $end = isset($EndDate) ? $EndDate : $end_date_time;
 
-                            $end_date = date('Y-m-d 23:59:59', strtotime($dates));
-                            $strtotime_end_today = strtotime($end_date);
+                while ($currentDate <= $end) {
+                    $AllDates[] = date('Y-m-d', $currentDate);
+                    $currentDate = strtotime('+1 day', $currentDate);
+                }
 
-                            $sSQL = "SELECT SUM(b.quantity) AS TicketCount
+                foreach ($AllDates as $key => $dates) {
+                    $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
+                    $BarChartData = [];
+                    $start_date = date('Y-m-d 00:00:00', strtotime($dates));
+                    $strtotime_start_today = strtotime($start_date);
+
+                    $end_date = date('Y-m-d 23:59:59', strtotime($dates));
+                    $strtotime_end_today = strtotime($end_date);
+
+                    $sSQL = "SELECT SUM(b.quantity) AS TicketCount
                             FROM booking_details AS b
                             LEFT JOIN event_booking AS e ON b.booking_id = e.id
                             WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND b.booking_date BETWEEN :strtotime_start_today AND :strtotime_end_today ";
-                            $params = array('event_id' => $EventId, 'strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
-                            $BarChartData = DB::select($sSQL, $params);
+                    $params = array('event_id' => $EventId, 'strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
+                    $BarChartData = DB::select($sSQL, $params);
 
-                            // dd($BarChartData);
-                            $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
-                        }
-                    }
+                    // dd($BarChartData);
+                    $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
                 }
+                // }
                 $ResponseData['FinalBarChartData'] = $FinalBarChartData;
 
                 // male female graph
@@ -934,7 +940,14 @@ class EventDashboardController extends Controller
                 // dd($utmCode);
 
                 // Coupon Code Data
-                // $SQL4 = "SELECT b.coupon_code, SUM(b.quantity) AS total_quantity
+                $SQL4 = "SELECT COUNT(coupon_id) AS CouponCount, (SELECT discount_name FROM event_coupon WHERE id=coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS DiscountCode
+                        FROM applied_coupons 
+                        WHERE event_id=:event_id 
+                        GROUP BY coupon_id";
+                $CouponCodes = DB::select($SQL4, array('event_id' => $EventId));
+                $ResponseData['CouponCodes'] = $CouponCodes;
+                // dd($CouponCodes);
+
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
