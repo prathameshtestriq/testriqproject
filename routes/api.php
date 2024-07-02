@@ -216,3 +216,9 @@ Route::controller(PaymentGatwayController::class)->group(function () {
     Route::post('/paymentVerifyStatus', 'payment_verify_status');
     Route::get('/paymentVerifyTransactionStatus/{trnid}', 'payment_verify_transaction_status');
 });
+
+Route::controller(EventDetailsController::class)->group(function () {
+    Route::post('/pageViewDetails', 'page_view_details');
+});
+
+

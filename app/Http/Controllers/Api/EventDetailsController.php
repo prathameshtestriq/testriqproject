@@ -11,5 +11,55 @@ use App\Models\Event;
 
 class EventDetailsController extends Controller
 {
+   
+    public function page_view_details(Request $request)
+    {
+        // dd($request);
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
 
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $UserId = 0;
+            if (!empty($aToken)) {
+                $UserId = $aToken['data']->ID;
+            }
+
+            $EventId    = !empty($request->event_id) ? $request->event_id : 0;
+            $IpAddress  = !empty($request->ip_address) ? $request->ip_address : '';
+           
+            $Sql = 'SELECT id,event_id,ip_address FROM page_views WHERE event_id = '.$EventId.' and ip_address = "'.$IpAddress.'" ';
+            $aResult = DB::select($Sql);
+            
+          
+            if(empty($aResult)) {
+
+            	$last_updated_datetime = date('Y-m-d h:i:s A');
+
+	            $Binding = array(
+	                "event_id" 	            => $EventId,
+	                "ip_address"            => $IpAddress,
+	                "last_updated_datetime" => $last_updated_datetime,
+	                "created_by"            => $UserId
+	            );
+	            // dd($Binding);
+	            $insert_SQL1 = "INSERT INTO page_views (event_id,ip_address,last_updated_datetime,created_by) VALUES(:event_id,:ip_address,:last_updated_datetime,:created_by)";
+	            DB::insert($insert_SQL1, $Binding);
+               
+            }
+
+            $response['message'] = 'Request processed successfully';
+            $ResposneCode = 200;
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
 }
