@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
         //Run the task every minute
         $schedule->command('app:verify-payment-status')
                 ->everyFiveMinutes();
+        $schedule->command('app:common-files-remove')
+                ->dailyAt('23:30'); //dailyAt('13:00');
     }
 
     /**

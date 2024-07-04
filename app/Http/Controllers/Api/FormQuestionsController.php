@@ -978,6 +978,7 @@ class FormQuestionsController extends Controller
 
     public function event_delete_change_status(Request $request)
     {
+        //dd($request);
         $response['data'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
@@ -1009,6 +1010,34 @@ class FormQuestionsController extends Controller
                 ));
                 $msg = 'Event status change successfully';
             }else if($ActionFlag == 'delete'){
+
+                $sql = "SELECT banner_image FROM events WHERE id =:event_id ";
+                $EventDetails = DB::select($sql, array('event_id' => $EventId));
+                $event_url = !empty($EventDetails) ? $EventDetails[0]->banner_image : '';
+                // dd($EventDetails);
+
+                //------------ unlink banner images
+                $image_path = public_path('/uploads/banner_image/'.$event_url);
+                // dd($image_path);
+                if(!empty($image_path) && file_exists($image_path)){
+                    unlink($image_path);
+                }
+
+                //------------ unlink banner photos
+                $sql = "SELECT image FROM event_images WHERE event_id =:event_id ";
+                $EventPhotos = DB::select($sql, array('event_id' => $EventId));
+                // dd($EventPhotos);
+
+                if(!empty($EventPhotos)){
+                    foreach($EventPhotos as $res){
+                        $photo_path = public_path('/uploads/banner_images/'.$res->image);
+
+                        if(file_exists($photo_path)){
+                            unlink($photo_path);
+                        }
+                    }
+                }
+
                 $del_sSQL = 'UPDATE events SET `deleted` =:eventDelete WHERE `id`=:eventId ';
                 DB::update($del_sSQL,array(
                     'eventId' => $EventId,

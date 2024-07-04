@@ -549,7 +549,7 @@ class EventDashboardController extends Controller
                 $payment_mode = !empty($paymentDetails) ? $paymentDetails[0]->payment_mode : '';
                 $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
-                $booking_datetime = !empty($paymentDetails) ? date('Y-m-d h:i:s A', $paymentDetails[0]->created_datetime) : '';
+                $booking_datetime = !empty($paymentDetails) ? date('d-m-Y h:i:s A', $paymentDetails[0]->created_datetime) : '';
 
                 //-----------------------------
                 foreach (json_decode($final_attendee_details_array) as $val) {
@@ -625,7 +625,7 @@ class EventDashboardController extends Controller
 
             // $filename = "attendee_sheet_".time();
             $filename = "attendee_" . $event_name . '_' . time();
-            $path = 'attendee_details_excell/';
+            $path = 'attendee_details_excell/'.date('Ymd').'/';
             $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $header_data_array), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
 
@@ -681,7 +681,7 @@ class EventDashboardController extends Controller
 
             $url = env('APP_URL') . '/public/';
             $filename = "remittance_" . time();
-            $path = 'attendee_details_excell/';
+            $path = 'attendee_details_excell/'.date('Ymd').'/';
             $data = Excel::store(new RemittanceDetailsDataExport($AttendeeDataArray), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
 
