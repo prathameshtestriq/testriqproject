@@ -830,36 +830,37 @@ class EventDashboardController extends Controller
                     $start_date_time = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
                     $end_date_time = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
                 }
+                if ($Filter != "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $currentDate = isset($StartDate) ? $StartDate : $start_date_time;
+                        $end = isset($EndDate) ? $EndDate : $end_date_time;
 
-                // if (isset($StartDate) && isset($EndDate)) {
-                $currentDate = isset($StartDate) ? $StartDate : $start_date_time;
-                $end = isset($EndDate) ? $EndDate : $end_date_time;
+                        while ($currentDate <= $end) {
+                            $AllDates[] = date('Y-m-d', $currentDate);
+                            $currentDate = strtotime('+1 day', $currentDate);
+                        }
 
-                while ($currentDate <= $end) {
-                    $AllDates[] = date('Y-m-d', $currentDate);
-                    $currentDate = strtotime('+1 day', $currentDate);
-                }
+                        foreach ($AllDates as $key => $dates) {
+                            $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
+                            $BarChartData = [];
+                            $start_date = date('Y-m-d 00:00:00', strtotime($dates));
+                            $strtotime_start_today = strtotime($start_date);
 
-                foreach ($AllDates as $key => $dates) {
-                    $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
-                    $BarChartData = [];
-                    $start_date = date('Y-m-d 00:00:00', strtotime($dates));
-                    $strtotime_start_today = strtotime($start_date);
+                            $end_date = date('Y-m-d 23:59:59', strtotime($dates));
+                            $strtotime_end_today = strtotime($end_date);
 
-                    $end_date = date('Y-m-d 23:59:59', strtotime($dates));
-                    $strtotime_end_today = strtotime($end_date);
-
-                    $sSQL = "SELECT SUM(b.quantity) AS TicketCount
+                            $sSQL = "SELECT SUM(b.quantity) AS TicketCount
                             FROM booking_details AS b
                             LEFT JOIN event_booking AS e ON b.booking_id = e.id
                             WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND b.booking_date BETWEEN :strtotime_start_today AND :strtotime_end_today ";
-                    $params = array('event_id' => $EventId, 'strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
-                    $BarChartData = DB::select($sSQL, $params);
+                            $params = array('event_id' => $EventId, 'strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
+                            $BarChartData = DB::select($sSQL, $params);
 
-                    // dd($BarChartData);
-                    $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
+                            // dd($BarChartData);
+                            $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
+                        }
+                    }
                 }
-                // }
                 $ResponseData['FinalBarChartData'] = $FinalBarChartData;
 
                 // male female graph
@@ -918,13 +919,11 @@ class EventDashboardController extends Controller
 
                         // if ($detail->question_form_name == 'question_form_name' && $detail->is_subquestion == 1) {
                         //     $subQuestion = json_decode($detail->question_form_option, true);
-
                         //     dd($subQuestion);
                         //     $subQuestionName = $subQuestion[0]['label'];
                         //     $subQuestionId = $subQuestion[0]['id'];
                         //     $subQuestionValue = $detail->ActualValue;
                         //     $subQuestionCount = 0;
-
                         // }
                     }
                 }
