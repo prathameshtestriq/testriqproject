@@ -519,7 +519,7 @@ class EventDashboardController extends Controller
             // dd($EventQuestionData);
 
             $card_array = array(
-                // array("id" => 101190, "question_label" => "Transaction ID", "question_form_type" => "text", "ActualValue"=> ""),
+                array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue"=> ""),
                 array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
                 // array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
                 // array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
@@ -584,6 +584,10 @@ class EventDashboardController extends Controller
                         }
                         //-------------------------------------
 
+                        if($val->question_label == 'Transaction/Order ID'){
+                            $aTemp->answer_value = $tran_id;
+                        }
+
                         if ($val->question_label == 'Registration ID') {
                             $aTemp->answer_value = !empty($res1->registration_id) ? $res1->registration_id : '';
                         }
@@ -600,9 +604,7 @@ class EventDashboardController extends Controller
                         //     $aTemp->answer_value = !empty($res1->ticket_amount) ? number_format($res1->ticket_amount,2) : '';
                         // }
 
-                        // if($val->question_label == 'Transaction ID'){
-                        //     $aTemp->answer_value = $tran_id;
-                        // }
+                       
 
                         // if($val->question_label == 'Payment Mode'){
                         //     $aTemp->answer_value = $payment_mode;
@@ -648,6 +650,7 @@ class EventDashboardController extends Controller
                 // $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
                 $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
+                $txnid = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
 
                 $card_details_array = json_decode($res->cart_details);
                 // dd($card_details_array);
@@ -660,6 +663,7 @@ class EventDashboardController extends Controller
                 $aTemp->booking_date = $res->booking_date;
                 $aTemp->payu_id = $mihpayid;
                 $aTemp->payment_status = $payment_status;
+                $aTemp->transaction_id = $txnid;
 
                 $Convenience_fee = !empty($card_details_array[0]->YtcrFee) ? $card_details_array[0]->YtcrFee : 0;
                 $cf_gst = !empty($card_details_array[0]->YtcrAmount) ? ($card_details_array[0]->YtcrFee * (18 / 100)) : '0.00';
