@@ -228,14 +228,14 @@ class LoginController extends Controller
             $empty = true;
             $field = 'UserId';
         }
-        if (empty($aPost['MobileOtp'])) {
+        if (empty($aPost['MobileOtp']) && empty($aPost['EmailOtp'])) {
             $empty = true;
-            $field = 'Mobile Otp';
+            $field = 'Email Or Mobile OTP';
         }
-        if (empty($aPost['EmailOtp'])) {
-            $empty = true;
-            $field = 'Email Otp';
-        }
+        // if (empty($aPost['EmailOtp'])) {
+        //     $empty = true;
+        //     $field = 'Email Otp';
+        // }
 
         if (!$empty) {
             $UserId = $aPost["UserId"];
@@ -258,8 +258,8 @@ class LoginController extends Controller
                 $MobileField = 'Mobile';
             }
 
-            if ($EmailFlag) {
-                if ($MobileFlag) {
+            // if ($EmailFlag) {
+                if ($MobileFlag || $EmailFlag) {
                     $sql3 = 'UPDATE users SET user_validated = 1 WHERE id=:user_id';
                     DB::update($sql3, array('user_id' => $UserId));
 
@@ -300,12 +300,17 @@ class LoginController extends Controller
                     $message = 'OTP validate successfully';
                 } else {
                     $ResposneCode = 400;
-                    $message = 'Invalid ' . $MobileField . ' OTP';
+                    
+                  
+                    if(!empty($aPost['MobileOtp']))
+                        $message = 'Invalid ' . $MobileField . ' OTP';
+                    else
+                        $message = 'Invalid ' . $EmailField . ' OTP';
                 }
-            } else {
-                $ResposneCode = 400;
-                $message = 'Invalid ' . $EmailField . ' OTP';
-            }
+            // } else {
+            //     $ResposneCode = 400;
+            //     $message = 'Invalid ' . $EmailField . ' OTP';
+            // }
         } else {
             $ResposneCode = 400;
             $message = $field . ' is empty';
