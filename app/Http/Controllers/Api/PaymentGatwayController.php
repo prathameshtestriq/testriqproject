@@ -186,9 +186,16 @@ class PaymentGatwayController extends Controller
                             // dd($que);
                             foreach ($question as $key => $value) {
                                 $result = [];
+                                // $common_form_array = '';
+                                // if($value['question_form_type'] == 'file'){
+                                //     $common_form_array = isset($value['ActualValue']) ? json_encode($value['ActualValue']) : '';
+                                // }else{
+                                //     $common_form_array = isset($value['ActualValue']) ? $value['ActualValue'] : '';
+                                // }
+
                                 $result = [
                                     'id' => isset($value['id']) ? $value['id'] : 0,
-                                    'ActualValue' => isset($value['ActualValue']) ? $value['ActualValue'] : '',
+                                    'ActualValue' => isset($value['ActualValue']) ? $value['ActualValue'] : '',//$common_form_array,
                                     'question_label' => isset($value['question_label']) ? $value['question_label'] : "",
                                     'general_form_id' => isset($value['general_form_id']) ? $value['general_form_id'] : "",
                                     'question_form_type' => isset($value['question_form_type']) ? $value['question_form_type'] : "",

@@ -10,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use App\Libraries\Emails;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class EventTicketController extends Controller
 {
@@ -856,6 +857,51 @@ class EventTicketController extends Controller
                     // dd($UserEmail);
                     $TotalTickets = 0;
 
+                    // -----------------Test Code------------------
+                    // $separatedArrays = [];
+
+
+                    // dd($FormQuestions);
+                    // foreach ($FormQuestions as $key => $arrays) {
+                    //     foreach ($arrays as $subArray) {
+                    //         $separatedArrays[] = json_encode($subArray);
+                    //     }
+                    // }
+
+                    // foreach ($separatedArrays as $key => $value) {
+                    //     $subArray = [];
+                    //     $subArray = json_decode($value);
+
+                    //     foreach ($subArray as $key => $sArray) {
+                    //         if ($sArray->question_form_type == 'file' && $sArray->ActualValue != "") {
+                    //             $file = ($sArray->ActualValue);
+                    //             // dd($file->fileType);
+                    //             $ExplodeVar = '';
+                    //             if ($file->fileType == "image/png"  || $file->fileType == "image/jpg" || $file->fileType == "image/jpeg")
+                    //             {
+                    //                 $ExplodeVar = 'image/';
+                    //             }else if($file->fileType == "application/pdf"){
+                    //                 $ExplodeVar = 'application/';
+                    //             }
+                    //             $imageparts = explode(";base64,", $file->fileContent);
+                    //             // dd($imageparts);
+                    //             $imagetypeaux = explode($ExplodeVar, $imageparts[0]);
+                    //             $imagetype = $imagetypeaux[1];
+                    //             $fileData = base64_decode($imageparts[1]);
+                                
+                               
+                    //             $filePath = 'uploads/' . $file->fileName;
+
+                    //             // Store the file
+                    //             Storage::put($filePath, $fileData);
+                                
+                    //         }
+
+                    //     }
+                    // }
+                    // dd("here");
+                    // -----------------End Test Code--------------
+
                     // if (!empty($TotalPrice)) {
                     #event_booking
                     $Binding1 = array(
@@ -1059,6 +1105,30 @@ class EventTicketController extends Controller
                             }
                             if (empty($TicketId)) {
                                 $TicketId = !empty($sArray->TicketId) ? $sArray->TicketId : 0;
+                            }
+
+                            if ($sArray->question_form_type == 'file' && $sArray->ActualValue != "") {
+                                $file = ($sArray->ActualValue);
+                                // dd($file->fileType);
+                                $ExplodeVar = '';
+                                if ($file->fileType == "image/png"  || $file->fileType == "image/jpg" || $file->fileType == "image/jpeg")
+                                {
+                                    $ExplodeVar = 'image/';
+                                }else if($file->fileType == "application/pdf"){
+                                    $ExplodeVar = 'application/';
+                                }
+                                $imageparts = explode(";base64,", $file->fileContent);
+                                // dd($imageparts);
+                                $imagetypeaux = explode($ExplodeVar, $imageparts[0]);
+                                $imagetype = $imagetypeaux[1];
+                                $fileData = base64_decode($imageparts[1]);
+                                
+                               
+                                $filePath = 'uploads/' . $file->fileName;
+
+                                // Store the file
+                                Storage::put($filePath, $fileData);
+                                
                             }
 
                         }
@@ -1397,7 +1467,7 @@ class EventTicketController extends Controller
                 $Auth->apiLog($request);
 
                 $UserId = $aToken['data']->ID;
-               
+
                 $SQL = "SELECT eb.*,
                 (SELECT SUM(quantity) FROM booking_details WHERE user_id = eb.user_id AND event_id = eb.event_id AND eb.id = booking_id) AS TotalCount,
                 (SELECT name FROM events WHERE id=eb.event_id) AS EventName,
@@ -2000,9 +2070,11 @@ class EventTicketController extends Controller
                     $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag = 1, $attendee_array);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
                     $up_sSQL = 'UPDATE booking_payment_details SET `send_email_flag` = 1 WHERE `id`=:booking_pay_id ';
-                    DB::update($up_sSQL, array(
-                        'booking_pay_id' => $BookingPayId
-                    )
+                    DB::update(
+                        $up_sSQL,
+                        array(
+                            'booking_pay_id' => $BookingPayId
+                        )
                     );
 
                     $ResponseData['data'] = 1;
