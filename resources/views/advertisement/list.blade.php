@@ -214,7 +214,7 @@
                 },
                 success: function(result) {
                     if(result == 1){
-                        console.log(result);
+                        // console.log(result);
                         alert('Status changed successfully')
                         //location.reload(); 
                     }else{

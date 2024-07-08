@@ -41,7 +41,7 @@ class TestimonialController extends Controller
         //     $aReturn['search_name'] = '';
         // }
         if (!empty($aReturn['search_name'])) {
-            $FiltersSql .= " AND (SELECT firstname FROM users WHERE Id = user_id) LIKE '%" . strtolower($aReturn['search_name']) . "%'";
+            $FiltersSql .= " AND name LIKE '%" . strtolower($aReturn['search_name']) . "%'";
         } else {
             $aReturn['search_name'] = '';
         }
@@ -63,10 +63,7 @@ class TestimonialController extends Controller
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
         // $sSQL = 'SELECT *,(SELECT firstname FROM users WHERE Id = user_id) As name,(SELECT profile_pic FROM users WHERE Id = testimonial_img) As testimonial_img FROM testimonial WHERE 1=1' . $FiltersSql;
-        $sSQL = 'SELECT *,(SELECT firstname FROM users WHERE Id = user_id) As name FROM testimonial WHERE 1=1' . $FiltersSql;
-
-
-
+        $sSQL = 'SELECT * FROM testimonial WHERE 1=1' . $FiltersSql;
         $sSQL .= ' ORDER BY name ASC ';
 
         if ($Limit > 0) {
@@ -86,94 +83,87 @@ class TestimonialController extends Controller
     {
         // dd($request);
 
-        $aReturn['user_id'] = '';
-        $aReturn['subtitle'] = '';
-        $aReturn['description'] = '';
-        //  $aReturn['testimonial_img'] = '';
-        $aReturn['active'] = '';
-        $aReturn['rating'] = '';
+        $aReturn['testimonial_name'] = '';
+        $aReturn['subtitle']         = '';
+        $aReturn['description']      = '';
+        $aReturn['testimonial_img']  = '';
         //  $SuccessMessage = ''; 
         //dd($request);
         if (isset($request->form_type) && $request->form_type == 'add_edit_testimonial') {
             // dd('ss');
             #VALIDATION RULES
             $Rules = [
-                'user_id' => 'required|string',
-                'subtitle' => 'required|string',
-                'description' => 'required|string',
-                'active' => 'required|string',
-                'rating' => 'required|string',
+                'testimonial_name' => 'required|string',
+                'subtitle'         => 'required|string',
+                'description'      => 'required|string',
+                //'testimonial_img'  => 'required'
             ];
-            $user_id = (!empty($request->user_id)) ? $request->user_id : '';
+            $testimonial_name = (!empty($request->testimonial_name)) ? $request->testimonial_name : '';
             $subtitle = (!empty($request->subtitle)) ? $request->subtitle : '';
             $description = (!empty($request->description)) ? $request->description : '';
-            // $testimonial_img = (!empty($request->testimonial_img)) ? $request->testimonial_img : '';
-            // $hidden_testimonial_img = (!empty($request->testimonial_img)) ? $request->hidden_testimonial_img : '';
-            $active = (!empty($request->active)) ? $request->active : '';
-            $rating = (!empty($request->rating)) ? $request->rating : '';
+            $testimonial_img = (!empty($request->testimonial_img)) ? $request->testimonial_img : '';
+            $hidden_testimonial_img = (!empty($request->testimonial_img)) ? $request->hidden_testimonial_img : '';
             $image_name = '';
             //  $SuccessMessage = 'testimonial  updated successfully'; 
             if ($iId > 0) {
-                //    dd($request->all());
-                //  dd($image_name);
-                if ($request->active == 'active') {
-                    $active = 1;
-                }
-                if ($request->active == 'inactive') {
-                    $active = 0;
-                }
+               
                 #UPDATE
                 $request->validate($Rules);
 
-                //dd($image_name);
-                // if (!empty($image_name)) {
-                $sSQL = 'UPDATE testimonial SET user_id = :user_id,subtitle = :subtitle ,description = :description, active = :active , rating = :rating WHERE id = :id';
+                if ($request->file('testimonial_img')) {
+                   $path = public_path('uploads/testimonial_images/');
+                   $img_file = $request->file('testimonial_img');
+                   $img_extension = $img_file->getClientOriginalExtension();
+                   $img_name = strtotime('now').'.'.$img_extension;
+                   
+                   $img_file->move($path, $img_name);
+                }
+
+                $sSQL = 'UPDATE testimonial SET name = :name, subtitle = :subtitle ,description = :description WHERE id = :id';
                 // dd($sSQL);
 
                 $Bindings = array(
-                    'user_id' => $user_id,
+                    'name'     => $testimonial_name,
                     'subtitle' => $subtitle,
-                    //  'testimonial_img' => $image_name,
                     'description' => $description,
-                    'active' => $active,
-                    'rating' => $rating,
                     'id' => $iId
                 );
-               
+
+                if (!empty($testimonial_img)) {
+                   $sSQL .= ', testimonial_img = :testimonial_img';
+                   $Bindings['testimonial_img'] = $img_name;
+                }
+
+
                 $Result = DB::update($sSQL, $Bindings);
-                $SuccessMessage = 'testimonial  updated successfully';
+                $SuccessMessage = 'testimonial updated successfully';
                 
             } else {
                
                 $request->validate($Rules);
-                #ADD
-                if ($request->active == 'active') {
-                    $active = 1;
-                }
-                if ($request->active == 'inactive') {
-                    $active = 0;
-                }
 
-                $sSQL = 'INSERT INTO testimonial(user_id,subtitle,description,active,rating) VALUES(:user_id,:subtitle,:description,:active,:rating)';
+                if ($request->file('testimonial_img')) {
+                   $path = public_path('uploads/testimonial_images/');
+                   $img_file = $request->file('testimonial_img');
+                   $img_extension = $img_file->getClientOriginalExtension();
+                   $img_name = strtotime('now').'.'.$img_extension;
+                   
+                   $img_file->move($path, $img_name);
+                }
+               
+                $sSQL = 'INSERT INTO testimonial(name,subtitle,description,testimonial_img) VALUES(:name,:subtitle,:description,:testimonial_img)';
                 // dd($sSQL);
 
                 $Bindings = array(
-                    'user_id' => $user_id,
+                    'name'     => $testimonial_name,
                     'subtitle' => $subtitle,
-                    //  'testimonial_img' => $image_name,
                     'description' => $description,
-                    'active' => $active,
-                    'rating' => $rating
+                    'testimonial_img' => $img_name
                 );
-                //  dd($Bindings);
 
-                    $Result = DB::insert($sSQL, $Bindings);
-                    $SuccessMessage = 'testimonial added successfully';
-                // } else {
-
-                //     $SuccessMessage = 'testimonial already exist';
-                //     return redirect('/testimonial/add')->with('error', $SuccessMessage);
-                // }
+                $Result = DB::insert($sSQL, $Bindings);
+                $SuccessMessage = 'testimonial added successfully';
+               
             }
             return redirect('/testimonial')->with('success', $SuccessMessage);
         } else {
@@ -182,7 +172,7 @@ class TestimonialController extends Controller
             //EDIT
             if ($iId > 0) {
 
-                $sSQL = 'SELECT * FROM testimonial WHERE id=:id';
+                $sSQL = 'SELECT id,name as testimonial_name,testimonial_img,subtitle,description,active FROM testimonial WHERE id=:id';
                 $Materials = DB::select($sSQL, array('id' => $iId));
                 // dd($Districts);
                 $aReturn = (array) $Materials[0];

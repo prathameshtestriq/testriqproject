@@ -64,10 +64,10 @@ class UserController extends Controller
             'username' => '',
             'password' => '',
             'is_active' => 1,
-            'type' => []
+            'type' => ''
         ];
-
-
+         // dd($aReturn);
+ 
         if ($request->has('form_type') && $request->form_type == 'add_edit_user') {
 
             $rules = [
@@ -108,40 +108,25 @@ class UserController extends Controller
         } else {
 
             if ($iId > 0) {
-                $user = User::find($iId);
-                if ($user) {
-                    $aReturn = $user->toArray();
-                }
+                // $user = User::find($iId);
 
+                // if ($user) {
+                //     $aReturn = $user->toArray();
+                // }
+
+                $Sql = 'SELECT id,firstname,lastname,email,mobile,is_active,type FROM  users WHERE id = '.$iId.' ';
+                $aResult = DB::select($Sql);
+                $aReturn['edit_data'] = !empty($aResult) ? $aResult[0] : [];
             }
+          
 
-
-            $userRoles = DB::table('master_roles')->get()->toArray(); // Convert collection to array
-            $aReturn['type'] = $userRoles;
-
+            // $userRoles = DB::table('master_roles')->get()->toArray(); // Convert collection to array
+            // $aReturn['type'] = $userRoles;
+            // dd($aReturn);
             // Return the view with data
             return view('users.create', $aReturn);
         }
     }
-
-
-
-    // public function get_country_info(Request $request)
-    // {
-    //     $country_data=array();
-    //     if($request->country_id==1)
-    //     {
-    //         $country_id=!empty($request->country_id)?$request->country_id:0;
-    //         $post = array('country_id' => $country_id);
-    //         $country_data=Master_farmer::get_country_info($country_id,$post);
-    //     }
-
-    //     if($country_data){
-    //         return $country_data;
-    //     }else{
-    //         return [];
-    //     }
-    // }
 
     public function change_active_status(Request $request)
     {

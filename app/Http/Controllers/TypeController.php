@@ -40,13 +40,7 @@ class TypeController extends Controller
         } else {
             $aReturn['search_name'] = '';
         }
-        //     if (!empty($aReturn['search_name'])) {
-        //   //      $FiltersSql .= ' AND (LOWER(vm.name) LIKE \'%' . strtolower($aReturn['search_name']) . '%\')';
-        //     } else {
-        //         $aReturn['search_name'] = '';
-        //     }
-
-
+     
         //  dd($FiltersSql);
         #PAGINATION
         $sSQL = 'SELECT count(vm.id) as count FROM eTypes as vm WHERE 1=1  ' . $FiltersSql;
@@ -62,11 +56,8 @@ class TypeController extends Controller
         // $Limit = 3;
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
-
         // $sSQL = 'SELECT *,(SELECT firstname FROM users WHERE Id = user_id) As name,(SELECT profile_pic FROM users WHERE Id = testimonial_img) As testimonial_img FROM testimonial WHERE 1=1' . $FiltersSql;
         $sSQL = 'SELECT * FROM eTypes WHERE 1=1' . $FiltersSql;
-
-
 
         $sSQL .= ' ORDER BY name ASC ';
 
@@ -86,26 +77,19 @@ class TypeController extends Controller
     {
         // Initialize return data
         $aReturn['name'] = '';
-        $aReturn['active'] = '';
         $aReturn['logo'] = '';
-        $aReturn['type'] = '';
+      
         $aReturn['id'] = '';
-            
-                // Fetch all types available
-            // Fetch all types available
+           
         $allTypes = DB::select('SELECT *, (SELECT name FROM eTypes WHERE type_id = id) AS type_name FROM event_type WHERE 1=1');
-
-        // Initialize an associative array to keep track of selected types
         $selectedTypes = [];
 
         foreach ($allTypes as $type) {
             $result = DB::select("SELECT * FROM event_type WHERE type_id = ? AND event_id = ?", [$type->type_id, $iId]);
             $isSelected = sizeof($result) > 0 ? 'selected' :'';
-        // $aReturn['allTypes'] = $allTypes;
+            // $aReturn['allTypes'] = $allTypes;
             // If the type is selected, add it to the selectedTypes array
-                $selectedTypes[$type->type_id] = $type;
-        
-
+            $selectedTypes[$type->type_id] = $type;
             $type->selected = $isSelected;
         }
         //dd($selectedTypes);
@@ -120,22 +104,14 @@ class TypeController extends Controller
             // Validation rules
            // dd($request->all());
             $Rules = [
-                'name' => 'required|string',
-                'active' => 'required',
+                'name' => 'required|string'
             ];
     
             // Retrieve data from request
             $name = $request->input('name', '');
-            $active = $request->input('active', 1);
-            $typeIds = $request->input('type_id', []);
-
+           
             if($iId>0){
-                if ($request->active == 'active') {
-                    $active = 1;
-                }
-                if ($request->active == 'inactive') {
-                    $active = 0;
-                }
+              
                 // Determine if image update is required
                 $updateImage = $request->hasFile('logo');
         
@@ -149,10 +125,11 @@ class TypeController extends Controller
                 // Update record
                 $Bindings = [
                     'name' => $name,
-                    'active' => $active,
                     'id' => $iId
                 ];
-                $sSQL = 'UPDATE eTypes SET name = :name, active = :active';
+               
+                $sSQL = 'UPDATE eTypes SET name = :name';
+
                 if ($updateImage) {
                     $sSQL .= ', logo = :logo';
                     $Bindings['logo'] = $image_name;
@@ -160,30 +137,11 @@ class TypeController extends Controller
                 $sSQL .= ' WHERE id = :id';
         
                 $Result = DB::update($sSQL, $Bindings);
-        
-                // Handle success or failure
-                if ($Result !== false) {
-                    $successMessage = 'Type updated successfully';
-
-                    // Update event categories
-                    DB::delete('DELETE FROM event_type WHERE event_id = ?', [$iId]); // Clear existing type entries
-
-                    // Insert new type entries
-                    foreach ($typeIds as $typeId) {
-                        DB::insert('INSERT INTO event_type (event_id, type_id) VALUES (?, ?)', [$iId, $typeId]);
-                    }
-
-                    return redirect('/type')->with('success', $successMessage);
-                } else {
-                    $errorMessage = 'Failed to update type';
-                    return redirect('/type/add')->with('error', $errorMessage);
-                }
-             
+                $successMessage = 'Type Updated Successfully';
+                return redirect('/type')->with('success', $successMessage);
                                
             } else {
-                // dd('aaa');
-                // dd($request->vehicle_image);
-                //      dd($request->all());
+                
                 if ((!empty($request->logo))) {
                     $image_name = $request->file('logo')->getClientOriginalName();
                     //    dd($image_name);
@@ -195,58 +153,18 @@ class TypeController extends Controller
                     $image_name = '';
                 }
 
-                if ($request->active == 'active') {
-                    $active = 1;
-                }
-                if ($request->active == 'inactive') {
-                    $active = 0;
-                }
-
                 $request->validate($Rules);
                 // New event insert logic
-                $sql = 'INSERT INTO eTypes (name, logo, active) VALUES (:name, :logo, :active)';
+                $sql = 'INSERT INTO eTypes (name, logo) VALUES (:name, :logo)';
                 $bindings = [
                     'name' => $name,
-                    'logo' => $image_name,
-                    'active' => $active,
-
+                    'logo' => $image_name
                 ];
-                $successMessage = 'type added successfully';
+                $successMessage = 'Type Added Successfully';
 
                 // Execute query
                 DB::insert($sql, $bindings);
-               //  dd($request->all());
-                //   dd('here');
-                // Insert type-event relationships
-                // $typeEventInsertData = [];
-                // foreach ($request->type_id as $typeId) {
-                //     $typeEventInsertData[] = [
-                //         'event_id' => $typeId,
-                //         'type_id' => $typeId,
-                //         'created_by' => $iId, // Assuming you're using authentication
-                //     ];
-                //     dd( $typeEventInsertData);
-                // }
-                $EventId = DB::getPdo()->lastInsertId();
-                if (!empty($type) && !empty($EventId)) {
-                    foreach ($type as $value) {
-                        //    dd($value);
-
-                        $sql = "INSERT INTO event_type (event_id, type_id,created_by) VALUES(:event_id,:type_id,:created_by)";
-                        //  dd($sql);
-                        $Bind = array(
-                            "event_id" => $EventId,
-                            "type_id" => $value,
-                            "created_by" => $iId
-                        );
-                        //     dd($Bind);
-                        DB::insert($sql, $Bind);
-                    }
-
-                }
-
-
-                return redirect('/type')->with('success', 'Type added successfully');
+                return redirect('/type')->with('success', $successMessage);
             }
         } else {
 
@@ -259,7 +177,7 @@ class TypeController extends Controller
             }
         }
         $aReturn['allTypes'] = $allTypes; // Pass $allTypes to the view
-    //    dd(     $aReturn['allTypes']);
+    //    dd($aReturn['allTypes']);
         return view('master_data.type.create', $aReturn);
     }
    
@@ -268,15 +186,12 @@ class TypeController extends Controller
     {
         if (!empty($iId)) {
             $sSQL = 'DELETE FROM eTypes WHERE id=:id';
-            $Result = DB::update(
-                $sSQL,
-                array(
-                    'id' => $iId
-                )
+            $Result = DB::update($sSQL,
+                array('id' => $iId)
             );
             // dd($Result);       
         }
-        return redirect(url('/type'))->with('success', 'type deleted successfully');
+        return redirect(url('/type'))->with('success', 'Type Deleted Successfully');
     }
     public function change_active_status(Request $request)
     {

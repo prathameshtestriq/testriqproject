@@ -1306,6 +1306,11 @@ class EventController extends Controller
             // ---------- get event form question
             $sql1 = "SELECT id FROM event_form_question WHERE event_id=:event_id";
             $ResponseData['event_form_question_details'] = DB::select($sql1, array('event_id' => $EventId));
+            
+            // ---------- get races category charges
+            $sql1 = "SELECT id,registration_amount,convenience_fee,platform_fee,payment_gateway_fee FROM race_category_charges WHERE event_id=:event_id";
+            $chargesResult = DB::select($sql1, array('event_id' => $EventId));
+            $ResponseData['race_category_charges_details'] = !empty($chargesResult) ? $chargesResult : [];
 
             $ResposneCode = 200;
             $message = "Events Data getting successfully";

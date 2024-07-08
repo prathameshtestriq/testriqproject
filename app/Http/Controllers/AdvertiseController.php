@@ -56,16 +56,25 @@ class AdvertiseController extends Controller
         $a_return['status'] = '';
         $a_return['url'] = '';
         $a_return['img'] = '';
+        $aResult = [];
+        
+        if ($iId > 0) {
+            $sql = 'SELECT id,name, img, url, status
+            FROM advertisement 
+            WHERE id = ?';
 
+            $addetails = DB::select($sql, array($iId));
+            $aResult = (array) $addetails[0];
+            //dd($aResult);
+        }
 
         if ($request->has('form_type') && $request->form_type == 'add_edit_ad') {
 
 
             $rules = [
-                 'name' => 'required',
-                 'url' => 'required',
-                'staus' => 'required',
-                'img' => 'required',
+                'name' => 'required',
+                'url' => 'required',
+                'img' => !empty($aResult) && $aResult['img'] !== '' ? '' : 'required',
             ];
 
             if ($request->has('img')) {
@@ -90,18 +99,9 @@ class AdvertiseController extends Controller
 
             return redirect('/advertisement')->with('success', $successMessage);
         } else {
-            if ($iId > 0) {
-                $sql = 'SELECT id,name, img, url, status
-                FROM advertisement 
-                WHERE id = ?';
-
-
-                $addetails = DB::select($sql, array($iId));
-                $a_return = (array) $addetails[0];
-                // dd($a_return);
-            }
+            $a_return['edit_data'] = $aResult;
         }
-
+        // dd($a_return);
 
         return view('advertisement.create', $a_return);
         // Pass $a_return array to the view

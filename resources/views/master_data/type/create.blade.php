@@ -86,7 +86,7 @@
                                     <div class="col-md-6">
                                         <!-- Name input field -->
                                         <div class="form-group mb-3">
-                                            <label for="name">Name <span style="color:red;">*</span></label>
+                                            <label for="name">Type Name <span style="color:red;">*</span></label>
                                             <input type="text" id="name" class="form-control" name="name"
                                                 placeholder="Event Name" autocomplete="off"
                                                 value="{{ old('name', $name) }}" />
@@ -95,39 +95,16 @@
                                             <span class="error">{{ $message }}</span>
                                             @enderror
                                         </div>
-
-                                        <!-- Type select field -->
-                                        <div class="form-group mb-3">
-                                            <label for="categorySelect">Select Type <span
-                                                    style="color:red;">*</span></label>
-                                            <select class="form-control form-select select2" multiple
-                                                style="min-width: 400px;" id="type" name="type_id[]">
-                                                @foreach($allTypes as $type)
-                                                <option value="{{ $type->type_id}}" {{ $type->selected ? 'selected' : ''
-                                                    }}>
-                                                    {{ $type->type_name }}
-                                                </option>
-                                                @endforeach
-                                            </select>
-                                            <span style="color:red;" id="type_err"></span>
-                                            @error('type_id[]')
-                                            <span class="error">{{ $message }}</span>
-                                            @enderror
-                                        </div>
+                                       
                                     </div>
 
                                     <!-- Column 2: Image and Status -->
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <!-- Image input field -->
                                         <div class="form-group mb-3">
                                             <label for="logo" class="form-label">Image <span
                                                     style="color:red">*</span></label>
-                                            @if (!empty($logo))
-                                            <img src="{{ asset('uploads/type_images/' . $logo) }}" alt="Current Image"
-                                                style="width: 50px;">
-                                            <input type="hidden" name="hidden_logo" value="{{ old('logo', $logo) }}"
-                                                accept="image/jpeg, image/png">
-                                            @endif
+                                           
                                             <input type="file" name="logo" id="logo"
                                                 style="text-transform: capitalize; display: block; width: 100%;"
                                                 accept="image/jpeg, image/png" class="form-control">
@@ -136,27 +113,20 @@
                                             <span class="error">{{ $message }}</span>
                                             @enderror
                                         </div>
-
-                                        <!-- Status radio buttons -->
-                                        <div class="form-group mb-3">
-                                            <label for="status" class="col-sm-2 float-left">Status <span
-                                                    style="color:red;">*</span></label>
-                                            <div class="form-check mt-1 mb-2">
-                                                <input class="form-check-input active1" type="radio" name="active"
-                                                    style="cursor: pointer;" id="status" value="active" {{ $active==1
-                                                    ? 'checked' : '' }}>
-                                                <label class="form-check-label mr-4" for="active1">Active</label>
-                                                <input class="form-check-input active1" type="radio" name="active"
-                                                    style="cursor: pointer;" id="status" value="inactive" {{ $active==0
-                                                    ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="active2">Inactive</label>
-                                            </div>
-                                            <h5><span class="text-danger" id="status_err"></span></h5>
-                                            @error('active')
-                                            <span class="error" style="color:red;">{{ $message }}</span>
-                                            @enderror
-                                        </div>
                                     </div>
+
+                                    <div class="col-md-2">
+                                        <span><br/></span>
+                                        @if (!empty($logo))
+                                            <a href="{{ asset('uploads/type_images/' . $logo) }}" target="_blank">
+                                                <img src="{{ asset('uploads/type_images/' . $logo) }}" alt="Current Image"
+                                                style="width: 50px;">
+                                            </a>
+                                            <input type="hidden" name="hidden_logo" value="{{ old('logo', $logo) }}"
+                                                accept="image/jpeg, image/png">
+                                        @endif
+                                    </div>
+
                                 </div>
 
                                 <!-- Submit Button -->

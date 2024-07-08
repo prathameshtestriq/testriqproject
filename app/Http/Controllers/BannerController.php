@@ -83,27 +83,40 @@ class BannerController extends Controller
         $a_return['country'] = '';
         $a_return['active'] = '';
         $image_name = '';
+
         // $a_return['country_array'] = DB::table('countries')->pluck('name', 'id')->toArray();
-        $cSql = 'select id,name FROM countries where flag = 1';
+        $cSql = 'select id,name FROM countries where flag = 1 and id = 101';
         $a_return['countries_array'] = DB::select($cSql);
-        $sSql = 'select id,name FROM states where flag = 1';
+        $sSql = 'select id,name FROM states where flag = 1 and country_id = 101';
         $a_return['states_array'] = DB::select($sSql);
-        $ccSql = 'select id,name FROM cities where show_flag = 1';
+        $ccSql = 'select id,name FROM cities where show_flag = 1 and country_id = 101';
         $a_return['cities_array'] = DB::select($ccSql);
         // dd($a_return['city_array']);
+
+        $edit_array = [];
+        if ($iId > 0) {
+            // #SHOW EXISTING DETAILS ON EDIT
+            $sql = 'SELECT id,banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
+                    FROM banner
+                    WHERE id = ?';
+
+            $bannerdetails = DB::select($sql, array($iId));
+            $edit_array = (array) $bannerdetails[0];
+           
+        }
+         // dd($edit_array);
 
         if ($request->has('form_type') && $request->form_type == 'add_edit_banner') {
 
             $rules = [
                 'banner_name' => 'required',
                 'banner_url' => 'required',
-                'banner_image' => 'required',
+                'banner_image' => !empty($edit_array) && $edit_array['banner_image'] !== '' ? '' : 'required',
                 'start_time' => 'required',
                 'end_time' => 'required',
                 'city' => 'required',
                 'state' => 'required',
-                'country' => 'required',
-                'active' => 'required'
+                'country' => 'required'
             ];
 
             if ($request->has('banner_image')) {
@@ -128,27 +141,18 @@ class BannerController extends Controller
 
             return redirect('/banner')->with('success', $successMessage);
         } else {
-            if ($iId > 0) {
-                // #SHOW EXISTING DETAILS ON EDIT
-                $sql = 'SELECT id,banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
-                        FROM banner
-                        WHERE id = ?';
-
-                $bannerdetails = DB::select($sql, array($iId));
-                $a_return = (array) $bannerdetails[0];
-                // dd($a_return);
-            }
+            $a_return['edit_data'] = !empty($edit_array) ? $edit_array : [] ;
         }
 
-        $cSql = 'select id,name FROM countries where flag = 1';
-        $a_return['countries_array'] = DB::select($cSql);
+        // $cSql = 'select id,name FROM countries where flag = 1';
+        // $a_return['countries_array'] = DB::select($cSql);
 
-        $a_return['states_array'] = DB::select($sSql);
-        $ccSql = 'select id,name FROM cities where show_flag = 1';
+        // $a_return['states_array'] = DB::select($sSql);
+        // $ccSql = 'select id,name FROM cities where show_flag = 1';
 
-        $ccSql = 'select id,name FROM cities where show_flag = 1';
-        $a_return['cities_array'] = DB::select($ccSql);
-
+        // $ccSql = 'select id,name FROM cities where show_flag = 1';
+        // $a_return['cities_array'] = DB::select($ccSql);
+        // dd($a_return['edit_data']);
         return view('Banner.create', $a_return);
     }
 

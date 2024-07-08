@@ -99,11 +99,9 @@
                         <table class="table table-striped table-bordered">
                             <thead>
                                 <tr>
-                                    <th class="text-center">Sr. No</th>
-                                    <th class="text-center">Name</th>
-                                    {{-- <th class="text-left">User Name</th> --}}
-                                    <th class="text-center">Profile</th>
-                                    {{-- <th class="text-center">Comment</th> --}}
+                                    <th class="text-center">Sr.No</th>
+                                    <th class="text-center">Testimonial Name</th>
+                                    <th class="text-center">Subtitle</th>
                                     <!-- <th class="text-center">Image</th> -->
                                     <th style="text-align: center;">Active</th>
                                     <th class="text-center">Actions</th>
@@ -112,7 +110,7 @@
                             <tbody class="text-center">
 
                                 <?php 
-                                    if (!empty($testimonial_array)){
+                                    if(!empty($testimonial_array)){
                                         $i = $Offset;?>
                                 <?php foreach ($testimonial_array as $val){
                                                 $i++;?>
@@ -122,7 +120,7 @@
                                         <?php echo $val->name; ?>
                                     </td>
                                     <td>{{ ucfirst($val->subtitle) }}</td>
-                                    {{-- <td>{{ ucfirst($val->description) }}</td> --}}
+                                  
                                     <!-- <td class="t-center text-center"><a target="_blank"
                                 href="{{ asset('uploads/testimonial_images/' . $val->testimonial_img) }}"><img
                                     style="width:50px ;"

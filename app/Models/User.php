@@ -140,27 +140,25 @@ class User extends Authenticatable
     public static function add_user($request)
     {
         // dd($request->all());
-        $firstname = (!empty($request->firstname)) ? $request->firstname : '';
-        $lastname = (!empty($request->lastname)) ? $request->lastname : '';
-        $email = (!empty($request->email)) ? $request->email : '';
-        $password = (!empty($request->password)) ? $request->password : '';
-        $username = !empty($request->username) ? $request->username : '';
-        $user_role = !empty($request->user_role) ? $request->user_role : '0';
-        if ($request->status == 'active') {
-            $status = 1;
-        }
-        if ($request->status == 'inactive') {
-            $status = 0;
-        }
-
-
+        // $firstname = (!empty($request->firstname)) ? $request->firstname : '';
+        // $lastname = (!empty($request->lastname)) ? $request->lastname : '';
+        // $email = (!empty($request->email)) ? $request->email : '';
+        // $password = (!empty($request->password)) ? $request->password : '';
+        // $username = !empty($request->username) ? $request->username : '';
+        // $user_role = !empty($request->user_role) ? $request->user_role : '0';
+        // if ($request->status == 'active') {
+        //     $status = 1;
+        // }
+        // if ($request->status == 'inactive') {
+        //     $status = 0;
+        // }
 
         $firstname = (!empty($request->firstname)) ? $request->firstname : '';
         $lastname = (!empty($request->lastname)) ? $request->lastname : '';
         $email = (!empty($request->email)) ? $request->email : '';
         $password = (!empty($request->password)) ? $request->password : '';
         $username = !empty($request->username) ? $request->username : '';
-        $user_role = !empty($request->user_role) ? $request->user_role : '0';
+        $user_role = !empty($request->type) ? $request->type : '0';
         $status = $request->status == 'active' ? 1 : 0;
 
         $sSQL = 'INSERT INTO users(firstname, lastname, email, password, mobile, type, is_active)
@@ -181,45 +179,32 @@ class User extends Authenticatable
 
     }
     public static function update_user($iId, $request)
-    {  //dd($request->all());
+    {  
+        // dd($request->all());
+       
         $firstname = (!empty($request->firstname)) ? $request->firstname : '';
         $lastname = (!empty($request->lastname)) ? $request->lastname : '';
         $email = (!empty($request->email)) ? $request->email : '';
         $password = (!empty($request->password)) ? $request->password : '';
-        $username = !empty($request->username) ? $request->username : '';
-        $user_role = !empty($request->user_role) ? $request->user_role : '0';
-        if ($request->status == 'active') {
-            $status = 1;
-        }
-        if ($request->status == 'inactive') {
-            $status = 0;
-        }
+        $mobile_no = !empty($request->mobile) ? $request->mobile : '';
+        $user_role = !empty($request->type) ? $request->type : '0';
+        $status = $request->status == 'active' ? 1 : 0;
+
 
         if ($iId > 0) {
-
-
-            $sSQL = 'UPDATE users SET
-            firstname = :firstname,
-            lastname = :lastname,
-            username= :username,
-            email = :email,
-            -- password = :password,
-            user_role=:user_role,
-            is_active=:is_active,
-            contact_number = :contact_number
-            WHERE id=:id';
 
             $Bindings = array(
                 'firstname' => $firstname,
                 'lastname' => $lastname,
-                'username' => $username,
                 'email' => $email,
-                // 'password' => md5($password),
-                'contact_number' => $request->contact_number,
-                'user_role' => $user_role,
+                'mobile' => $mobile_no,
+                'type' => $user_role,
                 'is_active' => $status,
                 'id' => $iId
             );
+
+            $sSQL = 'UPDATE users SET firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, type =:type, is_active= :is_active WHERE id=:id';
+
             // dd($Bindings);
             $result = DB::update($sSQL, $Bindings);
 

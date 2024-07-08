@@ -1,3 +1,24 @@
+<?php 
+ if(!empty($edit_data)){
+     $id        = $edit_data->id;
+     $firstname = $edit_data->firstname;
+     $lastname  = $edit_data->lastname;
+     $mobile    = $edit_data->mobile;
+     $email     = $edit_data->email;
+     $is_active = $edit_data->is_active;
+     $type      = $edit_data->type;
+ }else{
+     $id        = '';
+     $firstname = '';
+     $lastname  = '';
+     $mobile    = '';
+     $email     = '';
+     $is_active = '';
+     $type      = '';
+ }
+
+?>
+
 @extends('layout.index')
 <!-- Dashboard Ecommerce start -->
 @if (!empty($id))
@@ -97,8 +118,6 @@
 
                                         <div class="col-sm-6">
                                             <div class="row">
-{{--                                                 
-                                                --}}
 
                                                 <div class="col-xs-12 col-md-12">
                                                     <div class="form-group mb-5">
@@ -165,8 +184,8 @@
                                                             placeholder="password" autocomplete="off"/>
                                                             <h5><small class="text-danger" id="password_err"></small></h5>
                                                             @error('password')
-                                                            <span class="error" style="color:red;">{{ $message }}</span>
-                                                        @enderror
+                                                                <span class="error" style="color:red;">{{ $message }}</span>
+                                                            @enderror
                                                     </div>
                                                 </div>
                                                 
@@ -176,9 +195,7 @@
                                                         <input type="password" id="password_confirmation" class="form-control col-sm-8 float-right" name="password_confirmation"
                                                             placeholder="Confirm Password" autocomplete="off"/>
                                                             <h5><small class="text-danger" id="password_confirmation_err"></small></h5>
-                                                            @error('password_confirmation')
-                                                            <span class="error" style="color:red;">{{ $message }}</span>
-                                                        @enderror
+                                                          
                                                     </div>
                                                 </div>
 
@@ -204,11 +221,12 @@
                                                 <div class="form-group mb-5">
                                             
                                                     <label for="role" class="col-sm-4 float-left"> Type <span style="color:red;">*</span></label>
-                                                    <select name="type" id="type" class="form-control form-select col-sm-8 float-right" onchange="return get_info()">
+                                                    <select name="type" id="type" class="form-control form-select col-sm-8 float-right">
                                                         <option value="">Select Role</option>
-                                                        @foreach ($type as $role)
-                                                            <option value="{{ $role->id }}">{{ $role->role_name }}</option>
-                                                        @endforeach
+                                                     
+                                                        <option value="1" <?php echo !empty($type) && $type == 1 ? 'selected' : ''   ?> >Superadmin</option>
+                                                        <option value="2" <?php echo !empty($type) && $type == 2 ? 'selected' : ''   ?> >Organizer/Admin</option>
+                                                        <option value="3" <?php echo !empty($type) && $type == 3 ? 'selected' : '' ?>>User</option>
                                                     </select>
                                                     <h5><small class="text-danger" id="user_role_err"></small></h5>
                                                     @error('user_role')
@@ -296,11 +314,17 @@
             $('#mobile').parent().addClass('has-error');
             $('#mobile_err').html('Please Enter Mobile Number.');
             $('#mobile').focus();
+            $('#mobile').keyup(function () {
+            $('#mobile').parent().removeClass('has-error');
+            $('#mobile_err').html('');
             return false;
         } else if ($('#mobile').val().length < 10) {
             $('#mobile').parent().addClass('has-error');
             $('#mobile_err').html('Please Enter Valid Mobile Number');
             $('#mobile').focus();
+            $('#mobile').keyup(function () {
+            $('#mobile').parent().removeClass('has-error');
+            $('#mobile_err').html('');
             return false;
         }
 
