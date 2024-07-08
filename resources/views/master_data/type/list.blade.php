@@ -120,27 +120,25 @@
                                                 <td class="text-center">{{ $i }}</td>
                                                 <td><?php echo $val->name; ?></td>
 
-                                                <td class="t-center text-center"><a target="_blank"
-                                href="{{ asset('uploads/type_images/' . $val->logo) }}"><img
-                                    style="width:50px ;"
-                                    src="{{ asset('uploads/type_images/' . $val->logo) }}"></a>
-                        </td>
-                        <td class="text-center">
+                                                <td class="t-center text-center">
+                                                    <?php if(!empty($val->logo)){ ?>
+                                                        <a target="_blank" href="{{ asset('uploads/type_images/' . $val->logo) }}">
+                                                            <img style="width:50px;"
+                                                            src="{{ asset('uploads/type_images/' . $val->logo) }}">
+                                                        </a>
+                                                    <?php } ?>
+                                                 </td>
+                                                <td class="text-center">
+                                                    <div class="custom-control custom-switch custom-switch-success" >
+                                                        <input type="checkbox" class="custom-control-input"  id="{{ $val->id }}" 
+                                                        {{$val->active ? 'checked' : '' }} onclick="change_status(event.target, {{ $val->id }});" />
 
-<div class="custom-control custom-switch custom-switch-success" >
-    <input type="checkbox" class="custom-control-input"  id="{{ $val->id }}" {{
-        $val->active ? 'checked' : '' }}
-    onclick="change_status(event.target, {{ $val->id }});" />
-
-    <label class="custom-control-label" style="cursor: pointer;" for="{{ $val->id }}">
-
-        <span class="switch-icon-left"></span>
-        <span class="switch-icon-right"></span>
-    </label>
-</div>
-</td>
-
-                                                
+                                                        <label class="custom-control-label" style="cursor: pointer;" for="{{ $val->id }}">
+                                                            <span class="switch-icon-left"></span>
+                                                            <span class="switch-icon-right"></span>
+                                                        </label>
+                                                    </div>
+                                                </td>
 
                                                 <td>
                                                     <a href="{{ route('edit_type', $val->id) }}"><i
@@ -171,12 +169,10 @@
 
 <div class="flex-grow-1"></div>
 
-
 <script>
      function remove_type(iId) {
         // alert(iId);
         var url = '<?php echo url('/type/remove_type') ?>';
-
         url = url + '/' + iId;
         // alert(url);
         Confirmation = confirm('Are you sure you want to remove this type');

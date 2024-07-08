@@ -101,31 +101,23 @@ class Advertisement extends Model
    {
        $img_name = '';
 
-       if ($request->status == 'active') {
-            $status = 1;
-        } else {
-            $status = 0;
-        }
-   
        if ($request->file('img')) {
            $path = public_path('uploads/images/');
            $img_file = $request->file('img');
            $img_extension = $img_file->getClientOriginalExtension();
-           
            $img_name = strtotime('now') . '_ad.' . $img_extension;
            
            $img_file->move($path, $img_name);
        }
    
        $sql = 'INSERT INTO advertisement (
-                  name, status, url, img
+                  name, url, img
               ) VALUES (
-                  :name, :status, :url, :img
+                  :name, :url, :img
               )';
    
        $bindings = [
            'name' => $request->name,
-           'status' => $status,
            'url' => $request->url,
            'img' => $img_name
        ];
@@ -141,33 +133,22 @@ class Advertisement extends Model
    {
        $img_name = '';
    
-       if ($request->status == 'active') {
-           $status = 1;
-       } else {
-           $status = 0;
-       }
-   
        if ($request->hasFile('img')) { 
            $path = public_path('uploads/images/');
            $img_file = $request->file('img');
            $img_extension = $img_file->getClientOriginalExtension();
-           
-        
            $img_name = strtotime('now') . '_ad.' . $img_extension;
            
-        
            $img_file->move($path, $img_name);
        }
    
        
        $sql = 'UPDATE advertisement SET
                   name = :name,
-                  status = :status,
                   url = :url';
        
        $bindings = [
            'name' => $request->name,
-           'status' => $status, 
            'url' => $request->url,
            'id' => $id
        ];

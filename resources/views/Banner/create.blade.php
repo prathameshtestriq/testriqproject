@@ -1,3 +1,30 @@
+<?php
+
+if(!empty($edit_data)){
+     $id        = $edit_data['id'];
+     $banner_name = $edit_data['banner_name'];
+     $banner_url  = $edit_data['banner_url'];
+     $banner_image    = $edit_data['banner_image'];
+     $start_time     = $edit_data['start_time'];
+     $end_time = $edit_data['end_time'];
+     $country      = $edit_data['country'];
+     $state      = $edit_data['state'];
+     $city      = $edit_data['city'];
+     $active      = $edit_data['active'];
+ }else{
+     $id        = '';
+     $banner_name = '';
+     $banner_url  = '';
+     $banner_image    = '';
+     $start_time     = '';
+     $end_time = '';
+     $country      = '';
+     $state      = '';
+     $city      = '';
+     $active      = '';
+ }
+
+?>
 @extends('layout.index')
 @if (!empty($id))
 @section('title', 'Edit Banner Details')
@@ -50,7 +77,7 @@
         </div>
     </div>
 
-    @if ($errors->any())
+    <!-- @if ($errors->any())
     <div class="alert alert-danger">
         <ul>
             @foreach ($errors->all() as $error)
@@ -58,7 +85,7 @@
             @endforeach
         </ul>
     </div>
-    @endif
+    @endif -->
 
     @if (session('success'))
     <div class="alert alert-success">
@@ -70,7 +97,7 @@
     <div class="demo-spacing-0 mb-1">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <div class="alert-body">
-                {{-- <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> --}}
+              
                 {{ $message }}
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
 
@@ -120,30 +147,41 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-6 col-12">
+                                    <div class="col-md-4 col-12">
                                         <div class="form-group">
                                             <label for="banner_image" class="form-label">Banner Image <span
                                                     style="color:red">*</span></label>
-
-                                            @if (!empty($banner_image))
-                                            <img src="{{ asset('uploads/banner_image/' . $banner_image) }}"
-                                                alt="Current Image" style="width: 50px;">
-                                            <input type="hidden" name="hidden_banner_image"
-                                                value="{{ old('banner_image', $banner_image) }}"
-                                                accept="image/jpeg, image/png">
-                                            @endif
-
+                                          
                                             <input type="file" class="form-control" name="banner_image"
                                                 id="banner_image"
                                                 style="text-transform: capitalize; display: block; width: 100%;"
-                                                accept="image/jpeg, image/png" class="form-control">
-                                            <span style="color:red;" id="banner_image_err"></span>
+                                                accept="image/jpeg, image/png" class="form-controlBanner Image" />                   
+                                                <span style="color:red;" id="banner_image_err"></span>
                                             <h5><small class="text-danger" id="banner_image_err"></small></h5>
                                             @error('banner_image')
                                             <span class="error">{{ $message }}</span>
                                             @enderror
+                                           
                                         </div>
                                     </div>
+
+                                    <div class="col-md-2 col-12">
+                                        <div class="form-group">
+                                            <span><br></span>
+                                        
+                                            <?php if(!empty($banner_image)){ ?>
+                                                <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank"><img src="{{ asset('uploads/banner_image/' . $banner_image) }}"
+                                                    alt="Current Image" style="width: 50px;"></a> 
+                                                <input type="hidden" name="hidden_banner_image"
+                                                    value="{{ old('banner_image', $banner_image) }}" accept="image/jpeg, image/png">
+                                            <?php } //else{ ?>
+                                                <!-- <div id="imagePreview">
+                                                    <img id="preview" class="preview-image" src="#" alt="Image Preview">
+                                                </div> -->
+                                            <?php //} ?>
+                                        </div>
+                                    </div>
+
                                     <div class="col-md-6 col-12">
                                         <div class="form-group">
                                             <label for="start_time">Start Date <span style="color:red;">*</span></label>
@@ -234,21 +272,21 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
+                          <!--       <div class="row">
                                     <div class="col-md-6 col-12">
                                         <div class="form-group">
                                             <label class="col-sm-2 float-left" for="password_confirmation"
                                                     style="margin-top:9px">Status<span
                                                         style="color:red;">*</span></label>
                                                 <div class="form-check mt-1 mb-2">
-                                                    <?php $activeValue = ''; // Initialize to empty string ?>
+                                                    <?php //$activeValue = ''; // Initialize to empty string ?>
                                                     <input class="form-check-input active1" type="radio" name="active"
-                                                        id="active1" value="active" <?php if ($active==1) {
-                                                        echo 'checked' ; } ?>>
+                                                        id="active1" value="active" <?php //if ($active==1) {
+                                                        //echo 'checked' ; } ?>>
                                                     <label class="form-check-label mr-4" for="active1">Active</label>
                                                     <input class="form-check-input active1" type="radio" name="active"
-                                                        id="active2" value="inactive" <?php if ($active==0) {
-                                                        echo 'checked' ; } ?>>
+                                                        id="active2" value="inactive" <?php //if ($active==0) {
+                                                        //echo 'checked' ; } ?>>
                                                     <label class="form-check-label" for="active2">Inactive</label>
                                                 </div>
                                                 <h5><small class="text-danger" id="active_err"></small></h5>
@@ -257,7 +295,7 @@
                                                 @enderror
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
 
                                 <div class="col-12 text-center mt-1">
                                     <button type="submit" class="btn btn-primary mr-1"
@@ -278,18 +316,33 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+        function previewImage() {
+            var event = document.getElementById('banner_image');
+            console.log('ss');
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('preview');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.file[0]);
+        }
+
+        
+    </script>
+
+<script>
     $(document).ready(function() {
         $('#country').change(function() {
             //alert('here');
             var countryId = $(this).val();
-            console.log("Country Id: " + countryId);
+            // console.log("Country Id: " + countryId);
             if (countryId) {
                 $.ajax({
                     url: "{{ url('get-states') }}?country_id=" + countryId,
                     type: 'GET',
                     success: function(res) {
-                        console.log("Response from get-states:");
-                        console.log(res);
+                        // console.log("Response from get-states:");
+                        // console.log(res);
                         $('#state').empty();
                         $('#state').append('<option value="">Select</option>');
                         $.each(res, function(key, value) {
@@ -309,14 +362,14 @@
 
         $('#state').change(function() {
             var stateId = $(this).val();
-            console.log("State Id: " + stateId);
+            // console.log("State Id: " + stateId);
             if (stateId) {
                 $.ajax({
                     url: "{{ url('get-cities') }}?state_id=" + stateId,
                     type: 'GET',
                     success: function(res) {
-                        console.log("Response from get-cities:");
-                        console.log(res);
+                        // console.log("Response from get-cities:");
+                        // console.log(res);
                         $('#city').empty();
                         $('#city').append('<option value="">Select</option>');
                         $.each(res, function(key, value) {

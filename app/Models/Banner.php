@@ -150,9 +150,9 @@ class Banner extends Model
         }
 
         $ssql = 'INSERT INTO banner (
-            banner_name, banner_image, banner_url, start_time, end_time, city, state, country, active, created_datetime
+            banner_name, banner_image, banner_url, start_time, end_time, city, state, country, created_datetime
         ) VALUES (
-            :banner_name, :banner_image, :banner_url, :start_time, :end_time, :city, :state, :country, :active, :created_datetime
+            :banner_name, :banner_image, :banner_url, :start_time, :end_time, :city, :state, :country, :created_datetime
         )';
 
         $bindings = array(
@@ -164,7 +164,6 @@ class Banner extends Model
             'city' => $request->city,
             'state' => $request->state,
             'country' => $request->country,
-            'active' => $request->active,
             'created_datetime' => now() // Assuming `created_datetime` is a timestamp field
         );
 
@@ -177,12 +176,6 @@ class Banner extends Model
 
     public static function update_banner($iId, $request)
     {
-
-        if ($request->active == 'active') {
-            $active = 1;
-        } else {
-            $active = 0;
-        }
 
         $banner_image_name = '';
 
@@ -205,8 +198,7 @@ class Banner extends Model
             end_time = :end_time,
             city = :city,
             state = :state,
-            country = :country,
-            active = :active';
+            country = :country';
 
         $bindings = array(
             'banner_name' => $request->banner_name,
@@ -215,8 +207,7 @@ class Banner extends Model
             'end_time' => strtotime($request->end_time),
             'city' => $request->city,
             'state' => $request->state,
-            'country' => $request->country,
-            'active' => $active
+            'country' => $request->country
         );
 
         if (!empty($banner_image_name)) {

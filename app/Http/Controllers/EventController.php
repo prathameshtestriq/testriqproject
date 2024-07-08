@@ -99,7 +99,7 @@ class EventController extends Controller
         // $sSQL = 'SELECT vm.id,vm.name,vm.start_time,vm.end_time,vm.city,vm.state,vm.country,vm.active FROM events as vm WHERE vm.deleted = 0' . $FiltersSql;
 
         // $sSQL .= ' ORDER BY vm.name ASC ';
-        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country, vm.active FROM events AS vm WHERE vm.deleted = 0' . $FiltersSql;
+        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country, vm.active FROM events AS vm WHERE vm.deleted = 0' . $FiltersSql. ' order by vm.id desc';
 
 
         if ($Limit > 0) {
@@ -124,14 +124,14 @@ class EventController extends Controller
             'end_time' => '',
             'countries' => DB::table('countries')->where('flag', 1)->get(),
             //  'countries' => DB::select('select id,name FROM countries where flag = 1'),
-            'timezones' => 'select id,area FROM master_timezones where active = 1',
+            'time_zone' => 'select id,area FROM master_timezones where active = 1',
             'categories' => DB::table('event_category')->get(),
             'country' => '',
             'state' => 'select id,name FROM states where flag = 1',
             'city' => '',
             'event_url' => '',
             'active' => 1,
-            'description' => '',
+            'event_description' => '',
             'event_keywords' => '',
             'address' => '',
             'Category' => '',
@@ -146,8 +146,6 @@ class EventController extends Controller
                     // $aReturn['allTypes'] = $allTypes;
                     // If the type is selected, add it to the selectedTypes array
                     $selectedTypes[$category->category_id] = $category;
-        
-        
                     $category->selected = $isSelected;
                 }
                
@@ -155,10 +153,10 @@ class EventController extends Controller
         
                 $Category = array_diff_key($selectedTypes);
               //  dd($Category);
-              $aReturn['Category'] = $selectedTypes; 
+                $aReturn['Category'] = $selectedTypes; 
              //   $aReturn['Category'] = $selectedTypes; // Pass $allTypes to the view
 
-//dd( $aReturn['Category']);
+     //dd( $aReturn['Category']);
 
         // Validation Rules
         $rules = [
@@ -168,12 +166,11 @@ class EventController extends Controller
             'city' => 'required|string',
             'state' => 'required|string',
             'country' => 'required|string',
-            'active' => 'required|string',
             'address' => 'required|string',
             'event_url' => 'required|string',
-            'description' => 'required|string',
+            'event_description' => 'required|string',
             'event_keywords' => 'required|string',
-            'timezones' => 'required|string',
+            'time_zone' => 'required|string',
 
         ];
 
@@ -189,24 +186,24 @@ class EventController extends Controller
             $city = $validatedData['city'];
             $state = $validatedData['state'];
             $country = $validatedData['country'];
-            $active = $validatedData['active'];
+           // $active = $validatedData['active'];
             $address = $validatedData['address'];
             $event_url = $request->event_url;
-            $description = $request->description;
+            $description = $request->event_description;
             $event_keywords = $request->event_keywords;
-            $timezones = $request->timezones;
-            $active = $request->input('active', 1);
+            $timezones = $request->time_zone;
+           // $active = $request->input('active', 1);
             $Category = $request->input('category_id', []);
             // Update or insert based on $id
             if ($id > 0) {
-                if ($request->active == 'active') {
-                    $active = 1;
-                }
-                if ($request->active == 'inactive') {
-                    $active = 0;
-                }
+                // if ($request->active == 'active') {
+                //     $active = 1;
+                // }
+                // if ($request->active == 'inactive') {
+                //     $active = 0;
+                // }
                 // Existing event update logic
-                $usql = 'UPDATE events SET name = :name, start_time = :start_time, end_time = :end_time, city = :city, state = :state, country = :country, active = :active, event_url = :event_url, description = :description, event_keywords = :event_keywords, address = :address, timezones = :timezones  WHERE id = :id';
+                $usql = 'UPDATE events SET name = :name, start_time = :start_time, end_time = :end_time, city = :city, state = :state, country = :country, event_url = :event_url, event_description = :description, event_keywords = :event_keywords, address = :address, time_zone = :timezones  WHERE id = :id';
                 $bindings = [
                     'name' => $name,
                     'start_time' => $start_time,
@@ -214,7 +211,6 @@ class EventController extends Controller
                     'city' => $city,
                     'state' => $state,
                     'country' => $country,
-                    'active' => $active,
                     'event_url' => $event_url,
                     'description' => $description,
                     'event_keywords' => $event_keywords,
@@ -247,7 +243,7 @@ class EventController extends Controller
             } else {
                 // New event insert logic
                 
-                $sql = 'INSERT INTO events (name, start_time, end_time, city, state, country, active, description, event_url, event_keywords, address, timezones) VALUES (:name, :start_time, :end_time, :city, :state, :country, :active, :description, :event_url, :event_keywords, :address, :timezones)';
+                $sql = 'INSERT INTO events (name, start_time, end_time, city, state, country, active, event_description, event_url, event_keywords, address, time_zone) VALUES (:name, :start_time, :end_time, :city, :state, :country, :active, :description, :event_url, :event_keywords, :address, :timezones)';
                 $bindings = [
                     'name' => $name,
                     'start_time' => $start_time,
@@ -255,7 +251,7 @@ class EventController extends Controller
                     'city' => $city,
                     'state' => $state,
                     'country' => $country,
-                    'active' => $active,
+                    'active' => 1,
                     'description' => $description,
                     'event_url' => $event_url,
                     'event_keywords' => $event_keywords,
@@ -304,11 +300,11 @@ class EventController extends Controller
         }
    
         $aReturn['timezones_array'] = DB::table('master_timezones')->where('active', 1)->get();
-        $cSql = 'select id,name FROM countries where flag = 1';
+        $cSql = 'select id,name FROM countries where flag = 1 and id = 101';
         $aReturn['countries_array'] = DB::select($cSql);
-        $sSql = 'select id,name FROM states where flag = 1';
+        $sSql = 'select id,name FROM states where flag = 1 and country_id = 101';
         $aReturn['states_array'] = DB::select($sSql);
-        $ccSql = 'select id,name FROM cities where show_flag = 1';
+        $ccSql = 'select id,name FROM cities where show_flag = 1 and country_id = 101';
         $aReturn['cities_array'] = DB::select($ccSql);
         $aReturn['Category'] = $Category;
 //      

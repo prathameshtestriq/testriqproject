@@ -147,7 +147,7 @@
                                             </select>
                                             <small class="text-danger">{{ $errors->first('state') }}</small>
                                         </div>
-                                        <div class="form-group mb-3">
+                                        <!-- <div class="form-group mb-3">
                                             <label for="status" class="col-sm-2 float-left">Status</label>
                                             <div class="form-check mt-1 mb-2">
                                                 <input class="form-check-input active1" type="radio" name="active"
@@ -163,7 +163,7 @@
                                             @error('active')
                                             <span class="error" style="color:red;">{{ $message }}</span>
                                             @enderror
-                                        </div>
+                                        </div> -->
                                     </div>
 
                                     <div class="col-md-6">
@@ -178,10 +178,10 @@
                                         <div class="form-group mb-3">
                                             <label for="description">Event Description <span
                                                     style="color:red;">*</span></label>
-                                            <input type="text" id="description" class="form-control" name="description"
+                                            <input type="text" id="event_description" class="form-control" name="event_description"
                                                 placeholder="Event Description" autocomplete="off"
-                                                value="{{ old('description', $description) }}" />
-                                            <small class="text-danger">{{ $errors->first('description') }}</small>
+                                                value="{{ old('event_description', $event_description) }}" />
+                                            <small class="text-danger">{{ $errors->first('event_description') }}</small>
                                         </div>
 
                                         <div class="form-group mb-3">
@@ -195,16 +195,16 @@
 
                                         <div class="form-group mb-3">
                                             <label for="timezones">Timezone <span style="color:red">*</span></label>
-                                            <select name="timezones" id="timezones" class="form-control">
+                                            <select name="time_zone" id="time_zone" class="form-control">
                                                 <option value="">-- Select Timezone --</option>
                                                 @foreach($timezones_array as $res)
-                                                <option value="{{ $res->id }}" {{ old('timezones', $timezones)==$res->id
+                                                <option value="{{ $res->id }}" {{ old('time_zone', $time_zone)==$res->id
                                                     ? 'selected' : '' }}>
                                                     {{ $res->area }}
                                                 </option>
                                                 @endforeach
                                             </select>
-                                            <small class="text-danger">{{ $errors->first('timezones') }}</small>
+                                            <small class="text-danger">{{ $errors->first('time_zone') }}</small>
                                         </div>
 
                                         <div class="form-group mb-3">
@@ -260,14 +260,14 @@
         $(document).ready(function() {
         $('#country').change(function() {
             var countryId = $(this).val();
-            console.log("Country Id: " + countryId);
+            // console.log("Country Id: " + countryId);
             if (countryId) {
                 $.ajax({
                     url: "{{url('get-states')}}?country_id=" + countryId,
                     type: 'GET',
                     success: function (res) {
-                        console.log("Response from get-states:");
-                        console.log(res);
+                        // console.log("Response from get-states:");
+                        // console.log(res);
                         $('#state').empty();
                         $('#state').append('<option value="">Select</option>');
                         $.each(res, function (key, value) {
@@ -286,14 +286,14 @@
 
         $('#state').change(function() {
             var stateId = $(this).val();
-            console.log("State Id: " + stateId);
+            // console.log("State Id: " + stateId);
             if (stateId) {
                 $.ajax({
                     url: "{{url('get-cities')}}?state_id=" + stateId,
                     type: 'GET',
                     success: function (res) {
-                        console.log("Response from get-cities:");
-                        console.log(res);
+                        // console.log("Response from get-cities:");
+                        // console.log(res);
                         $('#city').empty();
                         $('#city').append('<option value="">Select</option>');
                         $.each(res, function (key, value) {

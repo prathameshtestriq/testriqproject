@@ -33,7 +33,7 @@
             <div class="content-header-left col-md-9 col-12 mb-2">
                 <div class="row breadcrumbs-top">
                     <div class="col-12 d-flex">
-                        <h2 class="content-header-title float-start mb-0">Add User</h2>
+                        <h2 class="content-header-title float-start mb-0">Add Testimonial</h2>
                     </div>
                 </div>
             </div>
@@ -77,40 +77,24 @@
 
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <div class="form-group mb-5">
-                                            <label for="user_id">Testimonial Name <span style="color:red">*</span></label>
-                                            <select name="user_id" id="user_id" class="form-control">
-                                                <option value="">-- Select testimonial name --</option>
-                                                @foreach($users_master_array as $res)
-                                                @php
-                                                $selected = '';
-                                                if (old('user_id', $user_id) == $res->id) {
-                                                $selected = 'selected';
-                                                }
-                                                @endphp
-                                                <option value="{{ $res->id }}" {{ $selected }}>{{ $res->firstname }}
-                                                </option>
-                                                @endforeach
-                                            </select>
-                                            <span class="error-message">@error('user_id'){{ $message }}@enderror</span>
-                                        </div>
-
-                                        <div class="form-group mb-5">
-                                            <label for="description">Comment <span style="color:red;">*</span></label>
-                                            <input type="text" id="description" class="form-control"
-                                                placeholder="Testimonial Comment" name="description" autocomplete="off"
-                                                value="{{ old('description', $description) }}" />
-                                            <span class="error-message">@error('description'){{ $message
-                                                }}@enderror</span>
-                                        </div>
-                                        <!-- <div class="form-group mb-5">
-                                                <label for="description">Comment <span style="color:red;">*</span></label>
-                                                <input type="text" id="description" class="form-control" placeholder="User Comment" name="description" autocomplete="off" value="{{ old('description', $description) }}" />
-                                                <span class="error-message">@error('description'){{ $message }}@enderror</span>
-                                            </div> -->
+                                        <label for="user_id">Testimonial Name <span style="color:red">*</span></label>
+                                         <input type="text" id="testimonial_name" class="form-control"
+                                            placeholder="Testimonial Name" name="testimonial_name" autocomplete="off"
+                                            value="{{ old('testimonial_name', $testimonial_name) }}" />
+                                        <span class="error-message">@error('testimonial_name'){{ $message
+                                            }}@enderror</span>
                                     </div>
 
-                                    <!-- <div class="col-sm-6">
+                                    <div class="col-sm-6">
+                                        <label for="subtitle">Subtitle <span style="color:red;">*</span></label>
+                                        <input type="text" id="subtitle" class="form-control"
+                                            placeholder="Subtitle" name="subtitle" autocomplete="off"
+                                            value="{{ old('subtitle', $subtitle) }}" />
+                                        <span class="error-message">@error('subtitle'){{ $message }}@enderror</span>
+                                    </div>
+
+
+                                  <!--    <div class="col-sm-6">
                                             <div class="form-group mb-5">
                                             <label for="testimonial_img" class="form-label">Image <span style="color:red">*</span></label>
                                                 @if (!empty($testimonial_img))
@@ -119,7 +103,7 @@
                                                 @endif
                                                 <input type="file" name="testimonial_img" id="testimonial_img" accept="image/jpeg, image/png" class="form-control">
                                                 <span class="error-message">@error('testimonial_img'){{ $message }}@enderror</span>
-                                            </div> -->
+                                            </div>  -->
 
                                     <!-- <div class="col-6">
                                             <div class="form-group mb-5">
@@ -153,42 +137,43 @@
 
 </div>
 </div> -->
-                                    <div class="col-6">
-                                        <div class="form-group mb-5">
-                                            <label for="subtitle">Testimonial Profile <span style="color:red;">*</span></label>
-                                            <input type="text" id="subtitle" class="form-control"
-                                                placeholder="Testimonial Profile" name="subtitle" autocomplete="off"
-                                                value="{{ old('subtitle', $subtitle) }}" />
-                                            <span class="error-message">@error('subtitle'){{ $message }}@enderror</span>
-
-                                        </div>
-
-
-                                        <div class="form-group mb-5">
-                                            <label for="rating">Choose Rating <span style="color:red">*</span></label>
-                                            <select name="rating" id="rating" class="form-control">
-                                                <option value="">-- Select Testimonial Rating --</option>
-                                                <option value="1" {{ $rating==1 ? 'selected' : '' }}>1</option>
-                                                <option value="2" {{ $rating==2 ? 'selected' : '' }}>2</option>
-                                                <option value="3" {{ $rating==3 ? 'selected' : '' }}>3</option>
-                                                <option value="4" {{ $rating==4 ? 'selected' : '' }}>4</option>
-                                                <option value="5" {{ $rating==5 ? 'selected' : '' }}>5</option>
-                                            </select>
-                                            <span class="error-message">@error('rating'){{ $message }}@enderror</span>
-                                        </div>
+                                    <div class="col-6 mt-2">
+                                        <label for="description">Description <span style="color:red;">*</span></label>
+                                        <input type="text" id="description" class="form-control"
+                                            placeholder="Description" name="description" autocomplete="off"
+                                            value="{{ old('description', $description) }}" />
+                                           
+                                        <span class="error-message">@error('description'){{ $message
+                                            }}@enderror</span>
                                     </div>
-                                    <div class="col-xs-12 col-md-12">
+
+                                    <div class="col-sm-4 mt-2">
+                                          
+                                        <label for="testimonial_img" class="form-label">Image <span style="color:red">*</span></label>
+                                       
+                                        <input type="file" name="testimonial_img" id="testimonial_img" accept="image/jpeg, image/png" class="form-control">
+                                        <span class="error-message">@error('testimonial_img'){{ $message }}@enderror</span>
+                                    </div> 
+
+                                    <div class="col-sm-2 mt-2">
+                                        @if (!empty($testimonial_img))
+                                            <a href="{{ asset('uploads/testimonial_images/' . $testimonial_img) }}" target="_blank">
+                                                <img src="{{ asset('uploads/testimonial_images/' . $testimonial_img) }}" alt="Current Image" style="width: 50px;">
+                                            </a>
+                                            <input type="hidden" name="hidden_testimonial_img" value="{{ old('testimonial_img', $testimonial_img) }}" accept="image/jpeg, image/png">
+                                        @endif
+                                    </div>
+
+                               <!--      <div class="col-xs-12 col-md-12">
                                         <label class="col-sm-1 float-left" for="password_confirmation"
                                             style="margin-top:10px">Status <span style="color:red;">*</span></label>
                                         <div class="form-check mt-1 mb-2">
-                                            <?php $activeValue = ''; // Initialize to empty string ?>
+                                            <?php //$activeValue = ''; // Initialize to empty string ?>
                                             <input class="form-check-input active1" type="radio" name="active"
-                                                id="active1" value="active" style="cursor: pointer;" <?php if
-                                                ($active==1) { echo 'checked' ; } ?>>
+                                                id="active1" value="active" style="cursor: pointer;" <?php //if($active==1) { echo 'checked' ; } ?>>
                                             <label class="form-check-label mr-4" for="active1">Active</label>
                                             <input class="form-check-input active1" type="radio" name="active"
-                                                id="active2" value="inactive" style="cursor: pointer;" <?php if
-                                                ($active==0) { echo 'checked' ; } ?>>
+                                                id="active2" value="inactive" style="cursor: pointer;" <?php //if($active==0) { echo 'checked' ; } ?>>
                                             <label class="form-check-label" for="active2">Inactive</label>
                                         </div>
                                         <span class="error-message">@error('active'){{ $message }}@enderror</span>
@@ -196,7 +181,7 @@
                                         @error('active')
                                         <span class="error" style="color:red;">{{ $message }}</span>
                                         @enderror --}}
-                                    </div>
+                                    </div> -->
                                 </div>
 
                                 <div class="col-12 text-center mt-1">

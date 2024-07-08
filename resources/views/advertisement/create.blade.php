@@ -1,3 +1,19 @@
+<?php
+// dd($edit_data);
+if(!empty($edit_data)){
+    $id        = $edit_data['id'];
+    $name      = $edit_data['name'];
+    $img       = $edit_data['img'];
+    $url       = $edit_data['url'];
+ }else{
+    $id        = '';
+    $name      = '';
+    $img       = '';
+    $url       = '';
+ }
+
+?>
+
 @extends('layout.index')
 @if (!empty($id))
     @section('title', 'Edit Advertisement Details')
@@ -50,7 +66,7 @@
             </div>
         </div>
 
-        @if ($errors->any())
+     <!--    @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
                     @foreach ($errors->all() as $error)
@@ -58,7 +74,7 @@
                     @endforeach
                 </ul>
             </div>
-        @endif
+        @endif -->
 
         @if (session('success'))
             <div class="alert alert-success">
@@ -95,99 +111,55 @@
                                     <div class="row">
 
                                         <div class="col-md-6">
-                                            {{-- <div class="row">
-                                                <div class="col-xs-12 col-md-12"> --}}
-                                            <div class="form-group mb-3">
-                                                <label for="name">Name <span style="color:red;">*</span></label>
-                                                {{-- <input type="text" id="banner_name"
-                                                            class="form-control col-sm-8 float-right" name="banner_name"
-                                                            placeholder=" Name" autocomplete="off"
-                                                            value="{{ old('banner_name', $banner_name) }}" /> --}}
-                                                <input type="text" id="name" class="form-control"
-                                                    name="name" placeholder="Name" autocomplete="off"
-                                                    value="{{ old('name', $name) }}" />
-                                                <h5><small class="text-danger" id="name_err"></small></h5>
-                                                @error('name')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-
-                                           
-
-                                            <div class="form-group mb-3">
-                                                {{-- <div class="form-group"> --}}
-                                                <label for="img" class="form-label">Image <span
-                                                        style="color:red">*</span></label>
-
-                                                @if (!empty($img))
-                                                    <img src="{{ asset('uploads/images/' . $img) }}"
-                                                        alt="Current Image" style="width: 50px;">
-                                                    <input type="hidden" name="hidden_image"
-                                                        value="{{ old('img', $img) }}"
-                                                        accept="image/jpeg, image/png">
-                                                @endif
-
-                                                <input type="file" class="form-control" name="img"
-                                                    id="img"
-                                                    style="text-transform: capitalize; display: block; width: 100%;"
-                                                    accept="image/jpeg, image/png" class="form-control">
-                                                <span style="color:red;" id="image_err"></span>
-
-                                                @error('img')
-                                                    <span class="error">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        
-                                            </select>
+                                           <label for="name">Name <span style="color:red;">*</span></label>
+                                            <input type="text" id="name" class="form-control"
+                                                name="name" placeholder="Name" autocomplete="off"
+                                                value="{{ old('name', $name) }}" />
+                                            <h5><small class="text-danger" id="name_err"></small></h5>
+                                            @error('name')
+                                                <span class="error" style="color:red;">{{ $message }}</span>
+                                            @enderror
                                         </div>
-                                        
+
                                         <div class="col-md-6">
-                                            <div class="form-group mb-3">
-                                                <label for="name">Url <span style="color:red;">*</span></label>
-
-                                                <input type="text" id="url" class="form-control"
-                                                    name="url" placeholder="url" autocomplete="off"
-                                                    value="{{ old('url', $url) }}" />
-                                                <h5><small class="text-danger" id="url_err"></small></h5>
-                                                @error('url')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        
-                                        </div>
-
-                                        <div class="col-sm-6">
-                                            <div class="row">
-                                                <div class="col-xs-12 col-md-12">
-                                                    <label class="col-sm-2 float-left" for="status"
-                                                        style="margin-top:10px">Status</label>
-                                                    <div class="form-check mt-1 mb-2">
-                                                        
-                                                        <?php $activeValue = ''; // Initialize to empty string ?>
-                                                        <input class="form-check-input active1" type="radio"
-                                                            name="status" id="active1" value="active"
-                                                            <?php if ($status == 1) {
-                                                                echo 'checked';
-                                                            } ?>>
-                                                        <label class="form-check-label mr-4" for="active1">Active</label>
-                                                        <input class="form-check-input active1" type="radio"
-                                                            name="status" id="active2" value="inactive"
-                                                            <?php if ($status == 0) {
-                                                                echo 'checked';
-                                                            } ?>>
-                                                        <label class="form-check-label" for="active2">Inactive</label>
-                                                    </div>
-                                                    <h5><small class="text-danger" id="status_err"></small></h5>
-                                                    @error('status')
-                                                        <span class="error" style="color:red;">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
-
-                                            </div>
+                                            <label for="name">Url <span style="color:red;">*</span></label>
+                                            <input type="text" id="url" class="form-control"
+                                                name="url" placeholder="url" autocomplete="off"
+                                                value="{{ old('url', $url) }}" />
+                                            <h5><small class="text-danger" id="url_err"></small></h5>
+                                            @error('url')
+                                                <span class="error" style="color:red;">{{ $message }}</span>
+                                            @enderror
                                         </div>  
-                                        </div>
-                                        
 
+                                        <div class="col-md-4 mt-2">
+                                            <label for="img" class="form-label">Image <span style="color:red">*</span></label>
+                                           
+                                            <input type="file" class="form-control" name="img" id="img"
+                                                style="text-transform: capitalize; display: block; width: 100%;"
+                                                accept="image/jpeg, image/png" class="form-control">
+                                            <span style="color:red;" id="image_err"></span>
+
+                                            @error('img')
+                                                <span class="error">{{ $message }}</span>
+                                            @enderror
+                                        </div> 
+                                        
+                                        <div class="col-md-2 mt-2">
+                                            <span><br /></span>
+                                            @if (!empty($img))
+                                                <a href="{{ asset('uploads/images/' . $img) }}" target="_blank">
+                                                  <img src="{{ asset('uploads/images/' . $img) }}" alt="Current Image" style="width: 50px;">
+                                                </a>
+                                                <input type="hidden" name="hidden_image" value="{{ old('img', $img) }}" accept="image/jpeg, image/png">
+                                            @endif
+
+                                        </div>
+
+
+                                    </div>
+                                        
+                                     
                                         <div class="col-12 text-center mt-1">
                                             <button type="submit" class="btn btn-primary mr-1"
                                                 onClick="return validation()">Submit</button>
