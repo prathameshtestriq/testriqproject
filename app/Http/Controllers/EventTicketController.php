@@ -101,10 +101,11 @@ class EventTicketController extends Controller
                         $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
 
                         if ($value->discount === 1) { //percentage
-                            $value->total_discount = ($value->ticket_price * ($value->discount_value / 100));
+                            $loc_total_discount = ($value->ticket_price * ($value->discount_value / 100));
+                            $value->total_discount = !empty($loc_total_discount) ? number_format($loc_total_discount,2) : '0.00';
                             $value->discount_ticket_price = $value->ticket_price - $value->total_discount;
                         } else if ($value->discount === 2) { //amount
-                            $value->total_discount = $value->discount_value;
+                            $value->total_discount = !empty($value->discount_value) ? number_format($loc_total_discount,2)  : '0.00';
                             $value->discount_ticket_price = $value->ticket_price - $value->discount_value;
                         }
                     }
