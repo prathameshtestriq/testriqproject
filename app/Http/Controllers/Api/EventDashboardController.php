@@ -111,40 +111,40 @@ class EventDashboardController extends Controller
 
                 // -------------------------------------Event Capacity
                 // Total Tickets
-                $sql = "SELECT IFNULL(SUM(total_quantity), 0) AS TotalTickets FROM event_tickets WHERE event_id =:event_id AND is_deleted=0";
-                $TotalTickets = DB::select($sql, array('event_id' => $EventId));
+                $SQL3 = "SELECT IFNULL(SUM(total_quantity), 0) AS TotalTickets FROM event_tickets WHERE event_id =:event_id AND is_deleted=0";
+                $TotalTickets = DB::select($SQL3, array('event_id' => $EventId));
                 $ResponseData['TotalTickets'] = (count($TotalTickets) > 0) ? $TotalTickets[0]->TotalTickets : 0;
 
 
                 // Sold Tickets
-                $sql = "SELECT IFNULL(SUM(quantity),0) AS TotalBookedTickets FROM booking_details AS bd
+                $SQL4 = "SELECT IFNULL(SUM(quantity),0) AS TotalBookedTickets FROM booking_details AS bd
                 LEFT JOIN event_booking AS eb ON bd.booking_id = eb.id
                 WHERE bd.event_id=:event_id AND eb.transaction_status IN (1,3)";
-                $TotalBookedTickets = DB::select($sql, array("event_id" => $EventId));
+                $TotalBookedTickets = DB::select($SQL4, array("event_id" => $EventId));
                 $ResponseData['TotalBookedTickets'] = (count($TotalBookedTickets) > 0) ? $TotalBookedTickets[0]->TotalBookedTickets : 0;
 
                 // -------------------------------------Conversion Rate
                 // Total Registration Users
-                $sql = "SELECT COUNT(id) AS TotalRegistrationUsers FROM event_booking WHERE event_id =:event_id";
-                $TotalRegistration = DB::select($sql, array('event_id' => $EventId));
+                $SQL5 = "SELECT COUNT(id) AS TotalRegistrationUsers FROM event_booking WHERE event_id =:event_id";
+                $TotalRegistration = DB::select($SQL5, array('event_id' => $EventId));
                 $TotalRegistrationCount = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistrationUsers : 0;
 
                 // Total Registration Users With Success
-                $sql = "SELECT COUNT(e.id) AS TotalRegistrationUsersWithSuccess FROM event_booking AS e 
+                $SQL6 = "SELECT COUNT(e.id) AS TotalRegistrationUsersWithSuccess FROM event_booking AS e 
                 LEFT JOIN booking_details AS b ON b.booking_id = e.id
                 WHERE e.event_id =:event_id AND e.transaction_status IN (1,3)";
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
-                        $sql .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+                        $SQL6 .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
                     }
                 }
                 if (!empty($Ticket)) {
-                    $SQL2 .= ' AND b.ticket_id =' . $Ticket;
+                    $SQL6 .= ' AND b.ticket_id =' . $Ticket;
                 }
                 if (!empty($FromDate) && !empty($ToDate)) {
-                    $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                    $SQL6 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
                 }
-                $TotalRegistrationUsersWithSuccess = DB::select($sql, array('event_id' => $EventId));
+                $TotalRegistrationUsersWithSuccess = DB::select($SQL6, array('event_id' => $EventId));
                 $TotalRegistrationUsersWithSuccessCount = (count($TotalRegistrationUsersWithSuccess) > 0) ? $TotalRegistrationUsersWithSuccess[0]->TotalRegistrationUsersWithSuccess : 0;
 
                 // Calculate percentage
@@ -156,10 +156,25 @@ class EventDashboardController extends Controller
                 $ResponseData['SuccessPercentage'] = $percentage;
 
                 // ALL TICKETS
-                $sql = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
-                $TicketData = DB::select($sql, array('event_id' => $EventId));
+                $SQL7 = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
+                $TicketData = DB::select($SQL7, array('event_id' => $EventId));
                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
 
+                // PAGE VIEWS
+                $SQL8 = "SELECT COUNT(id) AS TotalPageViews FROM page_views WHERE event_id =:event_id";
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL8 .= ' AND last_updated_datetime BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+                    }
+                }
+                // if (!empty($Ticket)) {
+                //     $SQL8 .= ' AND b.ticket_id =' . $Ticket;
+                // }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL8 .= ' AND last_updated_datetime BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                }
+                $TotalPageViews = DB::select($SQL8, array('event_id' => $EventId));
+                $ResponseData['TotalPageViews'] = (count($TotalPageViews) > 0) ? $TotalPageViews[0]->TotalPageViews : 0;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -625,7 +640,7 @@ class EventDashboardController extends Controller
 
             // $filename = "attendee_sheet_".time();
             $filename = "attendee_" . $event_name . '_' . time();
-            $path = 'attendee_details_excell/'.date('Ymd').'/';
+            $path = 'attendee_details_excell/' . date('Ymd') . '/';
             $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $header_data_array), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
 
@@ -681,7 +696,7 @@ class EventDashboardController extends Controller
 
             $url = env('APP_URL') . '/public/';
             $filename = "remittance_" . time();
-            $path = 'attendee_details_excell/'.date('Ymd').'/';
+            $path = 'attendee_details_excell/' . date('Ymd') . '/';
             $data = Excel::store(new RemittanceDetailsDataExport($AttendeeDataArray), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
 
@@ -996,6 +1011,90 @@ class EventDashboardController extends Controller
                 $CouponCodes = DB::select($SQL4, array('event_id' => $EventId));
                 $ResponseData['CouponCodes'] = $CouponCodes;
                 // dd($CouponCodes);
+
+
+                // Custom questions 
+                $SQL5 = "SELECT GROUP_CONCAT(id SEPARATOR ', ') AS Ids,GROUP_CONCAT(general_form_id SEPARATOR ', ') AS GIds FROM event_form_question WHERE event_id=:event_id AND question_form_name=:question_form_name AND question_form_option !=:question_form_option AND question_form_type=:question_form_type";
+                $EventFormQuestions = DB::select($SQL5, array('event_id' => $EventId, 'question_form_name' => 'sub_question', 'question_form_option' => '', 'question_form_type' => 'select'));
+
+                $QuestionIds = (count($EventFormQuestions) > 0) ? $EventFormQuestions[0]->Ids : "";
+                // $GeneralQuestionIds = (count($EventFormQuestions) > 0) ? $EventFormQuestions[0]->GIds : "";
+
+                $SQL6 = "SELECT a.ticket_id,a.attendee_details,b.event_id
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL6 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                if (!empty($Ticket)) {
+                    $SQL6 .= ' AND b.ticket_id =' . $Ticket;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL6 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                }
+                $bind = array('event_id' => $EventId);
+                $CustomQue = DB::select($SQL6, $bind);
+                $CustomQuestions = [];
+                $questionIdsArray = explode(',', $QuestionIds);
+                // dd($questionIdsArray);
+                foreach ($CustomQue as $key => $value) {
+                    $attendee_details = json_decode(json_decode($value->attendee_details));
+
+                    foreach ($attendee_details as $key => $attendee) {
+                        if (in_array($attendee->id, $questionIdsArray)) {
+                            if ($attendee->ActualValue != "" && $attendee->question_form_option != "") {
+                                $question_form_option = json_decode($attendee->question_form_option);
+
+                                $CustomQuestions[$attendee->id][] = $attendee;
+                            }
+                        }
+                    }
+                }
+
+                $CountArray = array();
+                // dd($CustomQuestions);
+                // foreach ($variable as $key => $value) {
+                //     $CountArray[$key] = ;
+                // }
+                $result = [];
+
+                foreach ($CustomQuestions as $key => $items) {
+                    
+                    foreach ($items as $item) {
+                        
+                        $actualValue = $item->ActualValue;
+                        $question_label = $item->question_label;
+                        
+                        $options = json_decode($item->question_form_option, true);
+                        $label = "";
+
+                        foreach ($options as $option) {
+                            if ($option["id"] == $actualValue) {
+                                $label = $option["label"];
+                                break;
+                            }
+                        }
+
+                        if (!isset($CountArray[$key])) {
+                            $CountArray[$key] = [
+                                "question_label" => $question_label,
+                            ];
+                        }
+
+                        if (!isset($CountArray[$key][$actualValue])) {
+                            $CountArray[$key][$actualValue] = ["label" => $label,"count" => 0];
+                        }
+
+                        $CountArray[$key][$actualValue]["count"]++;
+                    }
+                }
+
+                // dd($CountArray);
+                $ResponseData['CountArray'] = $CountArray;
 
 
                 $ResposneCode = 200;
