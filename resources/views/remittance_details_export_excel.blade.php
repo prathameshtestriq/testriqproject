@@ -6,6 +6,7 @@
             <th style="text-align: center; font-weight: bold;">Firstname</th>
             <th style="text-align: center; font-weight: bold;">Lastname</th>
             <th style="text-align: center; font-weight: bold;">Email</th>
+            <th style="text-align: center; font-weight: bold;">Transaction/Order ID</th>
             <th style="text-align: center; font-weight: bold;">Registration ID</th>
             <th style="text-align: center; font-weight: bold;">Payu ID</th>
             <th style="text-align: center; font-weight: bold;">Booking Date</th>
@@ -30,6 +31,7 @@
                    <td style="text-align: left;"><?php echo $res->firstname; ?></td>
                    <td style="text-align: left;"><?php echo $res->lastname; ?></td>
                    <td style="text-align: left;"><?php echo $res->email; ?></td>
+                   <td style="text-align: left;"><?php echo $res->transaction_id; ?></td>
                    <td style="text-align: left;"><?php echo $res->registration_id; ?></td>
                    <td style="text-align: left;"><?php echo $res->payu_id; ?></td>
                    <td style="text-align: left;"><?php echo $res->booking_date; ?></td>
