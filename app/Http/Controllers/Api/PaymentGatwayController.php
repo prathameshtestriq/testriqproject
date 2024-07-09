@@ -70,7 +70,8 @@ class PaymentGatwayController extends Controller
     public function booking_payment_process(Request $request)
     {
 
-        // dd($request);
+        // return $request->booking_tickets_array;
+
         $response['data'] = [];
         $response['message'] = '';
         $ResposneCode = 400;
@@ -160,19 +161,35 @@ class PaymentGatwayController extends Controller
             DB::insert($insert_SQL1, $Binding);
 
             //----------- temp table add entry for booking tickets
-            $BookTicketArray = !empty($request->booking_tickets_array) ? $request->booking_tickets_array : [];
+            $BookTicketArray = !empty($request->booking_tickets_array) ? json_decode($request->booking_tickets_array) : [];
+            // return $BookTicketArray;
+
+            $ParitcipantFiles = '';
+            // $date = strtotime(date("Y-m-d H:i:s"));
+            $date = time();
+            foreach ($request->file('fils_array') as $key => $uploadedFile) {
+                
+                $Path = public_path('uploads/user_documents/');
+              
+                if ($uploadedFile->isValid()) {
+
+                    $originalName = $date . '_' . $uploadedFile->getClientOriginalName();
+                    $participant_image = str_replace(" ","_",$originalName);
+                    $uploadedFile->move($Path, $participant_image);
+                }
+            }
 
             if (!empty($BookTicketArray)) {
-
-                $total_attendees = !empty($BookTicketArray['total_attendees']) ? $BookTicketArray['total_attendees'] : "";
-                $FormQuestions = !empty($BookTicketArray['FormQuestions']) ? $BookTicketArray['FormQuestions'] : "";
-                $TotalPrice = !empty($BookTicketArray['TotalPrice']) ? $BookTicketArray['TotalPrice'] : "0.00";
-                $TotalDiscount = !empty($BookTicketArray['TotalDiscount']) ? $BookTicketArray['TotalDiscount'] : "";
-                $AllTickets = !empty($BookTicketArray['AllTickets']) ? $BookTicketArray['AllTickets'] : "";
-                $ExtraPricing = !empty($BookTicketArray['ExtraPricing']) ? $BookTicketArray['ExtraPricing'] : "";
-                $EventUrl = !empty($BookTicketArray['EventUrl']) ? $BookTicketArray['EventUrl'] : "";
-                $UtmCampaign = !empty($BookTicketArray['UtmCampaign']) ? $BookTicketArray['UtmCampaign'] : "";
-                $GstArray = !empty($BookTicketArray['GstArray']) ? $BookTicketArray['GstArray'] : [];
+                // return $BookTicketArray->total_attendees;
+                $total_attendees = !empty($BookTicketArray->total_attendees) ? $BookTicketArray->total_attendees : "";
+                $FormQuestions = !empty($BookTicketArray->FormQuestions) ? $BookTicketArray->FormQuestions : "";
+                $TotalPrice = !empty($BookTicketArray->TotalPrice) ? $BookTicketArray->TotalPrice : "0.00";
+                $TotalDiscount = !empty($BookTicketArray->TotalDiscount) ? $BookTicketArray->TotalDiscount : "";
+                $AllTickets = !empty($BookTicketArray->AllTickets) ? $BookTicketArray->AllTickets : "";
+                $ExtraPricing = !empty($BookTicketArray->ExtraPricing) ? $BookTicketArray->ExtraPricing : "";
+                $EventUrl = !empty($BookTicketArray->EventUrl) ? $BookTicketArray->EventUrl : "";
+                $UtmCampaign = !empty($BookTicketArray->UtmCampaign) ? $BookTicketArray->UtmCampaign : "";
+                $GstArray = !empty($BookTicketArray->GstArray) ? $BookTicketArray->GstArray : [];
 
                 //------------- new create form question array  
                 //dd($FormQuestions);
@@ -186,27 +203,27 @@ class PaymentGatwayController extends Controller
                             // dd($que);
                             foreach ($question as $key => $value) {
                                 $result = [];
-                                // $common_form_array = '';
-                                // if($value['question_form_type'] == 'file'){
-                                //     $common_form_array = isset($value['ActualValue']) ? json_encode($value['ActualValue']) : '';
-                                // }else{
-                                //     $common_form_array = isset($value['ActualValue']) ? $value['ActualValue'] : '';
-                                // }
-
+                                if($value->question_form_type == 'file'){
+                                    // C:\fakepath\
+                                    $TemVar = isset($value->ActualValue) ? str_replace("C:\\fakepath\\", "", $value->ActualValue) : '';
+                                    $common_file_name = isset($TemVar) ? $date.'_'.str_replace(" ","_",$TemVar) : '';
+                                }else{
+                                    $common_file_name = isset($value->ActualValue) ? $value->ActualValue : '';
+                                }
                                 $result = [
-                                    'id' => isset($value['id']) ? $value['id'] : 0,
-                                    'ActualValue' => isset($value['ActualValue']) ? $value['ActualValue'] : '',//$common_form_array,
-                                    'question_label' => isset($value['question_label']) ? $value['question_label'] : "",
-                                    'general_form_id' => isset($value['general_form_id']) ? $value['general_form_id'] : "",
-                                    'question_form_type' => isset($value['question_form_type']) ? $value['question_form_type'] : "",
-                                    'question_form_name' => isset($value['question_form_name']) ? $value['question_form_name'] : "",
-                                    'question_form_option' => in_array($value['question_form_type'], $emptyOptionTypes) ? ""
-                                        : $value['question_form_option'],
-                                    'ticket_details' => isset($value['ticket_details']) ? $value['ticket_details'] : "",
-                                    'TicketId' => isset($value['TicketId']) ? $value['TicketId'] : "",
-                                    'child_question_ids' => isset($value['child_question_ids']) ? $value['child_question_ids'] : "",
-                                    'apply_ticket' => isset($value['apply_ticket']) ? $value['apply_ticket'] : "",
-                                    'data' => isset($value['data']) ? $value['data'] : ""
+                                    'id' => isset($value->id) ? $value->id : 0,
+                                    'ActualValue' => $common_file_name,//$common_form_array,
+                                    'question_label' => isset($value->question_label) ? $value->question_label : "",
+                                    'general_form_id' => isset($value->general_form_id) ? $value->general_form_id : "",
+                                    'question_form_type' => isset($value->question_form_type) ? $value->question_form_type : "",
+                                    'question_form_name' => isset($value->question_form_name) ? $value->question_form_name : "",
+                                    'question_form_option' => in_array($value->question_form_type, $emptyOptionTypes) ? ""
+                                        : $value->question_form_option,
+                                    'ticket_details' => isset($value->ticket_details) ? $value->ticket_details : "",
+                                    'TicketId' => isset($value->TicketId) ? $value->TicketId : "",
+                                    'child_question_ids' => isset($value->child_question_ids) ? $value->child_question_ids : "",
+                                    'apply_ticket' => isset($value->apply_ticket) ? $value->apply_ticket : "",
+                                    'data' => isset($value->data) ? $value->data : ""
                                 ];
                                 $newResult[$formId][$que][] = $result;
                             }
@@ -295,11 +312,13 @@ class PaymentGatwayController extends Controller
                 //dd($verify_payment_status,$payment_sub_status);
 
                 $up_sSQL = 'UPDATE booking_payment_details SET `verify_payment_status` =:verify_payment_status, `payment_sub_status` =:payment_sub_status WHERE `txnid`=:Txnid ';
-                DB::update($up_sSQL, array(
-                    'verify_payment_status' => $verify_payment_status,
-                    'payment_sub_status' => $payment_sub_status,
-                    'Txnid' => $Transaction_id
-                )
+                DB::update(
+                    $up_sSQL,
+                    array(
+                        'verify_payment_status' => $verify_payment_status,
+                        'payment_sub_status' => $payment_sub_status,
+                        'Txnid' => $Transaction_id
+                    )
                 );
 
                 //--------- generate log
@@ -382,13 +401,15 @@ class PaymentGatwayController extends Controller
             //dd($verify_payment_status,$payment_sub_status);
 
             $up_sSQL = 'UPDATE booking_payment_details SET `verify_payment_status` =:verify_payment_status, `payment_sub_status` =:payment_sub_status, `payment_mode` =:payment_mode, `response_error_message` =:response_error_message WHERE `txnid`=:Txnid ';
-            DB::update($up_sSQL, array(
-                'verify_payment_status' => $verify_payment_status,
-                'payment_sub_status' => $payment_sub_status,
-                'payment_mode' => $payment_mode,
-                'response_error_message' => $response_error_message,
-                'Txnid' => $Transaction_id
-            )
+            DB::update(
+                $up_sSQL,
+                array(
+                    'verify_payment_status' => $verify_payment_status,
+                    'payment_sub_status' => $payment_sub_status,
+                    'payment_mode' => $payment_mode,
+                    'response_error_message' => $response_error_message,
+                    'Txnid' => $Transaction_id
+                )
             );
 
             //--------- generate log
@@ -406,23 +427,27 @@ class PaymentGatwayController extends Controller
             //-------- update status for booking_payment_details
             if ($verify_payment_status == 'success') {
                 $up_sSQL = 'UPDATE booking_payment_details SET `payment_status` =:verify_payment_status, `payment_mode` =:payment_mode WHERE `txnid`=:Txnid ';
-                DB::update($up_sSQL, array(
-                    'verify_payment_status' => $verify_payment_status,
-                    'payment_mode' => $payment_mode,
-                    'Txnid' => $Transaction_id
-                )
+                DB::update(
+                    $up_sSQL,
+                    array(
+                        'verify_payment_status' => $verify_payment_status,
+                        'payment_mode' => $payment_mode,
+                        'Txnid' => $Transaction_id
+                    )
                 );
             }
 
             //-------- update status for booking_payment_log
             $response_datetime = date('Y-m-d H:i:s');
             $up_sSQL = 'UPDATE booking_payment_log SET `mihpayid` =:mihpayid, `payment_status` =:payment_status, `response_datetime` =:response_datetime WHERE `txnid`=:Txnid ';
-            DB::update($up_sSQL, array(
-                'mihpayid' => $mih_pay_id,
-                'payment_status' => $verify_payment_status,
-                'response_datetime' => $response_datetime,
-                'Txnid' => $Transaction_id
-            )
+            DB::update(
+                $up_sSQL,
+                array(
+                    'mihpayid' => $mih_pay_id,
+                    'payment_status' => $verify_payment_status,
+                    'response_datetime' => $response_datetime,
+                    'Txnid' => $Transaction_id
+                )
             );
 
             //-------- event booking table update payment status
@@ -433,10 +458,12 @@ class PaymentGatwayController extends Controller
                 $transaction_status = 2;
             }
             $up_sSQL = 'UPDATE event_booking SET `transaction_status` =:transaction_status WHERE `booking_pay_id`=:booking_pay_id ';
-            DB::update($up_sSQL, array(
-                'transaction_status' => $transaction_status,
-                'booking_pay_id' => $booking_pay_id
-            )
+            DB::update(
+                $up_sSQL,
+                array(
+                    'transaction_status' => $transaction_status,
+                    'booking_pay_id' => $booking_pay_id
+                )
             );
 
             echo 'Request processed successfully.';

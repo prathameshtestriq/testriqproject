@@ -100,10 +100,10 @@ class EventTicketController extends Controller
                     if ($value->early_bird == 1 && $value->TotalBookedTickets <= $value->no_of_tickets && $value->start_time <= $now && $value->end_time >= $now) {
                         $value->show_early_bird = 1;
                         $value->strike_out_price = ($value->early_bird == 1) ? $value->ticket_price : 0;
-                        
+
                         if ($value->discount === 1) { //percentage
                             $value->total_discount = ($value->ticket_price * ($value->discount_value / 100));
-                           // $value->total_discount = !empty($loc_total_discount) ? number_format($loc_total_discount,2) : '0.00';
+                            // $value->total_discount = !empty($loc_total_discount) ? number_format($loc_total_discount,2) : '0.00';
                             $value->discount_ticket_price = $value->ticket_price - $value->total_discount;
                         } else if ($value->discount === 2) { //amount
                             $value->total_discount = $value->discount_value; // !empty($value->discount_value) ? number_format($loc_total_discount,2)  : '0.00';
@@ -858,51 +858,6 @@ class EventTicketController extends Controller
                     // dd($UserEmail);
                     $TotalTickets = 0;
 
-                    // -----------------Test Code------------------
-                    // $separatedArrays = [];
-
-
-                    // dd($FormQuestions);
-                    // foreach ($FormQuestions as $key => $arrays) {
-                    //     foreach ($arrays as $subArray) {
-                    //         $separatedArrays[] = json_encode($subArray);
-                    //     }
-                    // }
-
-                    // foreach ($separatedArrays as $key => $value) {
-                    //     $subArray = [];
-                    //     $subArray = json_decode($value);
-
-                    //     foreach ($subArray as $key => $sArray) {
-                    //         if ($sArray->question_form_type == 'file' && $sArray->ActualValue != "") {
-                    //             $file = ($sArray->ActualValue);
-                    //             // dd($file->fileType);
-                    //             $ExplodeVar = '';
-                    //             if ($file->fileType == "image/png"  || $file->fileType == "image/jpg" || $file->fileType == "image/jpeg")
-                    //             {
-                    //                 $ExplodeVar = 'image/';
-                    //             }else if($file->fileType == "application/pdf"){
-                    //                 $ExplodeVar = 'application/';
-                    //             }
-                    //             $imageparts = explode(";base64,", $file->fileContent);
-                    //             // dd($imageparts);
-                    //             $imagetypeaux = explode($ExplodeVar, $imageparts[0]);
-                    //             $imagetype = $imagetypeaux[1];
-                    //             $fileData = base64_decode($imageparts[1]);
-                                
-                               
-                    //             $filePath = 'uploads/' . $file->fileName;
-
-                    //             // Store the file
-                    //             Storage::put($filePath, $fileData);
-                                
-                    //         }
-
-                    //     }
-                    // }
-                    // dd("here");
-                    // -----------------End Test Code--------------
-
                     // if (!empty($TotalPrice)) {
                     #event_booking
                     $Binding1 = array(
@@ -1077,6 +1032,7 @@ class EventTicketController extends Controller
                     $last_name = null;
                     $email = null;
                     $mobile = null;
+
                     $IdBookingDetails = 0;
 
                     // dd($FormQuestions);
@@ -1086,11 +1042,11 @@ class EventTicketController extends Controller
                         }
                     }
 
-
                     foreach ($separatedArrays as $key => $value) {
                         $subArray = [];
                         $subArray = json_decode($value);
                         $TicketId = 0;
+                        $participants_files = [];
                         // dd($subArray);
                         foreach ($subArray as $key => $sArray) {
                             if (isset($sArray->question_form_name)) {
@@ -1102,36 +1058,13 @@ class EventTicketController extends Controller
                                     $email = $sArray->ActualValue;
                                 } elseif ($sArray->question_form_type == 'mobile') {
                                     $mobile = $sArray->ActualValue;
+                                } elseif ($sArray->question_form_type == 'file') {
+                                    $participants_files[] = $sArray->ActualValue;
                                 }
                             }
                             if (empty($TicketId)) {
                                 $TicketId = !empty($sArray->TicketId) ? $sArray->TicketId : 0;
                             }
-
-                            if ($sArray->question_form_type == 'file' && $sArray->ActualValue != "") {
-                                $file = ($sArray->ActualValue);
-                                // dd($file->fileType);
-                                $ExplodeVar = '';
-                                if ($file->fileType == "image/png"  || $file->fileType == "image/jpg" || $file->fileType == "image/jpeg")
-                                {
-                                    $ExplodeVar = 'image/';
-                                }else if($file->fileType == "application/pdf"){
-                                    $ExplodeVar = 'application/';
-                                }
-                                $imageparts = explode(";base64,", $file->fileContent);
-                                // dd($imageparts);
-                                $imagetypeaux = explode($ExplodeVar, $imageparts[0]);
-                                $imagetype = $imagetypeaux[1];
-                                $fileData = base64_decode($imageparts[1]);
-                                
-                               
-                                $filePath = 'uploads/' . $file->fileName;
-
-                                // Store the file
-                                Storage::put($filePath, $fileData);
-                                
-                            }
-
                         }
                         // die;
                         $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
@@ -1149,6 +1082,15 @@ class EventTicketController extends Controller
                         DB::insert($sql, $Bind1);
                         $attendeeId = DB::getPdo()->lastInsertId();
                         // dd($attendeeId);
+                        // dd($participants_files);
+                        // ---------save documents
+                        if (!empty($participants_files)) {
+                            foreach ($participants_files as $key => $value) {
+                                $sSql = "INSERT INTO attendee_documents (attendee_booking_id,document_name) VALUES (:attendee_booking_id,:document_name)";
+                                DB::update($sSql, array("attendee_booking_id" => $attendeeId, 'document_name' => $value));
+                            }
+                        }
+                        // -------------
 
                         $booking_date = 0;
                         $bd_sql = "SELECT booking_date FROM booking_details WHERE id = :booking_details_id";
@@ -1164,63 +1106,11 @@ class EventTicketController extends Controller
 
                     }
                     // -------------------------------------------END ATTENDEE DETAIL
-                    foreach ($FormQuestions as $Form) {
-                        $TotTickets = count($Form);
-                        $TotalTickets += $TotTickets;
-                        foreach ($Form as $Question) {
-                            // echo "<pre>";print_r($Question);
-                            foreach ($Question as $value) {
-                                // dd($BookingDetailsIds,$value['ticket_id']);
-                                $Binding3 = [];
-                                $Sql3 = "";
-                                $IdBookingDetails = 0;
-                                if ((isset($value->ActualValue)) && ($value->ActualValue !== "")) {
 
-                                    if ($value->question_form_type == "file") {
-                                        // $_FILES = $value['ActualValue'];
-                                        $allowedExts = array('jpeg', 'jpg', "png", "gif", "bmp", "pdf");
-                                        $is_valid = false;
-                                        $filename = $address_proof_doc_upload = '';
-                                        // if (is_array($value['ActualValue']) && !empty($value['ActualValue']["name"])) {
-                                        //     // Validate file extension
-                                        //     $address_proof_doc_upload_temp = explode(".", $value['ActualValue']["name"]);
-                                        //     $address_proof_type = strtolower(end($address_proof_doc_upload_temp));
-                                        //     if (!in_array($address_proof_type, $allowedExts)) {
-                                        //         $filename = 'Address proof document';
-                                        //         $is_valid = true;
-                                        //     }
-
-                                        //     // Move uploaded file to destination
-                                        //     if (!$is_valid) {
-                                        //         $Path = public_path('uploads/user_documents/');
-                                        //         $address_proof_doc_upload = strtotime('now') . '.' . pathinfo($value['ActualValue']["name"], PATHINFO_EXTENSION);
-                                        //         move_uploaded_file($value['ActualValue']["tmp_name"], $Path . $address_proof_doc_upload);
-                                        //     }
-                                        // }
-                                    }
-                                    // $IdBookingDetails = isset($BookingDetailsIds[$value['TicketId']]) ? $BookingDetailsIds[$value['TicketId']] : 0;
-
-                                    // if (!empty($IdBookingDetails)) {
-                                    //     $Binding3 = array(
-                                    //         "booking_details_id" => $IdBookingDetails,
-                                    //         "field_name" => $value['question_form_name'],
-                                    //         "field_value" => ($value['question_form_type'] == "file") ? $address_proof_doc_upload : $value['ActualValue']
-                                    //     );
-
-                                    //     $Sql3 = "INSERT INTO attendee_details (booking_details_id,field_name,field_value) VALUES (:booking_details_id,:field_name,:field_value)";
-                                    //     DB::insert($Sql3, $Binding3);
-                                    // }
-                                }
-                            }
-                        }
-                    }
-                    // }
                     $ResposneCode = 200;
                     $message = 'Request processed successfully';
                     $EventUrl = isset($request->EventUrl) && !empty($request->EventUrl) ? $request->EventUrl : "";
-                    // $MessageContent = $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee);
-                    // $this->sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalAttendee,$TotalPrice);
-                    // $ResponseData['MessageContent'] = $MessageContent;
+
                 } else {
                     $ResposneCode = 400;
                     $message = 'Invalid request';
