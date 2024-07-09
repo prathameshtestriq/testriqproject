@@ -565,14 +565,16 @@ class EventDashboardController extends Controller
                 $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
                 $booking_datetime = !empty($paymentDetails) ? date('d-m-Y h:i:s A', $paymentDetails[0]->created_datetime) : '';
-
+                
+                // dd($final_attendee_details_array);
                 //-----------------------------
                 foreach (json_decode($final_attendee_details_array) as $val) {
                     if (isset($val->question_label)) {
 
                         $aTemp = new stdClass;
+                        $aTemp->question_form_type = $val->question_form_type;
                         $aTemp->question_label = $val->question_label;
-
+                       
                         if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
                             if (!empty($val->question_form_option)) {
                                 $question_form_option = json_decode($val->question_form_option, true);
