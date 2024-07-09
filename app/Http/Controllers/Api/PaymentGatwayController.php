@@ -167,15 +167,17 @@ class PaymentGatwayController extends Controller
             $ParitcipantFiles = '';
             // $date = strtotime(date("Y-m-d H:i:s"));
             $date = time();
-            foreach ($request->file('fils_array') as $key => $uploadedFile) {
+            if(!empty($request->file('fils_array'))){
+                foreach ($request->file('fils_array') as $key => $uploadedFile) {
                 
-                $Path = public_path('uploads/user_documents/');
-              
-                if ($uploadedFile->isValid()) {
-
-                    $originalName = $date . '_' . $uploadedFile->getClientOriginalName();
-                    $participant_image = str_replace(" ","_",$originalName);
-                    $uploadedFile->move($Path, $participant_image);
+                    $Path = public_path('uploads/user_documents/');
+                  
+                    if ($uploadedFile->isValid()) {
+    
+                        $originalName = $date . '_' . $uploadedFile->getClientOriginalName();
+                        $participant_image = str_replace(" ","_",$originalName);
+                        $uploadedFile->move($Path, $participant_image);
+                    }
                 }
             }
 
@@ -203,7 +205,7 @@ class PaymentGatwayController extends Controller
                             // dd($que);
                             foreach ($question as $key => $value) {
                                 $result = [];
-                                if($value->question_form_type == 'file'){
+                                if($value->question_form_type == 'file' && $value->ActualValue != ""){
                                     // C:\fakepath\
                                     $TemVar = isset($value->ActualValue) ? str_replace("C:\\fakepath\\", "", $value->ActualValue) : '';
                                     $common_file_name = isset($TemVar) ? $date.'_'.str_replace(" ","_",$TemVar) : '';
