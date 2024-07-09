@@ -170,7 +170,7 @@ class PaymentGatwayController extends Controller
             if(!empty($request->file('fils_array'))){
                 foreach ($request->file('fils_array') as $key => $uploadedFile) {
                 
-                    $Path = public_path('uploads/user_documents/');
+                    $Path = public_path('uploads/attendee_documents/');
                   
                     if ($uploadedFile->isValid()) {
     
