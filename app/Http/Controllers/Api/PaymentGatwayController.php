@@ -168,15 +168,20 @@ class PaymentGatwayController extends Controller
             // $date = strtotime(date("Y-m-d H:i:s"));
             $date = time();
             if(!empty($request->file('fils_array'))){
+                $i = 1;
                 foreach ($request->file('fils_array') as $key => $uploadedFile) {
                 
                     $Path = public_path('uploads/attendee_documents/');
                   
-                    if ($uploadedFile->isValid()) {
-    
-                        $originalName = $date . '_' . $uploadedFile->getClientOriginalName();
-                        $participant_image = str_replace(" ","_",$originalName);
-                        $uploadedFile->move($Path, $participant_image);
+                    if ($uploadedFile->isValid() && $uploadedFile->getSize() > 2000) {
+
+                        if($uploadedFile->getMimeType() == 'application/pdf' || $uploadedFile->getMimeType() == 'image/jpeg' || $uploadedFile->getMimeType() == 'image/png' || $uploadedFile->getMimeType() == 'image/jpg'){
+
+                            $originalName = $date.'_'.$i.'_'. $uploadedFile->getClientOriginalName();
+                            $participant_image = str_replace(" ","_",$originalName);
+                            $uploadedFile->move($Path, $participant_image);
+                            $i++;
+                        }
                     }
                 }
             }
@@ -198,7 +203,9 @@ class PaymentGatwayController extends Controller
                 $emptyOptionTypes = array("countries", "states", "cities", "age_category");
                 $MainFormQuestions = [];
                 $newResult = [];
+                $j = 1;
                 if (!empty($FormQuestions)) {
+                   // $i = 1;
                     foreach ($FormQuestions as $formId => $questions) {
                         // dd($formId);
                         foreach ($questions as $que => $question) {
@@ -208,7 +215,8 @@ class PaymentGatwayController extends Controller
                                 if($value->question_form_type == 'file' && $value->ActualValue != ""){
                                     // C:\fakepath\
                                     $TemVar = isset($value->ActualValue) ? str_replace("C:\\fakepath\\", "", $value->ActualValue) : '';
-                                    $common_file_name = isset($TemVar) ? $date.'_'.str_replace(" ","_",$TemVar) : '';
+                                    $common_file_name = isset($TemVar) ? $date.'_'.$j.'_'.str_replace(" ","_",$TemVar) : '';
+                                    $j++;
                                 }else{
                                     $common_file_name = isset($value->ActualValue) ? $value->ActualValue : '';
                                 }
@@ -228,8 +236,11 @@ class PaymentGatwayController extends Controller
                                     'data' => isset($value->data) ? $value->data : ""
                                 ];
                                 $newResult[$formId][$que][] = $result;
+                                // $i++;
                             }
+
                         }
+
                     }
                 }
                 //dd($newResult);
