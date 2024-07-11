@@ -534,7 +534,7 @@ class EventDashboardController extends Controller
             // dd($EventQuestionData);
 
             $card_array = array(
-                array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue"=> ""),
+                array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),
                 array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
                 // array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
                 // array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
@@ -565,7 +565,7 @@ class EventDashboardController extends Controller
                 $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
                 $booking_datetime = !empty($paymentDetails) ? date('d-m-Y h:i:s A', $paymentDetails[0]->created_datetime) : '';
-                
+
                 // dd($final_attendee_details_array);
                 //-----------------------------
                 foreach (json_decode($final_attendee_details_array) as $val) {
@@ -574,7 +574,7 @@ class EventDashboardController extends Controller
                         $aTemp = new stdClass;
                         $aTemp->question_form_type = $val->question_form_type;
                         $aTemp->question_label = $val->question_label;
-                       
+
                         if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
                             if (!empty($val->question_form_option)) {
                                 $question_form_option = json_decode($val->question_form_option, true);
@@ -601,7 +601,7 @@ class EventDashboardController extends Controller
                         }
                         //-------------------------------------
 
-                        if($val->question_label == 'Transaction/Order ID'){
+                        if ($val->question_label == 'Transaction/Order ID') {
                             $aTemp->answer_value = $tran_id;
                         }
 
@@ -621,7 +621,7 @@ class EventDashboardController extends Controller
                         //     $aTemp->answer_value = !empty($res1->ticket_amount) ? number_format($res1->ticket_amount,2) : '';
                         // }
 
-                       
+
 
                         // if($val->question_label == 'Payment Mode'){
                         //     $aTemp->answer_value = $payment_mode;
@@ -1020,8 +1020,10 @@ class EventDashboardController extends Controller
 
 
                 // Custom questions 
-                $SQL5 = "SELECT GROUP_CONCAT(id SEPARATOR ', ') AS Ids,GROUP_CONCAT(general_form_id SEPARATOR ', ') AS GIds FROM event_form_question WHERE event_id=:event_id AND question_form_name=:question_form_name AND question_form_option !=:question_form_option AND question_form_type=:question_form_type";
-                $EventFormQuestions = DB::select($SQL5, array('event_id' => $EventId, 'question_form_name' => 'sub_question', 'question_form_option' => '', 'question_form_type' => 'select'));
+                // $SQL5 = "SELECT GROUP_CONCAT(id SEPARATOR ', ') AS Ids,GROUP_CONCAT(general_form_id SEPARATOR ', ') AS GIds FROM event_form_question WHERE event_id=:event_id AND question_form_name=:question_form_name AND question_form_option !=:question_form_option AND question_form_type=:question_form_type";
+                // $EventFormQuestions = DB::select($SQL5, array('event_id' => $EventId, 'question_form_name' => 'sub_question', 'question_form_option' => '', 'question_form_type' => 'select'));
+                $SQL5 = "SELECT GROUP_CONCAT(id SEPARATOR ', ') AS Ids,GROUP_CONCAT(general_form_id SEPARATOR ', ') AS GIds FROM event_form_question WHERE event_id=:event_id AND is_custom_form=:is_custom_form ";
+                $EventFormQuestions = DB::select($SQL5, array('event_id' => $EventId, 'is_custom_form' => 0));
 
                 $QuestionIds = (count($EventFormQuestions) > 0) ? $EventFormQuestions[0]->Ids : "";
                 // $GeneralQuestionIds = (count($EventFormQuestions) > 0) ? $EventFormQuestions[0]->GIds : "";
@@ -1069,18 +1071,24 @@ class EventDashboardController extends Controller
                 $result = [];
 
                 foreach ($CustomQuestions as $key => $items) {
-                    
+
                     foreach ($items as $item) {
-                        
+
                         $actualValue = $item->ActualValue;
                         $question_label = $item->question_label;
-                        
+
                         $options = json_decode($item->question_form_option, true);
                         $label = "";
+                        $limit = "";
+                        $limit_flag = false;
 
                         foreach ($options as $option) {
                             if ($option["id"] == $actualValue) {
                                 $label = $option["label"];
+                                if (isset($option["count"])) {
+                                    $limit_flag = true;
+                                    $limit = $option["count"];
+                                }
                                 break;
                             }
                         }
@@ -1088,11 +1096,12 @@ class EventDashboardController extends Controller
                         if (!isset($CountArray[$key])) {
                             $CountArray[$key] = [
                                 "question_label" => $question_label,
+                                "limit_flag" => $limit_flag,
                             ];
                         }
 
                         if (!isset($CountArray[$key][$actualValue])) {
-                            $CountArray[$key][$actualValue] = ["label" => $label,"count" => 0];
+                            $CountArray[$key][$actualValue] = ["label" => $label, "count" => 0, "limit" => $limit];
                         }
 
                         $CountArray[$key][$actualValue]["count"]++;
