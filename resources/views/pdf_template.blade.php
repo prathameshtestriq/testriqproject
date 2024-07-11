@@ -7,8 +7,10 @@
     <meta charset="UTF-8">
     <title>Races Registration</title>
     <!-- <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/img/ico/favicon.ico') }}"> -->
+    <!-- <link rel="shortcut icon" href="https://racesregistrations.com/assets/img/favicon.ico" > -->
     <!-- <link rel="shortcut icon" type="image/x-icon" href="https://racesregistrations.com/assets/img/favicon.ico"> -->
-    <link rel="shortcut icon" type="image/x-icon" href="/var/www/html/races/public/assets/img/ico/favicon.ico">
+    <link rel="icon" href="{{ asset('assets/img/ico/favicon.ico') }}" type="image/x-icon">
+
 
     <style>
         @font-face {
@@ -200,7 +202,7 @@
                     </tr>
 
                     <tr>
-                        <td>Name</td>
+                        <td style="width: 35%;">Name</td>
                         <td>{{ isset($ticket_details["firstname"]) ? $ticket_details["firstname"] . " " . $ticket_details["lastname"] : "" }}
                         </td>
                     </tr>
@@ -283,25 +285,23 @@
         <div class="event-details">
             <h4 class="title">Additional Purchases</h4>
             <hr>
-            <table class="table table-bordered">
+            <table class="">
                 <tbody>
-                    <?php    foreach ($extra_details as $extra_detail) {
-        $actual_value = intval($extra_detail->ActualValue);
-        $question_form_option = json_decode($extra_detail->question_form_option, true);
+                   
+                    <?php 
+                        foreach ($extra_details as $res) {
+                    ?>
+                        <tr>
+                            <td style="width: 35%;">{{$res->question_label}}</td>
+                            <td style="text-align: left;">
+                                <?php if($res->question_form_type == 'file'){ ?>
+                                   <a href="{{asset('uploads/attendee_documents/'.$res->ActualValue) }}" target="_blank" style="text-decoration: none; color: #212121;"> <?php echo $res->ActualValue; ?></a>
+                                <?php }else{ echo $res->ActualValue; }  ?>
+                                
+                            </td>
+                        </tr>
+                    <?php } ?>
 
-        $label = null;
-        foreach ($question_form_option as $option) {
-            if ($option['id'] === $actual_value) {
-                $label = $option['label'];
-                break;
-            }
-        }
-                                ?>
-                    <tr>
-                        <td>{{$extra_detail->question_label}}</td>
-                        <td>{{ $label }}</td>
-                    </tr>
-                    <?php    }  ?>
                 </tbody>
             </table>
         </div>

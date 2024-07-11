@@ -167,24 +167,25 @@ class PaymentGatwayController extends Controller
             $ParitcipantFiles = '';
             // $date = strtotime(date("Y-m-d H:i:s"));
             $date = time();
-            if(!empty($request->file('fils_array'))){
-                $i = 1;
-                foreach ($request->file('fils_array') as $key => $uploadedFile) {
+            // if(!empty($request->file('fils_array'))){
+            //     $i = 1;
+            //     foreach ($request->file('fils_array') as $key => $uploadedFile) {
                 
-                    $Path = public_path('uploads/attendee_documents/');
-                  
-                    if ($uploadedFile->isValid() && $uploadedFile->getSize() > 2000) {
+            //         $Path = public_path('uploads/attendee_documents/');
+            //         $max_size = 2 * 1024 * 1024; // 2MB
+            //         if ($uploadedFile->isValid()) {   //  && $uploadedFile->getSize() > $max_size
 
-                        if($uploadedFile->getMimeType() == 'application/pdf' || $uploadedFile->getMimeType() == 'image/jpeg' || $uploadedFile->getMimeType() == 'image/png' || $uploadedFile->getMimeType() == 'image/jpg'){
+            //             if($uploadedFile->getMimeType() == 'application/pdf' || $uploadedFile->getMimeType() == 'image/jpeg' || $uploadedFile->getMimeType() == 'image/png' || $uploadedFile->getMimeType() == 'image/jpg'){
 
-                            $originalName = $date.'_'.$i.'_'. $uploadedFile->getClientOriginalName();
-                            $participant_image = str_replace(" ","_",$originalName);
-                            $uploadedFile->move($Path, $participant_image);
-                            $i++;
-                        }
-                    }
-                }
-            }
+            //                 $originalName = $date.'_'.$i.'_'. $uploadedFile->getClientOriginalName();
+            //                 $participant_image = str_replace(" ","_",$originalName);
+            //                 $uploadedFile->move($Path, $participant_image);
+            //                 $i++;
+            //                 $new_document_array[] = array("id" => $i, "doc_name" => $uploadedFile->getClientOriginalName());
+            //             }
+            //         }
+            //     }
+            // }
 
             if (!empty($BookTicketArray)) {
                 // return $BookTicketArray->total_attendees;
@@ -213,9 +214,33 @@ class PaymentGatwayController extends Controller
                             foreach ($question as $key => $value) {
                                 $result = [];
                                 if($value->question_form_type == 'file' && $value->ActualValue != ""){
+                                    
                                     // C:\fakepath\
                                     $TemVar = isset($value->ActualValue) ? str_replace("C:\\fakepath\\", "", $value->ActualValue) : '';
                                     $common_file_name = isset($TemVar) ? $date.'_'.$j.'_'.str_replace(" ","_",$TemVar) : '';
+                                    
+                                    //---------------------- File Upload ---------------------------
+                                    if(!empty($request->file('fils_array'))){
+
+                                        foreach ($request->file('fils_array') as $key => $uploadedFile) {
+                                            if(str_replace("C:\\fakepath\\", "", $value->ActualValue) == $uploadedFile->getClientOriginalName()){
+                                                $Path = public_path('uploads/attendee_documents/');
+                                                $max_size = 2 * 1024 * 1024; // 2MB
+                                                if ($uploadedFile->isValid()) {   //  && $uploadedFile->getSize() > $max_size
+
+                                                    if($uploadedFile->getMimeType() == 'application/pdf' || $uploadedFile->getMimeType() == 'image/jpeg' || $uploadedFile->getMimeType() == 'image/png' || $uploadedFile->getMimeType() == 'image/jpg'){
+
+                                                        $originalName = $date.'_'.$j.'_'. $uploadedFile->getClientOriginalName();
+                                                        $participant_image = str_replace(" ","_",$originalName);
+                                                        $uploadedFile->move($Path, $participant_image);
+                                                       // $i++;
+                                                    }
+                                                }
+                                            }
+                                            
+                                        }
+                                    }
+
                                     $j++;
                                 }else{
                                     $common_file_name = isset($value->ActualValue) ? $value->ActualValue : '';

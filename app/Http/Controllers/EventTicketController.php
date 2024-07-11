@@ -11,6 +11,7 @@ use App\Libraries\Emails;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use \stdClass;
 
 class EventTicketController extends Controller
 {
@@ -1539,7 +1540,7 @@ class EventTicketController extends Controller
         $empty = false;
         $field = '';
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-        // dd($aToken);
+        // dd($request);
         // $aToken['code'] = 200;
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
@@ -1559,13 +1560,13 @@ class EventTicketController extends Controller
                 $Venue = "";
                 $TicketArr = isset($request->ticket) ? $request->ticket : []; // ticket array
                 // dd($TicketArr);
-                foreach ($TicketArr as $value) {
+                //foreach ($TicketArr as $value) {
                     // dd($value);
                     // if (is_array($value)) {
                     //     $value["booking_start_date"] = (!empty($value["booking_date"]))? date("d M Y", $value["booking_date"]) : 0;
                     //     $value["booking_time"] = (!empty($value["booking_date"]))? date("h:i A", $value["booking_date"]) : "";
                     // } 
-                }
+                //}
 
 
                 $EventId = isset($TicketArr["event_id"]) ? $TicketArr["event_id"] : 0;
@@ -1584,26 +1585,68 @@ class EventTicketController extends Controller
                     if (count($AttendeeData) > 0) {
                         $AttenddeeDetails = $AttendeeData[0]->attendee_details;
                         $attendee_details = json_decode(json_decode($AttenddeeDetails));
-                        // dd($attendee_details);
+                        // dd($EventId);
                         $amount_details = [];
                         $extra_details = [];
 
+                        //--------------
+                        $sql1 = "SELECT question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0";
+                        $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
+                        // dd($QuestionData);
+
                         // Iterate through attendee details to separate the amounts
-                        foreach ($attendee_details as $detail) {
-                            if ($detail->question_form_type == 'amount') {
-                                $amount_details[] = $detail;
-                            }
-                            if ($detail->question_form_name == 'drink_preferences') {
-                                $extra_details[] = $detail;
-                            }
-                            if ($detail->question_form_name == 'breakfast_preferences') {
-                                $extra_details[] = $detail;
+                        if(!empty($QuestionData)){
+                            foreach($QuestionData as $res){
+                                foreach ($attendee_details as $detail) {
+                                    $aTemp = new stdClass;
+                                    if ($detail->question_form_name == $res->question_form_name) {
+                                        
+                                        if($detail->question_form_type == 'radio' || $detail->question_form_type == 'select'){
+                                            $question_form_option = json_decode($detail->question_form_option, true);
+                                           // dd($question_form_option);
+                                            $label = null;
+                                            foreach ($question_form_option as $option) {
+                                                if ($option['id'] === (int)$detail->ActualValue) {
+                                                    $label = $option['label'];
+                                                    break;
+                                                }
+                                            }
+                                            // dd($label);
+                                            //$detail->ActualValue = $label;
+                                            $aTemp->ActualValue    = $label;
+                                        }else{
+                                            $aTemp->ActualValue    = $detail->ActualValue;
+                                        }
+                                        $aTemp->id             = $detail->id;
+                                        $aTemp->question_label = $detail->question_label;
+                                        $aTemp->question_form_type = $detail->question_form_type;
+
+                                        $extra_details[] = $aTemp;
+                                    }
+                                }
                             }
                         }
 
+                        // foreach ($attendee_details as $detail) {
+                        //     if ($detail->question_form_type == 'amount') {
+                        //         $amount_details[] = $detail;
+                        //     }
+                        //     if ($detail->question_form_name == 'drink_preferences') {
+                        //         $extra_details[] = $detail;
+                        //     }
+                        //     if ($detail->question_form_name == 'breakfast_preferences') {
+                        //         $extra_details[] = $detail;
+                        //     }
+                        // }
+
+                        // if(!empty($extra_details)){
+                        //     foreach
+                        // }
+
                     }
                 }
-                // dd($amount_details,$extra_details);
+             //dd($extra_details);
+
                 $created_by = 0;
                 if (!empty($EventId)) {
                     $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode,created_by FROM events WHERE id=:event_id";
