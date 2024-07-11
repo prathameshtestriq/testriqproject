@@ -1079,10 +1079,16 @@ class EventDashboardController extends Controller
 
                         $options = json_decode($item->question_form_option, true);
                         $label = "";
+                        $limit = "";
+                        $limit_flag = false;
 
                         foreach ($options as $option) {
                             if ($option["id"] == $actualValue) {
                                 $label = $option["label"];
+                                if (isset($option["count"])) {
+                                    $limit_flag = true;
+                                    $limit = $option["count"];
+                                }
                                 break;
                             }
                         }
@@ -1090,11 +1096,12 @@ class EventDashboardController extends Controller
                         if (!isset($CountArray[$key])) {
                             $CountArray[$key] = [
                                 "question_label" => $question_label,
+                                "limit_flag" => $limit_flag,
                             ];
                         }
 
                         if (!isset($CountArray[$key][$actualValue])) {
-                            $CountArray[$key][$actualValue] = ["label" => $label, "count" => 0];
+                            $CountArray[$key][$actualValue] = ["label" => $label, "count" => 0, "limit" => $limit];
                         }
 
                         $CountArray[$key][$actualValue]["count"]++;
