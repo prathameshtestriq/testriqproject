@@ -924,6 +924,28 @@ class EventController extends Controller
                             }
                         }
 
+                        //------------ added manual race category charges on 12-07-2024 -------------
+                        // if (!empty($EventId)) {
+                        //     $races_charges_array = array(
+                        //         array("registration_amount" => 1000, "convenience_fee" => 2),
+                        //         array("registration_amount" => 1400, "convenience_fee" => 30),
+                        //         array("registration_amount" => 1401, "convenience_fee" => 40)
+                        //     );
+
+                        //     foreach ($races_charges_array as $res) {
+                        //             $sql1 = "INSERT INTO race_category_charges (event_id, registration_amount, convenience_fee, platform_fee,    payment_gateway_fee, created_by) VALUES(:event_id,:registration_amount,:convenience_fee,:platform_fee,:payment_gateway_fee,:created_by)";
+                        //             $Bind1 = array(
+                        //                 "event_id" => $EventId,
+                        //                 "registration_amount" => $res['registration_amount'],
+                        //                 "convenience_fee" => $res['convenience_fee'],
+                        //                 "platform_fee" => 5,
+                        //                 "payment_gateway_fee" => 1.85,
+                        //                 "created_by" => $UserId
+                        //             );
+                        //             DB::insert($sql1, $Bind1);
+                        //     }
+                        // }
+
                         $message = "Basic inforamtion of event added successfully";
                     }
                 } else {

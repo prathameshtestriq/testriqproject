@@ -539,8 +539,8 @@ class EventDashboardController extends Controller
                 // array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
                 // array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
                 array("id" => 101194, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue" => ""),
-                //array("id" => 101195, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> "")
-                array("id" => 101195, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
+                array("id" => 101195, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> ""),
+                array("id" => 101196, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
             );
             //dd(json_encode($new_array));
             $main_array = json_encode(array_merge($card_array, $EventQuestionData));
@@ -613,6 +613,10 @@ class EventDashboardController extends Controller
                             $aTemp->answer_value = $mihpayid;
                         }
 
+                        if($val->question_label == 'Payment Status'){
+                            $aTemp->answer_value = $payment_status;
+                        }
+
                         if ($val->question_label == 'Booking Date/Time') {
                             $aTemp->answer_value = $booking_datetime;
                         }
@@ -627,9 +631,7 @@ class EventDashboardController extends Controller
                         //     $aTemp->answer_value = $payment_mode;
                         // }
 
-                        // if($val->question_label == 'Payment Status'){
-                        //     $aTemp->answer_value = $payment_status;
-                        // }
+                        
 
 
                         //-------------------------------------
