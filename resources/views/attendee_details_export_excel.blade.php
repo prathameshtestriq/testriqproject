@@ -16,7 +16,8 @@
     <tbody>
            <?php $i=1;
                  //$url = env('APP_URL') . '/public/uploads/attendee_documents/';
-                 foreach ($ExcellDataArray as $res): ?>
+                 if(!empty($ExcellDataArray)){
+                    foreach ($ExcellDataArray as $res): ?>
                 <tr>
                    <td style="text-align: center;"><?php echo $i; ?></td>
                     <?php foreach ($EventQuestionData as $val): ?>
@@ -41,7 +42,7 @@
                             <td><?= $answerValue ?></td>
                     <?php } endforeach; ?>
                 </tr>
-            <?php $i++; endforeach; ?>
+            <?php $i++; endforeach; } ?>
 
     </tbody>
 </table>
