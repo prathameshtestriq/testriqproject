@@ -396,14 +396,14 @@ class EventDashboardController extends Controller
                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
                 // dd($ResponseData['AttendeeData']);
                 //------------- Attendee details excel generate
-                if (!empty($AttendeeData)) {
-                    $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
-                    $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
+                // if (!empty($AttendeeData)) {
+                //     $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
+                //     $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
 
-                } else {
+                // } else {
                     $ResponseData['attendee_details_excel'] = '';
                     $ResponseData['remittance_details_excel'] = '';
-                }
+                //}
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
