@@ -27,9 +27,9 @@
                             foreach ($res as $answer) {
                                 if ($answer->question_label == $val->question_label) {
                                     if($val->question_form_type == 'file'){
-                                        $file_name = $answer->answer_value;  
+                                        $file_name = ucfirst($answer->answer_value);  
                                     }else{
-                                        $answerValue = $answer->answer_value;
+                                        $answerValue = ucfirst($answer->answer_value);
                                     }
                                     break;
                                 }

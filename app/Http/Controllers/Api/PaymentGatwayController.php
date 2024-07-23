@@ -217,7 +217,7 @@ class PaymentGatwayController extends Controller
                                     
                                     // C:\fakepath\
                                     $TemVar = isset($value->ActualValue) ? str_replace("C:\\fakepath\\", "", $value->ActualValue) : '';
-                                    $common_file_name = isset($TemVar) ? $date.'_'.$j.'_'.str_replace(" ","_",$TemVar) : '';
+                                    $common_file_name = isset($TemVar) ? $date.'_'.$j.'_'.str_replace(" ","_",ucfirst($TemVar)) : '';
                                     
                                     //---------------------- File Upload ---------------------------
                                     if(!empty($request->file('fils_array'))){
@@ -243,7 +243,7 @@ class PaymentGatwayController extends Controller
 
                                     $j++;
                                 }else{
-                                    $common_file_name = isset($value->ActualValue) ? $value->ActualValue : '';
+                                    $common_file_name = isset($value->ActualValue) ? ucfirst($value->ActualValue) : '';
                                 }
                                 $result = [
                                     'id' => isset($value->id) ? $value->id : 0,

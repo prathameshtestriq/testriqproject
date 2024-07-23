@@ -283,7 +283,7 @@
         <br />
         <?php if (isset($extra_details) && count($extra_details) > 0) { ?>
         <div class="event-details">
-            <h4 class="title">Additional Purchases</h4>
+            <h4 class="title">Additional Details</h4>
             <hr>
             <table class="">
                 <tbody>

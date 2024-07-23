@@ -383,6 +383,7 @@ class EventDashboardController extends Controller
                     $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
                 }
                 $sql .= " ORDER BY a.id DESC";
+                // dd($sql);
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
                 foreach ($AttendeeData as $key => $value) {
                     $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
@@ -395,15 +396,17 @@ class EventDashboardController extends Controller
                 $TicketData = DB::select($sql, array('event_id' => $EventId));
                 $ResponseData['TicketData'] = (count($TicketData) > 0) ? $TicketData : [];
                 // dd($ResponseData['AttendeeData']);
-                //------------- Attendee details excel generate
-                // if (!empty($AttendeeData)) {
-                //     $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
-                //    // $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
 
-                // } else {
+                // dd($AttendeeData);
+                //------------- Attendee details excel generate
+                if (!empty($AttendeeData)) {
+                    $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
+                   // $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
+
+                } else {
                     $ResponseData['attendee_details_excel'] = '';
                    // $ResponseData['remittance_details_excel'] = '';
-                // }
+                }
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -595,7 +598,12 @@ class EventDashboardController extends Controller
                                 } else if ($val->question_form_type == "cities") {
                                     $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
                                 } else {
-                                    $aTemp->answer_value = $val->ActualValue;
+                                    // if($val->question_form_type == "textarea"){
+                                    //      $aTemp->answer_value = ""; 
+                                    // }else{
+                                         $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                    // }
+                                   
                                 }
                             }
                         }
@@ -614,7 +622,7 @@ class EventDashboardController extends Controller
                         }
 
                         if($val->question_label == 'Payment Status'){
-                            $aTemp->answer_value = $payment_status;
+                            $aTemp->answer_value = ucfirst($payment_status);
                         }
 
                         if ($val->question_label == 'Booking Date/Time') {

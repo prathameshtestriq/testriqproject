@@ -68,6 +68,10 @@ class EventController extends Controller
                 $event->show_registration_button_msg = "Registration Closed";
             }
 
+            if($now > $event->registration_end_time) {
+                $event->registration_close_flag = 1;
+            }else{ $event->registration_close_flag = 0; }
+
             #GETTING EVENT IMAGES
             $ImageQry = "SELECT * FROM event_images WHERE event_id=:event_id";
             $EventImg = DB::select($ImageQry, array('event_id' => $event->id));
@@ -1346,6 +1350,54 @@ class EventController extends Controller
             'message' => $message,
         ];
 
+        return response()->json($response, $ResposneCode);
+
+    }
+
+    public function eventIntegration(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+            $PopupFlag = isset($request->popup_flag) ? $request->popup_flag : 0;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                
+                $Bindings = array(
+                    "tcs_popup" => $PopupFlag,
+                    "id" => $aPost['event_id']
+                );
+                DB::update("UPDATE events SET tcs_popup=:tcs_popup WHERE id=:id", $Bindings);
+                $ResposneCode = 200;
+                $message = "Request processed successfully";
+            }else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+        }else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+       
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
         return response()->json($response, $ResposneCode);
 
     }

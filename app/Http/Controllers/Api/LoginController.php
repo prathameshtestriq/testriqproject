@@ -965,18 +965,20 @@ class LoginController extends Controller
                         $success = 1;
                     } else {
                         $success = 0;
-                        $ResposneCode = 400;
+                        $ResposneCode = 200;
                         $message = 'Token not found';
                         $field = "";
                     }
                     // }
                 } else {
-                    $ResposneCode = 400;
+                    $ResposneCode = 200;
                     $message = 'Confirm Password is not same as Password';
+                    $success = 0;
                 }
             } else {
-                $ResposneCode = 400;
+                $ResposneCode = 200;
                 $message = 'Password should be 8-20 characters in length and must contain at least one alphabet and one digit.';
+                $success = 0;
             }
         } else {
             $success = 0;
