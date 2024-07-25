@@ -1240,7 +1240,7 @@ class EventTicketController extends Controller
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
 
-        dd($ConfirmationEmail);
+        // dd($ConfirmationEmail);
         $Subject = "";
         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
         $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
