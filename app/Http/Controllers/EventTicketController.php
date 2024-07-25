@@ -184,10 +184,7 @@ class EventTicketController extends Controller
                 $empty = true;
                 $field = 'Total Quantity';
             }
-            // if (empty($aPost['ticket_price'])) {
-            //     $empty = true;
-            //     $field = 'Total Price';
-            // }
+           
             if (empty($aPost['start_date'])) {
                 $empty = true;
                 $field = 'Ticket Sale Start Date';
