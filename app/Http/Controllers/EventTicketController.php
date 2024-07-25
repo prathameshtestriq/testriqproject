@@ -1235,7 +1235,7 @@ class EventTicketController extends Controller
             "VENUE" => $Venue,
             "TOTALAMOUNT" => $TotalPrice,
             "TICKETAMOUNT" => $TotalPrice,
-            "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
+            "REGISTRATIONID" => '3-410-1721904030, 3-411-1721904030', //!empty($registration_ids) ? $registration_ids : '', 
             "RACECATEGORY" => 'test12', // !empty($ticket_names) ? $ticket_names : ''
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
