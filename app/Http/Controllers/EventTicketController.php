@@ -832,11 +832,10 @@ class EventTicketController extends Controller
                 $BookingPaymentId = !empty($aPost['booking_pay_id']) ? $aPost['booking_pay_id'] : 0;
                 $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                 $BookingPayment = DB::select($sql, array('booking_pay_id' => $BookingPaymentId));
-
-
+               
                 // $sql1 = "SELECT payment_status FROM booking_payment_details WHERE id =:id";
                 // $Status = DB::select($sql, array('id' => $BookingPaymentId));
-                // dd($BookingPayment);
+                //dd($BookingPayment);
 
                 if (count($BookingPayment) > 0) {
                     $EventId = $BookingPayment[0]->event_id;
@@ -1043,7 +1042,8 @@ class EventTicketController extends Controller
                             $separatedArrays[] = json_encode($subArray);
                         }
                     }
-
+                    
+                    $new_registration_id_array = [];
                     foreach ($separatedArrays as $key => $value) {
                         $subArray = [];
                         $subArray = json_decode($value);
@@ -1103,10 +1103,24 @@ class EventTicketController extends Controller
                         $uniqueId = 0;
                         $uniqueId = $EventId . "-" . $attendeeId . "-" . $booking_date;
                         // dd($uniqueId,$IdBookingDetails,$booking_date);
+                        
                         $u_sql = "UPDATE attendee_booking_details SET registration_id=:registration_id WHERE id=:id";
                         $u_bind = DB::update($u_sql, array("registration_id" => $uniqueId, 'id' => $attendeeId));
-
+                        
+                        //------------ new added
+                        $sql1 = "SELECT ticket_name FROM event_tickets WHERE id = :ticket_id";
+                        $aResult1 = DB::select($sql1, array("ticket_id" => !empty($TicketId) ? $TicketId : $new_ticket_id));
+                        $new_ticket_name_array = !empty($aResult1) ? array_column($aResult1,"ticket_name") : [];
+                        $new_registration_id_array[] = $uniqueId;
                     }
+                    
+                    //------- new added for update ticket_names, registration_ids on 25-06-24 (because send email to reg no, tick name issue)
+                    $loc_ticket_names = !empty($new_ticket_name_array) ? implode(", ", array_unique($new_ticket_name_array)) : '';
+                    $loc_registration_id = !empty($new_registration_id_array) ? implode(", ", $new_registration_id_array) : '';
+                     // dd($loc_ticket_names,$loc_registration_id);
+                    $up_sql = "UPDATE booking_payment_details SET ticket_names =:ticket_names, registration_ids =:registration_ids  WHERE id=:id";
+                    DB::update($up_sql, array("ticket_names" => $loc_ticket_names, "registration_ids" => $loc_registration_id, 'id' => $BookingPaymentId));
+
                     // -------------------------------------------END ATTENDEE DETAIL
 
                     $ResposneCode = 200;
@@ -1195,6 +1209,14 @@ class EventTicketController extends Controller
             $ticket_names = $ticket_names;
         }
 
+        //------------ new added
+        $sql5 = "SELECT ticket_names,registration_ids FROM booking_payment_details WHERE id=:id";
+        $BookingPaymentDetails = DB::select($sql5, ['id' => $BookingPayId]);
+       
+        $loc_registration_id = !empty($BookingPaymentDetails) ? $BookingPaymentDetails[0]->registration_ids : '';
+        $loc_ticket_names    = !empty($BookingPaymentDetails) ? $BookingPaymentDetails[0]->ticket_names : '';
+        // dd($BookingPaymentDetails);
+
         $ConfirmationEmail = array(
             // "USERID" => $UserId,
             "USERNAME" => $user_name,
@@ -1213,12 +1235,12 @@ class EventTicketController extends Controller
             "VENUE" => $Venue,
             "TOTALAMOUNT" => $TotalPrice,
             "TICKETAMOUNT" => $TotalPrice,
-            "REGISTRATIONID" => $registration_id, //!empty($registration_ids) ? $registration_ids : '',
-            "RACECATEGORY" => $ticket_names, // !empty($ticket_names) ? $ticket_names : ''
+            "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
+            "RACECATEGORY" => !empty($ticket_names) ? $ticket_names : $loc_ticket_names, // !empty($ticket_names) ? $ticket_names : ''
             // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
         );
 
-        // dd($ConfirmationEmail);
+        dd($ConfirmationEmail);
         $Subject = "";
         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
         $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
