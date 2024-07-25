@@ -893,7 +893,7 @@ class LoginController extends Controller
                 $success = 0;
                 $ResposneCode = 400;
                 $field = 'email';
-                $message = 'Customer not found having provided eamil. Please try with valid email.';
+                $message = 'Customer not found having provided email. Please try with valid email.';
             }
         } else {
             $success = 0;
