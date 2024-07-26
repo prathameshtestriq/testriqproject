@@ -370,9 +370,9 @@ class EventDashboardController extends Controller
                 if (!empty($TicketId)) {
                     $sql .= " AND a.ticket_id =" . $TicketId;
                 }
-                // if ($user_id != 0) {
-                //     $sql .= " AND b.user_id =" . $user_id;
-                // }
+                if ($user_id != 0) {
+                    $sql .= " AND b.user_id =" . $user_id;
+                }
                 if (!empty($FromDate) && empty($ToDate)) {
                     $sql .= " AND b.booking_date >= " . $FromDate;
                 }
