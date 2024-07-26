@@ -370,9 +370,9 @@ class EventDashboardController extends Controller
                 if (!empty($TicketId)) {
                     $sql .= " AND a.ticket_id =" . $TicketId;
                 }
-                if ($user_id != 0) {
-                    $sql .= " AND b.user_id =" . $user_id;
-                }
+                // if ($user_id != 0) {
+                //     $sql .= " AND b.user_id =" . $user_id;
+                // }
                 if (!empty($FromDate) && empty($ToDate)) {
                     $sql .= " AND b.booking_date >= " . $FromDate;
                 }
@@ -539,25 +539,45 @@ class EventDashboardController extends Controller
             $card_array = array(
                 array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),
                 array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
-                // array("id" => 101192, "question_label" => "Amount", "question_form_type" => "text", "ActualValue"=> ""),
+                // 
                 // array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101194, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101195, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101196, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
+                array("id" => 101193, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue" => ""),
+                array("id" => 101194, "question_label" => "Free/Paid", "question_form_type" => "text", "ActualValue"=> ""),
+                array("id" => 101187, "question_label" => "Coupon Code", "question_form_type" => "text", "ActualValue" => ""),
+                array("id" => 101195, "question_label" => "Total Amount", "question_form_type" => "text", "ActualValue"=> ""),
+                array("id" => 101196, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> ""),
+                array("id" => 101197, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
+                array("id" => 101198, "question_label" => "Race Category", "question_form_type" => "text", "ActualValue" => "")
             );
+
+            // $couponCode_array  = array( array("id" => 101187, "question_label" => "Coupon Code", "question_form_type" => "text", "ActualValue" => ""));
+
+
             //dd(json_encode($new_array));
-            $main_array = json_encode(array_merge($card_array, $EventQuestionData));
-            $header_data_array = json_decode($main_array);
+            $ageCategory_array  = array( array("id" => 101199, "question_label" => "Age Category", "question_form_type" => "age_category", "ActualValue" => ""));
+            $utmCapning_array  = array( array("id" => 101186, "question_label" => "UTM Campaign", "question_form_type" => "text", "ActualValue" => ""));
+           
+            $main_array = array_merge($card_array, $EventQuestionData);
+            // $header_data_array = json_decode($main_array);
             // dd($header_data_array);
             //-------------------------
 
             $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
             // dd($AttendeeData);
             $label = '';
+            $show_age_category = $show_coupon_code = $show_utm = 0;
+
             foreach ($AttendeeData as $key => $res1) {
+
+                //----------- get coupon code
+                $sql = "SELECT id,(select discount_name from event_coupon where id = applied_coupons.coupon_id) as coupon_name FROM applied_coupons WHERE event_id = :event_id AND booking_detail_id=:booking_detail_id ";
+                $aCouponResult = DB::select($sql, array('event_id' => $res1->event_id, 'booking_detail_id' => $res1->booking_details_id));
+                // dd($aCouponResult); 
+
+               
                 $attendee_details_array = json_decode(json_decode($res1->attendee_details), true);
                 // $attendee_details_array = $res1->attendee_details;
-                $final_attendee_details_array = json_encode(array_merge($attendee_details_array, $card_array));
+                $final_attendee_details_array = json_encode(array_merge($attendee_details_array, $card_array, $ageCategory_array, $utmCapning_array));
 
                 //-----------------------------
                 $sql = "SELECT txnid,payment_mode,payment_status,created_datetime,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
@@ -569,7 +589,7 @@ class EventDashboardController extends Controller
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
                 $booking_datetime = !empty($paymentDetails) ? date('d-m-Y h:i:s A', $paymentDetails[0]->created_datetime) : '';
 
-                // dd($final_attendee_details_array);
+                // dd(json_decode($final_attendee_details_array));
                 //-----------------------------
                 foreach (json_decode($final_attendee_details_array) as $val) {
                     if (isset($val->question_label)) {
@@ -577,18 +597,28 @@ class EventDashboardController extends Controller
                         $aTemp = new stdClass;
                         $aTemp->question_form_type = $val->question_form_type;
                         $aTemp->question_label = $val->question_label;
+                        $labels = [];
 
                         if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
                             if (!empty($val->question_form_option)) {
                                 $question_form_option = json_decode($val->question_form_option, true);
-                                // dd($question_form_option);
-                                foreach ($question_form_option as $option) {
-                                    //dd($val->ActualValue);
-                                    if ($option['id'] === (int) $val->ActualValue) {
-                                        $label = $option['label'];
-                                        break;
+                               
+                                if($val->question_form_type == "radio" || $val->question_form_type == "select"){
+                                    foreach ($question_form_option as $option) {
+                                        if ($option['id'] === (int) $val->ActualValue) {
+                                            $label = $option['label'];
+                                            break;
+                                        }
                                     }
+                                }else if($val->question_form_type == "checkbox"){
+                                    foreach ($question_form_option as $option) {
+                                        if (in_array($option['id'], explode(',', $val->ActualValue))) {
+                                             $labels[] = $option['label'];
+                                        }
+                                    }
+                                    $label = implode(', ', $labels);
                                 }
+                                
                                 $aTemp->answer_value = $label;
                             } else {
                                 if ($val->question_form_type == "countries") {
@@ -598,17 +628,25 @@ class EventDashboardController extends Controller
                                 } else if ($val->question_form_type == "cities") {
                                     $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
                                 } else {
-                                    // if($val->question_form_type == "textarea"){
-                                    //      $aTemp->answer_value = ""; 
-                                    // }else{
-                                         $aTemp->answer_value = htmlspecialchars($val->ActualValue);
-                                    // }
+                                    
+                                    if($val->question_form_type == "age_category"){
+                                       
+                                        $aTemp->question_label = 'Age Category';
+                                        if(!empty($val->data)){
+                                            $show_age_category = 1;
+                                            $aTemp->answer_value = htmlspecialchars($val->data[0]->age_category);
+                                        }else{ $aTemp->answer_value = ''; }
+                                    }else if($val->question_form_type == "date"){
+                                        $aTemp->answer_value = date('d-m-Y',strtotime($val->ActualValue));
+                                    }else{
+                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                    }
                                    
                                 }
                             }
                         }
                         //-------------------------------------
-
+                       
                         if ($val->question_label == 'Transaction/Order ID') {
                             $aTemp->answer_value = $tran_id;
                         }
@@ -629,28 +667,66 @@ class EventDashboardController extends Controller
                             $aTemp->answer_value = $booking_datetime;
                         }
 
-                        // if($val->question_label == 'Amount'){
-                        //     $aTemp->answer_value = !empty($res1->ticket_amount) ? number_format($res1->ticket_amount,2) : '';
-                        // }
+                        if($val->question_label == 'Total Amount'){
+                            $aTemp->answer_value = !empty($res1->total_amount) ? number_format($res1->total_amount,2) : '0.00';
+                        }
 
+                        if($val->question_label == 'Free/Paid'){
+                            $aTemp->answer_value = !empty($res1->ticket_amount) && $res1->ticket_amount > 0 ? 'PAID' : 'FREE';
+                        }
 
+                        if($val->question_label == 'Race Category'){
+                            $aTemp->answer_value = !empty($res1->TicketName) ? $res1->TicketName : '';
+                        }
 
-                        // if($val->question_label == 'Payment Mode'){
-                        //     $aTemp->answer_value = $payment_mode;
-                        // }
+                        if($val->question_label == 'UTM Campaign'){
+                           
+                            if(!empty($res1->utm_campaign)){
+                                $show_utm = 1;
+                                $aTemp->answer_value = $res1->utm_campaign;
+                            }else{ $aTemp->answer_value = ''; }
+                          
+                        }
 
-                        
-
+                        if($val->question_label == 'Coupon Code'){
+                            
+                            if(!empty($aCouponResult)){
+                                $show_coupon_code = 1;
+                                $aTemp->answer_value = $aCouponResult[0]->coupon_name;
+                            }else{ $aTemp->answer_value = ''; }
+                        }
 
                         //-------------------------------------
                         $ExcellDataArray[$key][] = $aTemp;
                     }
                 }
             }
-            // dd($ExcellDataArray);
+            // dd($show_utm);
 
             $url = env('APP_URL') . '/public/';
             //dd($url);
+            
+            if($show_age_category == 1){
+                $main_array = array_merge($main_array, $ageCategory_array);
+            } else{
+                $main_array = array_merge($main_array);
+            }
+
+            if($show_utm == 1){
+                $main_array = array_merge($main_array, $utmCapning_array);
+            } else{
+                $main_array = array_merge($main_array);
+            }
+       
+            // if($show_coupon_code == 1){
+            //     $main_array = array_merge($main_array, $couponCode_array);
+            // }else{
+            //     $main_array = array_merge($main_array);
+            // }
+
+            $header_data_array = json_decode(json_encode($main_array));
+
+            // dd($header_data_array);
 
             // $filename = "attendee_sheet_".time();
             $filename = "attendee_" . $event_name . '_' . time();
