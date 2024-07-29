@@ -92,7 +92,7 @@ class EventController extends Controller
 
 
         }
-        // dd($Events);
+        //dd($Events);
         return $Events;
     }
 
@@ -616,8 +616,8 @@ class EventController extends Controller
         }
         // dd($Category);
         if (!empty($Category)) {
-            $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
-            // $EventSql .= " LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category =" . $Category;
+            // $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
+            $EventSql .= " LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category =" . $Category;
         }
         if (empty($Category) && empty($EventId)) {
             $EventSql .= " WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
@@ -707,8 +707,12 @@ class EventController extends Controller
         // }
 
         $Events = DB::select($EventSql);
-        // dd($Events);
-        $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
+
+        $temp_array = array_unique(array_column($Events, 'event_id'));
+        $filteredData = array_intersect_key($Events, $temp_array);
+
+        // dd($filteredData);
+        $ResponseData['EventData'] = $this->ManipulateEvents($filteredData, $UserId);
         $response = [
             'status' => 200,
             'data' => $ResponseData,
