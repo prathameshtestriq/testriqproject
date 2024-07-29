@@ -614,9 +614,10 @@ class EventController extends Controller
         if (!empty($EventId)) {
             $EventSql .= " WHERE e.id=" . $EventId;
         }
+        // dd($Category);
         if (!empty($Category)) {
-            // $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
-            $EventSql .= " LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category =" . $Category;
+            $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
+            // $EventSql .= " LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category =" . $Category;
         }
         if (empty($Category) && empty($EventId)) {
             $EventSql .= " WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
@@ -698,7 +699,12 @@ class EventController extends Controller
                 $EventSql .= " AND e.is_paid=0";
             }
         }
-        // dd($EventSql, $StartDate, $EndDate);
+        // dd($EventSql);
+
+        // if (!empty($Category)) {
+        //     // $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
+        //     $EventSql .= "  group by et.id ";
+        // }
 
         $Events = DB::select($EventSql);
         // dd($Events);
