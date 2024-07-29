@@ -1236,4 +1236,69 @@ class EventDashboardController extends Controller
     }
 
 
+    function ChangePaymentStatus(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        // $aToken['code'] = 200;
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            $booking_details_id = !empty($aPost['booking_details_id']) ? $aPost['booking_details_id'] : 0;
+            // dd($booking_details_id);
+
+            $SQL5 = "SELECT booking_pay_id FROM event_booking as eb left join booking_details as bd on bd.booking_id = eb.id WHERE bd.id=:booking_details_id ";
+            $aResult = DB::select($SQL5, array('booking_details_id' => $booking_details_id));
+             // dd($aResult);
+
+            $booking_pay_id = !empty($aResult) ? $aResult[0]->booking_pay_id : 0;
+
+            if (!$empty) {
+
+                if(!empty($booking_pay_id )){
+                    $Bindings = array(
+                        "payment_status" => 'initiate',
+                        "id" => $booking_pay_id
+                    );
+
+                    $SQL = "UPDATE booking_payment_details SET payment_status =:payment_status WHERE id=:id";
+                    DB::update($SQL, $Bindings);
+
+                    $Bindings1 = array(
+                        "transaction_status" => 0,
+                        "booking_pay_id" => $booking_pay_id
+                    );
+
+                    $SQL1 = "UPDATE event_booking SET transaction_status =:transaction_status WHERE booking_pay_id=:booking_pay_id";
+                    DB::update($SQL1, $Bindings1);
+
+                    $ResposneCode = 200;
+                    $message = 'Payment status successfully';
+
+                }
+                      
+            }
+        }else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+
 }

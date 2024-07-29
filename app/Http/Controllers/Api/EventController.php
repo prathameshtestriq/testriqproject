@@ -610,15 +610,30 @@ class EventController extends Controller
         $EndDateTime = (isset($request->end_date) && !empty($request->end_date)) ? strtotime(date("Y-m-d 23:59:59", strtotime($request->end_date))) : 0;
         $Distance = isset($request->distance) ? $request->distance : 0;
         // dd($StartDateTime,$EndDateTime);
+        $event_ids = '';
+        if (!empty($Category)) {
+            $aSql = "SELECT e.id FROM events as e LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category = ".$Category." ";
+            $aResult = DB::select($aSql);
+            // dd($aResult);
+            $event_array = !empty($aResult) ? array_column($aResult,'id') : [];
+            $event_ids = !empty($event_array) ? implode(",",$event_array) : "";
+        }
+        // dd($event_ids);
+
         $EventSql = "SELECT * FROM events AS e";
         if (!empty($EventId)) {
             $EventSql .= " WHERE e.id=" . $EventId;
         }
         // dd($Category);
         if (!empty($Category)) {
-            $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
+            //$EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
             // $EventSql .= " LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category =" . $Category;
         }
+
+        if (!empty($Category) && !empty($event_ids)) {
+            $EventSql .= " WHERE e.id IN(".$event_ids.") ";
+        }
+
         if (empty($Category) && empty($EventId)) {
             $EventSql .= " WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         } else {
@@ -650,6 +665,8 @@ class EventController extends Controller
         if (!empty($CityId)) {
             $EventSql .= " AND e.city=" . $CityId;
         }
+
+       
 
         // dd($EventSql);
         if (!empty($Filter)) {
@@ -700,11 +717,6 @@ class EventController extends Controller
             }
         }
         // dd($EventSql);
-
-        // if (!empty($Category)) {
-        //     // $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
-        //     $EventSql .= "  group by et.id ";
-        // }
 
         $Events = DB::select($EventSql);
 

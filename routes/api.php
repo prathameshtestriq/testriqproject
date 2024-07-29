@@ -46,6 +46,8 @@ Route::controller(EventDashboardController::class)->group(function (){
     Route::post('attendee_netsales_excell_data', 'attendeeNetsalesExcellData'); 
     Route::post('get_payment_log','getPaymentLog');
     Route::post('get_category_wise_data','getCategoryWiseData');
+    Route::post('change_payment_status','ChangePaymentStatus');
+
 });
 
 Route::controller(MasterController::class)->group(function () {
