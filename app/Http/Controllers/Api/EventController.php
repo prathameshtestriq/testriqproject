@@ -615,7 +615,8 @@ class EventController extends Controller
             $EventSql .= " WHERE e.id=" . $EventId;
         }
         if (!empty($Category)) {
-            $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
+            // $EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
+            $EventSql .= " LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category =" . $Category;
         }
         if (empty($Category) && empty($EventId)) {
             $EventSql .= " WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
