@@ -27,6 +27,9 @@ class BannerController extends Controller
     public function clear_search()
     {
         session::forget('banner_name');
+        session::forget('start_booking_date');
+        session::forget('end_booking_date');
+        session::forget('banner_status');
         return redirect('/banner');
     }
 
@@ -34,15 +37,26 @@ class BannerController extends Controller
     {
         $aReturn = array();
         $aReturn['search_banner'] = '';
+        $aReturn['search_start_booking_date'] = '';
+        $aReturn['search_end_booking_date'] = '';
+        $aReturn['banner_status'] = '';
 
         if(isset($request->form_type) && $request->form_type ==  'search_banner') {
             //  dd($request->name);
             session(['banner_name' => $request->name]);
+            session(['start_booking_date' => $request->start_booking_date]);
+            session(['end_booking_date' => $request->end_booking_date]);
+            session(['banner_status' => $request->banner_status]);
             //  session(['mobile' => $request->mobile]);
 
             return redirect('/banner');
         }
         $aReturn['search_banner'] =  (!empty(session('banner_name'))) ? session('banner_name') : '';
+        $aReturn['search_start_booking_date'] = (!empty(session('start_booking_date'))) ?  session('start_booking_date') : '';
+        $aReturn['search_end_booking_date'] = (!empty(session('end_booking_date'))) ? session('end_booking_date'): '';
+        $banner_status = session('banner_status');
+        $aReturn['search_banner_status'] = (isset($banner_status) && $banner_status != '') ? $banner_status : '';
+
         // $aReturn['mobile'] =  (!empty(session('mobile'))) ? session('mobile') : '';
 
         // dd($aReturn);
@@ -74,7 +88,7 @@ class BannerController extends Controller
     {
 
         $a_return['banner_name'] = '';
-        $a_return['banner_image'] = '';
+        $a_return['banner_image'] = ''; 
         $a_return['banner_url'] = '';
         $a_return['start_time'] = '';
         $a_return['end_time'] = '';
@@ -109,7 +123,7 @@ class BannerController extends Controller
         if ($request->has('form_type') && $request->form_type == 'add_edit_banner') {
 
             $rules = [
-                'banner_name' => 'required',
+                'banner_name' => 'required|unique:banner,banner_name,' . $iId . 'id',
                 'banner_url' => 'required',
                 'banner_image' => !empty($edit_array) && $edit_array['banner_image'] !== '' ? '' : 'required',
                 'start_time' => 'required',

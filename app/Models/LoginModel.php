@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class LoginModel extends Model
 {
     use HasFactory;
-    protected $table = 'users';
+    protected $table = 'users';   
 
 }

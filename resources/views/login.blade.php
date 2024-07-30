@@ -9,9 +9,9 @@
     <meta name="description" content="vts">
     <meta name="keywords" content="vts, nashik">
     <meta name="author" content="swt">
-    <title>Login -YouTooCanRun </title>
-    {{-- <link rel="apple-touch-icon" href={{ asset('app-assets/images/ico/apple-icon-120.png')}}> --}}
-    <link rel="shortcut icon" type="image/x-icon" href={{ asset('app-assets/images/logo/logo.jpg')}}>
+    <title>Login - YTCR - Nashik</title>
+    <link rel="apple-touch-icon" href={{ asset('app-assets/images/ico/apple-icon-120.png') }}>
+    <link rel="shortcut icon" type="image/x-icon" href={{ asset('app-assets/images/ico/favicon.ico') }}>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600"
         rel="stylesheet">
 
@@ -42,7 +42,7 @@
 <!-- END: Head-->
 
 <!-- BEGIN: Body-->
-<?php //\Session::flush();?>
+
 <body class="vertical-layout vertical-menu-modern blank-page navbar-floating footer-static   menu-collapsed"
     data-open="click" data-menu="vertical-menu-modern" data-col="blank-page">
     <!-- BEGIN: Content-->
@@ -53,24 +53,26 @@
             <div class="content-header row">
             </div>
             <div class="content-body">
-                <div class="wrapper ">
-                    <div class=" row m-0">
+                <div class="auth-wrapper auth-v2">
+                    <div class="auth-inner row m-0">
                         <!-- Brand logo-->
                         <a class="brand-logo" href="javascript:void(0);">
-                            <img src={{ asset('app-assets/images/logo/bg-top.png') }} alt="" width="1550px" >
-                            {{-- <h2 class="brand-text text-primary ml-1">{{ env('APP_NAME') }}</h2> --}}
+                            <img src={{ asset('app-assets/images/logo/logo.png') }} alt="">
+                            <h2 class="brand-text text-primary ">RACES</h2>
                         </a>
                         <!-- /Brand logo-->
                         <!-- Left Text-->
-                        <div class="d-none d-lg-flex col-lg-8 align-items-center p-5  auth-bg" >
-                            <div class="w-100 d-lg-flex align-items-center justify-content-center px-5"><img class="img-fluid" src={{ asset('app-assets/images/logo/logo.png') }} alt="Login V2"  width="500px"/></div>
+                        <div class="d-none d-lg-flex col-lg-8 align-items-center p-5">
+                            <div class="w-100 d-lg-flex align-items-center justify-content-center px-5"><img
+                                    class="img-fluid" src={{ asset('app-assets/images/pages/login-v2.svg') }}
+                                    alt="Login V2" /></div>
                         </div>
                         <!-- /Left Text-->
                         <!-- Login-->
-                        <div class="d-flex col-lg-4 align-items-center auth-bg px-2 p-lg-5" style="color:rgb(181, 208, 231)">
+                        <div class="d-flex col-lg-4 align-items-center auth-bg px-2 p-lg-5">
                             <div class="col-12 col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
-                                <h2 class="card-title font-weight-bold mb-1 " style="color:#202B63">Welcome to Races2.0! 👋</h2>
-                                <p class="card-text mb-2" style="color:#2a335f">Please sign-in to your account</p>
+                                <h2 class="card-title font-weight-bold mb-1">Welcome Back 👋</h2>
+                                <p class="card-text mb-2">Please sign-in to your account</p>
                                 @if ($message = Session::get('success'))
                                     <div class="demo-spacing-0 mb-1">
                                         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -109,7 +111,7 @@
                                 <form class="auth-login-form mt-2" action="{{ url('login') }}" method="post">
                                     {{ @csrf_field() }}
                                     <div class="form-group">
-                                        <label class="form-label" for="login-email" style="color:#202B63">Email<span
+                                        <label class="form-label" for="login-email">Email<span
                                                 style="color:red;">*</span></label>
                                         <input class="form-control" id="login-email" type="text" name="email"
                                             placeholder="Enter Email" aria-describedby="login-email" autofocus=""
@@ -124,7 +126,7 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="d-flex justify-content-between">
-                                            <label for="login-password" style="color:#202B63">Password <span
+                                            <label for="login-password">Password <span
                                                     style="color:red;">*</span></label>
                                             <!-- <a href="page-auth-forgot-password-v2.html"><small>Forgot Password?</small></a> -->
                                         </div>
@@ -143,7 +145,7 @@
                                         </p>
                                     </div>
                                     <input type="hidden" name="command" value="login" />
-                                    <button class="btn btn-primary btn-block" style="background-color:#202B63 !important" tabindex="4">Signup</button>
+                                    <button class="btn btn-primary btn-block" tabindex="4">Sign in</button>
                                 </form>
 
 

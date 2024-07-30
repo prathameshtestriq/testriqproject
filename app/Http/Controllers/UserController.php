@@ -8,6 +8,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -19,22 +20,33 @@ class UserController extends Controller
 
      public function clear_search(){
         session::forget('name');
+        session::forget('email');
+        session::forget('mobile'); 
+        session::forget('status'); 
         return redirect('/users');
     }
 
     public function index(Request $request){
         $aReturn = array();
         $aReturn['search_name'] = '';
+        $aReturn['search_email_id'] ='';
+        $aReturn['search_mobile'] = '';
 
         if(isset($request->form_type) && $request->form_type ==  'search_user'){
             //  dd($request->name);
            session(['name' => $request->name]);
-            session(['mobile' => $request->mobile]);
+           session(['email' => $request->email_id]);
+           session(['mobile' => $request->mobile_no]);
+           session(['status' => $request->status]);
 
             return redirect('/users');
         }
         $aReturn['search_name'] =  (!empty(session('name'))) ? session('name') : '';
-         $aReturn['mobile'] =  (!empty(session('mobile'))) ? session('mobile') : '';
+        $aReturn['search_email_id'] = (!empty(session('email'))) ? session('email') : '';
+        $aReturn['search_mobile'] =  (!empty(session('mobile'))) ? session('mobile') : '';
+        $status = session('status');
+        $aReturn['search_status'] = (isset($status) && $status != '') ? $status : '';
+
 
         // dd($aReturn);
         $CountRows=User::get_count($aReturn);
@@ -71,18 +83,28 @@ class UserController extends Controller
         if ($request->has('form_type') && $request->form_type == 'add_edit_user') {
 
             $rules = [
-                'firstname' => 'required',
-                'lastname' => 'required',
                 'mobile' => 'required|digits:10',
                 'status' => 'required',
                 'type' => 'required'
             ];
 
+            
 
             if ($iId > 0) {
-                $rules['email'] = 'required|email:rfc,dns';
+                $rules['firstname'] = 'required';
+                $rules['lastname'][] = Rule::unique('users')->ignore($iId, 'id')->where(function ($query) {
+                    return $query->where('firstname', request()->input('firstname'));
+                });
+                $rules['email'] = 'required|email:rfc,dns|unique:users,email,'.$iId.',Id';
                 $rules['password'] = 'nullable|confirmed|min:5';
             } else {
+                $rules['firstname'] = 'required';
+                $rules['lastname'] = [
+                    'required',
+                    Rule::unique('users')->where(function ($query) {
+                        return $query->where('firstname', request()->input('firstname'));
+                    }),
+                ];
                 $rules['email'] = 'required|email:rfc,dns|unique:users';
                 $rules['password'] = 'required|confirmed|min:5';
             }
@@ -107,7 +129,7 @@ class UserController extends Controller
             return redirect('/users')->with('success', $successMessage);
         } else {
 
-            if ($iId > 0) {
+            if ($iId > 0) { 
                 // $user = User::find($iId);
 
                 // if ($user) {

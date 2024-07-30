@@ -124,7 +124,7 @@ $(function() {
     }
     if (emailTo.length) {
         emailTo.wrap('<div class="position-relative"></div>').select2({
-            placeholder: ' ',
+            placeholder: 'Select value',
             dropdownParent: emailTo.parent(),
             closeOnSelect: false,
             templateResult: renderGuestAvatar,
@@ -139,7 +139,7 @@ $(function() {
 
     if (emailCC.length) {
         emailCC.wrap('<div class="position-relative"></div>').select2({
-            placeholder: ' ',
+            placeholder: 'Select value',
             dropdownParent: emailCC.parent(),
             closeOnSelect: false,
             templateResult: renderGuestAvatar,
@@ -154,7 +154,7 @@ $(function() {
 
     if (emailBCC.length) {
         emailBCC.wrap('<div class="position-relative"></div>').select2({
-            placeholder: ' ',
+            placeholder: 'Select value',
             dropdownParent: emailBCC.parent(),
             closeOnSelect: false,
             templateResult: renderGuestAvatar,

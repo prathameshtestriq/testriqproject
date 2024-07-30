@@ -1,11 +1,11 @@
 @extends('layout.index')
-@section('title', 'Users List')
+@section('title', 'Advertisement List')
 
 <!-- Dashboard Ecommerce start -->
 @section('content')
 <section>
-    <div class="content-header row">
-        <div class="content-header-left col-md-9 col-12 mb-2">
+    {{-- <div class="content-header row">
+        <div class="content-header-left col-md-9 col-12 mb-2"> 
             <div class="row breadcrumbs-top">
                 <div class="col-12 d-flex">
                     <h2 class="content-header-title float-start mb-0">Advertisemnt List</h2>
@@ -26,9 +26,37 @@
                 </div>
             </div>
         </div>
-    </div>       
-  </section>
-    <section>
+    </div>        --}}
+
+    <div class="content-body">
+        <!-- Bordered table start -->
+        <div class="row" id="table-bordered">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header w-100">
+                        <div class="content-header-left">
+                            <div class="row breadcrumbs-top">
+                                <div class="col-sm-12">
+                                    <h2 class="content-header-title float-left mb-0">Advertisemnt List</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end breadcrumb-wrapper">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mr-1">
+                                    <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                    <li class="breadcrumb-item">Advertisement</li>
+                                    <li class="breadcrumb-item active" aria-current="page">Advertisement List</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bordered table end -->
+    </div>
+ 
         @if ($message = Session::get('success'))
             <div class="demo-spacing-0 mb-1">
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -71,15 +99,53 @@
                                 <div class="row w-100">
                                     <div class="col-sm-8">
                                         <div class="row">
-                                            <div class="col-sm-3">
+                                            <div class="col-sm-2">
+                                                <label for="form-control">Advertisement Name:</label>
                                                 <input type="text" id="name" class="form-control"
-                                                    placeholder="advertisement name" name="name" value="{{ $search_ad }}"
+                                                    placeholder="advertisement name" name="name" value="{{ $search_name }}"
+                                                    autocomplete="off" />
+                                            </div>
+                                           
+                                            <div class="col-sm-2 ">
+                                                <label for="form-control">Start Date:</label>
+                                                <input type="datetime-local" id="start_booking_date1" class="form-control"
+                                                    placeholder="Start Date" name="start_date"   value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d\TH:i') : '') }}"  
+                                                    autocomplete="off" />
+                                            </div>
+                                           
+                                            <div class="col-sm-2">
+                                                <label for="form-control">End Date:</label>
+                                                <input type="datetime-local" id="end_booking_date1" class="form-control"
+                                                    placeholder="End Date" name="end_date"  value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d\TH:i') : '') }}" 
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-6">
+                                            <div class="col-sm-2 col-12"> 
+                                                <?php 
+                                                   $advertisement_status = array(0=>'Inactive',1=>'Active' );    
+                                                ?>
+                                                <label for="form-control"> Status:</label>
+                                                <select id="advertisement_status" name="advertisement_status" class="form-control select2 form-control">
+                                                    <option value="">Select  Status</option>
+                                                    <?php 
+                                                        foreach ($advertisement_status as $key => $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('advertisement_status',$search_advertisement_status) == $key){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+
+                                            <div class="col-sm-3 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if ($search_ad)
+                                                @if (!empty($search_name) || !empty($search_start_booking_date) || !empty($search_end_booking_date) || ($search_advertisement_status != ''))
                                                     <a title="Clear" href="{{ url('advertisement/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -88,7 +154,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-4 mt-2">
                                         <a href="{{ url('/advertisement/add_edit') }}" class="btn btn-outline-primary float-right">
                                             <i data-feather="plus"></i><span>Add advertisement</span></a>
                                     </div>
@@ -113,6 +179,9 @@
                                             </div>
                                         </div>
                                         {{-- <th class="text-left">User Name</th> --}}
+                                        <th class="text-center">Position</th>
+                                        <th class="text-center">Start Date</th>
+                                        <th class="text-center">End Date</th>
                                         <th class="text-center">IMAGE</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
@@ -128,6 +197,9 @@
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
                                                 <td class="text-left">{{ $val->name }}</td>
+                                                <td class="text-left">{{ $val->position }}</td>
+                                                <td class="text-left">{{ date('d-m-Y H:i:s', $val->start_time)  }}</td>
+                                                <td class="text-left">{{ date('d-m-Y H:i:s', $val->end_time)  }}</td>
                                                 <td class="t-center text-center">
 
                                                     <a target="_blank" href="{{ asset('uploads/images/' . $val->img) }}">

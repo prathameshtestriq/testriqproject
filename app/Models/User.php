@@ -93,16 +93,33 @@ class User extends Authenticatable
         $s_sql = 'SELECT u.id, u.firstname,u.lastname,u.is_active,u.email,u.mobile
                 FROM users u WHERE 1=1';
 
-        if (!empty($a_search['search_name'])) {
-           $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-            //$s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-            // $s_sql .= ' AND (LOWER(u.firstname) LIKE :search_name';
-            // $s_sql .= ' OR LOWER(u.lastname) LIKE :search_name';
-            // $s_sql .= ' OR LOWER(CONCAT(u.firstname, " ", u.lastname)) LIKE :search_name)';
+        // if (!empty($a_search['search_name'])) {
+        //    $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
+        //     //$s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
+        //     // $s_sql .= ' AND (LOWER(u.firstname) LIKE :search_name';
+        //     // $s_sql .= ' OR LOWER(u.lastname) LIKE :search_name';
+        //     // $s_sql .= ' OR LOWER(CONCAT(u.firstname, " ", u.lastname)) LIKE :search_name)';
             
 
-            $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
-        }
+        //     $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
+        // }
+
+        if(!empty( $a_search['search_name'])){
+            $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
+        } 
+
+        if(!empty( $a_search['search_email_id'])){
+            $s_sql .= ' AND (LOWER(u.email) LIKE \'%' . strtolower($a_search['search_email_id']) . '%\')';
+        } 
+ 
+        if(!empty( $a_search['search_mobile'])){
+            $s_sql .= ' AND (LOWER(u.mobile) LIKE \'%' . strtolower($a_search['search_mobile']) . '%\')';
+        } 
+
+        if(isset( $a_search['search_status'])){
+            $s_sql .= ' AND (LOWER(u.is_active) LIKE \'%' . strtolower($a_search['search_status']) . '%\')';
+        } 
+
         // dd($s_sql);
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
@@ -123,12 +140,28 @@ class User extends Authenticatable
         // dd($a_search);
         $s_sql = 'SELECT count(id) as count FROM users u WHERE 1=1';
 
-        if (!empty($a_search['search_name'])) {
-            $s_sql .= ' AND (LOWER(u.firstname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-            $s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-            $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
-        }
+        // if (!empty($a_search['search_name'])) {
+        //     $s_sql .= ' AND (LOWER(u.firstname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
+        //     $s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
+        //     $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
+        // }
 
+        if(!empty( $a_search['search_name'])){
+            $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
+        } 
+
+        if(!empty( $a_search['search_email_id'])){
+            $s_sql .= ' AND (LOWER(u.email) LIKE \'%' . strtolower($a_search['search_email_id']) . '%\')';
+        } 
+
+        if(!empty( $a_search['search_mobile'])){
+            $s_sql .= ' AND (LOWER(u.mobile) LIKE \'%' . strtolower($a_search['search_mobile']) . '%\')';
+        } 
+
+        if(isset( $a_search['search_status'])){
+            $s_sql .= ' AND (LOWER(u.is_active) LIKE \'%' . strtolower($a_search['search_status']) . '%\')';
+        } 
+        
         $CountsResult = DB::select($s_sql);
         if (!empty($CountsResult)) {
             $count = $CountsResult[0]->count;

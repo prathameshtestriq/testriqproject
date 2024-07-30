@@ -95,6 +95,22 @@ class Banner extends Model
             $s_sql .= ' AND (LOWER(b.banner_name) LIKE \'%' . strtolower($a_search['search_banner']) . '%\')';
         }
 
+        if(!empty($a_search['search_start_booking_date'])){
+            $startdate = strtotime($a_search['search_start_booking_date']);    
+            $s_sql .= " AND b.start_time >= "." $startdate";
+            // dd($sSQL);
+        }
+
+        if(!empty($a_search['search_end_booking_date'])){
+            $endDate = strtotime($a_search['search_end_booking_date']);
+            $s_sql .= " AND  b.end_time <="." $endDate";
+            // dd($sSQL);
+        } 
+
+        if(isset( $a_search['search_banner_status'])){
+            $s_sql .= ' AND (LOWER(b.active) LIKE \'%' . strtolower($a_search['search_banner_status']) . '%\')';
+        } 
+
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
         }
@@ -123,6 +139,22 @@ class Banner extends Model
         if (!empty($a_search['search_banner'])) {
             $s_sql .= ' AND (LOWER(b.banner_name) LIKE \'%' . strtolower($a_search['search_banner']) . '%\')';
         }
+
+        if(!empty($a_search['search_start_booking_date'])){
+            $startdate = strtotime($a_search['search_start_booking_date']);
+            $s_sql .= " AND b.start_time >= "." $startdate";
+            // dd($sSQL);
+        }
+
+        if(!empty($a_search['search_end_booking_date'])){
+            $endDate = strtotime($a_search['search_end_booking_date']);
+            $s_sql .= " AND  b.end_time <="." $endDate";
+            // dd($sSQL);
+        } 
+
+        if(isset( $a_search['search_banner_status'])){
+            $s_sql .= ' AND (LOWER(b.active) LIKE \'%' . strtolower($a_search['search_banner_status']) . '%\')';
+        } 
 
 
         $CountsResult = DB::select($s_sql);

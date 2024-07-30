@@ -1,4 +1,5 @@
-<?php 
+
+<?php
  if(!empty($edit_data)){
      $id        = $edit_data->id;
      $firstname = $edit_data->firstname;
@@ -20,72 +21,56 @@
 ?>
 
 @extends('layout.index')
-<!-- Dashboard Ecommerce start -->
 @if (!empty($id))
     @section('title', 'Edit User Details')
 @else
     @section('title', 'Add User Details')
 @endif
 
-<style>
-    *{
-        font-size: 15px;
-    }
-</style>
+@section('title', 'User Create')
+<!-- Dashboard Ecommerce start -->
 @section('content')
     <section>
+
         <div class="content-body">
-            <div class="content-header row">
-                <div class="content-header-left col-md-9 col-12 mb-2">
-                    <div class="row breadcrumbs-top">
-                        <div class="col-12 d-flex">
-                            <h2 class="content-header-title float-start mb-0">
-                                @if (!empty($id))
-                                   Edit User Details
-                                @else
-                                    Add User Details
-                                @endif 
-                            </h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
-                    <div class="mb-1 breadcrumb-right">
-                        <div class="breadcrumb-wrapper">
-                            <ol class="breadcrumb" style="justify-content: flex-end">
-                                <li class="breadcrumb-item"><a href="#">Home</a>
-                                </li>
-                                <li class="breadcrumb-item"><a href="#">Users</a>
-                                </li>
-                                <li class="breadcrumb-item active">
-                                    @if (!empty($id))
-                                        Edit User 
-                                    @else
-                                        Add User 
-                                    @endif 
-                                </li>
-                            </ol>
+            <!-- Bordered table start -->
+            <div class="row" id="table-bordered">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header w-100">
+                            <div class="content-header-left">
+                                <div class="row breadcrumbs-top">
+                                    <div class="col-sm-12">
+                                        <h2 class="content-header-title float-left mb-0">
+                                        @if (!empty($id))
+                                            Edit User Details
+                                        @else
+                                             Add User Details
+                                        @endif</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end breadcrumb-wrapper">
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb mr-1">
+                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">User</li>
+                                        <li class="breadcrumb-item active" aria-current="page">
+                                            @if (!empty($id))
+                                                Edit User
+                                            @else
+                                                Add User
+                                            @endif
+                                        </li>
+                                    </ol>
+                                </nav>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <!-- Bordered table end -->
         </div>
-
-        @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
 
         @if ($message = Session::get('error'))
             <div class="demo-spacing-0 mb-1">
@@ -115,134 +100,115 @@
                                     <input type="hidden" name="user_id" id="user_id" value="{{ $id }}">
 
                                     <div class="row">
-
-                                        <div class="col-sm-6">
-                                            <div class="row">
-
-                                                <div class="col-xs-12 col-md-12">
-                                                    <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >First name <span style="color:red;">*</span></label>
-                                                        <input type="firstname" id="firstname" class="form-control col-sm-8 float-right" name="firstname"
-                                                            placeholder="First Name" autocomplete="off" value="{{ old('firstname',$firstname) }}" />
-                                                            <h5><small class="text-danger" id="firstname_err"></small></h5>
-                                                            @error('firstname')
-                                                            <span class="error" style="color:red;">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-xs-12 col-md-12">
-                                                    <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Last Number <span style="color:red;">*</span></label>
-                                                        <input type="text" id="lastname" class="form-control col-sm-8 float-right" name="lastname"
-                                                            placeholder="lastname" autocomplete="off" value="{{ old('lastname',$lastname) }}" />
-                                                            <h5><small class="text-danger" id="lastname_err"></small></h5>
-                                                            @error('lastname')
-                                                            <span class="error" style="color:red;">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-xs-12 col-md-12">
-                                                    <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >contact number <span style="color:red;">*</span></label>
-                                                        <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
-                                                            placeholder="mobile" autocomplete="off" value="{{ old('mobile',$mobile) }}" />
-                                                            <h5><small class="text-danger" id="mobile_err"></small></h5>
-                                                            @error('mobile')
-                                                            <span class="error" style="color:red;">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-
-                                                
-                                                <div class="col-xs-12 col-md-12">
-                                                    <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left"  for="email" style="margin-top:20px">Email <span style="color:red;">*</span></label>
-                                                        <input type="text" id="email" class="form-control col-sm-8 float-right" name="email"
-                                                            placeholder="Email" autocomplete="off" value="{{ old('email',$email) }}" />
-                                                            <h5><small class="text-danger" id="email_err"></small></h5>
-                                                            @error('email')
-                                                            <span class="error" style="color:red;">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-                                               
-                                                
-
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="firstname">First Name <span style="color:red;">*</span></label>
+                                                <input type="text" id="firstname" class="form-control"
+                                                    placeholder="First Name" name="firstname" value="{{ old('firstname', $firstname) }}" autocomplete="off" />
+                                                <h5><small class="text-danger" id="firstname_err"></small></h5>
+                                                @error('firstname')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
                                             </div>
                                         </div>
-
-                                        <div class="col-sm-6">
-                                            <div class="row">
-                                                <h4 class="m-1">Credential:</h4>
-                                                
-                                                <div class="col-xs-12 col-md-12">
-                                                    <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >password <span style="color:red;">*</span></label>
-                                                        <input type="password" id="password" class="form-control col-sm-8 float-right" name="password"
-                                                            placeholder="password" autocomplete="off"/>
-                                                            <h5><small class="text-danger" id="password_err"></small></h5>
-                                                            @error('password')
-                                                                <span class="error" style="color:red;">{{ $message }}</span>
-                                                            @enderror
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-xs-12 col-md-12">
-                                                    <div class="form-group mb-5">
-                                                        <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Confirm password <span style="color:red;">*</span></label>
-                                                        <input type="password" id="password_confirmation" class="form-control col-sm-8 float-right" name="password_confirmation"
-                                                            placeholder="Confirm Password" autocomplete="off"/>
-                                                            <h5><small class="text-danger" id="password_confirmation_err"></small></h5>
-                                                          
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-xs-12 col-md-12">
-                                                    <label class="col-sm-4 float-left" for="password_confirmation" style="margin-top:10px">Status</label>
-                                                    <div class="form-check mt-1 mb-2">
-                                                        <input class="form-check-input status1" type="radio" name="status" id="status1" value="active" <?php if($is_active==1){ echo 'checked';};?>>
-                                                        <label class="form-check-label mr-4" for="status1">
-                                                            Active
-                                                        </label>
-                                                        <input class="form-check-input status1" type="radio" name="status" id="status2" value="inactive"  <?php if($is_active==0){ echo 'checked';};?> >
-                                                        <label class="form-check-label" for="status2">
-                                                            Inactive
-                                                        </label>
-                                                    </div>
-                                                     <h5><small class="text-danger" id="status_err"></small></h5>
-                                                     @error('status')
-                                                        <span class="error" style="color:red;">{{ $message }}</span>
-                                                    @enderror
-                                                </div> 
-                                    
-                                                <div class="col-xs-12 col-md-12 ">
-                                                <div class="form-group mb-5">
-                                            
-                                                    <label for="role" class="col-sm-4 float-left"> Type <span style="color:red;">*</span></label>
-                                                    <select name="type" id="type" class="form-control form-select col-sm-8 float-right">
-                                                        <option value="">Select Role</option>
-                                                     
-                                                        <option value="1" <?php echo !empty($type) && $type == 1 ? 'selected' : ''   ?> >Superadmin</option>
-                                                        <option value="2" <?php echo !empty($type) && $type == 2 ? 'selected' : ''   ?> >Organizer/Admin</option>
-                                                        <option value="3" <?php echo !empty($type) && $type == 3 ? 'selected' : '' ?>>User</option>
-                                                    </select>
-                                                    <h5><small class="text-danger" id="user_role_err"></small></h5>
-                                                    @error('user_role')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="lastname">Last Name <span style="color:red;">*</span></label>
+                                                <input type="text" id="lastname" class="form-control"
+                                                    placeholder="Last Name" name="lastname" value="{{ old('lastname',$lastname) }}" autocomplete="off" />
+                                                <h5><small class="text-danger" id="lastname_err"></small></h5>
+                                                @error('lastname')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
-                                                </div>
-                                                </div>
-                                                
                                             </div>
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="mobile">Contact Number <span style="color:red;">*</span></label>
+                                                <input type="number" id="mobile" class="form-control" name="mobile"
+                                                    placeholder="Contact Number" autocomplete="off" value="{{ old('mobile',$mobile) }}" />
+                                                <h5><small class="text-danger" id="email_err"></small></h5>
+                                                @error('mobile')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="email">Email <span style="color:red;">*</span></label>
+                                                <input type="text" id="email" class="form-control" name="email"
+                                                    placeholder="Email" autocomplete="off" value="{{ old('email',$email) }}" />
+                                                <h5><small class="text-danger" id="email_err"></small></h5>
+                                                @error('email')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="password">Password <span style="color:red;">*</span></label>
+                                                <input type="password" id="password" class="form-control"
+                                                    name="password" placeholder="Password" autocomplete="off" />
+                                                <h5><small class="text-danger" id="password_err"></small></h5>
+                                                @error('password')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="password_confirmation">Confirm Password </label>
+                                                <input type="password" id="password_confirmation" class="form-control"
+                                                    name="password_confirmation" placeholder="Confirm Password" />
+                                                <h5><small class="text-danger" id="password_confirmation_err"></small>
+                                                </h5>
+                                                @error('password_confirmation')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="type">Type<span style="color:red;">*</span></label>
+                                                <select id="type" name="type" class="select2 form-control">
+                                                    <option value="">Select Role</option>
+
+                                                    <option value="1" <?php echo !empty($type) && $type == 1 ? 'selected' : ''   ?> >Superadmin</option>
+                                                    <option value="2" <?php echo !empty($type) && $type == 2 ? 'selected' : ''   ?> >Organizer/Admin</option>
+                                                    <option value="3" <?php echo !empty($type) && $type == 3 ? 'selected' : '' ?>>User</option>
+                                                </select>
+                                                    <h5><small class="text-danger" id="type_err"></small></h5>
+                                                @error('type')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 col-12"><br>
+                                            <label for="password_confirmation m-2">Status :</label> <br/>
+                                            <div class="demo-inline-spacing">
+                                                <div class="custom-control custom-radio mt-0">
+                                                    <input type="radio" id="customRadio1" name="status"
+                                                        class="custom-control-input" value="active" <?php if($is_active==1){ echo 'checked';};?> />
+                                                    <label class="custom-control-label" for="customRadio1">Active</label>
+                                                </div>
+                                                <div class="custom-control custom-radio mt-0">
+                                                    <input type="radio" id="customRadio2" name="status"
+                                                        class="custom-control-input" value="inactive"  <?php if($is_active==0){ echo 'checked';};?> />
+                                                    <label class="custom-control-label" for="customRadio2">Inactive</label>
+                                                </div>
+                                            </div>
+                                            <h5><small class="text-danger" id="gender_err"></small></h5>
+                                            @error('status')
+                                                <span class="error" style="color:red;">{{ $message }}</span>
+                                            @enderror
                                         </div>
 
                                         <div class="col-12 text-center mt-1">
-                                            <button type="submit" class="btn btn-primary mr-1" onClick="return validation()">Submit</button>
+                                            <button type="submit" class="btn btn-primary mr-1"
+                                                onClick="return validation()">Submit</button>
                                             <a href="{{ url('/users') }}" type="reset"
                                                 class="btn btn-outline-secondary">Cancel</a>
-                                        </div>                                  
+                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -252,14 +218,10 @@
             </section>
         </div>
     </section>
-   
 @endsection
 
-<script type="text/javascript"> 
-
-
-    
-	function validation() {  
+<script type="text/javascript">
+    function validation() {
         
         if ($('#firstname').val() == ""){
             $('#firstname').parent().addClass('has-error');
@@ -281,10 +243,10 @@
                 $('#firstname').keyup(function () {
                 $('#firstname').parent().removeClass('has-error');
                 $('#firstname_err').html('');
-                });   
+                });
             return false;
             }
-        } 
+        }
 
         if ($('#lastname').val() == ""){
             $('#lastname').parent().addClass('has-error');
@@ -305,10 +267,10 @@
                 $('#lastname').keyup(function () {
                 $('#lastname').parent().removeClass('has-error');
                 $('#lastname_err').html('');
-                });   
+                });
             return false;
             }
-        } 
+        }
 
         if ($('#mobile').val() == "") {
             $('#mobile').parent().addClass('has-error');
@@ -348,10 +310,10 @@
                 $('#email').keyup(function () {
                 $('#email').parent().removeClass('has-error');
                 $('#email_err').html('');
-                });   
+                });
             return false;
             }
-        } 
+        }
 
         var emp = $('#user_id').val();
         if (emp == 0) {
@@ -364,8 +326,8 @@
                 $('#password_err').html('');
                 });
                 return false;
-            } 
-        
+            }
+
             if ($('#password_confirmation').val() == ""){
                 $('#password_confirmation').parent().addClass('has-error');
                 $('#password_confirmation_err').html('Please Enter Confirm Password.');
@@ -382,10 +344,10 @@
                 $('#password_confirmation').keyup(function () {
                 $('#password_confirmation').parent().removeClass('has-error');
                 $('#password_confirmation_err').html('');
-                });   
+                });
                 return false;
             }
         }
-        
-        }
+
+    }
 </script>

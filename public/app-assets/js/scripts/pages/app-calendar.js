@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return $bullet;
         }
         eventLabel.wrap('<div class="position-relative"></div>').select2({
-            placeholder: ' ',
+            placeholder: 'Select value',
             dropdownParent: eventLabel.parent(),
             templateResult: renderBullets,
             templateSelection: renderBullets,
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return $avatar;
         }
         eventGuests.wrap('<div class="position-relative"></div>').select2({
-            placeholder: ' ',
+            placeholder: 'Select value',
             dropdownParent: eventGuests.parent(),
             closeOnSelect: false,
             templateResult: renderGuestAvatar,

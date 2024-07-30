@@ -14,6 +14,9 @@ class AdvertiseController extends Controller
     public function clear_search()
     {
         session::forget('name');
+        session::forget('start_date');
+        session::forget('end_date');
+        session::forget('advertisement_status');
         return redirect('/advertisement');
     }
 
@@ -21,16 +24,28 @@ class AdvertiseController extends Controller
     {
 
         $aReturn = array();
-        $aReturn['search_ad'] = ''; 
+        $aReturn['search_name'] = ''; 
+        $aReturn['search_start_booking_date'] = '';
+        $aReturn['search_end_booking_date'] = '';
+        $aReturn['search_advertisement_status'] = '';
+        
 
         if(isset($request->form_type) && $request->form_type ==  'search_ad') {
             //  dd($request->name);
             session(['name' => $request->name]);
-
+            session(['start_date' => $request->start_date]);
+            session(['end_date' => $request->end_date]);
+            session(['advertisement_status' => $request->advertisement_status]);
+ 
             return redirect('/advertisement');
         }
 
-        $aReturn['search_ad'] =  (!empty(session('name'))) ? session('name') : '';
+        $aReturn['search_name'] =  (!empty(session('name'))) ? session('name') : '';
+        $aReturn['search_start_booking_date'] = (!empty(session('start_date'))) ?  session('start_date') : '';
+        $aReturn['search_end_booking_date'] = (!empty(session('end_date'))) ? session('end_date'): '';
+        $advertisement_status = session('advertisement_status');
+        $aReturn['search_advertisement_status'] = (isset($advertisement_status) && $advertisement_status != '') ? $advertisement_status : '';
+
         //dd($aReturn);
         // dd($aReturn);
         $CountRows = Advertisement::get_count_ad($aReturn);
@@ -54,26 +69,32 @@ class AdvertiseController extends Controller
 
         $a_return['name'] = '';
         $a_return['status'] = '';
+        $a_return['position'] = '';
+        $a_return['start_time'] = '';
+        $a_return['end_time'] = '';
         $a_return['url'] = '';
         $a_return['img'] = '';
         $aResult = [];
         
         if ($iId > 0) {
-            $sql = 'SELECT id,name, img, url, status
+            $sql = 'SELECT id,name,position, start_time, end_time, img, url, status
             FROM advertisement 
             WHERE id = ?';
 
             $addetails = DB::select($sql, array($iId));
             $aResult = (array) $addetails[0];
-            //dd($aResult);
+            // dd($aResult);
         }
 
         if ($request->has('form_type') && $request->form_type == 'add_edit_ad') {
 
 
             $rules = [
-                'name' => 'required',
+                'name' => 'required|unique:advertisement,name,' . $iId . 'id',
                 'url' => 'required',
+                'start_time' => 'required',
+                'end_time' => 'required',
+                'position' => 'required', 
                 'img' => !empty($aResult) && $aResult['img'] !== '' ? '' : 'required',
             ];
 
@@ -101,7 +122,7 @@ class AdvertiseController extends Controller
         } else {
             $a_return['edit_data'] = $aResult;
         }
-        // dd($a_return);
+     
 
         return view('advertisement.create', $a_return);
         // Pass $a_return array to the view

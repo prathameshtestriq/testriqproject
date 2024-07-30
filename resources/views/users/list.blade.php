@@ -3,60 +3,63 @@
 
 <!-- Dashboard Ecommerce start -->
 @section('content')
-<section>
-    <div class="content-header row">
-        <div class="content-header-left col-md-9 col-12 mb-2">
-            <div class="row breadcrumbs-top">
-                <div class="col-12 d-flex">
-                    <h2 class="content-header-title float-start mb-0">Users List</h2>
-                </div>
-            </div>
-        </div>
-        <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
-            <div class="mb-1 breadcrumb-right">
-                <div class="breadcrumb-wrapper">
-                    <ol class="breadcrumb" style="justify-content: flex-end">
-                        <li class="breadcrumb-item"><a href="#">Home</a>
-                        </li>
-                        <li class="breadcrumb-item"><a href="#">Users</a>
-                        </li>
-                        <li class="breadcrumb-item active">Users List
-                        </li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>       
-  </section>
     <section>
+        <div class="content-body">
+            <!-- Bordered table start -->
+            <div class="row" id="table-bordered">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header w-100">
+                            <div class="content-header-left">
+                                <div class="row breadcrumbs-top">
+                                    <div class="col-sm-12">
+                                        <h2 class="content-header-title float-left mb-0">Users List</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end breadcrumb-wrapper">
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb mr-1">
+                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Users</li>
+                                        <li class="breadcrumb-item active" aria-current="page">Users List</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Bordered table end -->
+        </div>
         @if ($message = Session::get('success'))
             <div class="demo-spacing-0 mb-1">
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <div class="alert-body">
                         <i class="fa fa-check-circle" style="font-size:16px;" aria-hidden="true"></i>
-                        {{ $message }}
+                            {{ $message }}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
 
                     </div>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
             </div>
         @elseif ($message = Session::get('error'))
             <div class="demo-spacing-0 mb-1">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <div class="alert-body">
-                        <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-                        {{ $message }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <div class="alert-body">
+                            <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                                {{ $message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
 
-                    </div>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        </div>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            </div>
+                        </button>
+                    </div>
+           </div>
         @endif
 
         <div class="content-body">
@@ -67,28 +70,64 @@
                         <form class="dt_adv_search" action="{{ url('users') }}" method="POST">
                             @csrf
                             <input type="hidden" name="form_type" value="search_user">
-                            <div class="card-header w-100 m-0">
+                            <div class="card-header w-100 m-0"> 
                                 <div class="row w-100">
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-9">
                                         <div class="row">
-                                            <div class="col-sm-3">
-                                                <input type="text" id="name" class="form-control"
-                                                    placeholder="User Name" name="name" value="{{ $search_name }}"
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control">User Name:</label>
+                                                <input type="text" id="user_name" class="form-control"
+                                                        placeholder="User Name" name="name"
+                                                        value="{{ $search_name }}" autocomplete="off" />
+                                            </div>
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control">Email Id:</label>
+                                                <input type="text" id="email_id" class="form-control"
+                                                    placeholder="Email Id" name="email_id" value="{{ $search_email_id }}"
+                                                    autocomplete="off" />
+                                            </div>
+                                            
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control">Mobile No:</label>
+                                                <input type="text" id="mobile_no" class="form-control"
+                                                    placeholder="Mobile No" name="mobile_no" value="{{ $search_mobile }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-6">
+                                            <div class="col-sm-2 col-12">
+                                                <?php 
+                                                   $Status = array(0=>'Inactive',1=>'Active' );    
+                                                ?>
+                                                <label for="form-control"> Status:</label>
+                                                <select id="status" name="status" class="form-control select2 form-control">
+                                                    <option value="">Select  Status</option>
+                                                    <?php 
+                                                        foreach ($Status as $key => $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('status',$search_status) == $key){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-sm-3 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if ($search_name)
-                                                    <a title="Clear" href="{{ url('user/clear_search') }}" type="button"
-                                                        class="btn btn-outline-primary">
+                                                @if (!empty($search_name) || !empty($search_email_id) || !empty($search_mobile) || ($search_status != ''))
+                                                    <a title="Clear" href="{{ url('user/clear_search') }}"
+                                                        type="button" class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
                                                     </a>
                                                 @endif
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-3 mt-2">
                                         <a href="{{ url('/user/add_edit') }}" class="btn btn-outline-primary float-right">
                                             <i data-feather="plus"></i><span>Add User</span></a>
                                     </div>
@@ -174,13 +213,10 @@
             </div>
             <!-- Bordered table end -->
         </div>
-
-
     </section>
-
 @endsection
 <script>
-    function delUser(id) {
+  function delUser(id) {
         // alert(id);
         var url = '<?php echo url('user/delete'); ?>';
         url = url + '/' + id;

@@ -4,31 +4,35 @@
 <!-- Dashboard Ecommerce start -->
 @section('content')
 <section>
-    <div class="content-header row">
-        <div class="content-header-left col-md-9 col-12 mb-2">
-            <div class="row breadcrumbs-top">
-                <div class="col-12 d-flex">
-                    <h2 class="content-header-title float-start mb-0">Testimonial List</h2>
+    <div class="content-body">
+        <!-- Bordered table start -->
+        <div class="row" id="table-bordered">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header w-100">
+                        <div class="content-header-left">
+                            <div class="row breadcrumbs-top">
+                                <div class="col-sm-12">
+                                    <h2 class="content-header-title float-left mb-0">Testimonial List</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end breadcrumb-wrapper">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mr-1">
+                                    <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                    <li class="breadcrumb-item">Testimonial</li>
+                                    <li class="breadcrumb-item active" aria-current="page">Testimonial List</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
-            <div class="mb-1 breadcrumb-right">
-                <div class="breadcrumb-wrapper">
-                    <ol class="breadcrumb" style="justify-content: flex-end">
-                        <li class="breadcrumb-item"><a href="#">Home</a>
-                        </li>
-                        <li class="breadcrumb-item"><a href="#">Testimonial</a>
-                        </li>
-                        <li class="breadcrumb-item active">Testimonial List
-                        </li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<section>
+     <!-- Bordered table end -->
+    </div>    
+<
     @if ($message = Session::get('success'))
     <div class="demo-spacing-0 mb-1">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -72,13 +76,36 @@
                                 <div class="col-sm-8">
                                     <div class="row">
                                         <div class="col-sm-3">
+                                            <label for="form-control"> Testimonial Name:</label>
                                             <input type="text" id="user_id" class="form-control" placeholder="Testimonial Name"
                                                 name="user_id" value="{{ $search_name }}" autocomplete="off" />
                                         </div>
 
-                                        <div class="col-sm-6">
+                                        <div class="col-sm-3 "> 
+                                            <?php 
+                                               $testimonial_status = array(0=>'Inactive',1=>'Active' );    
+                                            ?>
+                                            <label for="form-control"> Status:</label>
+                                            <select id="testimonial_status" name="testimonial_status" class="form-control select2 form-control">
+                                                <option value="">Select  Status</option>
+                                                <?php 
+                                                    foreach ($testimonial_status as $key => $value)
+                                                    {
+                                                        $selected = '';
+                                                        if(old('testimonial_status',$search_testimonial_status) == $key){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                        <?php 
+                                                    }
+                                                ?>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-sm-4 mt-2">
                                             <button type="submit" class="btn btn-primary">Search</button>
-                                            @if ($search_name)
+                                            @if (!empty($search_name) || ($search_testimonial_status != ''))
                                             <a title="Clear" href="{{ url('testimonial/clear_search') }}" type="button"
                                                 class="btn btn-outline-primary">
                                                 <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -88,7 +115,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-4">
+                                <div class="col-sm-4 mt-2">
                                     <a href="{{ url('/testimonial/add') }}" class="btn btn-outline-primary float-right">
                                         <i data-feather="plus"></i><span>Add Testimonial</span></a>
                                 </div>

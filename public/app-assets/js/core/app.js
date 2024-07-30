@@ -579,7 +579,7 @@ window.colors = {
                 searchInput.removeClass('open');
                 if (searchInput.hasClass('show')) {
                     $(this).removeClass('show');
-                    searchInput.removeClass('show');stepper
+                    searchInput.removeClass('show');
                 }
             }
 
@@ -1054,8 +1054,6 @@ function featherSVG(iconSize) {
     }
     return feather.replace({ width: iconSize, height: iconSize });
 }
-
- 
 
 // jQuery Validation Global Defaults
 if (typeof jQuery.validator === 'function') {

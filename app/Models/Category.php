@@ -75,11 +75,16 @@ class Category extends Model
     {
         $a_return = [];
 
-        $s_sql = 'SELECT id, name, logo, active FROM category';
+        $s_sql = 'SELECT id, name, logo, active FROM category where 1=1';
 
         if (!empty($a_search['search_category'])) {
-            $s_sql .= ' WHERE LOWER(name) LIKE \'%' . strtolower($a_search['search_category']) . '%\'';
+            $s_sql .= ' AND LOWER(name) LIKE \'%' . strtolower($a_search['search_category']) . '%\'';
         }
+     
+        if(isset( $a_search['search_category_status'])){
+            $s_sql .= ' AND (LOWER(active) LIKE \'%' . strtolower($a_search['search_category_status']) . '%\')';
+        } 
+
         
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
@@ -103,6 +108,10 @@ class Category extends Model
          //   $s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
            // $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
         }
+
+        if(isset( $a_search['search_category_status'])){
+            $s_sql .= ' AND (LOWER(active) LIKE \'%' . strtolower($a_search['search_category_status']) . '%\')';
+        } 
 
         $CountsResult = DB::select($s_sql);
         if (!empty($CountsResult)) {

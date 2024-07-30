@@ -1,0 +1,130 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\RemittanceManagement;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Pagination\LengthAwarePaginator;
+
+class RemittanceManagementController extends Controller
+{
+    public function clear_search()
+    {
+        session::forget('remittance_name');
+        session::forget('start_remittance_date');
+        session::forget('end_remittance_date');
+        session::forget('remittance_status');
+        return redirect('/remittance_management');
+    }
+
+    public function index(Request $request)
+    {
+        $a_return = array();
+        $a_return['search_remittance_name'] = '';
+        $a_return['search_start_remittance_date'] = '';
+        $a_return['search_end_remittance_date'] = '';
+        $a_return['search_remittance_status'] = '';
+
+        if (isset($request->form_type) && $request->form_type == 'search_remittance_management') {
+            session(['remittance_name' => $request->remittance_name]);
+            session(['start_remittance_date' => $request->start_remittance_date]);
+            session(['end_remittance_date' => $request->end_remittance_date]);
+            session(['remittance_status' => $request->remittance_status]);
+
+            return redirect('/remittance_management');
+        }
+        $a_return['search_remittance_name'] = (!empty(session('remittance_name'))) ? session('remittance_name') : '';
+        $a_return['search_start_remittance_date'] = (!empty(session('start_remittance_date'))) ?  session('start_remittance_date') : '';
+        $a_return['search_end_remittance_date'] = (!empty(session('end_remittance_date'))) ? session('end_remittance_date'): '';
+        $remittance_status = session('remittance_status');
+        $a_return['search_remittance_status'] = (isset($remittance_status) && $remittance_status != '') ? $remittance_status : '';
+   
+
+        $CountRows = RemittanceManagement::get_count($a_return);
+        // dd($CountRows);
+        $PageNo = request()->input('page', 1);
+        $Limit = config('custom.per_page');
+        // $Limit = 3;
+        $a_return['Offset'] = ($PageNo - 1) * $Limit;
+        
+       
+        $a_return["Remittance"] = RemittanceManagement::get_all_remittance($Limit,$a_return);
+    //  dd($a_return["Remittance"]);
+        $a_return['Paginator'] = new LengthAwarePaginator($a_return['Remittance'], $CountRows, $Limit, $PageNo);
+        $a_return['Paginator']->setPath(request()->url());
+
+        return view('remittancemanagement.list',$a_return);
+    }
+
+    public function add_edit(Request $request, $iId = 0){
+        $a_return['remittance_name'] = '';
+        $a_return['remittance_date'] = '';
+        $a_return['gross_amount'] = '';
+        $a_return['service_charge'] = '';
+        $a_return['Sgst'] = '';
+        $a_return['Cgst'] = '';
+        $a_return['Igst'] = '';
+        $a_return['deductions'] = '';
+        $a_return['Tds'] = '';
+        $a_return['amount_remitted'] = '';
+        $a_return['bank_reference'] = '';
+       
+     
+
+        if (isset($request->form_type) && $request->form_type == 'add_edit_remittance_management') {
+            $rules = [
+                'remittance_name' => 'required|alpha|unique:remittance_management,remittance_name,' . $iId . 'id',
+                'remittance_date' => 'required',
+                'gross_amount' => 'required|numeric|regex:/^\d*\.\d+$/',
+                'service_charge' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
+                'Sgst' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
+                'Cgst' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
+                'Igst' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
+                'deductions' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
+                'Tds' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
+                'amount_remitted' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
+                'bank_reference' => 'required'
+            ];
+
+            $request->validate($rules);
+
+
+            if ($iId > 0) {
+                RemittanceManagement::update_remittance_management($iId, $request);
+                $successMessage = ' Remittance Management Details Updated Successfully';
+            }else{
+              
+                RemittanceManagement::add_remittance_management($request);
+                $successMessage = 'Remittance Management Details Added Successfully';
+            }
+            return redirect('/remittance_management')->with('success', $successMessage);
+
+        }else{
+            if($iId > 0){
+            //   #SHOW EXISTING DETAILS ON EDIT
+              $sSQL = 'SELECT id,remittance_name,remittance_date,gross_amount,service_charge,Sgst,Cgst,Igst,deductions,Tds, amount_remitted, bank_reference FROM remittance_management WHERE id=:id';
+              $hospitaldetails = DB::select($sSQL, array( 'id' => $iId));
+              $a_return = (array)$hospitaldetails[0];
+            //   dd($a_return );
+            }
+          }      
+        
+          
+        return view('remittancemanagement.create',$a_return);
+    }
+
+    public function delete_remittance_management($iId){
+        RemittanceManagement::delete_remittance_management($iId);
+        return redirect(url('/remittance_management'))->with('success', 'remittance management deleted successfully');
+    }
+
+    public function change_active_status(Request $request)
+    {
+        $aReturn = RemittanceManagement::change_status_remittance_management($request);
+        // dd($aReturn);
+        return $aReturn;
+    }
+    
+}

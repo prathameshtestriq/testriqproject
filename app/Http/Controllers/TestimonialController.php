@@ -13,9 +13,10 @@ use Illuminate\Support\Facades\File;
 class TestimonialController extends Controller
 {
     //
-    public function clear_search()
+    public function clear_search() 
     {
         session()->forget('user_id');
+        session()->forget('testimonial_status');
         return redirect('/testimonial');
     }
 
@@ -26,12 +27,16 @@ class TestimonialController extends Controller
 
         $aReturn = array();
         $aReturn['search_name'] = '';
+        $aReturn['search_testimonial_status'] = '';
         if (isset($request->form_type) && $request->form_type == 'search_testimonial') {
             // dd('here1');
             session(['user_id' => $request->user_id]);
+            session(['testimonial_status' => $request->testimonial_status]);
             return redirect('/testimonial');
         }
         $aReturn['search_name'] = (!empty(session('user_id'))) ? session('user_id') : '';
+        $testimonial_status = session('testimonial_status');
+        $aReturn['search_testimonial_status'] = (isset($testimonial_status) && $testimonial_status != '') ? $testimonial_status : '';
         $FiltersSql = '';
         //  dd($aReturn['search_district_name']);
 
@@ -46,6 +51,9 @@ class TestimonialController extends Controller
             $aReturn['search_name'] = '';
         }
 
+        if(isset( $aReturn['search_testimonial_status'])){
+            $FiltersSql .= ' AND (LOWER(active) LIKE \'%' . strtolower($aReturn['search_testimonial_status']) . '%\')';
+        } 
 
         //  dd($FiltersSql);
 
@@ -93,7 +101,7 @@ class TestimonialController extends Controller
             // dd('ss');
             #VALIDATION RULES
             $Rules = [
-                'testimonial_name' => 'required|string',
+                'testimonial_name' => 'required|unique:testimonial,name,' . $iId . 'id',
                 'subtitle'         => 'required|string',
                 'description'      => 'required|string',
                 //'testimonial_img'  => 'required'
@@ -119,7 +127,7 @@ class TestimonialController extends Controller
                    $img_file->move($path, $img_name);
                 }
 
-                $sSQL = 'UPDATE testimonial SET name = :name, subtitle = :subtitle ,description = :description WHERE id = :id';
+                $sSQL = 'UPDATE testimonial SET name = :name, subtitle = :subtitle ,description = :description ';
                 // dd($sSQL);
 
                 $Bindings = array(
@@ -134,7 +142,7 @@ class TestimonialController extends Controller
                    $Bindings['testimonial_img'] = $img_name;
                 }
 
-
+                $sSQL .= ' WHERE id = :id';
                 $Result = DB::update($sSQL, $Bindings);
                 $SuccessMessage = 'testimonial updated successfully';
                 

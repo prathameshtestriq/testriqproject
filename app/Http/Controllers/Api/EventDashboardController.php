@@ -327,7 +327,7 @@ class EventDashboardController extends Controller
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
                 $couponUsedFlag = isset($aPost['coupon_used_flag']) ? $aPost['coupon_used_flag'] : 0;
 
-                $sql = "SELECT *,a.id AS aId,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
+                $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id";
                 
@@ -1267,10 +1267,11 @@ class EventDashboardController extends Controller
                 if(!empty($booking_pay_id )){
                     $Bindings = array(
                         "payment_status" => 'initiate',
+                        "change_status_manual" => 1,
                         "id" => $booking_pay_id
                     );
 
-                    $SQL = "UPDATE booking_payment_details SET payment_status =:payment_status WHERE id=:id";
+                    $SQL = "UPDATE booking_payment_details SET payment_status =:payment_status, change_status_manual =:change_status_manual WHERE id=:id";
                     DB::update($SQL, $Bindings);
 
                     $Bindings1 = array(

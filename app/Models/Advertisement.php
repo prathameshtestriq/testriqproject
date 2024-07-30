@@ -61,18 +61,35 @@ class Advertisement extends Model
    {
        $a_return = [];
    
-       $s_sql = 'SELECT a.id, a.name, a.img, a.url, a.status
-                 FROM advertisement a';
+       $s_sql = 'SELECT a.id, a.name, a.position, a.start_time, a.end_time, a.img, a.url, a.status
+                 FROM advertisement a where 1=1';
    
-       if (!empty($a_search['search_ad'])) {
-           $s_sql .= ' WHERE LOWER(a.name) LIKE \'%' . strtolower($a_search['search_ad']) . '%\'';
+       if (!empty($a_search['search_name'])) {
+           $s_sql .= ' AND LOWER(a.name) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
        }
+
+       if(!empty($a_search['search_start_booking_date'])){
+            $startdate = strtotime($a_search['search_start_booking_date']);  
+            $s_sql .= " AND a.start_time >= "." $startdate";
+            // dd($s_sql);
+        }
+
+        if(!empty($a_search['search_end_booking_date'])){
+            $endDate = strtotime($a_search['search_end_booking_date']);
+            $s_sql .= " AND  a.end_time <="." $endDate";
+            // dd($sSQL);
+        } 
+
+        if(isset( $a_search['search_advertisement_status'])){
+            $s_sql .= ' AND (LOWER(a.status) LIKE \'%' . strtolower($a_search['search_advertisement_status']) . '%\')';
+        } 
        
        if ($limit > 0) {
            $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
        }
    
        $a_return = DB::select($s_sql);
+    //    dd($a_return);
        return $a_return;
    }
    
@@ -82,12 +99,29 @@ class Advertisement extends Model
        $count = 0;
        $s_sql = 'SELECT count(id) as count FROM advertisement a WHERE 1=1';
    
-       if (!empty($a_search['search_ad'])) {
-           $s_sql .= ' AND (LOWER(a.name) LIKE \'%' . strtolower($a_search['search_ad']) . '%\')';
+       if (!empty($a_search['search_name'])) {
+           $s_sql .= ' AND (LOWER(a.name) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
        }
+
+       if(!empty($a_search['search_start_booking_date'])){
+            $startdate = strtotime($a_search['search_start_booking_date']);    
+            $s_sql .= " AND a.start_time >= "." $startdate";
+            // dd($s_sql);
+        }
+
+        if(!empty($a_search['search_end_booking_date'])){
+            $endDate = strtotime($a_search['search_end_booking_date']);
+            $s_sql .= " AND  a.end_time <="." $endDate";
+            // dd($sSQL);
+        } 
+   
+
+        if(isset( $a_search['search_advertisement_status'])){
+            $s_sql .= ' AND (LOWER(a.status) LIKE \'%' . strtolower($a_search['search_advertisement_status']) . '%\')';
+        } 
    
        $CountsResult = DB::select($s_sql);
-     //  dd($CountsResult);
+    //   dd($CountsResult);
    
        if (!empty($CountsResult)) {
            $count = $CountsResult[0]->count;
@@ -110,14 +144,18 @@ class Advertisement extends Model
            $img_file->move($path, $img_name);
        }
    
+       
        $sql = 'INSERT INTO advertisement (
-                  name, url, img
+                  name, position, start_time, end_time, url, img
               ) VALUES (
-                  :name, :url, :img
+                  :name, :position, :start_time, :end_time, :url, :img
               )';
    
        $bindings = [
            'name' => $request->name,
+           'position' => $request->position,
+           'start_time' => strtotime($request->start_time),
+           'end_time' => strtotime($request->end_time),
            'url' => $request->url,
            'img' => $img_name
        ];
@@ -145,10 +183,16 @@ class Advertisement extends Model
        
        $sql = 'UPDATE advertisement SET
                   name = :name,
+                  position= :position,
+                  start_time = :start_time,
+                  end_time = :end_time,
                   url = :url';
        
        $bindings = [
            'name' => $request->name,
+           'position' =>$request->position,
+           'start_time' => strtotime($request->start_time),
+           'end_time' => strtotime($request->end_time),
            'url' => $request->url,
            'id' => $id
        ];

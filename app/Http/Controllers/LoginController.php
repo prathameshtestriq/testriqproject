@@ -6,18 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use App\Models\LoginModel;
 use App\Models\AdminUserRight;
-use App\Models\Athelete;
 
 class LoginController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(){       
         // $this->admin_user_rights = new AdminUserRight();
     }
-
-    public function index(Request $request)
-    {
-
+    
+    public function index(Request $request){
         if ($request->post('command') == 'login') {
             $request->validate([
                 'email' => 'required',
@@ -70,14 +66,10 @@ class LoginController extends Controller
             }
         }
         return view('login');
-    }
+    } 
 
-    public function logout(Request $request)
-    {
-
+    public function logout(Request $request){
         $request->session()->flush();
         return redirect('/admin');
     }
-
-
 }

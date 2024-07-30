@@ -21,6 +21,9 @@ class EventController extends Controller
         session()->forget('city');
         session()->forget('state');
         session()->forget('country');
+        session()->forget('event_start_date');
+        session()->forget('event_end_date');
+        session()->forget('event_status');
         return redirect('/event');
     }
 
@@ -33,6 +36,9 @@ class EventController extends Controller
         $aReturn = array();
         $aReturn['search_name'] = '';
         $aReturn['search_city'] = '';
+        $aReturn['search_event_start_date'] = '';
+        $aReturn['search_event_end_date'] = '';
+        $aReturn['search_event_status'] = '';
 
         // $aReturn['search_state'] = DB::table('vehicle_master')->where('isdeleted', 0)->pluck('vehicle_name', 'id');
         // $aReturn['search_country'] = DB::table('vehicle_management')->where('isdeleted', 0)->pluck('vehicle_number', 'id');
@@ -48,6 +54,9 @@ class EventController extends Controller
             session(['city' => $request->city]);
             session(['state' => $request->state]);
             session(['country' => $request->country]);
+            session(['event_start_date' => $request->event_start_date]);
+            session(['event_end_date' => $request->event_end_date]);
+            session(['event_status' => $request->event_status]);
             return redirect('/event');
         }
 
@@ -55,6 +64,12 @@ class EventController extends Controller
         $aReturn['search_city'] = (!empty(session('city'))) ? session('city') : '';
         $aReturn['search_state'] = (!empty(session('state'))) ? session('state') : '';
         $aReturn['search_country'] = (!empty(session('country'))) ? session('country') : '';
+        $aReturn['search_event_start_date'] = (!empty(session('event_start_date'))) ?  session('event_start_date') : '';
+        $aReturn['search_event_end_date'] = (!empty(session('event_end_date'))) ? session('event_end_date'): '';
+        $event_status = session('event_status');
+        $aReturn['search_event_status'] = (isset($event_status) && $event_status != '') ? $event_status : '';
+
+ 
         //dd($aReturn['search_vehicle_number']);
         $FiltersSql = '';
         //  dd($aReturn['search_district_name']);
@@ -64,6 +79,22 @@ class EventController extends Controller
         } else {
             $aReturn['search_name'] = '';
         }
+
+        if(!empty($aReturn['search_event_start_date'])){
+            $startdate = strtotime($aReturn['search_event_start_date']);
+            $FiltersSql .= " AND vm.start_time >= "." $startdate";
+            // dd($sSQL);
+        }
+
+        if(!empty($aReturn['search_event_end_date'])){
+            $endDate = strtotime($aReturn['search_event_end_date']);
+            $FiltersSql .= " AND vm.end_time <="." $endDate";
+            // dd($sSQL);
+        }
+
+        if(isset(  $aReturn['search_event_status'] )){
+            $FiltersSql .= ' AND (LOWER(vm.active) LIKE \'%' . strtolower( $aReturn['search_event_status'] ) . '%\')';
+        } 
         // if (!empty($aReturn['search_vehicle_number'])) {
         //     $FiltersSql .= ' AND vm.id = ' . $aReturn['search_vehicle_number'];
 
@@ -160,7 +191,7 @@ class EventController extends Controller
 
         // Validation Rules
         $rules = [
-            'name' => 'required|string',
+            'name' => 'required|unique:events,name,' . $id . 'id',
             'start_time' => 'required|date',
             'end_time' => 'required|date',
             'city' => 'required|string',
@@ -307,7 +338,7 @@ class EventController extends Controller
         $ccSql = 'select id,name FROM cities where show_flag = 1 and country_id = 101';
         $aReturn['cities_array'] = DB::select($ccSql);
         $aReturn['Category'] = $Category;
-//      
+     //      
    //     dd($aReturn['Category']);
         return view('master_data.event.create', $aReturn);
 

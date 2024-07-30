@@ -17,12 +17,29 @@
         rangePickr = $('.flatpickr-range'),
         humanFriendlyPickr = $('.flatpickr-human-friendly'),
         disabledRangePickr = $('.flatpickr-disabled-range'),
-        inlineRangePickr = $('.flatpickr-inline');
+        inlineRangePickr   = $('.flatpickr-inline'),
+        dateMinPickr       = $('.flatpickr-date-min'),
+        monthYearPickr     = $('.flatpickr-month-year');
+
+    if (monthYearPickr.length) {
+        monthYearPickr.flatpickr({
+            dateFormat: "M-Y",
+            altInput: false,
+            altFormat: "FY"
+        });
+    }
+
+    if (dateMinPickr.length) {
+        dateMinPickr.flatpickr({
+            dateFormat: 'd-m-Y',
+            minDate: "today",
+        });
+    }
 
     // Default
     if (basicPickr.length) {
         basicPickr.flatpickr({
-            dateFormat: 'd-m-Y'
+            dateFormat: 'd-m-Y',
         });
     }
 
