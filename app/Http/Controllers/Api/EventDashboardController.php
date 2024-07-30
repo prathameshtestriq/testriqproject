@@ -398,7 +398,7 @@ class EventDashboardController extends Controller
                 $sql .= " ORDER BY a.id DESC";
                 // dd($sql);
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
-                 dd($AttendeeData);
+                 // dd($AttendeeData);
                 foreach ($AttendeeData as $key => $value) {
                     $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
                 }
