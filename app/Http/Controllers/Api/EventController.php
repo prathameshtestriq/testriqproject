@@ -1205,7 +1205,7 @@ class EventController extends Controller
             $ResponseData['PAYMENT_GATEWAY_GST_PERCENTAGE'] = config('custom.payment_gateway_gst_percent');
 
             //----------
-            $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "races_web" AND TABLE_NAME = "users" ';
+            $sSQL = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = "Races2.0_Web" AND TABLE_NAME = "users" ';
             $ResponseData['field_mapping_details'] = DB::select($sSQL, array());
 
 

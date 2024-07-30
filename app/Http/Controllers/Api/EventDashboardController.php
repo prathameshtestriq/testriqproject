@@ -377,9 +377,9 @@ class EventDashboardController extends Controller
                 if (!empty($TicketId)) {
                     $sql .= " AND a.ticket_id =" . $TicketId;
                 }
-                if ($user_id != 0) {
-                    $sql .= " AND b.user_id =" . $user_id;
-                }
+                // if ($user_id != 0) {
+                //     $sql .= " AND b.user_id =" . $user_id;
+                // }
                 if (!empty($FromDate) && empty($ToDate)) {
                     $sql .= " AND b.booking_date >= " . $FromDate;
                 }
@@ -398,7 +398,7 @@ class EventDashboardController extends Controller
                 $sql .= " ORDER BY a.id DESC";
                 // dd($sql);
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
-                 // dd($AttendeeData);
+                 dd($AttendeeData);
                 foreach ($AttendeeData as $key => $value) {
                     $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
                 }
@@ -584,7 +584,7 @@ class EventDashboardController extends Controller
             foreach ($AttendeeData as $key => $res1) {
 
                 //----------- get coupon code
-                $sql = "SELECT id,(select discount_name from event_coupon where id = applied_coupons.coupon_id) as coupon_name FROM applied_coupons WHERE event_id = :event_id AND booking_detail_id=:booking_detail_id ";
+                $sql = "SELECT id,(select ed.discount_code from event_coupon as ec left join event_coupon_details as ed on ed.event_coupon_id = ec.id where ec.id = applied_coupons.coupon_id) as coupon_name FROM applied_coupons WHERE event_id = :event_id AND booking_detail_id=:booking_detail_id ";
                 $aCouponResult = DB::select($sql, array('event_id' => $res1->event_id, 'booking_detail_id' => $res1->booking_details_id));
                 // dd($aCouponResult); 
 
@@ -1109,8 +1109,11 @@ class EventDashboardController extends Controller
                 // dd($utmCode);
 
                 // Coupon Code Data
-                $SQL4 = "SELECT COUNT(coupon_id) AS CouponCount,(SELECT id FROM event_coupon WHERE id=coupon_id) AS coupon_id, (SELECT discount_name FROM event_coupon WHERE id=coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
-                        FROM applied_coupons 
+                // $SQL4 = "SELECT COUNT(coupon_id) AS CouponCount,(SELECT id FROM event_coupon WHERE id=coupon_id) AS coupon_id, (SELECT discount_name FROM event_coupon WHERE id=coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
+                //         FROM applied_coupons 
+                //         WHERE event_id=:event_id";
+                $SQL4 = "SELECT COUNT(ac.coupon_id) AS CouponCount,(SELECT id FROM event_coupon WHERE id=ac.coupon_id) AS coupon_id, (SELECT discount_name FROM event_coupon WHERE id=ac.coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=ac.coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
+                        FROM applied_coupons as ac
                         WHERE event_id=:event_id";
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
@@ -1125,6 +1128,19 @@ class EventDashboardController extends Controller
                 }
                 $SQL4 .= " GROUP BY coupon_id";
                 $CouponCodes = DB::select($SQL4, array('event_id' => $EventId));
+                if(!empty($CouponCodes)){
+                    foreach($CouponCodes as $res){
+
+                        $SQL5 = "SELECT ac.id,COUNT(ac.coupon_id) AS Coupon_Count
+                        FROM applied_coupons as ac left join event_booking as eb on eb.id=ac.booking_id 
+                        WHERE ac.coupon_id = ".$res->coupon_id." AND eb.transaction_status IN (1,3) ";
+                        $aResult = DB::select($SQL5, array());
+                        //dd($aResult);
+
+                        $res->CouponCount = !empty($aResult) ? $aResult[0]->Coupon_Count : $res->CouponCount;
+                    }
+
+                }
                 $ResponseData['CouponCodes'] = $CouponCodes;
                 // dd($CouponCodes);
 
