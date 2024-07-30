@@ -618,19 +618,25 @@ class EventDashboardController extends Controller
                                 $question_form_option = json_decode($val->question_form_option, true);
                                
                                 if($val->question_form_type == "radio" || $val->question_form_type == "select"){
-                                    foreach ($question_form_option as $option) {
-                                        if ($option['id'] === (int) $val->ActualValue) {
-                                            $label = $option['label'];
-                                            break;
+                                    if(isset($val->ActualValue) && !empty($val->ActualValue)){
+                                        foreach ($question_form_option as $option) {
+                                            if ($option['id'] === (int) $val->ActualValue) {
+                                                $label = $option['label'];
+                                                break;
+                                            }
                                         }
                                     }
+                                    
                                 }else if($val->question_form_type == "checkbox"){
-                                    foreach ($question_form_option as $option) {
-                                        if (in_array($option['id'], explode(',', $val->ActualValue))) {
-                                             $labels[] = $option['label'];
+                                    if(isset($val->ActualValue) && !empty($val->ActualValue)){
+                                        foreach ($question_form_option as $option) {
+                                            if (in_array($option['id'], explode(',', $val->ActualValue))) {
+                                                 $labels[] = $option['label'];
+                                            }
                                         }
+                                        $label = implode(', ', $labels);
                                     }
-                                    $label = implode(', ', $labels);
+                                  
                                 }
                                 
                                 $aTemp->answer_value = $label;
