@@ -11,13 +11,30 @@
             <th style="text-align: center; font-weight: bold;">Payu ID</th>
             <th style="text-align: center; font-weight: bold;">Booking Date</th>
             <th style="text-align: center; font-weight: bold;">Payment Status</th>
+
+            <th style="text-align: center; font-weight: bold;">Registration Price</th>
+            <th style="text-align: center; font-weight: bold;">Count</th>
+            <th style="text-align: center; font-weight: bold;">Registration Amount</th>
+            <th style="text-align: center; font-weight: bold;">Registration Fee GST</th>
+
+            <th style="text-align: center; font-weight: bold;">Applied Coupon Amount</th>
+            
+            <th style="text-align: center; font-weight: bold;">Additional Amount</th>
+            <th style="text-align: center; font-weight: bold;">Additional Amount Payment Gateway Charges</th>
+            <th style="text-align: center; font-weight: bold;">Additional Amount Payment Gateway GST (18%)</th>
+
             <th style="text-align: center; font-weight: bold;">Convenience Fee</th>
-            <th style="text-align: center; font-weight: bold;">Convenience Fee GST</th>
-            <th style="text-align: center; font-weight: bold;">Payment Gateway GST</th>
-            <th style="text-align: center; font-weight: bold;">Platform Charges GST</th>
-            <th style="text-align: center; font-weight: bold;">Platform Charges</th>
-            <th style="text-align: center; font-weight: bold;">Total Service Charges</th>
-            <th style="text-align: center; font-weight: bold;">Final Organiser Amount</th>
+            <th style="text-align: center; font-weight: bold;">Convenience Fee GST (18%)</th>
+
+            <th style="text-align: center; font-weight: bold;">Platform Fee</th>
+            <th style="text-align: center; font-weight: bold;">Platform Fee GST (18%)</th>
+
+            <th style="text-align: center; font-weight: bold;">Payment Gateway Charges (1.85%)</th>
+            <th style="text-align: center; font-weight: bold;">Payment Gateway GST (18%)</th>
+
+            <th style="text-align: center; font-weight: bold;">Final Amount</th>
+
+
         </tr>
     </thead>
     <tbody>
@@ -37,15 +54,30 @@
                    <td style="text-align: left;"><?php echo $res->booking_date; ?></td>
                    <td style="text-align: left;"><?php echo $res->payment_status; ?></td>
 
+                   <td style="text-align: right;"><?php echo $res->Single_ticket_price; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Ticket_count; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Ticket_price; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Registration_Fee_GST; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Applied_Coupon_Amount; ?></td>
+
+                   <td style="text-align: right;"><?php echo $res->Extra_amount; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Extra_amount_pg_charges; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Extra_amount_pg_GST; ?></td>
+
                    <td style="text-align: right;"><?php echo $res->Convenience_fee; ?></td>
-                   <td style="text-align: right;"><?php echo $res->cf_gst; ?></td>
-                   <td style="text-align: right;"><?php echo $res->pg_gst; ?></td>
-                   <td style="text-align: right;"><?php echo $res->platform_charges; ?></td>
-                   <td style="text-align: right;"><?php echo $res->pc_gst; ?></td>
-                   <td style="text-align: right;"><?php echo $res->total_service_charges; ?></td>
-                   <td style="text-align: right;"><?php echo $res->final_organiser_amount; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Convenience_Fee_GST; ?></td>
+
+                   <td style="text-align: right;"><?php echo $res->Platform_fee; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Platform_Fee_GST; ?></td>
+
+                   <td style="text-align: right;"><?php echo $res->Payment_gateway_charges; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Payment_Gateway_GST; ?></td>
+
+                   <td style="text-align: right;"><?php echo $res->Final_total_amount; ?></td>
                 </tr>
             <?php $i++; }} ?>
 
     </tbody>
 </table>
+
+ 
