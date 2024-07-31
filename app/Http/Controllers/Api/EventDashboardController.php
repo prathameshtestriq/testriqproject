@@ -1248,9 +1248,8 @@ class EventDashboardController extends Controller
                     }
                 }
 
-                // dd($CountArray);
+             // dd($CountArray);
                 $ResponseData['CountArray'] = $CountArray;
-
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
