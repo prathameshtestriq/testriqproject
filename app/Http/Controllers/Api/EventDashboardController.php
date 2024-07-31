@@ -401,7 +401,21 @@ class EventDashboardController extends Controller
                  // dd($AttendeeData);
                 foreach ($AttendeeData as $key => $value) {
                     $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
+
+                    if(!empty($value->attendee_details)){
+                        // dd(json_decode(json_decode($value->attendee_details)));
+                        $new_mobile_no = '';
+                        foreach(json_decode(json_decode($value->attendee_details)) as $res){
+                            if($res->question_form_type == 'mobile' && $res->question_label == 'Mobile Number'){
+                                $new_mobile_no = $res->ActualValue;
+                                break;
+                            }
+                        }
+                        $value->mobile = $new_mobile_no;
+                    }
                 }
+
+                // dd($AttendeeData);
 
                 $ResponseData['AttendeeData'] = (count($AttendeeData) > 0) ? $AttendeeData : [];
 
