@@ -1124,7 +1124,7 @@ class EventTicketController extends Controller
                             "booking_details_id" => !empty($IdBookingDetails) ? $IdBookingDetails : $BookingDetailsId,
                             "ticket_id" => !empty($TicketId) ? $TicketId : $new_ticket_id,
                             "attendee_details" => json_encode($value),
-                            "email" => $email,
+                            "email" => strtolower($email),
                             "firstname" => $first_name,
                             "lastname" => $last_name,
                             "mobile" => $mobile,
@@ -1397,7 +1397,7 @@ class EventTicketController extends Controller
                 }
 
                 // echo $MessageContent.'<br><br>';
-                if (!empty($attendee_email) && $UserEmail != $attendee_email) {
+                if (!empty($attendee_email) && strtolower($UserEmail) != strtolower($attendee_email)) {
                     $Email = new Emails();
                     $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag);
                 }
