@@ -866,9 +866,10 @@ class EventController extends Controller
                             "event_url" => $EventUrl,
                             "event_type" => $EventType,
                             "created_by" => $UserId,
+                            "created_date" => now(),
                             "ytcr_base_price" => 40
                         );
-                        $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_url,event_type,created_by,ytcr_base_price) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_url,:event_type,:created_by,:ytcr_base_price)";
+                        $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_url,event_type,created_by,created_date,ytcr_base_price) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_url,:event_type,:created_by,:created_date,:ytcr_base_price)";
                         DB::insert($SQL, $Bindings);
                         $EventId = DB::getPdo()->lastInsertId();
 
