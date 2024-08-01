@@ -952,6 +952,7 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
                 $Filter = isset($aPost['filter']) ? $aPost['filter'] : "";
+                $RegistrationFilter = isset($aPost['filter']) ? $aPost['filter'] : "week";
                 $Ticket = isset($aPost['Ticket']) ? $aPost['Ticket'] : 0;
                 $FromDate = isset($aPost['from_date']) ? strtotime($aPost['from_date']) : 0;
                 $ToDate = isset($aPost['to_date']) ? strtotime($aPost['to_date']) : 0;
@@ -980,7 +981,7 @@ class EventDashboardController extends Controller
                 }
                 
                 // (select SUM(b.quantity) AS TicketCount from booking_details as bd left join event_booking as eb on eb.id=bd.booking_id and eb.transaction_status IN (1,3)) as TicketCount
-                $SQL1 = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice
+                $SQL1 = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice,SUM(e.total_amount) AS TotalAmount
                 FROM booking_details AS b
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
                 WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
@@ -1002,7 +1003,8 @@ class EventDashboardController extends Controller
                 // dd($BookingData);
                 foreach ($BookingData as $key => $value) {
                     $value->TicketCount = (int) $value->TicketCount;
-                    $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
+                    // $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
+                    $value->TotalTicketPrice = $value->TotalAmount;
                     $value->PendingCount = ((int)$value->total_quantity-(int)$value->TicketCount);
                     $value->SingleTicketPrice = $value->TicketPrice;
                 }
@@ -1014,12 +1016,12 @@ class EventDashboardController extends Controller
 
 
                 $start_date_time = $end_date_time = "";
-                if ($Filter == "") {
+                if ($RegistrationFilter != "") {
                     $start_date_time = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
                     $end_date_time = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
                 }
-                if ($Filter != "") {
-                    if (isset($StartDate) && isset($EndDate)) {
+                if ($RegistrationFilter != "") {
+                    //if (isset($StartDate) && isset($EndDate)) {
                         $currentDate = isset($StartDate) ? $StartDate : $start_date_time;
                         $end = isset($EndDate) ? $EndDate : $end_date_time;
 
@@ -1047,7 +1049,7 @@ class EventDashboardController extends Controller
                             // dd($BarChartData);
                             $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
                         }
-                    }
+                    //}
                 }
                 $ResponseData['FinalBarChartData'] = $FinalBarChartData;
 
