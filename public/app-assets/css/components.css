@@ -645,12 +645,21 @@ footer.footer-border {
     line-height: 1.45;
 }
 
+.main-menu.menu-light .navigation li a svg{
+    fill: #ffffff;
+}
+
 .main-menu.menu-light .navigation li a span.menu-sub-title {
     color: #bdbbc4;
 }
 
 .main-menu.menu-light .navigation li a>* {
     transition: transform 0.25s ease;
+}
+
+.main-menu.menu-light .navigation li.nav-item{
+    padding-bottom: 0.5rem ;
+    padding-top: 0.5rem ;
 }
 
 .main-menu.menu-light .navigation li.nav-item a:hover>* {
@@ -718,7 +727,7 @@ footer.footer-border {
 
 .main-menu.menu-light .navigation>li.active>a {
     background: linear-gradient(118deg, #7367f0, rgba(115, 103, 240, 0.7));
-    box-shadow: 0 0 10px 1px rgb(115 103 240 / 70%);
+    /* box-shadow: 0 0 10px 1px rgb(115 103 240 / 70%); */
     color: #fff;
     font-weight: 400;
     border-radius: 4px;
@@ -4100,3 +4109,18 @@ components.css
 
 
 
+.vertical-layout.vertical-menu-modern .main-menu .navigation>li>a svg, .vertical-layout.vertical-menu-modern .main-menu .navigation>li>a i{
+    height: 24px !important;
+    width: 24px !important;
+}
+
+
+.menu-content li a svg{
+    height: 20px !important;
+    width: 20px !important;
+}
+
+
+.card-min-height{
+    min-height: 450px;
+}
