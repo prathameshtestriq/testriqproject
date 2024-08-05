@@ -95,7 +95,7 @@ class EventTicketController extends Controller
 
                 $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $aPost['event_id'], 'now_start' => $now, 'now_end' => $now));
                 $ticket_calculation_details = [];
-                $limit_exceed_flag = 0;
+                $limit_exceed_flag = $limit_exceed = 0;
 
                 foreach ($ResponseData['event_tickets'] as $value) {
                     $value->count = 0;
