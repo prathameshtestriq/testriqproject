@@ -60,7 +60,7 @@ class EventController extends Controller
             return redirect('/event');
         }
 
-        $aReturn['search_name'] = (!empty(session('name'))) ? session('name') : '';
+        $aReturn['search_event_name'] = (!empty(session('name'))) ? session('name') : '';
         $aReturn['search_city'] = (!empty(session('city'))) ? session('city') : '';
         $aReturn['search_state'] = (!empty(session('state'))) ? session('state') : '';
         $aReturn['search_country'] = (!empty(session('country'))) ? session('country') : '';
@@ -74,8 +74,8 @@ class EventController extends Controller
         $FiltersSql = '';
         //  dd($aReturn['search_district_name']);
 
-        if (!empty($aReturn['search_name'])) {
-            $FiltersSql .= ' AND (LOWER(vm.name) LIKE \'%' . strtolower($aReturn['search_name']) . '%\')';
+        if (!empty($aReturn['search_event_name'])) {
+            $FiltersSql .= ' AND (LOWER(vm.name) LIKE \'%' . strtolower($aReturn['search_event_name']) . '%\')';
         } else {
             $aReturn['search_name'] = '';
         }

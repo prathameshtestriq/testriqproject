@@ -171,110 +171,61 @@
 
         $('.error').html('');
 
-        // Check vehicle brand
-        // var vehicle_brand = document.getElementById('vehicle_brand');
-        // var ptrn = /^[A-Za-z\s]*$/;
-        // console.log(vehicle_brand.value.match(ptrn))
-        // if (vehicle_brand.value.match(ptrn) === null) {
-        //     $('#vehicle_brand_err').html('Please enter letters only');
-        //     isValid = false;
-        // }
-
         // // Check vehicle brand
-        // if ($('#vehicle_brand').val() == "") {
-        //     $('#vehicle_brand_err').html('Please enter Vehicle brand.');
-        //     $('#vehicle_brand').focus();
-        //     $('#vehicle_brand').keyup(function () {
-        //         $('#vehicle_brand').parent().removeClass('has-error');
-        //         $('#vehicle_brand_err').html('');
+        // if ($('#testimonial_name').val() == "") {
+        //     $('#testimonial_name_err').html('Please enter Testimonial Name.');
+        //     $('#testimonial_name').focus();
+        //     $('#testimonial_name').keyup(function () {
+        //         $('#testimonial_name').parent().removeClass('has-error');
+        //         $('#testimonial_name_err').html('');
         //     });
         //     isValid = false;
         // }
 
-        // // Check vehicle number
-        // var ptrn_vehicle_number = /^[A-Z]{2}[ -][0-9]{1,2}(?: [A-Z])?(?: [A-Z]*)? [0-9]{4}$/;
-        // if ($('#vehicle_number').val() == "") {
-        //     $('#vehicle_number_err').html('Please enter vehicle number.');
-        //     $('#vehicle_number').focus();
-        //     $('#vehicle_number').keyup(function () {
-        //         $('#vehicle_number').parent().removeClass('has-error');
-        //         $('#vehicle_number_err').html('');
-        //     });
-        //     isValid = false;
-        // } else if (!ptrn_vehicle_number.test($('#vehicle_number').val())) {
-        //     $('#vehicle_number_err').html('Please enter a valid vehicle number');
-        //     isValid = false;
-        // }
-        // var vehicle_driver_name = document.getElementById('vehicle_driver_name');
-        // var driverNamePtrn = /^[A-Za-z\s]*$/;
-        // console.log(vehicle_driver_name.value.match(driverNamePtrn))
-        // if (vehicle_driver_name.value.match(driverNamePtrn) === null) {
-        //     $('#vehicle_driver_name_err').html('Please enter letters only');
-        //     isValid = false;
-        // }
-
-
-        // // Check vehicle driver name
-        // if ($('#vehicle_driver_name').val() == "") {
-        //     $('#vehicle_driver_name_err').html('Please enter vehicle driver name.');
-        //     $('#vehicle_driver_name').focus();
-        //     $('#vehicle_driver_name').keyup(function () {
-        //         $('#vehicle_driver_name').parent().removeClass('has-error');
-        //         $('#vehicle_driver_name_err').html('');
+        // if ($('#subtitle').val() == "") {
+        //     $('#subtitle_err').html('Please enter Subtitle.');
+        //     $('#subtitle').focus();
+        //     $('#subtitle').keyup(function () {
+        //         $('#subtitle').parent().removeClass('has-error');
+        //         $('#subtitle_err').html('');
         //     });
         //     isValid = false;
         // }
 
-        // // Check driver contact number
-        // var contactNumberRegex = /^[0-9]{10}$/;
-        // if ($('#driver_contact').val() == "") {
-        //     $('#driver_contact_err').html('Please enter driver contact number.');
-        //     $('#driver_contact').focus();
-        //     $('#driver_contact').keyup(function () {
-        //         $('#driver_contact').parent().removeClass('has-error');
-        //         $('#driver_contact_err').html('');
-        //     });
-        //     isValid = false;
-        // } else if (!contactNumberRegex.test($('#driver_contact').val())) {
-        //     $('#driver_contact_err').html('Please enter a valid 10-digit contact number.');
-        //     isValid = false;
-        // }
-
-        // // Check vehicle type
-        // if ($('#vehicle_type').val() == "") {
-        //     $('#vehicle_type_err').html('Please select the vehicle type.');
-        //     $('#vehicle_type').focus();
-        //     $('#vehicle_type').change(function () {
-        //         $('#vehicle_type').parent().removeClass('has-error');
-        //         $('#vehicle_type_err').html('');
+        // if ($('#description').val() == "") {
+        //     $('#description_err').html('Please enter Description.');
+        //     $('#description').focus();
+        //     $('#description').keyup(function () {
+        //         $('#description').parent().removeClass('has-error');
+        //         $('#description_err').html('');
         //     });
         //     isValid = false;
         // }
+       
+        // // Check vehicle photo
+        // var testimonial_img = $('#testimonial_img').prop('files')[0];
+        // var existingImage = $('input[name="hidden_testimonial_img"]').val();
+        // if (!testimonial_img && !existingImage) {
+        //  //  alert('here');
+        //     $('#testimonial_img_err').html('Please select a image.');
+        //     isValid = false;
+        // } else if (testimonial_img) {
+        //     var maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        //     if (testimonial_img.size > maxSize) {
+        //         $('#testimonial_img_err').html('Please select a file smaller than 2MB.');
+        //         $('#testimonial_img').val('');
+        //         isValid = false;
+        //     }
 
-        // Check vehicle photo
-        var testimonial_img = $('#testimonial_img').prop('files')[0];
-        var existingImage = $('input[name="hidden_testimonial_img"]').val();
-        if (!testimonial_img && !existingImage) {
-         //  alert('here');
-            $('#testimonial_img_err').html('Please select a image.');
-            isValid = false;
-        } else if (testimonial_img) {
-            var maxSize = 2 * 1024 * 1024; // 2MB in bytes
-            if (testimonial_img.size > maxSize) {
-                $('#testimonial_img_err').html('Please select a file smaller than 2MB.');
-                $('#testimonial_img').val('');
-                isValid = false;
-            }
+        //     var allowedTypes = ['jpg', 'jpeg', 'png'];
+        //     var fileType = testimonial_img.name.split('.').pop().toLowerCase();
+        //     if ($.inArray(fileType, allowedTypes) === -1) {
+        //         $('#testimonial_img_err').html('Please select a valid file type (jpg, jpeg, png).');
+        //         $('#testimonial_img').val('');
+        //         isValid = false;
+        //     }
+        // }
 
-            var allowedTypes = ['jpg', 'jpeg', 'png'];
-            var fileType = testimonial_img.name.split('.').pop().toLowerCase();
-            if ($.inArray(fileType, allowedTypes) === -1) {
-                $('#testimonial_img_err').html('Please select a valid file type (jpg, jpeg, png).');
-                $('#testimonial_img').val('');
-                isValid = false;
-            }
-        }
-
-        return isValid;
+        // return isValid;
     }
 </script>

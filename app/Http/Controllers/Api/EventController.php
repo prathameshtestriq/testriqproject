@@ -89,8 +89,23 @@ class EventController extends Controller
             #EVENT CATEGORIES
             $event->category = $e->getCategoryDetails($event->id);
             $event->types = $e->getTypeDetails($event->id);
-
-
+            
+            //----------- event overall limit flag
+            //$event_overall_limit = $event->overall_limit;
+            // dd($event_overall_limit);
+            if(!empty($event->overall_limit)){
+                $sSQL = 'SELECT count(id) as total_bookings FROM event_booking WHERE event_id =:event_id AND transaction_status IN(1,3)';
+                $aResult = DB::select($sSQL, array('event_id' => $event->id));
+                // dd($aResult);
+                if(!empty($aResult) && $aResult[0]->total_bookings > (int)$event->overall_limit){
+                    $event->event_overall_limit_flag = 1;
+                }else{
+                    $event->event_overall_limit_flag = 0;
+                }
+            }else{
+                $event->event_overall_limit_flag = 0;
+            }
+            
         }
         // dd($Events);
         return $Events;

@@ -138,7 +138,7 @@ class EventParticipantsController extends Controller
             FROM attendee_booking_details a
             LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
             Inner JOIN event_booking AS e ON b.booking_id = e.id
-            WHERE b.event_id = '.$event_id.''.$FiltersSql.' ORDER BY a.id DESC';
+            WHERE b.event_id = '.$event_id.''.$FiltersSql.' ORDER BY a.id DESC ';
 
         if ($Limit > 0) {
             $sSQL .= ' LIMIT ' . $Return['Offset'] . ',' . $Limit;
@@ -173,7 +173,7 @@ class EventParticipantsController extends Controller
 
     public function export_event_participants(Request $request,$event_id)
     {         
-        return Excel::download(new ParticipantsEventExport($event_id), 'Participants Event.xlsx');
+        return Excel::download(new ParticipantsEventExport($event_id), 'Participants Event Report.xlsx');
     }
 
 }

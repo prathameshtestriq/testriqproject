@@ -1,11 +1,11 @@
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Remittance Management Details')
+    @section('title', 'Edit Remittance  Details')
 @else
-    @section('title', 'Add Remittance Management Details')
+    @section('title', 'Add Remittance  Details')
 @endif
 
-@section('title', 'Remittance Management Create')
+@section('title', 'Remittance  Create')
 <!-- Dashboard Ecommerce start -->
 @section('content')
     <section>
@@ -21,9 +21,9 @@
                                     <div class="col-sm-12">
                                         <h2 class="content-header-title float-left mb-0">
                                             @if (!empty($aReturn['id']))
-                                                Edit remittance management Details
+                                                Edit remittance  Details
                                             @else
-                                                Add remittance management Details
+                                                Add remittance  Details
                                             @endif
                                         </h2>
                                     </div>
@@ -36,9 +36,9 @@
                                         <li class="breadcrumb-item">Category</li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($aReturn['id']))
-                                                Edit remittance management 
+                                                Edit remittance  
                                             @else
-                                                Add remittance management
+                                                Add remittance 
                                             @endif 
                                         </li>
                                     </ol>
@@ -176,7 +176,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-
+ 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="Tds">Tds<span style="color:red;">*</span></label>

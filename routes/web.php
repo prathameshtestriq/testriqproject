@@ -4,13 +4,17 @@ use App\Http\Controllers\AdvertiseController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CategoryTypeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailSendingController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EventParticipantsController;
+use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\PaymentLogController;
+use App\Http\Controllers\RegistrationSuccessfulController;
 use App\Http\Controllers\RemittanceManagementController;
+use App\Http\Controllers\RgistrationSuccessfulController;
 use App\Http\Controllers\TestimonialController;
-use App\Http\Controllers\RestCategoryController;
+use App\Http\Controllers\RacesCategoryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\LoginController;
@@ -100,15 +104,20 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'], '/event/add', [EventController::class, 'add_edit'])->name('add_event');
     Route::match(['get', 'post'], 'event/edit/{id}', [EventController::class, 'add_edit'])->name('edit_event');
     Route::match(['get', 'post'], 'event/change_status', [EventController::class, 'change_active_status'])->name('change_status_event');
-
     Route::get('/event/remove_event/{id}', [EventController::class, 'remove_event'])->name('remove_event');
     Route::get('/event/clear_search', [EventController::class, 'clear_search'])->name('clear_search_event');
+  
+    //  EVENT Participants 
     Route::match(['get', 'post'],'/participants_event/{event_id}', [EventParticipantsController::class, 'index'])->name('participants_event_index');
     Route::match (['get'],'/participants_event/{event_id}/delete/{id}', [EventParticipantsController::class, 'delete_participants_event'])->name('delete_participants_event');
     Route::get('/participants_event/{event_id}/clear_search', [EventParticipantsController::class, 'clear_search'])->name('clear_search_participants_event');
-    // Route::match(['get', 'post'], 'participants_event/download/event_participants_sample',[EventParticipantsController::class,'download_sample']);
     Route::match(['get','post'],'participants_event/{event_id}/export_event_participants',[EventParticipantsController::class,'export_event_participants'])->name('export_event_participants');
 
+    // EVENT Registration
+    Route::match(['get', 'post'], '/registration_successful/{event_id}', [RegistrationSuccessfulController::class, 'index'])->name('registration_successful_index');
+    Route::get('/registration_successful/{event_id}/clear_search', [RegistrationSuccessfulController::class, 'clear_search'])->name('clear_search_registration_successful');
+    Route::match(['get','post'],'/registration_successful/{event_id}/export_registration',[RegistrationSuccessfulController::class,'export_registration_successful'])->name('export_registration_successful');
+    
 
     //TESTIMONIAL ROUTE
     Route::match(['get', 'post'], '/testimonial', [TestimonialController::class, 'index'])->name('testimonial_index');
@@ -119,14 +128,14 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'], 'testimonial/change_status', [TestimonialController::class, 'change_active_status'])->name('change_status_testimonial');
 
     //TYPE ROUTE
-    Route::match(['get', 'post'], '/type', [RestCategoryController::class, 'index'])->name('type_index');
-    Route::match(['get', 'post'], '/type/add', [RestCategoryController::class, 'add_edit'])->name('add_type');
-    Route::match(['get', 'post'], 'type/edit/{id}', [RestCategoryController::class, 'add_edit'])->name('edit_type');
-    Route::match(['get', 'post'], 'type/change_status', [RestCategoryController::class, 'change_active_status'])->name('change_status_type');
+    Route::match(['get', 'post'], '/type', [RacesCategoryController::class, 'index'])->name('type_index');
+    Route::match(['get', 'post'], '/type/add', [RacesCategoryController::class, 'add_edit'])->name('add_type');
+    Route::match(['get', 'post'], 'type/edit/{id}', [RacesCategoryController::class, 'add_edit'])->name('edit_type');
+    Route::match(['get', 'post'], 'type/change_status', [RacesCategoryController::class, 'change_active_status'])->name('change_status_type');
 
-    Route::get('/type/remove_type/{id}', [RestCategoryController::class, 'remove_type'])->name('remove_type');
-    Route::get('/type/clear_search', [RestCategoryController::class, 'clear_search'])->name('clear_search_type');
-    Route::match(['get', 'post'], 'type/update/{id}', [RestCategoryController::class, 'update_type'])->name('update_type');
+    Route::get('/type/remove_type/{id}', [RacesCategoryController::class, 'remove_type'])->name('remove_type');
+    Route::get('/type/clear_search', [RacesCategoryController::class, 'clear_search'])->name('clear_search_type');
+    Route::match(['get', 'post'], 'type/update/{id}', [RacesCategoryController::class, 'update_type'])->name('update_type');
 
     #Remittance management 
     Route::match(['get', 'post'], '/remittance_management', [RemittanceManagementController::class, 'index'])->name('remittance_management_index');
@@ -135,10 +144,40 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match (['get'], 'remittance_management/delete/{id}', [RemittanceManagementController::class, 'delete_remittance_management'])->name('delete_remittance_management');
     Route::get('/remittance_management/clear_search', [RemittanceManagementController::class, 'clear_search'])->name('clear_search_remittance_management');
     Route::match(['get', 'post'], 'remittance_management/change_status', [RemittanceManagementController::class, 'change_active_status'])->name('change_status_remittance_management');
+    Route::match(['get','post'],' remittance_management/export_remittance_management',[RemittanceManagementController::class,'export_remittance_management'])->name('export_remittance_management');
+   
     
     // paymentlog
     Route::match(['get', 'post'], '/payment_log', [PaymentLogController::class, 'index'])->name('Payment_log_index');
     Route::get('/payment_log/clear_search', [PaymentLogController::class, 'clear_search'])->name('clear_search_payment_log');
+    Route::match(['get','post'],' payment_log/export_payment_log',[PaymentLogController::class,'export_payment_log'])->name('export_payment_log');
+
+    // Sending Email
+    Route::match(['get', 'post'], '/email_sending', [EmailSendingController::class, 'index'])->name('email_sending_index');
+    Route::match(['get', 'post'],'email_sending/add', [EmailSendingController::class,'add_edit'])->name('add_email_sending');
+    Route::match(['get', 'post'], 'email_sending/change_status', [EmailSendingController::class, 'change_active_status'])->name('change_status_email_sending');
     
+    // Marketing
+    Route::match(['get', 'post'], '/marketing', [MarketingController::class, 'index'])->name('marketing_index');
+    Route::match(['get', 'post'],'marketing/add', [MarketingController::class,'add_edit'])->name('add_marketing');
+    Route::match(['get', 'post'],'marketing/edit/{Id}', [MarketingController::class,'add_edit'])->name('edit_marketing');
+    Route::match (['get'], 'marketing/delete/{id}', [MarketingController::class, 'delete_marketing'])->name('delete_marketing');
+    Route::get('/marketing/clear_search', [MarketingController::class, 'clear_search'])->name('clear_search_marketing');
+    Route::match(['get', 'post'], 'marketing/change_status', [MarketingController::class, 'change_active_status'])->name('change_status_marketing');
+ 
+
+    
+   
+    
+
+
+
+
+
+
+
+
+
+
 
 });

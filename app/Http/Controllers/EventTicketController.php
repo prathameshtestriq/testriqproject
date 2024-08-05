@@ -67,12 +67,35 @@ class EventTicketController extends Controller
                 }
                 $ResponseData['CollectGst'] = $CollectGst;
                 $ResponseData['PriceTaxesStatus'] = $PriceTaxesStatus;
-                // -------------------------------------------------
+                //-------------------------------------------------
+                
+                $Sql = "SELECT name,start_time,city,event_registration_status,overall_limit FROM events WHERE id=:event_id";
+                $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
+
+                $overall_limit = !empty($EventData) ? (int)$EventData[0]->overall_limit : 0;
+                
+                //--------- total booking registration count for payment status (success & free)
+                $sSQL = 'SELECT count(id) as total_bookings FROM event_booking WHERE event_id =:event_id AND transaction_status IN(1,3)';
+                $aResult = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+
+                $total_booking_registration = !empty($aResult) ? (int)$aResult[0]->total_bookings : 0;
+
+                foreach ($EventData as $key => $event) {
+                    $event->display_name = !empty($event->name) ? $event->name : "";
+                    $event->start_date = (!empty($event->start_time)) ? date("d M Y", $event->start_time) : 0;
+                    $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
+                    $event->total_booking_registration = $total_booking_registration;
+                    $event->overall_limit = !empty($event->overall_limit) ? (int)$event->overall_limit : 0;
+                }
+                $ResponseData['EventData'] = $EventData;
+
+                //----------------------------------------
 
                 $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end';
 
                 $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $aPost['event_id'], 'now_start' => $now, 'now_end' => $now));
                 $ticket_calculation_details = [];
+                $limit_exceed_flag = 0;
 
                 foreach ($ResponseData['event_tickets'] as $value) {
                     $value->count = 0;
@@ -125,37 +148,34 @@ class EventTicketController extends Controller
                     $ticket_calculation_details = $value->ticket_calculation_details = !empty($value->ticket_calculation_details) ? json_decode($value->ticket_calculation_details) : [];
 
                     if(!empty($ticket_calculation_details)){
-                    // $ResponseData['OrgGstPercentage'] = $ticket_calculation_details->convenience_fees_gst_percentage;
-                    // $ResponseData['TicketYtcrBasePrice'] = $ticket_calculation_details->convenience_fee_base;
-                    // $ResponseData['YTCR_FEE_PERCENT'] = config('custom.ytcr_fee_percent');
-                    // $ResponseData['PLATFORM_FEE_PERCENT'] = $ticket_calculation_details->platform_fees_5_each;
-                    // $ResponseData['PAYMENT_GATEWAY_FEE_PERCENT'] = $ticket_calculation_details->gst_on_platform_fees;
-                    // $ResponseData['PAYMENT_GATEWAY_GST_PERCENT'] = $ticket_calculation_details->payment_gateway_gst;
+                        $value->OrgGstPercentage = $ticket_calculation_details->convenience_fees_gst_percentage;
+                        $value->TicketYtcrBasePrice = $ticket_calculation_details->convenience_fee_base;
+                        $value->YTCR_FEE_PERCENT = config('custom.ytcr_fee_percent');
+                        $value->PLATFORM_FEE_PERCENT = $ticket_calculation_details->platform_fees_5_each;
+                        $value->PAYMENT_GATEWAY_FEE_PERCENT = $ticket_calculation_details->gst_on_platform_fees;
+                        $value->PAYMENT_GATEWAY_GST_PERCENT = $ticket_calculation_details->payment_gateway_gst;
 
-                    $value->OrgGstPercentage = $ticket_calculation_details->convenience_fees_gst_percentage;
-                    $value->TicketYtcrBasePrice = $ticket_calculation_details->convenience_fee_base;
-                    $value->YTCR_FEE_PERCENT = config('custom.ytcr_fee_percent');
-                    $value->PLATFORM_FEE_PERCENT = $ticket_calculation_details->platform_fees_5_each;
-                    $value->PAYMENT_GATEWAY_FEE_PERCENT = $ticket_calculation_details->gst_on_platform_fees;
-                    $value->PAYMENT_GATEWAY_GST_PERCENT = $ticket_calculation_details->payment_gateway_gst;
+                        $value->total_buyer = $ticket_calculation_details->total_buyer;
+                        $value->to_organiser = $ticket_calculation_details->to_organiser;
+                        $value->registration_18_percent_GST = $ticket_calculation_details->registration_18_percent_GST;
+                    }
 
-                    $value->total_buyer = $ticket_calculation_details->total_buyer;
-                    $value->to_organiser = $ticket_calculation_details->to_organiser;
-                    $value->registration_18_percent_GST = $ticket_calculation_details->registration_18_percent_GST;
+                    //----------------------------
+                    if(!empty($overall_limit) && !empty($value->min_booking)){
+                        $limit_exceed = ($total_booking_registration + (int)$value->min_booking);
+                        if($limit_exceed > $overall_limit){
+                            $limit_exceed_flag = 1;
+                        }else{
+                            $limit_exceed_flag = 0;
+                        }
+                    }else{ $limit_exceed_flag = 0; }
+
+                    $value->limit_exceed_count = $limit_exceed;
+                    $value->limit_exceed_flag = $limit_exceed_flag;
+                    
                 }
-
-                }
-
-
-                // -------------------------------------------------
-                $Sql = "SELECT name,start_time,city,event_registration_status FROM events WHERE id=:event_id";
-                $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
-                foreach ($EventData as $key => $event) {
-                    $event->display_name = !empty($event->name) ? $event->name : "";
-                    $event->start_date = (!empty($event->start_time)) ? date("d M Y", $event->start_time) : 0;
-                    $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
-                }
-                $ResponseData['EventData'] = $EventData;
+              // dd($ResponseData['event_tickets']);
+                
 
                 // ---------- get races category charges
                 $sql4 = "SELECT id,registration_amount,convenience_fee,platform_fee,payment_gateway_fee FROM race_category_charges WHERE event_id=:event_id";
@@ -624,20 +644,19 @@ class EventTicketController extends Controller
                 $ResponseData['TicketYtcrBasePrice'] = $TicketYtcrBasePrice;
 
                 // -------------------------------------------------
-                $CollectGst = 0;
-                $PriceTaxesStatus = 0;
-                $EventStartTime = 0;
-                $sql3 = "SELECT collect_gst,prices_taxes_status,start_time FROM events WHERE id=:event_id";
+                $CollectGst = $PriceTaxesStatus = $EventStartTime = $AllowUniqueRegistration = 0;
+                $sql3 = "SELECT collect_gst,prices_taxes_status,start_time,allow_unique_registration FROM events WHERE id=:event_id";
                 $CollectGstArr = DB::select($sql3, array("event_id" => $aPost['event_id']));
                 if (count($CollectGstArr) > 0) {
                     $CollectGst = $CollectGstArr[0]->collect_gst;
                     $PriceTaxesStatus = $CollectGstArr[0]->prices_taxes_status;
                     $EventStartTime = $CollectGstArr[0]->start_time;
+                    $AllowUniqueRegistration = $CollectGstArr[0]->allow_unique_registration;
                 }
                 $ResponseData['CollectGst'] = $CollectGst;
                 $ResponseData['PriceTaxesStatus'] = $PriceTaxesStatus;
                 $ResponseData['EventStartTime'] = $EventStartTime;
-
+                $ResponseData['AllowUniqueRegistration'] = $AllowUniqueRegistration;
 
                 // -------------------------------------------------
 

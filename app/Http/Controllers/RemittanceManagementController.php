@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\RemittanceManagementExport;
 use App\Models\RemittanceManagement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RemittanceManagementController extends Controller
 {
@@ -51,7 +53,7 @@ class RemittanceManagementController extends Controller
         
        
         $a_return["Remittance"] = RemittanceManagement::get_all_remittance($Limit,$a_return);
-    //  dd($a_return["Remittance"]);
+    //  dd($a_return["Remittance"][0]);
         $a_return['Paginator'] = new LengthAwarePaginator($a_return['Remittance'], $CountRows, $Limit, $PageNo);
         $a_return['Paginator']->setPath(request()->url());
 
@@ -75,16 +77,16 @@ class RemittanceManagementController extends Controller
 
         if (isset($request->form_type) && $request->form_type == 'add_edit_remittance_management') {
             $rules = [
-                'remittance_name' => 'required|alpha|unique:remittance_management,remittance_name,' . $iId . 'id',
+                'remittance_name' => 'required|unique:remittance_management,remittance_name,' . $iId . 'id',
                 'remittance_date' => 'required',
-                'gross_amount' => 'required|numeric|regex:/^\d*\.\d+$/',
-                'service_charge' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
-                'Sgst' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
-                'Cgst' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
-                'Igst' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
-                'deductions' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
-                'Tds' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
-                'amount_remitted' => 'required|numeric|regex:/^\d+(\.\d{1,2})?$/',
+                'gross_amount' => 'required|numeric',
+                'service_charge' => 'required|numeric',
+                'Sgst' => 'required|numeric',
+                'Cgst' => 'required|numeric',
+                'Igst' => 'required|numeric',
+                'deductions' => 'required|numeric',
+                'Tds' => 'required|numeric',
+                'amount_remitted' => 'required|numeric',
                 'bank_reference' => 'required'
             ];
 
@@ -105,8 +107,8 @@ class RemittanceManagementController extends Controller
             if($iId > 0){
             //   #SHOW EXISTING DETAILS ON EDIT
               $sSQL = 'SELECT id,remittance_name,remittance_date,gross_amount,service_charge,Sgst,Cgst,Igst,deductions,Tds, amount_remitted, bank_reference FROM remittance_management WHERE id=:id';
-              $hospitaldetails = DB::select($sSQL, array( 'id' => $iId));
-              $a_return = (array)$hospitaldetails[0];
+              $remittance_management_details = DB::select($sSQL, array( 'id' => $iId));
+              $a_return = (array)$remittance_management_details[0];
             //   dd($a_return );
             }
           }      
@@ -125,6 +127,10 @@ class RemittanceManagementController extends Controller
         $aReturn = RemittanceManagement::change_status_remittance_management($request);
         // dd($aReturn);
         return $aReturn;
+    }
+    
+    public function export_remittance_management(){
+        return Excel::download(new RemittanceManagementExport(), ' Remittance_Report.xlsx');
     }
     
 }

@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Participants Event List')
+@section('title', ' Registration List')
 
 <!-- Dashboard Ecommerce start -->
 @section('content')
@@ -14,7 +14,7 @@
                         <div class="content-header-left">
                             <div class="row breadcrumbs-top">
                                 <div class="col-sm-12">
-                                    <h2 class="content-header-title float-left mb-0">Participants List</h2>
+                                    <h2 class="content-header-title float-left mb-0">Registration List</h2>
                                 </div>
                             </div>
                         </div>
@@ -22,8 +22,8 @@
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb mr-1">
                                     <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
-                                    <li class="breadcrumb-item">Participant</li>
-                                    <li class="breadcrumb-item active" aria-current="page">Participants List</li>
+                                    <li class="breadcrumb-item">Registration</li>
+                                    <li class="breadcrumb-item active" aria-current="page">Registration List</li>
                                 </ol>
                             </nav>
                         </div>
@@ -71,31 +71,31 @@
                     <div class="card ">
                         <form class="dt_adv_search"  method="POST">
                             @csrf
-                            <input type="hidden" name="form_type" value="search_participant_event">
+                            <input type="hidden" name="form_type" value="search_registration_successful">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-2 col-12">
-                                                <label for="form-control">Participant name:</label>
-                                                <input type="text" id="search_participant_name" class="form-control"
-                                                    placeholder="Participant name" name="participant_name" value="{{ $search_participant_name }}"
+                                            <div class="col-sm-2 ">
+                                                <label for="form-control">User name:</label>
+                                                <input type="text" id="search_registration_user_name" class="form-control"
+                                                    placeholder="User name" name="registration_user_name" value="{{ $search_registration_user_name }}"
                                                     autocomplete="off" />
                                             </div>
 
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-2">
                                                     <?php 
-                                                       $Transaction_Status = array(0=>'Inprocess',1=>'Success', 2=>'Fail', 3=>'Free' );    
+                                                       $Transaction_Status = array(0=>'Initiate',1=>'Success', 2=>'Fail', 3=>'Free' );    
                                                     ?>
                                                     <label for="form-control">Transaction Status:</label>
-                                                    <select id="transaction_status" name="transaction_status" class="form-control select2 form-control">
+                                                    <select id="registration_transaction_status" name="registration_transaction_status" class="form-control select2 form-control">
                                                         <option value="">Select Transaction Status</option>
                                                         <?php 
                                                             foreach ($Transaction_Status as $key => $value)
                                                             {
                                                                 $selected = '';
-                                                                if(old('transaction_status', $search_transaction_status) == $key){
+                                                                if(old('registration_transaction_status',$search_registration_transaction_status) == $key){
                                                                     $selected = 'selected';
                                                                 }
                                                                 ?>
@@ -106,74 +106,43 @@
                                                     </select>
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
-                                                <label for="form-control">Registration Id:</label>
-                                                <input type="text" id="registration_id" class="form-control"
-                                                    placeholder="Registration Id" name="registration_id" value="{{ $search_registration_id }}"
-                                                    autocomplete="off" />
-                                            </div>
-
-                                            
-                                            {{-- <div class="col-sm-2 col-12">
-                                                <label for="form-control">Mobile No:</label>
-                                                <input type="text" id="mobile_no" class="form-control"
-                                                    placeholder="Mobile No" name="mobile_no" value="{{ $search_mobile_no }}"
-                                                    autocomplete="off" />
-                                            </div> --}}
-
-                                            <div class="col-sm-2 col-12 ">
-                                                <label for="form-control">Email/Mobile Id:</label>
-                                                <input type="text" id="email_id" class="form-control"
-                                                    placeholder="Email/Mobile Id" name="email_id" value="{{ $search_email_id }}"
-                                                    autocomplete="off" />
-                                            </div>
-                                            <div class="col-sm-2 col-12 ">
-                                                <label for="form-control">Category:</label>
-                                                <input type="text" id="category" class="form-control"
-                                                    placeholder="Category" name="category" value="{{ $search_category }}"
-                                                    autocomplete="off" />
-                                            </div>
-                                            <div class="col-sm-2 col-12 ">
+                                            <div class="col-sm-2 ">
                                                 <label for="form-control">Start Date:</label>
-                                                <input type="datetime-local" id="start_booking_date" class="form-control"
-                                                    placeholder="Start Date" name="start_booking_date" value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d\TH:i') : '') }}"
+                                                <input type="datetime-local" id="start_registration_booking_date" class="form-control"
+                                            value="{{ old('start_booking_date', $search_start_registration_booking_date ? \Carbon\Carbon::parse($search_start_registration_booking_date)->format('Y-m-d\TH:i') : '') }}"
+                                            placeholder="Start Date" name="start_registration_booking_date" 
                                                     autocomplete="off" />
                                             </div>
-                                          
-                                            <div class="col-sm-2 col-12 mt-2">
+                                           
+                                            <div class="col-sm-2 ">
                                                 <label for="form-control">End Date:</label>
-                                                <input type="datetime-local" id="end_booking_date" class="form-control"
-                                                    placeholder="End Date" name="end_booking_date" value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d\TH:i') : '') }}"
+                                                <input type="datetime-local" id="end_registration_booking_date" class="form-control"
+                                                    placeholder="End Date" name="end_registration_booking_date"  value="{{ old('end_booking_date', $search_end_registration_booking_date ? \Carbon\Carbon::parse($search_end_registration_booking_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2 col-12  mt-2">
-                                                <label for="form-control">Transaction/Order Id:</label>
-                                                <input type="text" id="transaction_order_id" class="form-control"
-                                                    placeholder="Transaction/Order Id" name="transaction_order_id" value="{{ $search_transaction_order_id }}"
-                                                    autocomplete="off" />
-                                            </div>
+                                          
 
-                                            <div class="col-sm-8 mt-3">
+                                            <div class="col-sm-4 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_participant_name) || !empty($search_registration_id) || !empty($search_mobile_no) 
-                                                || !empty($search_email_id) || !empty($search_category) || !empty($search_start_booking_date) 
-                                                || !empty($search_end_booking_date) ||  $search_transaction_status !== '' || !empty($search_transaction_order_id))
-                                                {{-- {{ url('/participants_event/'.$event_participants[0]->event_id.'/clear_search') }} --}}
-                                                    <a title="Clear" href="{{ url('/participants_event/'.$event_id.'/clear_search') }}" type="button"
+                                                @if (!empty($search_registration_user_name)|| $search_registration_transaction_status !== '' || !empty($search_start_registration_booking_date) || !empty($search_end_registration_booking_date)  )
+
+                                                    <a title="Clear" href="{{ url('/registration_successful/'.$event_id.'/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
                                                     </a>
                                                 @endif
+                                               
                                                 <div class="float-right">
-                                                    @if (!empty($event_participants))
-                                                      <a href="{{ url('participants_event/'.$event_id.'/export_event_participants') }}" class="btn btn-danger text-white ">Download </a>
+                                                    @if (!empty($Registration_successful))
+                                                       <a href="{{ url('/registration_successful/'.$event_id.'/export_registration') }}" class="btn btn-danger text-white ">Download </a>
                                                     @endif
-                                                    <a href="{{ url('/event') }}"  class="btn btn-primary ">
+                                                       <a href="{{ url('/event') }}"  class="btn btn-primary ">
                                                         <span>Back</span></a>
-                                                </div>    
+                                                </div>  
                                                   
                                             </div>
+                                             
                                          
                                         </div>
                                     </div>  
@@ -185,37 +154,35 @@
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-left">Participant Name</th>  
+                                        <th class="text-left">User Name</th>  
+                                        <th class="text-center">Email</th>
+                                        <th class="text-center">Mobile</th></th>
+                                        <th class="text-center">Number of tickets</th></th>
+                                        <th class="text-center">Total Amount</th>
                                         <th class="text-center">Booking Date</th>
-                                        <th class="text-center">Transaction/Order Id</th>
-                                        <th class="text-center">Registration Id</th>
-                                        <th class="text-center">Payu Id</th>
-                                        <th class="text-center">Transaction/Payment Status</th>
-                                        <th class="text-center">Email Address</th>
-                                        <th class="text-center">Mobile Number</th>
-                                        <th class="text-center">Category Name</th>
-                                        <th class="text-center">Actions</th>
+                                        <th class="text-center">Transaction Status</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-center">
                                 <br/><br/><br/>
                                     <?php 
-                                    if (!empty($event_participants)){
+                                    if (!empty($Registration_successful)){
                                         $i = $Offset;
                                         // $i = 0;
                                         ?>
                                         <?php 
                                        
-                                        foreach ($event_participants as $val){
+                                        foreach ($Registration_successful as $val){
                                         
                                                 $i++;?>
                                             <tr>
-                                                <td class="text-center">{{ $i }}</td>
-                                                <td class="text-left">{{ $val->user_name }}</td>
-                                                <td class="text-left">{{ date('d-m-Y H:i:s', $val->booking_date) }}</td>
-                                                <td class="text-left">{{ $val->Transaction_order_id }}</td>
-                                                <td class="text-left">{{ $val->registration_id }}</td>
-                                                <td class="text-left">{{ $val->payu_id }}</td>
+                                                <td class="text-center">{{$i}}</td>
+                                                <td class="text-left">{{ $val->firstname.' '.$val->lastname }}</td>
+                                                <td class="text-left">{{ $val->email }}</td>
+                                                <td class="text-left">{{ $val->mobile }}</td>
+                                                <td class="text-left">{{ $val->TotalTickets }}</td>
+                                                <td class="text-left">{{ $val->TotalAmount }}</td>
+                                                <td class="text-left">{{ date('d-m-Y H:i:s',$val->booking_date) }}</td>
                                                 <td class="text-left">
                                                     <?php
                                                  {{ 
@@ -230,20 +197,9 @@
                                                     }
     
                                                  }}  ?>
-                                                    </td>
-                                                <td class="text-left">{{ $val->email }}</td>
-                                                <td class="text-left">{{ $val->mobile }}</td>
-                                                <td class="text-left">
-                                                 {{ $val->category_name }}
                                                 </td>
+                                                
                                              
-                                              
-                                               
-                                                <td>
-                                                    {{-- <a href=""><i
-                                                            class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a> --}}
-                                                    <i class="fa fa-trash-o btn btn-danger btn-sm" onclick="remove_type({{ $val->id }},{{$val->event_id}})" title="delete"></i>
-                                                </td>
                                             </tr>
                                       <?php }
                                     }else{?>
@@ -268,7 +224,7 @@
 
 
     </section>
-
+{{-- 
     <script>
             function remove_type(iId,event_id) {
                 // alert(iId);
@@ -283,6 +239,6 @@
                 }
             }
 
-    </script>
+    </script> --}}
 
 @endsection

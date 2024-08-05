@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Remittance  List')
+@section('title', 'Marketing List')
 
 
 @section('content')
@@ -13,7 +13,7 @@
                             <div class="content-header-left">
                                 <div class="row breadcrumbs-top">
                                     <div class="col-sm-12">
-                                        <h2 class="content-header-title float-left mb-0">Remittance  List</h2>
+                                        <h2 class="content-header-title float-left mb-0">Marketing List</h2>
                                     </div>
                                 </div>
                             </div>
@@ -21,8 +21,8 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
                                         <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
-                                        <li class="breadcrumb-item">Remittance </li>
-                                        <li class="breadcrumb-item active" aria-current="page">Remittance List</li>
+                                        <li class="breadcrumb-item">Marketing</li>
+                                        <li class="breadcrumb-item active" aria-current="page">Marketing List</li>
                                     </ol>
                                 </nav>
                             </div>
@@ -70,44 +70,44 @@
                     <div class="card">
                         <form class="dt_adv_search" action="" method="POST">
                             @csrf
-                            <input type="hidden" name="form_type" value="search_remittance_management">
+                            <input type="hidden" name="form_type" value="search_marketing">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-9">
                                         <div class="row">
-                                            <div class="col-sm-2">
-                                                <label for="form-control">Remittance Name:</label>
-                                                <input type="text" id="remittance_name" class="form-control"
-                                                    placeholder="Remittance Name" name="remittance_name"
-                                                    value="{{old('remittance_name',$search_remittance_name)}}" autocomplete="off" />
+                                            <div class="col-sm-3">
+                                                <label for="form-control">Campaign Name:</label>
+                                                <input type="text" id="campaign_name" class="form-control"
+                                                    placeholder="Campaign Name" name="campaign_name"
+                                                    value="{{old('campaign_name',$search_campaign_name)}}" autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Date:</label>
-                                                <input type="datetime-local" id="start_remittance_date" class="form-control"
-                                                    placeholder="Start Date" name="start_remittance_date" value="{{ old('start_remittance_date', $search_start_remittance_date ? \Carbon\Carbon::parse($search_start_remittance_date)->format('Y-m-d\TH:i') : '') }}"   
+                                                <input type="datetime-local" id="start_marketing_date" class="form-control"
+                                                    placeholder="Start Date" name="start_marketing_date" value="{{ old('start_marketing_date', $search_start_marketing_date ? \Carbon\Carbon::parse($search_start_marketing_date)->format('Y-m-d\TH:i') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Date:</label>
-                                                <input type="datetime-local" id="end_remittance_date" class="form-control"
-                                                    placeholder="End Date" name="end_remittance_date" value="{{ old('end_remittance_date', $search_end_remittance_date ? \Carbon\Carbon::parse($search_end_remittance_date)->format('Y-m-d\TH:i') : '') }}"
+                                                <input type="datetime-local" id="end_marketing_date" class="form-control"
+                                                    placeholder="End Date" name="end_marketing_date" value="{{ old('end_marketing_date', $search_end_marketing_date ? \Carbon\Carbon::parse($search_end_marketing_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
                                             <div class="col-sm-2 col-12">
                                                 <?php 
-                                                   $remittance_status = array(0=>'Inactive',1=>'Active' );    
+                                                   $marketing_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
                                                 <label for="form-control"> Status:</label>
-                                                <select id="remittance_status" name="remittance_status" class="form-control select2 form-control">
+                                                <select id="marketing_status" name="marketing_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
-                                                        foreach ($remittance_status as $key => $value)
+                                                        foreach ($marketing_status as $key => $value)
                                                         {
                                                             $selected = '';
-                                                            if(old('remittance_status',$search_remittance_status) == $key){
+                                                            if(old('marketing_status',$search_marketing_status) == $key){
                                                                 $selected = 'selected';
                                                             }
                                                             ?>
@@ -118,10 +118,10 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-4 mt-2">
+                                            <div class="col-sm-3 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_remittance_name) || !empty($search_start_remittance_date) || !empty($search_end_remittance_date) || ($search_remittance_status != ''))
-                                                    <a title="Clear" href="{{ url('/remittance_management/clear_search') }}"
+                                                @if (!empty($search_campaign_name) || !empty($search_start_marketing_date) || !empty($search_end_marketing_date) || ($search_marketing_status != ''))
+                                                    <a title="Clear" href="{{ url('/marketing/clear_search') }}"
                                                         type="button" class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
                                                     </a>
@@ -129,18 +129,12 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @if (!empty($Remittance))
                                     <div class="col-sm-3 mt-2">
-                                        <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right ml-2 ">Download </a>
-
-                                    </div>
-                                @endif   
-                                    <div class="col-sm-1 mt-2">
-                                        <a href="{{ url('remittance_management/add') }}"
+                                        <a href="{{ url('marketing/add') }}"
                                             class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add </span></a>
+                                            <i data-feather="plus"></i><span>Add Marketing Details </span></a>
                                     </div>
-                                   
+                                        
                                 </div>
                             </div>
                         </form>
@@ -149,46 +143,32 @@
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-left">Remittance Name</th>
-                                        <th class="text-center">Remittance Date</th>
-                                        <th class="text-center">Gross Amount</th>
-                                        <th class="text-center">Service Charge</th>
-                                        <th class="text-center">SGST</th>
-                                        <th class="text-center">CGST</th>
-                                        <th class="text-center">IGST</th>
-                                        <th class="text-center">Deductions</th>
-                                        <th class="text-center">TDS</th>
-                                        <th class="text-center">Amount Remitted</th>
-                                        <th class="text-center">Bank Reference</th>
+                                        <th class="text-left">Campaign Name</th>
+                                        <th class="text-left">Count</th>
+                                        <th class="text-center">Start Date</th>
+                                        <th class="text-center">End Date</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php 
-                                    if (!empty($Remittance)){
+                                    if (!empty($Marketing)){
                                         $i = $Offset;?>
-                                    <?php foreach ($Remittance as $val){
+                                    <?php foreach ($Marketing as $val){
                                       
                                                 $i++;
                                     ?>
                                         <tr>
                                             <td class="text-center">{{ $i }}</td>
-                                            <td class="text-left">{{ $val->remittance_name }}</td>
-                                            <td class="text-center">{{  date('d-m-Y H:i:s',$val->remittance_date) }}</td>
-                                            <td class="text-center">{{ number_format($val->gross_amount, 2)  }}</td>
-                                            <td class="text-center">{{ number_format($val->service_charge,2) }}</td>
-                                            <td class="text-center">{{ number_format($val->Sgst,2) }}</td>
-                                            <td class="text-center">{{ number_format($val->Cgst,2) }}</td>
-                                            <td class="text-center">{{ number_format($val->Igst,2) }}</td>
-                                            <td class="text-center">{{ number_format($val->deductions,2) }}</td>
-                                            <td class="text-center">{{ number_format($val->Tds,2) }}</td>
-                                            <td class="text-center">{{ number_format($val->amount_remitted,2) }}</td>
-                                            <td class="text-center">{{ $val->bank_reference }}</td>
+                                            <td class="text-left">{{ $val->campaign_name }}</td>
+                                            <td class="text-left">{{ $val->count }}</td>
+                                            <td class="text-center">{{  date('d-m-Y H:i:s',$val->start_date) }}</td>
+                                            <td class="text-center">{{  date('d-m-Y H:i:s',$val->end_date) }}</td>
                                             <td class="text-center">
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input"
-                                                        id="{{ $val->id }}" {{ $val->active ? 'checked' : '' }}
+                                                        id="{{ $val->id }}" {{ $val->status ? 'checked' : '' }}
                                                         onclick="change_status(event.target, {{ $val->id }});" />
                                                     <label class="custom-control-label" for="{{ $val->id }}">
                                                         <span class="switch-icon-left"></span>
@@ -197,12 +177,11 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                {{-- {{ url('/category/add_edit', $category->id) }} --}}
-                                                <a href="{{ url('remittance_management/edit', $val->id ) }}">
+                                                <a href="{{ url('marketing/edit', $val->id ) }}">
                                                     <i class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i>
                                                 </a>
-                                                {{-- onclick="delCategory({{ $category->id }})" --}}
-                                                <i class="fa fa-trash-o btn btn-danger btn-sm" onclick="delremittance({{ $val->id }})"
+                                           
+                                                <i class="fa fa-trash-o btn btn-danger btn-sm" onclick="delmarketing({{ $val->id }})"
                                                   title="Delete"></i>
                                             </td>
                                         </tr>
@@ -228,12 +207,12 @@
 @endsection
 
 <script>
-   function delremittance(id) {
+   function delmarketing(id) {
         // alert(id);
-        var url = '<?php echo url('remittance_management/delete'); ?>';
+        var url = '<?php echo url('marketing/delete'); ?>';
         url = url + '/' + id;
         //    alert(url);
-        bConfirm = confirm('Are you sure you want to remove this remittance management');
+        bConfirm = confirm('Are you sure you want to remove this record');
         if (bConfirm) {
             window.location.href = url;
         } else {
@@ -252,7 +231,7 @@
             let _token = $('meta[name="csrf-token"]').attr('content');
             //alert(_token);
             $.ajax({
-                url: "<?php echo url('remittance_management/change_status'); ?>",
+                url: "<?php echo url('marketing/change_status'); ?>",
                 type: 'post',
                 data: {
                     _token: "{{ csrf_token() }}",

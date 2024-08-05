@@ -124,7 +124,7 @@ class MasterController extends Controller
         #GET CITY WISE
         $CountryCode = isset($request->country_code) ? $request->country_code : "";
         $CountryId = isset($request->country_id) ? $request->country_id : "";
-        $StateId = isset($request->state_id) ? $request->state_id : "";
+        $StateId = isset($request->state_id) ? $request->state_id : 0;
 
         $sql = "SELECT c.* FROM cities AS c WHERE show_flag=1";
         if (!empty($CountryCode)) {
@@ -137,7 +137,10 @@ class MasterController extends Controller
         }
         if (!empty($StateId)) {
             $sql .= " AND c.state_id=" . $StateId;
+        }else{
+            $sql .= " AND 1=2 ";
         }
+
         if (!empty($CountryId)) {
             $sql .= " AND c.country_id=" . $CountryId;
         }

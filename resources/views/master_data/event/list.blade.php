@@ -75,7 +75,7 @@
                                             <div class="col-sm-2">
                                                 <label for="form-control">Event Name:</label>
                                                 <input type="text" id="name" class="form-control"
-                                                    placeholder="Event Name" name="name" value="{{ $search_name }}"
+                                                    placeholder="Event Name" name="name" value="{{ $search_event_name }}"
                                                     autocomplete="off" />
                                             </div>
                                           
@@ -117,7 +117,7 @@
 
                                             <div class="col-sm-3 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != ''))
+                                                @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != ''))
                                                     <a title="Clear" href="{{ url('event/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -162,7 +162,10 @@
                                                 <td>{{ ucfirst($event->city) }}</td>
                                                 <td style="text-align: center;">
                                                     <a href={{ url('participants_event', $event->id) }}> 
-                                                        <i class="fa fa-eye btn btn-success btn-sm "></i>
+                                                        <i class="fa fa-eye btn btn-success btn-sm "  title="Participants event"></i>
+                                                    </a>
+                                                    <a href={{ url('/registration_successful', $event->id) }}> 
+                                                        <i class="fa fa-eye btn btn-success btn-sm "  title="Registration successful"></i>
                                                     </a>
                                                 </td>
                                                 <!-- <td>{{ ucfirst($event->state) }}</td>
