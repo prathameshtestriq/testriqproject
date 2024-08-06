@@ -91,9 +91,12 @@ class EventDashboardController extends Controller
 
                 // 79,105,110 DISTINCT(user_id) replace it with id
                 // -------------------------------------Registration && Net Earnings
-                $SQL2 = "SELECT COUNT(e.id) AS TotalRegistration,SUM(e.total_amount) AS TotalAmount FROM event_booking AS e 
-                LEFT JOIN booking_details AS b ON b.booking_id = e.id
-                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3)";
+                // $SQL2 = "SELECT COUNT(e.id) AS TotalRegistration,SUM(e.total_amount) AS TotalAmount FROM event_booking AS e 
+                // LEFT JOIN booking_details AS b ON b.booking_id = e.id
+                // WHERE e.event_id =:event_id AND e.transaction_status IN (1,3)";
+
+                $SQL2 = "SELECT DISTINCT(e.id) AS TotalRegistration ,e.total_amount AS TotalAmount,e.transaction_status FROM booking_details AS b LEFT JOIN event_booking AS e ON b.booking_id = e.id WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+              
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
                         $SQL2 .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
@@ -106,8 +109,15 @@ class EventDashboardController extends Controller
                     $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
                 }
                 $TotalRegistration = DB::select($SQL2, array('event_id' => $EventId));
-                $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistration : 0;
-                $ResponseData['TotalAmount'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalAmount : 0;
+                
+                $total_amount = 0;
+                if(!empty($TotalRegistration)){
+                    foreach($TotalRegistration as $res){
+                        $total_amount += !empty($res->TotalAmount) ? $res->TotalAmount : 0;
+                    }
+                }
+                $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? count($TotalRegistration) : 0;
+                $ResponseData['TotalAmount'] = !empty($total_amount) ? $total_amount : 0;
 
                 // -------------------------------------Event Capacity
                 // Total Tickets
@@ -327,7 +337,7 @@ class EventDashboardController extends Controller
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
                 $couponUsedFlag = isset($aPost['coupon_used_flag']) ? $aPost['coupon_used_flag'] : 0;
 
-                $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName FROM attendee_booking_details AS a 
+                $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id";
                 
@@ -377,9 +387,9 @@ class EventDashboardController extends Controller
                 if (!empty($TicketId)) {
                     $sql .= " AND a.ticket_id =" . $TicketId;
                 }
-                // if ($user_id != 0) {
-                //     $sql .= " AND b.user_id =" . $user_id;
-                // }
+                if ($user_id != 0) {
+                    $sql .= " AND b.user_id =" . $user_id;
+                }
                 if (!empty($FromDate) && empty($ToDate)) {
                     $sql .= " AND b.booking_date >= " . $FromDate;
                 }
@@ -802,7 +812,36 @@ class EventDashboardController extends Controller
                 $aTemp->payment_status = $payment_status;
                 $aTemp->transaction_id = $txnid;
 
-               
+                $aTemp->mobile = $res->mobile;
+                $aTemp->category_name = $res->category_name; 
+                $ExcPriceTaxesStatus = isset($card_details_array[0]->ExcPriceTaxesStatus) && !empty($card_details_array[0]->ExcPriceTaxesStatus) ? $card_details_array[0]->ExcPriceTaxesStatus : 0;
+
+                if($ExcPriceTaxesStatus == 1){
+                    $aTemp->taxes_status = 'Inclusive';
+                }else if($ExcPriceTaxesStatus == 2){
+                    $aTemp->taxes_status = 'Exclusive';
+                }else{
+                    $aTemp->taxes_status = '';
+                }
+
+                $aTemp->Organiser_amount = isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? $card_details_array[0]->to_organiser : 0;
+
+                $WhoPayYtcrFee = isset($card_details_array[0]->player_of_fee) && !empty($card_details_array[0]->player_of_fee) ? $card_details_array[0]->player_of_fee : 0;
+                $WhoPayPaymentGatewayFee = isset($card_details_array[0]->player_of_gateway_fee) && !empty($card_details_array[0]->player_of_gateway_fee) ? $card_details_array[0]->player_of_gateway_fee : 0;
+
+                if($WhoPayYtcrFee == 1 && $WhoPayPaymentGatewayFee == 1){
+                    $aTemp->Pass_Bare = 'Passed on';
+                }else if($WhoPayYtcrFee == 2 && $WhoPayPaymentGatewayFee == 2){
+                    $aTemp->Pass_Bare = 'Bare by';
+                }else if($WhoPayYtcrFee == 1 && $WhoPayPaymentGatewayFee == 2){
+                    $aTemp->Pass_Bare = 'Bare by';
+                }else if($WhoPayYtcrFee == 2 && $WhoPayPaymentGatewayFee == 1){
+                    $aTemp->Pass_Bare = 'Passed on';
+                }else{
+                   $aTemp->Pass_Bare = ''; 
+                }
+                  
+                  
                     $aTemp->Ticket_count = isset($card_details_array[0]->count) && !empty($card_details_array[0]->count) ? $card_details_array[0]->count : 0;
                     $aTemp->Single_ticket_price = isset($card_details_array[0]->Main_Price) && !empty($card_details_array[0]->Main_Price) ? 
                     ($card_details_array[0]->Main_Price * $card_details_array[0]->count) : '0.00';

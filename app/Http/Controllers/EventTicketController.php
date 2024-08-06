@@ -171,7 +171,7 @@ class EventTicketController extends Controller
                     }else{ $limit_exceed_flag = 0; }
 
                     $value->limit_exceed_count = $limit_exceed;
-                    $value->limit_exceed_flag = $limit_exceed_flag;
+                    $value->limit_exceed_flag  = $limit_exceed_flag;
                     
                 }
               // dd($ResponseData['event_tickets']);
@@ -1450,30 +1450,49 @@ class EventTicketController extends Controller
 
                 $UserId = $aToken['data']->ID;
 
-                $SQL = "SELECT eb.*,
-                (SELECT name FROM events WHERE id=eb.event_id) AS EventName,
-                (SELECT start_time FROM events WHERE id=eb.event_id) AS EventStartTime,
-                (SELECT end_time FROM events WHERE id=eb.event_id) AS EventEndTime,
-                (SELECT city FROM events WHERE id=eb.event_id) AS EventCity,
-                (SELECT banner_image FROM events WHERE id=eb.event_id) AS banner_image
+                // $SQL = "SELECT eb.*,
+                // (SELECT name FROM events WHERE id=eb.event_id) AS EventName,
+                // (SELECT start_time FROM events WHERE id=eb.event_id) AS EventStartTime,
+                // (SELECT end_time FROM events WHERE id=eb.event_id) AS EventEndTime,
+                // (SELECT city FROM events WHERE id=eb.event_id) AS EventCity,
+                // (SELECT banner_image FROM events WHERE id=eb.event_id) AS banner_image
+                //     FROM event_booking AS eb
+                //     WHERE eb.user_id=:user_id
+                //     AND eb.transaction_status IN (1,3)
+                //     GROUP BY eb.event_id";
+                // $BookingData = DB::select($SQL, array('user_id' => $UserId));
+
+                $SQL2 = "SELECT eb.event_id ,(SELECT SUM(bd.quantity) 
+                    FROM booking_details bd 
+                    LEFT JOIN event_booking ebi ON bd.booking_id = ebi.id
+                    WHERE
+                    ebi.user_id=:user_id
+                    AND ebi.transaction_status IN (1,3) AND 
+                     eb.event_id = bd.event_id
+                    ) AS TotalCount,
+                    (SELECT name FROM events WHERE id=eb.event_id) AS EventName,
+                    (SELECT start_time FROM events WHERE id=eb.event_id) AS EventStartTime,
+                    (SELECT end_time FROM events WHERE id=eb.event_id) AS EventEndTime,
+                    (SELECT city FROM events WHERE id=eb.event_id) AS EventCity,
+                    (SELECT banner_image FROM events WHERE id=eb.event_id) AS banner_image
                     FROM event_booking AS eb
-                    WHERE eb.user_id=:user_id
+                    WHERE eb.user_id=:user_id2
                     AND eb.transaction_status IN (1,3)
                     GROUP BY eb.event_id";
-                $BookingData = DB::select($SQL, array('user_id' => $UserId));
+                $BookingData = DB::select($SQL2, array('user_id' => $UserId,'user_id2' => $UserId));
 
                 //dd($BookingData);
               
                 $new_tot_count = 0;
                 foreach ($BookingData as $event) {
-                    $SQL = "SELECT count(id) as tot_count FROM event_booking where user_id =:user_id and event_id =107 and transaction_status IN (1,3) ";
+                    // $SQL = "SELECT count(id) as tot_count FROM event_booking where user_id =:user_id and event_id = ".$event->event_id." and transaction_status IN (1,3) ";
                   
-                    $BookingData1 = DB::select($SQL, array('user_id' => $UserId));
+                    // $BookingData1 = DB::select($SQL, array('user_id' => $UserId));
                     //dd($BookingData1);
                    //   dd(array_column($BookingData, 'last_name'));
-                    //$new_tot_count += $event->quantity;
+                   // $new_tot_count += $event->quantity;
 
-                    $event->TotalCount = $BookingData1[0]->tot_count;
+                    $event->TotalCount = !empty($event->TotalCount) ? $event->TotalCount : 0;
                     $event->name = !empty($event->EventName) ? ucwords($event->EventName) : "";
                     $event->display_name = !empty($event->EventName) ? (strlen($event->EventName) > 40 ? ucwords(substr($event->EventName, 0, 40)) . "..." : ucwords($event->EventName)) : "";
                     $event->start_date = (!empty($event->EventStartTime)) ? date("d M Y", $event->EventStartTime) : 0;

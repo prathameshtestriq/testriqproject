@@ -53,7 +53,7 @@ Route::get('/admin', function () {
     if(!Session::has('logged_in.admin_loggedin')) {
         return view('login');
     }
-    return redirect('/home');
+    return redirect('/admin');
 });
 Route::post('/login', [LoginController::class,'index']);
 
@@ -165,19 +165,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::get('/marketing/clear_search', [MarketingController::class, 'clear_search'])->name('clear_search_marketing');
     Route::match(['get', 'post'], 'marketing/change_status', [MarketingController::class, 'change_active_status'])->name('change_status_marketing');
  
-
-    
-   
-    
-
-
-
-
-
-
-
-
-
-
+   #LOGOUT
+    Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 });
