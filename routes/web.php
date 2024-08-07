@@ -112,6 +112,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match (['get'],'/participants_event/{event_id}/delete/{id}', [EventParticipantsController::class, 'delete_participants_event'])->name('delete_participants_event');
     Route::get('/participants_event/{event_id}/clear_search', [EventParticipantsController::class, 'clear_search'])->name('clear_search_participants_event');
     Route::match(['get','post'],'participants_event/{event_id}/export_event_participants',[EventParticipantsController::class,'export_event_participants'])->name('export_event_participants');
+    Route::match(['get','post'],'participants_event/{event_id}/export_revenue',[EventParticipantsController::class,'export_participants_revenue'])->name('export_participants_revenue');
 
     // EVENT Registration
     Route::match(['get', 'post'], '/registration_successful/{event_id}', [RegistrationSuccessfulController::class, 'index'])->name('registration_successful_index');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Exports\ParticipantsEventExport;
+use App\Exports\ParticipantsEventRevenueExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Response;
@@ -173,7 +174,15 @@ class EventParticipantsController extends Controller
 
     public function export_event_participants(Request $request,$event_id)
     {         
-        return Excel::download(new ParticipantsEventExport($event_id), 'Participants Event Report.xlsx');
+        $filename = "participant_report_" . time();
+        return Excel::download(new ParticipantsEventExport($event_id),  $filename.'.xlsx');
     }
+
+    public function export_participants_revenue(Request $request,$event_id)
+    {         
+        $filename = "revenue_report_" . time();
+        return Excel::download(new ParticipantsEventRevenueExport($event_id),  $filename.'.xlsx');
+    }
+    
 
 }

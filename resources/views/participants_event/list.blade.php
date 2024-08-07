@@ -88,9 +88,9 @@
                                                     <?php 
                                                        $Transaction_Status = array(0=>'Inprocess',1=>'Success', 2=>'Fail', 3=>'Free' );    
                                                     ?>
-                                                    <label for="form-control">Transaction Status:</label>
+                                                    <label for="form-control">Payment Status:</label>
                                                     <select id="transaction_status" name="transaction_status" class="form-control select2 form-control">
-                                                        <option value="">Select Transaction Status</option>
+                                                        <option value="">Select Payment Status</option>
                                                         <?php 
                                                             foreach ($Transaction_Status as $key => $value)
                                                             {
@@ -134,14 +134,14 @@
                                                     autocomplete="off" />
                                             </div>
                                             <div class="col-sm-2 col-12 ">
-                                                <label for="form-control">Start Date:</label>
+                                                <label for="form-control">Start Booking Date:</label>
                                                 <input type="datetime-local" id="start_booking_date" class="form-control"
                                                     placeholder="Start Date" name="start_booking_date" value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
                                             </div>
                                           
                                             <div class="col-sm-2 col-12 mt-2">
-                                                <label for="form-control">End Date:</label>
+                                                <label for="form-control">End Booking Date:</label>
                                                 <input type="datetime-local" id="end_booking_date" class="form-control"
                                                     placeholder="End Date" name="end_booking_date" value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
@@ -166,8 +166,9 @@
                                                     </a>
                                                 @endif
                                                 <div class="float-right">
+                                                    <a href="{{ url('participants_event/'.$event_id.'/export_revenue') }}" class="btn btn-danger text-white ">Revenue </a>
                                                     @if (!empty($event_participants))
-                                                      <a href="{{ url('participants_event/'.$event_id.'/export_event_participants') }}" class="btn btn-danger text-white ">Download </a>
+                                                      <a href="{{ url('participants_event/'.$event_id.'/export_download') }}" class="btn btn-danger text-white ">Download </a>
                                                     @endif
                                                     <a href="{{ url('/event') }}"  class="btn btn-primary ">
                                                         <span>Back</span></a>
@@ -248,7 +249,7 @@
                                       <?php }
                                     }else{?>
                                         <tr>
-                                            <td colspan="8" style="text-align:center; color:red;">No Record Found</td>
+                                            <td colspan="17" style="text-align:center; color:red;">No Record Found</td>
                                         </tr>
                                   <?php }?>
                                 </tbody>
