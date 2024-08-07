@@ -1019,8 +1019,8 @@ class EventDashboardController extends Controller
                     // dd($StartDate, $EndDate); 
                 }
                 
-                // (select SUM(b.quantity) AS TicketCount from booking_details as bd left join event_booking as eb on eb.id=bd.booking_id and eb.transaction_status IN (1,3)) as TicketCount
-                $SQL1 = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice,SUM(e.total_amount) AS TotalAmount
+                // (select SUM(e.total_amount) AS TotalAmount from booking_details as bd left join event_booking as eb on eb.id=bd.booking_id and eb.transaction_status IN (1,3)) as TotalAmount // SUM(e.total_amount) AS TotalAmount
+                $SQL1 = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice, SUM(e.total_amount) AS TotalAmount
                 FROM booking_details AS b
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
                 WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
@@ -1040,10 +1040,36 @@ class EventDashboardController extends Controller
                 // dd($SQL1);
                 $BookingData = DB::select($SQL1, $params);
                 // dd($BookingData);
+                
                 foreach ($BookingData as $key => $value) {
+                    
+                   //  $SQL2 = "SELECT DISTINCT(e.id) AS TotalRegistration ,e.total_amount AS TotalAmount,e.transaction_status FROM booking_details AS b LEFT JOIN event_booking AS e ON b.booking_id = e.id WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND b.ticket_id = ".$value->ticket_id." ";
+
+                   //  if ($Filter !== "") {
+                   //      if (isset($StartDate) && isset($EndDate)) {
+                   //          $SQL2 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                   //      }
+                   //  }
+                   //  if (!empty($Ticket)) {
+                   //      $SQL2 .= ' AND b.ticket_id =' . $Ticket;
+                   //  }
+                   //  if (!empty($FromDate) && !empty($ToDate)) {
+                   //      $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                   //  }
+                   //  $params = array('event_id' => $EventId);
+                   //  $aResult = DB::select($SQL2, $params);
+                   //  // dd($aResult);
+                   // $tot_amount = 0;
+                   //  if(!empty($aResult)){
+                   //      foreach($aResult as $res){
+                   //          $tot_amount += $res->TotalAmount;
+                   //      }
+                   //  }
+
                     $value->TicketCount = (int) $value->TicketCount;
                     // $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
                     $value->TotalTicketPrice = $value->TotalAmount;
+                    // $value->TotalTicketPrice = $tot_amount;
                     $value->PendingCount = ((int)$value->total_quantity-(int)$value->TicketCount);
                     $value->SingleTicketPrice = $value->TicketPrice;
                 }
