@@ -421,7 +421,7 @@ class EventTicketController extends Controller
 
                             DB::select($SQL2, $Binding);
 
-                            //---------- add form question to aplay new ticket id
+                            //---------- add form question to aplay new ticket id on 07-08-24
                             $last_inserted_id = DB::getPdo()->lastInsertId();
 
                             $Sql = 'SELECT id,ticket_details FROM event_form_question WHERE question_status = 1 and apply_ticket = 1 and event_id = ' . $EventId . '  ';
@@ -443,6 +443,7 @@ class EventTicketController extends Controller
 
                                 }
                             }
+                            //--------------- end -----------------------
 
                             $ResposneCode = 200;
                             $message = 'Event Ticket Inserted Successfully';
