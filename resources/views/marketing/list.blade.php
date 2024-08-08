@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Marketing List')
+@section('title', 'Marketing ')
 
 
 @section('content')

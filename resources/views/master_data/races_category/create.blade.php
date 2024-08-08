@@ -1,8 +1,8 @@
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Type Details')
+    @section('title', ' Races Category')
 @else
-    @section('title', 'Add Type Details')
+    @section('title', 'Races Category')
 @endif
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -84,7 +84,7 @@
                                             <div class="form-group">
                                                 <label for="name">Race Category Name<span
                                                         style="color:red;">*</span></label>
-                                                <input type="text" id="name" class="form-control"
+                                                <input type="text" id="name" class="form-control mt-2"
                                                     placeholder="Race Category Name" name="name"
                                                     value="{{ old('name', $name) }}" autocomplete="off" />
                                                 <h5><small class="text-danger" id="name_err"></small></h5>
@@ -97,6 +97,7 @@
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="logo">Image <span style="color:red;">*</span></label>
+                                                <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
                                                 <input type="file" id="logo" class="form-control"
                                                     placeholder="Logo Name" name="logo"
                                                     style="text-transform: capitalize; display: block; width: 100%;"

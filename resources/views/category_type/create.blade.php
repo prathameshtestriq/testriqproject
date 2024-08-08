@@ -1,8 +1,8 @@
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Category Details')
+    @section('title', ' Category Type')
 @else
-    @section('title', 'Add Category Details')
+    @section('title', ' Category Type')
 @endif
 
 @section('title', 'Category Create')

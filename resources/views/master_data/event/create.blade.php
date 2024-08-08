@@ -1,8 +1,8 @@
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Event Details')
+    @section('title', ' Event ')
 @else
-    @section('title', 'Add Event Details')
+    @section('title', ' Event ')
 @endif
 
 <head>

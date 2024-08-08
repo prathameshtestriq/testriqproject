@@ -27,9 +27,9 @@ if (!empty($edit_data)) {
 ?> --}}
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Email Details')
+    @section('title', ' Emails ')
 @else
-    @section('title', 'Add Email Details')
+    @section('title', ' Emails ')
 @endif
 
 @section('title', 'Email Create')
@@ -111,8 +111,37 @@ if (!empty($edit_data)) {
     
 
                                     <div class="row">
-                                        <div class="col-md-6 col-12">
-                                            <div class="form-group">
+                                        <div  class="col-md-6 col-12">
+                                            <?php 
+                                               $Email_Type = ['All ','Email','Upload CSV'];    
+                                            ?>
+                                            <label for="form-control">Email Type<span
+                                                style="color:red;">*</span></label>
+                                            <select id="email_type" name="email_type" class="form-control select2 form-control" onchange="hideshow_event_receiver(event.target.value)">
+                                                <option value="">Select Type</option>
+                                                <?php 
+                                                    foreach ($Email_Type as  $value)
+                                                    {
+                                                        $selected = '';
+                                                        if(old('email_type') == $value){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $value; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                        <?php 
+                                                    }
+                                                ?>
+                                            </select>
+                                            @error('email_type')
+                                                <span class="error" style="color:red;">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+
+                                        <div  class="col-md-6 col-12">
+                                        </div>
+
+                                        <div class="col-md-6 col-12 event" style="display:none;">
+                                            <div class="form-group ">
                                                 <label for="event">Event<span
                                                     style="color:red;">*</span></label>
                                                     <?php $event_name=[];
@@ -155,13 +184,13 @@ if (!empty($edit_data)) {
 
                                      
 
-                                        <div  class="col-md-6 col-12">
+                                        <div  class="col-md-6 col-12 receiver"  style="display:none;">
                                             <?php 
                                                $Receivers = ['All User','All Organizer','All Registration','All Participant'];    
                                             ?>
                                             <label for="form-control">Receivers<span
                                                 style="color:red;">*</span></label>
-                                            <select id="receiver" name="receiver" class="form-control select2 form-control">
+                                            <select id="receiver" name="receiver" class="form-control select2 form-control"  style="display:none;">
                                                 <option value="">Select Receiver</option>
                                                 <?php 
                                                     foreach ($Receivers as  $value)
@@ -180,9 +209,22 @@ if (!empty($edit_data)) {
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                         </div>
-                                       
+
+                                        <div class="col-md-6 col-12 email" style="display:none;">
+                                            <div class="form-group ">
+                                                <label for="email">Email Address<span
+                                                        style="color:red;">*</span></label>
+                                                 <textarea name="email" id="email" value="{{ old('email') }}" class="form-control" cols="1" rows="1"></textarea>   
+                                                <h5><small class="text-danger" id="email_err"></small></h5>
+                                                @error('email')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
+
                                         {{-- {{ old('subject', $subject) }} --}}
-                                        <div class="col-md-6 col-12">
+                                        <div class="col-md-6 col-12 mt-2">
                                             <div class="form-group">
                                                 <label for="subject">Subject<span
                                                         style="color:red;">*</span></label>
@@ -196,12 +238,25 @@ if (!empty($edit_data)) {
                                             </div>
                                         </div>
 
+                                        <div class="col-md-6 col-12 email_file mt-2" style="display:none;">
+                                            <div class="form-group ">
+                                                <label for="email_file"> Email Data Import:<span
+                                                        style="color:red;">*</span></label>
+                                                    <input type="file" id="email_file" name="email_file" class="form-control">
+                                                    <input type="hidden" name="email_id">                  
+                                                <h5><small class="text-danger" id="email_file_err"></small></h5>
+                                                @error('email_file')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
                                         <div class="col-sm-6 col-12"><br>
                                             <label for="password_confirmation m-2">Email Send Date :</label> <br/>
                                             <div class="demo-inline-spacing">
                                                 <div class="custom-control custom-radio mt-0">
                                                     <input type="radio" id="customRadio1" name="date"
-                                                        class="custom-control-input" value="now_date" onchange="hideshow(event.target.value)"/>
+                                                        class="custom-control-input" value="now_date" onchange="hideshow(event.target.value)" checked/>
                                                     <label class="custom-control-label" for="customRadio1">Email Send Now</label>
                                                 </div>
                                                 <div class="custom-control custom-radio mt-0">
@@ -215,6 +270,9 @@ if (!empty($edit_data)) {
                                                 <span class="error" style="color:red;">{{ $message }}</span>
                                             @enderror
                                         </div>
+
+                                       
+                                       
 
                                         {{-- value="{{ old('date', $date ? \Carbon\Carbon::parse($date)->format('Y-m-d\TH:i:s') : '') }}"  --}}
                                         <div class="col-md-6 col-12">
@@ -233,7 +291,7 @@ if (!empty($edit_data)) {
 
                                          
                                        
-                                        <div class="col-md-12 col-12">
+                                        <div class="col-md-12 col-12 mt-2">
                                             <div class="form-group">
                                                 <label for="message">message<span
                                                         style="color:red;">*</span></label>
@@ -267,7 +325,10 @@ if (!empty($edit_data)) {
         ClassicEditor
         .create(document.querySelector('#message'))
 
-        function hideshow(value){
+    </script>
+    <script>
+        
+           function hideshow(value){
             // alert(value);
             if(value == 'shedule_date'){
                 // alert("here");
@@ -280,6 +341,39 @@ if (!empty($edit_data)) {
             }
         }
 
+        function hideshow_event_receiver(value){
+         
+            if(value == 'All '){
+                $('.event').show();
+                $('.event').next(".select2-container").show();
+                $('.receiver').show();
+                $('.receiver').next(".select2-container").show();
+            }else{
+                // alert("here123456");
+                $('.event').hide();
+                $('.event').next(".select2-container").hide();
+                $('.receiver').hide();
+                $('.receiver').next(".select2-container").hide();
+            }
+            if(value == 'Email'){
+                $('.email').show();
+                $('.email').next(".select2-container").show();
+               
+            }else{
+                // alert("here123456");
+                $('.email').hide();
+                $('.email').next(".select2-container").hide();
+            }
+            if(value == 'Upload CSV'){
+                $('.email_file').show();
+                $('.email_file').next(".select2-container").show();
+            }else{
+                // alert("here123456");
+                $('.email_file').hide();
+                $('.email_file').next(".select2-container").hide();
+            }
+        }
+        
     </script>
 @endsection
 

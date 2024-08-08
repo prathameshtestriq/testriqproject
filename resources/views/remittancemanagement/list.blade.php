@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Remittance  List')
+@section('title', 'Remittance Management ')
 
 
 @section('content')
@@ -38,7 +38,7 @@
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <div class="alert-body">
                         <i class="fa fa-check-circle" style="font-size:16px;" aria-hidden="true"></i>
-                        {{ $message }}
+                        {!! $message !!}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
 
                     </div>
@@ -52,7 +52,7 @@
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <div class="alert-body">
                         <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-                        {{ $message }}
+                        {!! $message !!}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
 
                     </div>
@@ -83,14 +83,14 @@
                                             </div>
                                             
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Date:</label>
+                                                <label for="form-control">Start Remittance Date:</label>
                                                 <input type="datetime-local" id="start_remittance_date" class="form-control"
                                                     placeholder="Start Date" name="start_remittance_date" value="{{ old('start_remittance_date', $search_start_remittance_date ? \Carbon\Carbon::parse($search_start_remittance_date)->format('Y-m-d\TH:i') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
-                                                <label for="form-control">End Date:</label>
+                                                <label for="form-control">End Remittance Date:</label>
                                                 <input type="datetime-local" id="end_remittance_date" class="form-control"
                                                     placeholder="End Date" name="end_remittance_date" value="{{ old('end_remittance_date', $search_end_remittance_date ? \Carbon\Carbon::parse($search_end_remittance_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
@@ -141,6 +141,28 @@
                                             <i data-feather="plus"></i><span>Add </span></a>
                                     </div>
                                    
+                                </div>
+                            </div>
+                        </form>
+
+                        <form method="post" action="{{route('remittance_management.import_remittance_management') }}" enctype="multipart/form-data">
+                            @csrf 
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <div class="form-group m-1">
+                                       Remittance Data Import:
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 ml-3">
+                                    <div class="form-group mr-1">
+                                        <input type="file" id="rem_file" name="rem_file" class="form-control">
+                                        <input type="hidden" name="remittance_id">
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group m-0">
+                                       <button type="submit" class="btn btn-primary">Submit</button>
+                                    </div>
                                 </div>
                             </div>
                         </form>

@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Category Type List')
+@section('title', 'Category Type ')
 
 
 @section('content')

@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Payment List')
+@section('title', 'Payment ')
 
 <!-- Dashboard Ecommerce start -->
 @section('content')
@@ -75,7 +75,7 @@
                             <input type="hidden" name="form_type" value="search_payment">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2">
                                                 <label for="form-control">Username:</label>
@@ -98,24 +98,56 @@
                                                     autocomplete="off" />
                                             </div>
 
+                                            <div class="col-sm-2">
+                                                <label for="form-control">Transaction Id:</label>
+                                                <input type="text" id="transaction_id_payment" class="form-control"
+                                                    placeholder="Transaction Id" name="transaction_id_payment" value=""
+                                                    autocomplete="off" />
+                                            </div>
+                                            
+                                            <div class="col-sm-2">
+                                                <?php 
+                                                   $Transaction_Status = ['success','initiate','failure','Free'];    
+                                                ?>
+                                                <label for="form-control">Transaction Status:</label>
+                                                <select id="transaction_status_payment" name="transaction_status_payment" class="form-control select2 form-control">
+                                                    <option value="">Select Transaction Status</option>
+                                                    <?php 
+                                                        foreach ($Transaction_Status as  $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('transaction_status_payment', $search_transaction_status_payment) == $value){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
                                          
-
-
-                                            <div class="col-sm-3 mt-2">
+                                            <div class="col-sm-2 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_user_name) || !empty($search_start_payment_date) || !empty($search_end_payment_date) )
+                                                @if (!empty($search_user_name) || !empty($search_start_payment_date) || !empty($search_end_payment_date) || !empty($search_transaction_id_payment) || !empty($search_transaction_status_payment)  )
                                                     <a title="Clear" href="{{ url('/payment_log/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
-                                                        <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
+                                                        <i data-feather="rotate-ccw" class="me-25"></i> Clear 
                                                     </a>
-                                                @endif
+                                                @endif     
                                             </div>
                                         </div>
                                     </div>
-                                    {{-- <div class="col-sm-4 mt-2">
-                                        <a href="{{ url('banner/add_edit') }}" class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add banner</span></a>
-                                    </div> --}}
+                                    {{-- <div class="float-right">
+                                        <a href="{{ url('payment_log/export_payment_log') }}" class="btn btn-danger text-white ">Download </a>
+                                        <a href="{{ url('/dashboard') }}"  class="btn btn-primary ">
+                                            <span>Back</span></a>
+                                    </div>   --}}
+                                    <div class="col-sm-12 mt-1   float-right">
+                                        <a href="{{ url('payment_log/export_payment_log') }}" class="btn btn-danger text-white float-right ml-2 ">Download </a>
+                                        <a href="{{ url('/dashboard') }}" class="btn  btn-primary  float-right">
+                                            <span>Back</span></a>
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -138,16 +170,25 @@
 
                                     <?php 
                                     if (!empty($payment_array)){
+                                       
                                         $i = $Offset;?>
                                     <?php foreach ($payment_array as $val){
-                                                $i++;?>
-                                    <tr>
+
+                                        $data = json_decode( $val->post_data , true); // Decode JSON into an associative array
+
+                                        if (isset($data['mihpayid'])) {
+                                            $mihpayid = $data['mihpayid'];
+                                        } else {
+                                            $mihpayid = '-'; // Handle cases where JSON is invalid or mihpayid is missing
+                                        }
+                                        $i++;?>
+                                    <tr> 
                                         <td class="text-center">{{ $i }}</td>
                                         <td class="text-left">{{ $val->firstname }} {{ $val->lastname }}</td>
                                         <td class="text-left">{{ $val->email }}</td>
                                         <td class="text-left">{{ $val->mobile }}</td>
                                         <td class="text-left">{{ $val->txnid }}</td>
-                                        <td class="text-left">{{ $val->paymentId }}</td>
+                                        <td class="text-left">{{ $mihpayid }}</td>
                                         <td class="text-left">{{ $val->amount }}</td>
                                         <td class="text-left">{{ date('d-m-Y H:i A',$val->created_datetime) }}</td>
                                         <td class="text-center">{{ $val->payment_status }}</td>

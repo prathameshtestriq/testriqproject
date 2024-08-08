@@ -22,9 +22,9 @@
 
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit User Details')
+    @section('title', ' User ')
 @else
-    @section('title', 'Add User Details')
+    @section('title', ' User ')
 @endif
 
 @section('title', 'User Create')

@@ -1,8 +1,8 @@
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Remittance  Details')
+    @section('title', ' Remittance Management')
 @else
-    @section('title', 'Add Remittance  Details')
+    @section('title', ' Remittance Management')
 @endif
 
 @section('title', 'Remittance  Create')

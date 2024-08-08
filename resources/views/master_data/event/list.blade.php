@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Event List')
+@section('title', 'Event ')
 
 @section('content')
     <section>
@@ -70,7 +70,7 @@
                             <input type="hidden" name="form_type" value="search_event">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2">
                                                 <label for="form-control">Event Name:</label>
@@ -80,14 +80,14 @@
                                             </div>
                                           
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Date:</label>
+                                                <label for="form-control">Start Booking Date:</label>
                                                 <input type="datetime-local" id="event_start_date" class="form-control"
                                                     placeholder="Start Date" name="event_start_date"   value="{{ old('start_date', $search_event_start_date ? \Carbon\Carbon::parse($search_event_start_date)->format('Y-m-d\TH:i') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
-                                                <label for="form-control">End Date:</label>
+                                                <label for="form-control">End Booking Date:</label>
                                                 <input type="datetime-local" id="event_end_date" class="form-control"
                                                     placeholder="End Date" name="event_end_date" value="{{ old('end_date', $search_event_end_date ? \Carbon\Carbon::parse($search_event_end_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
@@ -115,9 +115,29 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-3 mt-2">
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control"> Organizer:</label>
+                                                <select id="organizer" name="organizer" class="form-control select2 form-control">
+                                                    <option value="">Select  Organizer</option>
+                                                    <?php 
+                                                        foreach ($organizer as  $value)
+                                                        {
+                                                            
+                                                            $selected = '';
+                                                            if(old('organizer',$search_organizer) == $value->name){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value->name; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+ 
+                                            <div class="col-sm-2 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != ''))
+                                                @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != '')|| !empty($search_organizer))
                                                     <a title="Clear" href="{{ url('event/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search

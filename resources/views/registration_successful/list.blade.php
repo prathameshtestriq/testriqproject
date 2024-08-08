@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', ' Registration List')
+@section('title', ' Registration ')
 
 <!-- Dashboard Ecommerce start -->
 @section('content')
@@ -88,9 +88,9 @@
                                                     <?php 
                                                        $Transaction_Status = array(0=>'Initiate',1=>'Success', 2=>'Fail', 3=>'Free' );    
                                                     ?>
-                                                    <label for="form-control">Transaction Status:</label>
+                                                    <label for="form-control">Payment Status:</label>
                                                     <select id="registration_transaction_status" name="registration_transaction_status" class="form-control select2 form-control">
-                                                        <option value="">Select Transaction Status</option>
+                                                        <option value="">Select Payment Status</option>
                                                         <?php 
                                                             foreach ($Transaction_Status as $key => $value)
                                                             {
@@ -106,8 +106,22 @@
                                                     </select>
                                             </div>
 
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control">Email Id:</label>
+                                                <input type="text" id="registration_email_id" class="form-control"
+                                                    placeholder="Email Id" name="registration_email_id" value="{{ $search_registration_email }}"
+                                                    autocomplete="off" />
+                                            </div>
+                                            
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control">Mobile No:</label>
+                                                <input type="text" id="registration_mobile_no" class="form-control"
+                                                    placeholder="Mobile No" name="registration_mobile_no" value="{{ $search_registration_mobile }}"
+                                                    autocomplete="off" />
+                                            </div>
+
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Date:</label>
+                                                <label for="form-control">Start Booking Date:</label>
                                                 <input type="datetime-local" id="start_registration_booking_date" class="form-control"
                                             value="{{ old('start_booking_date', $search_start_registration_booking_date ? \Carbon\Carbon::parse($search_start_registration_booking_date)->format('Y-m-d\TH:i') : '') }}"
                                             placeholder="Start Date" name="start_registration_booking_date" 
@@ -115,7 +129,7 @@
                                             </div>
                                            
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">End Date:</label>
+                                                <label for="form-control">End Booking Date:</label>
                                                 <input type="datetime-local" id="end_registration_booking_date" class="form-control"
                                                     placeholder="End Date" name="end_registration_booking_date"  value="{{ old('end_booking_date', $search_end_registration_booking_date ? \Carbon\Carbon::parse($search_end_registration_booking_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
@@ -123,9 +137,9 @@
 
                                           
 
-                                            <div class="col-sm-4 mt-2">
+                                            <div class="col-sm-12 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_registration_user_name)|| $search_registration_transaction_status !== '' || !empty($search_start_registration_booking_date) || !empty($search_end_registration_booking_date)  )
+                                                @if (!empty($search_registration_user_name)|| $search_registration_transaction_status !== ''||!empty($search_registration_email)||!empty($search_registration_mobile) || !empty($search_start_registration_booking_date) || !empty($search_end_registration_booking_date)  )
 
                                                     <a title="Clear" href="{{ url('/registration_successful/'.$event_id.'/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
@@ -160,7 +174,7 @@
                                         <th class="text-center">Number of tickets</th></th>
                                         <th class="text-center">Total Amount</th>
                                         <th class="text-center">Booking Date</th>
-                                        <th class="text-center">Transaction Status</th>
+                                        <th class="text-center">Payment Status</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-center">

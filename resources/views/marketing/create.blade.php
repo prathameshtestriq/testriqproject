@@ -1,8 +1,8 @@
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Marketing Details')
+    @section('title', ' Marketing ')
 @else
-    @section('title', 'Add Marketing Details')
+    @section('title', ' Marketing ')
 @endif
 
 @section('title', 'Marketing Create')
@@ -90,6 +90,18 @@
                                                 @enderror
                                             </div>
                                         </div>
+
+                                        {{-- <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="campaign_name">Campaign Type<span style="color:red;">*</span></label>
+                                                <input type="text" id="campaign_name" class="form-control"
+                                                    placeholder="Campaign Name" name="campaign_name"  value="{{ old('campaign_name', $campaign_name) }}" autocomplete="off" />
+                                                <h5><small class="text-danger" id="campaign_name_err"></small></h5>
+                                                @error('campaign_name')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div> --}}
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">

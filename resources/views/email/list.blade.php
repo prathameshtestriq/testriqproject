@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Email List')
+@section('title', 'Email ')
 
 <!-- Dashboard Ecommerce start -->
 @section('content')

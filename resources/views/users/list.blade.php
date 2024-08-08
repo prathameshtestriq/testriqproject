@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Users List')
+@section('title', 'Users ')
 
 <!-- Dashboard Ecommerce start -->
 @section('content')
@@ -72,29 +72,76 @@
                             <input type="hidden" name="form_type" value="search_user">
                             <div class="card-header w-100 m-0"> 
                                 <div class="row w-100">
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
                                                 <label for="form-control">User Name:</label>
                                                 <input type="text" id="user_name" class="form-control"
                                                         placeholder="User Name" name="name"
                                                         value="{{ $search_name }}" autocomplete="off" />
                                             </div>
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
                                                 <label for="form-control">Email Id:</label>
                                                 <input type="text" id="email_id" class="form-control"
                                                     placeholder="Email Id" name="email_id" value="{{ $search_email_id }}"
                                                     autocomplete="off" />
                                             </div>
                                             
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
                                                 <label for="form-control">Mobile No:</label>
                                                 <input type="text" id="mobile_no" class="form-control"
                                                     placeholder="Mobile No" name="mobile_no" value="{{ $search_mobile }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
+                                                <label for="state">States:</label>
+                                                <select id="state" name="state" class="form-control select2">
+                                                    <option value="">Select State</option>
+                                                    <?php 
+                                                        foreach ($states as $value) {
+                                                            $selected = (old('state',$search_state) == $value->id) ? 'selected' : '';
+                                                            ?>
+                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>>
+                                                                <?php echo $value->name; ?>
+                                                            </option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-sm-3 col-12">
+                                                <label for="city">Cities:</label>
+                                                <select id="city" name="city" class="form-control select2">
+                                                    <option value="">Select City</option>
+                                                    <!-- Cities will be populated via AJAX -->
+                                                </select>
+                                            </div>
+
+                                            <div class="col-sm-3 col-12">
+                                                <?php 
+                                                   $Gender = array(1=>'Male',2=>'Female',3=>'Other' );    
+                                                ?>
+                                                <label for="form-control"> Gender:</label>
+                                                <select id="gender" name="gender" class="form-control select2 form-control">
+                                                    <option value="">Select  Gender</option>
+                                                    <?php 
+                                                        foreach ($Gender as $key => $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('gender',$search_gender) == $key){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-sm-3 col-12">
                                                 <?php 
                                                    $Status = array(0=>'Inactive',1=>'Active' );    
                                                 ?>
@@ -115,23 +162,52 @@
                                                     ?>
                                                 </select>
                                             </div>
-
+                                            
+                                            <div class="col-sm-3">
+                                                <?php 
+                                                   $Rows = ['10','25','50','100'];    
+                                                ?>
+                                                <label for="form-control">Rows :</label>
+                                                <select id="rows" name="rows" class="form-control select2 form-control">
+                                                    <option value="">Select Rows</option>
+                                                    <?php 
+                                                        foreach ($Rows as  $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('rows',$search_rows) == $value){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                         
                                             <div class="col-sm-3 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_name) || !empty($search_email_id) || !empty($search_mobile) || ($search_status != ''))
+                                                @if (!empty($search_name) || !empty($search_email_id) || !empty($search_mobile) || !empty($search_state) ||!empty($search_city) || !empty($search_gender) || ($search_status != '') ||(!empty($search_rows)) )
                                                     <a title="Clear" href="{{ url('user/clear_search') }}"
                                                         type="button" class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
                                                     </a>
-                                                @endif
+                                                @endif 
+                                            </div>
+                                           
+                                        
+                                            <div class="col-sm-3 float-right mt-2 ">
+                                                @if (!empty($user_array))
+                                                    <a href="{{ url('/user/export_download') }}" class="btn btn-danger text-white float-right ">Download </a>
+                                                @endif 
+                                              
+                                                <a href="{{ url('/user/add_edit') }}" class="btn btn-outline-primary float-right">
+                                                    <i data-feather="plus"></i><span>Add User</span></a> 
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-3 mt-2">
-                                        <a href="{{ url('/user/add_edit') }}" class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add User</span></a>
-                                    </div>
                                 </div>
+                              
                             </div>
                         </form>
                         <div class="table-responsive">
@@ -139,7 +215,7 @@
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-left">Name</th>                                                <div class="col-xs-12 col-md-12">
+                                        <th class="text-left">User Name</th>                                                <div class="col-xs-12 col-md-12">
                                             <div class="form-group mb-5">
                                                 {{-- <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Contact Number <span style="color:red;">*</span></label> --}}
                                                 {{-- <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
@@ -151,9 +227,13 @@
                                             </div>
                                         </div>
                                         {{-- <th class="text-left">User Name</th> --}}
-                                        <th class="text-left">Email ID</th>
-                                        <th class="text-left">Contact Number</th>
+                                        <th class="text-left">Email ID/Contact Number</th>
+                                        <th class="text-left">Gender</th>
+                                        <th class="text-left">Date of Birth</th>
+                                        <th class="text-left">State</th>
+                                        <th class="text-left">City</th>
                                         <th class="text-center">Status</th>
+                                        <th class="text-left">Percentage</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -161,17 +241,28 @@
                     
                                     <?php 
                                     if (!empty($user_array)){
-                                        $i = $Offset;?>
+                                        $i = $Offset;
+                                        // $i = 0;
+                                        ?>
                                         <?php foreach ($user_array as $val){
                                                 $i++;?>
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
                                                 <td class="text-left">{{ $val->firstname }} {{ $val->lastname }}</td>
                                                 {{-- <td class="text-left">{{ $val->username }}</td> --}}
-                                                <td class="text-left">{{ $val->email }}</td>
-                                                <td class="text-left">{{ $val->mobile }}</td>
-
-
+                                                <td class="text-left">{{ $val->email }}<br>{{ $val->mobile }}</td>
+                                                <td class="text-left">
+                                                    @if ($val->gender == 1)
+                                                        Male
+                                                    @elseif ($val->gender == 2)
+                                                        Female
+                                                    @else
+                                                        Other
+                                                    @endif
+                                                </td>
+                                                <td class="text-left">{{ date('d-m-Y',strtotime($val->dob)) }}</td>
+                                                <td class="text-left">{{ !empty($val->state_name) ? $val->state_name : '-'}}</td>
+                                                <td class="text-left">{{ !empty($val->city_name) ? $val->city_name : '-' }}</td>
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success">
                                                         <input type="checkbox" class="custom-control-input"
@@ -183,7 +274,7 @@
                                                         </label>
                                                     </div>
                                                 </td>
-
+                                                <td></td> 
                                                
 
                                                 <td>
@@ -196,7 +287,7 @@
                                       <?php }
                                     }else{?>
                                         <tr>
-                                            <td colspan="8" style="text-align:center; color:red;">No Record Found</td>
+                                            <td colspan="16" style="text-align:center; color:red;">No Record Found</td>
                                         </tr>
                                   <?php }?>
                                 </tbody>
@@ -215,6 +306,31 @@
         </div>
     </section>
 @endsection
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#state').change(function() {
+        var stateId = $(this).val();
+        if (stateId) {
+            $.ajax({
+                url: '/get-cities/' + stateId,
+                type: 'GET',
+                success: function(data) {
+                    var cityDropdown = $('#city');
+                    cityDropdown.empty();
+                    cityDropdown.append('<option value="">Select City</option>');
+                    $.each(data.cities, function(index, city) {
+                        cityDropdown.append('<option value="' + city.id + '">' + city.name + '</option>');
+                    });
+                }
+            });
+        } else {
+            $('#city').empty().append('<option value="">Select City</option>');
+        }
+    });
+});
+</script>
 <script>
   function delUser(id) {
         // alert(id);

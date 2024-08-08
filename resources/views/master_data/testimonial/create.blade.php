@@ -1,9 +1,9 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Testimonial Details')
+    @section('title', ' Testimonial ')
 @else
-    @section('title', 'Add Testimonial Details')
+    @section('title', ' Testimonial ')
 @endif
 
 @section('title', 'Category Create')
@@ -108,10 +108,10 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6 col-12">
+                                        <div class="col-md-6 mt-1 col-12">
                                             <div class="form-group">
                                                 <label for="description">Description <span style="color:red;">*</span></label>
-                                                <input type="text" id="description" class="form-control"
+                                                <input type="text" id="description" class="form-control mt-2"
                                                     placeholder="Description" name="description"
                                                     value="{{ old('description', $description) }}" 
                                                     autocomplete="off" />
@@ -125,6 +125,7 @@
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="testimonial_img">Image <span style="color:red;">*</span></label>
+                                                <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
                                                 <input type="file" id="testimonial_img" class="form-control"
                                                     name="testimonial_img"
                                                     accept="image/jpeg, image/png" 
@@ -171,61 +172,6 @@
 
         $('.error').html('');
 
-        // // Check vehicle brand
-        // if ($('#testimonial_name').val() == "") {
-        //     $('#testimonial_name_err').html('Please enter Testimonial Name.');
-        //     $('#testimonial_name').focus();
-        //     $('#testimonial_name').keyup(function () {
-        //         $('#testimonial_name').parent().removeClass('has-error');
-        //         $('#testimonial_name_err').html('');
-        //     });
-        //     isValid = false;
-        // }
-
-        // if ($('#subtitle').val() == "") {
-        //     $('#subtitle_err').html('Please enter Subtitle.');
-        //     $('#subtitle').focus();
-        //     $('#subtitle').keyup(function () {
-        //         $('#subtitle').parent().removeClass('has-error');
-        //         $('#subtitle_err').html('');
-        //     });
-        //     isValid = false;
-        // }
-
-        // if ($('#description').val() == "") {
-        //     $('#description_err').html('Please enter Description.');
-        //     $('#description').focus();
-        //     $('#description').keyup(function () {
-        //         $('#description').parent().removeClass('has-error');
-        //         $('#description_err').html('');
-        //     });
-        //     isValid = false;
-        // }
-       
-        // // Check vehicle photo
-        // var testimonial_img = $('#testimonial_img').prop('files')[0];
-        // var existingImage = $('input[name="hidden_testimonial_img"]').val();
-        // if (!testimonial_img && !existingImage) {
-        //  //  alert('here');
-        //     $('#testimonial_img_err').html('Please select a image.');
-        //     isValid = false;
-        // } else if (testimonial_img) {
-        //     var maxSize = 2 * 1024 * 1024; // 2MB in bytes
-        //     if (testimonial_img.size > maxSize) {
-        //         $('#testimonial_img_err').html('Please select a file smaller than 2MB.');
-        //         $('#testimonial_img').val('');
-        //         isValid = false;
-        //     }
-
-        //     var allowedTypes = ['jpg', 'jpeg', 'png'];
-        //     var fileType = testimonial_img.name.split('.').pop().toLowerCase();
-        //     if ($.inArray(fileType, allowedTypes) === -1) {
-        //         $('#testimonial_img_err').html('Please select a valid file type (jpg, jpeg, png).');
-        //         $('#testimonial_img').val('');
-        //         isValid = false;
-        //     }
-        // }
-
-        // return isValid;
+     
     }
 </script>
