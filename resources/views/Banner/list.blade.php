@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Banner List')
+@section('title', 'Banner ')
 
 <!-- Dashboard Ecommerce start -->
 @section('content')
@@ -75,7 +75,7 @@
                             <input type="hidden" name="form_type" value="search_banner">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2">
                                                 <label for="form-control">Banner Name:</label>
@@ -120,8 +120,7 @@
                                                 </select>
                                             </div>
 
-
-                                            <div class="col-sm-3 mt-2">
+                                            <div class="col-sm-2 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_banner) || !empty($search_start_booking_date) || !empty($search_end_booking_date) || ($search_banner_status != ''))
                                                     <a title="Clear" href="{{ url('banner/clear_search') }}" type="button"
@@ -130,12 +129,13 @@
                                                     </a>
                                                 @endif
                                             </div>
+                                            <div class="col-sm-2 mt-2">
+                                                <a href="{{ url('banner/add_edit') }}" class="btn btn-outline-primary float-right">
+                                                    <i data-feather="plus"></i><span>Add banner</span></a>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-4 mt-2">
-                                        <a href="{{ url('banner/add_edit') }}" class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add banner</span></a>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </form>

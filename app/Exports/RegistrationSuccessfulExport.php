@@ -91,10 +91,54 @@ class RegistrationSuccessfulExport implements FromArray, WithHeadings, ShouldAut
     public function headings(): array
     {
         $eventId = $this->eventId;
+        $sSQL = 'SELECT name FROM events where id = '.$eventId;
+        $event_name = DB::select($sSQL ,array()); 
+   
 
+        $registration_user_name = Session::has('registration_user_name') ? Session::get('registration_user_name') : '';
+        $registration_transaction_status = Session::has('registration_transaction_status') ? Session::get('registration_transaction_status') : '';
+        $start_registration_booking_date = Session::has('start_registration_booking_date') ? Session::get('start_registration_booking_date') : '';
+        $end_registration_booking_date = Session::has('end_registration_booking_date') ? Session::get('end_registration_booking_date') : '';
+
+        // Build the SQL query with search criteria
+        $s_sql = "SELECT eb.id AS EventBookingId
+        FROM event_booking AS eb 
+        LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
+        LEFT JOIN users AS u ON u.id = eb.user_id
+        WHERE eb.event_id= ".$eventId ;
+        // // Add conditions based on session data
+        if (!empty($registration_user_name)) {
+            $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($registration_user_name) . '%\')';
+        }
+
+       
+        if(isset( $registration_transaction_status)){
+            $s_sql .= ' AND (LOWER( eb.transaction_status) LIKE \'%' . strtolower($registration_transaction_status) . '%\')';
+        } 
+       
+
+        if(!empty($start_registration_booking_date)){
+            $startdate = strtotime($start_registration_booking_date);  
+            $s_sql .= " AND eb.booking_date >= "." $startdate";
+            // dd($sSQL);
+        }
+
+        if(!empty($end_registration_booking_date)){
+            $endDate = strtotime($end_registration_booking_date);
+            $s_sql .= " AND  eb.booking_date <="." $endDate";
+            // dd($sSQL);
+        } 
+
+        $s_sql .= " GROUP BY bd.booking_id";
+        $s_sql .= " ORDER BY eb.id DESC";
+
+        
+        $registration_successful = DB::select($s_sql, array());
+        $registration_successful_count = count($registration_successful);
+        // dd($registration_successful_count);
         return [
-            ['Report Name: Registration Successful'],
-            ['Event Id :' . $eventId],
+            ['Event Id :' . $event_name[0]->name],
+            ['Registration Count : ' .$registration_successful_count],
             [],
             [
                 'User Name',

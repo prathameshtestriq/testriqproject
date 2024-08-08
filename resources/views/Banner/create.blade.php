@@ -27,9 +27,9 @@ if (!empty($edit_data)) {
 ?>
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Banner Details')
+    @section('title', 'Banner ')
 @else
-    @section('title', 'Add Banner Details')
+    @section('title', ' Banner ')
 @endif
 
 @section('title', 'Category Create')
@@ -137,10 +137,12 @@ if (!empty($edit_data)) {
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="banner_image">Banner Image<span style="color:red;">*</span></label>
+                                                <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
                                                 <input type="file" id="banner_image" class="form-control"
                                                     placeholder="Banner Url" name="banner_image"
                                                     value="{{ old('banner_image', $banner_image) }}"
                                                     autocomplete="off" />
+                                                   
                                                 <h5><small class="text-danger" id="banner_image_err"></small></h5>
                                                 @error('banner_image')
                                                     <span class="error" style="color:red;">{{ $message }}</span>

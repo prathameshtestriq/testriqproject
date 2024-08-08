@@ -610,7 +610,7 @@ class EventTicketController extends Controller
         $empty = false;
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         // dd($aToken);
-// dd($request);
+
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
             if (empty($aPost['event_id'])) {
@@ -665,7 +665,31 @@ class EventTicketController extends Controller
                 $TermsConditions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
                 $ResponseData['TermsConditions'] = $TermsConditions;
 
-                // dd($FormQuestions);
+                //------------------------- get exsting email ids
+                $sSQL = 'SELECT distinct(ad.email) as email_ids FROM event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as ad on ad.booking_details_id = bd.id  WHERE eb.event_id =:event_id AND eb.transaction_status IN(1,3)';
+                $aEmailResult = DB::select($sSQL, array('event_id' => $aPost['event_id']));
+                
+                // dd($aEmailResult);
+                $EmailIdsArray = [];
+                $MobileNoArray = [];
+
+                if(!empty($aEmailResult)){
+                    $emailArray     = array_column($aEmailResult,'email_ids');
+                    $FilteredEmails = array_filter($emailArray);
+                    $EmailIdsArray  = array_values($FilteredEmails);
+                }
+
+                $sSQL1 = 'SELECT distinct(ad.mobile) as mobile_no FROM event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as ad on ad.booking_details_id = bd.id  WHERE eb.event_id =:event_id AND eb.transaction_status IN(1,3)';
+                $aMobileResult = DB::select($sSQL1, array('event_id' => $aPost['event_id']));
+
+                if(!empty($aMobileResult)){
+                    $mobileArray    = array_column($aMobileResult,'mobile_no');
+                    $FilteredMobile = array_filter(array_unique($mobileArray));
+                    $MobileNoArray  = array_values($FilteredMobile);
+                }
+                
+                $ResponseData['DuplicatedEmailIds'] = $EmailIdsArray;
+                $ResponseData['DuplicatedMobileNo'] = $MobileNoArray;
 
                 if (!empty($AllTickets)) {
                     foreach ($AllTickets as $ticket) {

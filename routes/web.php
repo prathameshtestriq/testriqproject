@@ -9,6 +9,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EventParticipantsController;
 use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\MasterRoleController;
 use App\Http\Controllers\PaymentLogController;
 use App\Http\Controllers\RegistrationSuccessfulController;
 use App\Http\Controllers\RemittanceManagementController;
@@ -53,7 +54,7 @@ Route::get('/admin', function () {
     if(!Session::has('logged_in.admin_loggedin')) {
         return view('login');
     }
-    return redirect('/admin');
+    return redirect('/home');
 });
 Route::post('/login', [LoginController::class,'index']);
 
@@ -68,7 +69,9 @@ Route::group(['middleware' => ['checkLogin']], function () {
      Route::match (['get', 'post'], 'user/change_status', [UserController::class, 'change_active_status'])->name('change_status_user');
      Route::match (['get'], 'user/delete/{id}', [UserController::class, 'delete_user'])->name('delete_user');
      Route::get('user/clear_search', [UserController::class, 'clear_search'])->name('clear_search_user');
- 
+     Route::match (['get', 'post'], '/get-cities/{state_id}', [UserController::class, 'get_cities'])->name('user_get_cities')->name('users.get_cities');
+     Route::match(['get','post'],'user/export_download',[UserController::class,'export_excel'])->name('export_user');
+     
 
      // CategoryController
      Route::match (['get', 'post'], '/category', [CategoryTypeController::class, 'index_category'])->name('index_category');
@@ -111,8 +114,9 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'],'/participants_event/{event_id}', [EventParticipantsController::class, 'index'])->name('participants_event_index');
     Route::match (['get'],'/participants_event/{event_id}/delete/{id}', [EventParticipantsController::class, 'delete_participants_event'])->name('delete_participants_event');
     Route::get('/participants_event/{event_id}/clear_search', [EventParticipantsController::class, 'clear_search'])->name('clear_search_participants_event');
-    Route::match(['get','post'],'participants_event/{event_id}/export_event_participants',[EventParticipantsController::class,'export_event_participants'])->name('export_event_participants');
+    Route::match(['get','post'],'participants_event/{event_id}/export_download',[EventParticipantsController::class,'export_event_participants'])->name('export_event_participants');
     Route::match(['get','post'],'participants_event/{event_id}/export_revenue',[EventParticipantsController::class,'export_participants_revenue'])->name('export_participants_revenue');
+    
 
     // EVENT Registration
     Route::match(['get', 'post'], '/registration_successful/{event_id}', [RegistrationSuccessfulController::class, 'index'])->name('registration_successful_index');
@@ -145,8 +149,11 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match (['get'], 'remittance_management/delete/{id}', [RemittanceManagementController::class, 'delete_remittance_management'])->name('delete_remittance_management');
     Route::get('/remittance_management/clear_search', [RemittanceManagementController::class, 'clear_search'])->name('clear_search_remittance_management');
     Route::match(['get', 'post'], 'remittance_management/change_status', [RemittanceManagementController::class, 'change_active_status'])->name('change_status_remittance_management');
+     /* Remittance Export */
     Route::match(['get','post'],' remittance_management/export_remittance_management',[RemittanceManagementController::class,'export_remittance_management'])->name('export_remittance_management');
-   
+   /* Remittance Import */
+   Route::post('/remittance_management/import_employee', [RemittanceManagementController::class, 'import_remittance_management'])->name('remittance_management.import_remittance_management');
+
     
     // paymentlog
     Route::match(['get', 'post'], '/payment_log', [PaymentLogController::class, 'index'])->name('Payment_log_index');
@@ -166,7 +173,16 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::get('/marketing/clear_search', [MarketingController::class, 'clear_search'])->name('clear_search_marketing');
     Route::match(['get', 'post'], 'marketing/change_status', [MarketingController::class, 'change_active_status'])->name('change_status_marketing');
  
-   #LOGOUT
+
+    // master_role
+    Route::match(['get', 'post'], '/role_master', [MasterRoleController::class, 'index'])->name('role_master_index');
+    Route::match(['get', 'post'],'role_master/add', [MasterRoleController::class,'add_edit'])->name('add_role_master');
+    Route::match(['get', 'post'],'role_master/edit/{Id}', [MasterRoleController::class,'add_edit'])->name('edit_role_master');
+    Route::match (['get'], 'role_master/delete/{id}', [MasterRoleController::class, 'delete_role_master'])->name('delete_role_master');
+    Route::get('/role_master/clear_search', [MasterRoleController::class, 'clear_search'])->name('clear_search_role_master');
+    Route::match(['get', 'post'], 'role_master/change_status', [MasterRoleController::class, 'change_active_status'])->name('change_status_role_master');
+ 
+    #LOGOUT
     Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 });

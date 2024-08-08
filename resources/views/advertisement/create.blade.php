@@ -21,9 +21,9 @@ if (!empty($edit_data)) {
 ?>
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', 'Edit Advertisement Details')
+    @section('title', 'Advertisement ')
 @else
-    @section('title', 'Add Advertisement Details')
+    @section('title', ' Advertisement ')
 @endif
 
 @section('title', 'Category Create')
@@ -158,11 +158,13 @@ if (!empty($edit_data)) {
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="img">Image <span style="color:red;">*</span></label>
+                                                <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
                                                 <input type="file" id="img" class="form-control"
                                                     placeholder="img" name="img"
                                                     style="text-transform: capitalize; display: block; width: 100%;"
                                                     accept="image/jpeg, image/png" 
                                                     autocomplete="off" />
+                                                  
                                                 <h5><small class="text-danger" id="image_err"></small></h5>
                                                 @error('img')
                                                     <span class="error" style="color:red;">{{ $message }}</span>

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Session;
 class MarketingModel extends Model
 {
     use HasFactory;
-    protected $table = 'Marketing';
+    protected $table = 'marketing';
  
     protected $fillable = [
         'campaign_name',
@@ -24,7 +24,7 @@ class MarketingModel extends Model
     public static function get_count($a_search = array()){
         $count = 0;
         // dd($a_search);
-        $s_sql = 'SELECT count(m.id) as count FROM Marketing m WHERE 1=1';
+        $s_sql = 'SELECT count(m.id) as count FROM marketing m WHERE 1=1';
 
         if (!empty($a_search['search_campaign_name'])) {
             $s_sql .= ' AND LOWER(m.campaign_name) LIKE \'%' . strtolower($a_search['search_campaign_name']) . '%\'';
@@ -57,7 +57,7 @@ class MarketingModel extends Model
     public static function get_all($limit, $a_search = array()){
         $a_return = [];
 
-        $s_sql = 'SELECT * FROM Marketing m where 1=1';
+        $s_sql = 'SELECT * FROM marketing m where 1=1';
 
         if (!empty($a_search['search_campaign_name'])) {
             $s_sql .= ' AND LOWER(m.campaign_name) LIKE \'%' . strtolower($a_search['search_campaign_name']) . '%\'';
@@ -90,7 +90,7 @@ class MarketingModel extends Model
     public static function update_marketing($iId, $request)
 	{
        
-        $ssql = 'UPDATE Marketing SET 
+        $ssql = 'UPDATE marketing SET 
         campaign_name = :campaign_name,
         count =:count,
         start_date = :start_date, 
@@ -111,7 +111,7 @@ class MarketingModel extends Model
     public static function add_marketing($request)
 	{
        
-        $ssql = 'INSERT INTO Marketing(
+        $ssql = 'INSERT INTO marketing(
             campaign_name,count,start_date,end_date)
                 VALUES (
             :campaign_name,:count,:start_date,:end_date
@@ -132,7 +132,7 @@ class MarketingModel extends Model
     {
        
         if (!empty($iId)) {
-            $sSQL = 'DELETE FROM `Marketing` WHERE id=:id';
+            $sSQL = 'DELETE FROM `marketing` WHERE id=:id';
             $Result = DB::delete(
                 $sSQL,
                 array(
@@ -147,7 +147,7 @@ class MarketingModel extends Model
 
     public static function change_status_marketing($request)
     {
-        $sSQL = 'UPDATE Marketing SET status=:active WHERE id=:id';
+        $sSQL = 'UPDATE marketing SET status=:active WHERE id=:id';
         $aReturn = DB::update(
             $sSQL,
             array(

@@ -24,6 +24,7 @@ class EventController extends Controller
         session()->forget('event_start_date');
         session()->forget('event_end_date');
         session()->forget('event_status');
+        session()->forget('organizer');
         return redirect('/event');
     }
 
@@ -39,15 +40,8 @@ class EventController extends Controller
         $aReturn['search_event_start_date'] = '';
         $aReturn['search_event_end_date'] = '';
         $aReturn['search_event_status'] = '';
+        $aReturn['search_organizer'] = '';
 
-        // $aReturn['search_state'] = DB::table('vehicle_master')->where('isdeleted', 0)->pluck('vehicle_name', 'id');
-        // $aReturn['search_country'] = DB::table('vehicle_management')->where('isdeleted', 0)->pluck('vehicle_number', 'id');
-        // dd($aReturn['vehicle_numbers']);
-        //  dd('vehicle_types');
-        // $request->city = '';
-        // $aReturn['citys'] = DB::table('cities')->where('show_flag', 1)->pluck('name', 'id');
-        // dd($aReturn['city']);
-        // $aReturn['vehicle_numbers'] = DB::table('vehicle_management')->where('isdeleted', 0)->pluck('vehicle_number', 'id');
 
         if (isset($request->form_type) && $request->form_type == 'search_event') {
             session(['name' => $request->name]);
@@ -57,6 +51,7 @@ class EventController extends Controller
             session(['event_start_date' => $request->event_start_date]);
             session(['event_end_date' => $request->event_end_date]);
             session(['event_status' => $request->event_status]);
+            session(['organizer' => $request->organizer]);
             return redirect('/event');
         }
 
@@ -68,9 +63,11 @@ class EventController extends Controller
         $aReturn['search_event_end_date'] = (!empty(session('event_end_date'))) ? session('event_end_date'): '';
         $event_status = session('event_status');
         $aReturn['search_event_status'] = (isset($event_status) && $event_status != '') ? $event_status : '';
+        $aReturn['search_organizer'] = (!empty(session('organizer'))) ? session('organizer') : '';
+        // dd($aReturn['search_organizer']);
 
  
-        //dd($aReturn['search_vehicle_number']);
+        // dd($aReturn['search_organizer']);
         $FiltersSql = '';
         //  dd($aReturn['search_district_name']);
 
@@ -95,25 +92,14 @@ class EventController extends Controller
         if(isset(  $aReturn['search_event_status'] )){
             $FiltersSql .= ' AND (LOWER(vm.active) LIKE \'%' . strtolower( $aReturn['search_event_status'] ) . '%\')';
         } 
-        // if (!empty($aReturn['search_vehicle_number'])) {
-        //     $FiltersSql .= ' AND vm.id = ' . $aReturn['search_vehicle_number'];
 
-        //     //  dd($FiltersSql);
-
-        // } else {
-        //     $aReturn['search_vehicle_number'] = '';
-        //     // dd($aReturn['search_vehicle_number']);
-        // }
-        // // dd($FiltersSql);
-        // if (!empty($aReturn['search_vehicle_type'])) {
-        //     $FiltersSql .= ' AND vm.vehicle_type = ' . $aReturn['search_vehicle_type'] . '';
-        // } else {
-        //     $aReturn['search_vehicle_type'] = '';
-        // }
-        //  dd($FiltersSql);
+        if (isset($aReturn['search_organizer'])) {
+            $FiltersSql .= ' AND LOWER(o.name) LIKE \'%' . strtolower($aReturn['search_organizer']) . '%\'';
+        } 
+       
 
         #PAGINATION
-        $sSQL = 'SELECT count(vm.id) as count FROM events as vm WHERE 1=1 AND vm.deleted=0 ' . $FiltersSql;
+        $sSQL = 'SELECT count(vm.id) as count FROM events as vm  LEFT JOIN organizer AS o ON o.user_id = vm.created_by WHERE 1=1 AND vm.deleted=0 ' . $FiltersSql;
         $CountsResult = DB::select($sSQL);
         // dd($CountsResult);
         $CountRows = 0;
@@ -126,11 +112,20 @@ class EventController extends Controller
         // $Limit = 3;
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
+        
+        // $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country, vm.active FROM events AS vm WHERE vm.deleted = 0' . $FiltersSql. ' order by vm.id desc';
 
-        // $sSQL = 'SELECT vm.id,vm.name,vm.start_time,vm.end_time,vm.city,vm.state,vm.country,vm.active FROM events as vm WHERE vm.deleted = 0' . $FiltersSql;
+        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,
+                o.user_id,(o.name) As organizer_name,(SELECT name FROM cities WHERE 
+                Id = vm.city) AS city,(SELECT name FROM states WHERE Id = vm.state) AS state, 
+                (SELECT name FROM countries WHERE Id = vm.country) AS country, 
+                vm.active, 
+                o.user_id
+         FROM events AS vm
+         LEFT JOIN organizer AS o ON o.user_id = vm.created_by
+         WHERE vm.deleted = 0 ' . $FiltersSql . ' 
+         ORDER BY vm.id DESC';
 
-        // $sSQL .= ' ORDER BY vm.name ASC ';
-        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country, vm.active FROM events AS vm WHERE vm.deleted = 0' . $FiltersSql. ' order by vm.id desc';
 
 
         if ($Limit > 0) {
@@ -138,7 +133,10 @@ class EventController extends Controller
         }
         //dd($sSQL );
         $aReturn['event_array'] = DB::select($sSQL, array());
-        //  dd($aReturn['event_array']);
+        // dd($aReturn['event_array']);
+        $sSQL = 'SELECT * FROM organizer';
+         $aReturn['organizer'] = DB::select($sSQL, array());
+         
         $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['event_array'], $CountRows, $Limit, $PageNo);
         $aReturn['Paginator']->setPath(request()->url());
         //dd($aReturn);

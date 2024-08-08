@@ -34,7 +34,7 @@ class ParticipantsEventExport implements FromArray, WithHeadings, ShouldAutoSize
         $end_booking_date = Session::has('end_booking_date') ? Session::get('end_booking_date') : '';
 
         // Build the SQL query with search criteria
-        $sSQL = 'SELECT a.*,e.booking_date,e.booking_pay_id, e.transaction_status, b.event_id,a.id AS aId, CONCAT(a.firstname, " ", a.lastname) AS user_name,
+        $sSQL = 'SELECT a.*,e.booking_date,e.booking_pay_id,e.total_amount, e.transaction_status, b.ticket_amount, b.event_id,a.id AS aId, CONCAT(a.firstname, " ", a.lastname) AS user_name,
         (SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name,
         (SELECT bpd.txnid FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id) AS Transaction_order_id,
         (SELECT bpt.mihpayid FROM booking_payment_log bpt WHERE bpt.txnid = Transaction_order_id) AS payu_id
@@ -73,18 +73,23 @@ class ParticipantsEventExport implements FromArray, WithHeadings, ShouldAutoSize
 
         
         $event_participants = DB::select($sSQL, array());
-      
+    //   dd($event_participants);
         $excelData = [];
         foreach ($event_participants as $val) {
+            $sql = "SELECT id,(select ed.discount_code from event_coupon as ec left join event_coupon_details as ed on ed.event_coupon_id = ec.id where ec.id = applied_coupons.coupon_id) as coupon_name FROM applied_coupons WHERE event_id = :event_id AND booking_detail_id=:booking_detail_id ";
+            $aCouponResult = DB::select($sql, array('event_id' => $val->event_id, 'booking_detail_id' => $val->booking_details_id));
+            $coupancode = !empty($aCouponResult) ? $aCouponResult[0]->coupon_name : '-'; 
+            $free_status = !empty($val->ticket_amount) && $val->ticket_amount > 0 ? 'PAID' : 'FREE';
+            $total_amount = !empty($val->total_amount) ? number_format($val->total_amount,2) : '0.00'; 
             $excelData[] = array(
                 'Participant Name' => $val->firstname . ' ' . $val->lastname,
                 'Booking Date' => date('d-m-Y H:i:s', $val->booking_date),
                 'Transaction/order Id' => $val->Transaction_order_id,
                 'Registration Id' => $val->registration_id,
                 'Payu Id' => $val->payu_id,
-                'Free/paid status'=> 0,
-                'Coupan Code'=> 0,
-                'Total amount'=>0,
+                'Free/paid status'=> $free_status,
+                'Coupan Code'=> $coupancode,
+                'Total amount'=> $total_amount,
                 'Transaction Status' => 
                 ($val->transaction_status == 0 ? "Initiate" :
                  ($val->transaction_status == 1 ? "Success" :

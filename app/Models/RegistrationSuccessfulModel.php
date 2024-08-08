@@ -30,7 +30,7 @@ class RegistrationSuccessfulModel extends Model
         }
 
 
-        if(isset( $a_search['search_start_registration_booking_date'])){
+        if(isset( $a_search['search_registration_transaction_status'])){
             $s_sql .= ' AND (LOWER( eb.transaction_status) LIKE \'%' . strtolower($a_search['search_registration_transaction_status']) . '%\')';
         } 
 
@@ -72,10 +72,17 @@ class RegistrationSuccessfulModel extends Model
         }
  
        
-        if(isset( $a_search['search_start_registration_booking_date'])){
+        if(isset( $a_search['search_registration_transaction_status'])){
             $s_sql .= ' AND (LOWER( eb.transaction_status) LIKE \'%' . strtolower($a_search['search_registration_transaction_status']) . '%\')';
         } 
-       
+
+        if(!empty( $a_search['search_registration_email'])){
+            $s_sql .= ' AND (LOWER(u.email) LIKE \'%' . strtolower($a_search['search_registration_email']) . '%\')';
+        } 
+
+        if(!empty( $a_search['search_registration_mobile'])){
+            $s_sql .= ' AND (LOWER(u.mobile) LIKE \'%' . strtolower($a_search['search_registration_mobile']) . '%\')';
+        } 
 
         if(!empty($a_search['search_start_registration_booking_date'])){
             $startdate = strtotime($a_search['search_start_registration_booking_date']);  

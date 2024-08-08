@@ -68,7 +68,7 @@ class MarketingController extends Controller
 
         if (isset($request->form_type) && $request->form_type == 'add_edit_marketing') {
             $rules = [
-                'campaign_name' => 'required|unique:Marketing,campaign_name,' . $iId . 'id',
+                'campaign_name' => 'required|unique:marketing,campaign_name,' . $iId . 'id',
                 'count' => 'required',
                 'start_date' => 'required',
                 'end_date' => 'required'
@@ -90,7 +90,7 @@ class MarketingController extends Controller
         }else{
             if($iId > 0){
             //   #SHOW EXISTING DETAILS ON EDIT
-              $sSQL = 'SELECT id,campaign_name,count,start_date,end_date FROM Marketing WHERE id=:id';
+              $sSQL = 'SELECT id,campaign_name,count,start_date,end_date FROM marketing WHERE id=:id';
               $marketingdetails = DB::select($sSQL, array( 'id' => $iId));
               $a_return = (array)$marketingdetails[0];
              //dd($a_return );
@@ -103,7 +103,7 @@ class MarketingController extends Controller
 
     public function delete_marketing($iId){
         MarketingModel::delete_marketing($iId);
-        return redirect(url('/marketing'))->with('success', 'remittance management deleted successfully');
+        return redirect(url('/marketing'))->with('success', 'Marketing deleted successfully');
     }
 
     public function change_active_status(Request $request)

@@ -66,7 +66,7 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
                 'TDS' => $val->Tds,
                 'AMOUNT REMITTED' => $val->amount_remitted,
                 'BANK REFERENCE' => $val->bank_reference,
-                'STATUS' => $val->active,
+               
             );
             // dd($excelData);
         }
@@ -78,22 +78,18 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
     {
 
         return [
-            ['Report Name: Remittance Management'],
-            [],
-            [],
             [
-                'REMITTANCE NAME',
-                'REMITTANCE DATE',
-                'GROSS AMOUNT',
-                'SERVICE CHARGE',
-                'SGST',
-                'CGST',
-                'IGST',
-                'DEDUCTIONS',
-                'TDS ',
-                'AMOUNT REMITTED',
-                'BANK REFERENCE',
-                'STATUS'
+                'Remittance Name',
+                'Remittance Date',
+                'Gross Amount',
+                'Service Charge',
+                'Sgst',
+                'Cgst',
+                'Igst',
+                'Deductions',
+                'Tds ',
+                'Amount Remitted',
+                'Bank Reference'
             ]
         ];
     }
@@ -105,21 +101,22 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
                 $sheet = $event->sheet->getDelegate();
 
                 // Set horizontal alignment for all cells
-                $sheet->getStyle('A1:H1')->getAlignment()->setHorizontal('left');
+                $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal('left');
 
                 // Merge cells in the header
-                $headerMergeRanges = ['A1:L1', 'A2:L2', 'A3:L3'];
-                foreach ($headerMergeRanges as $range) {
-                    $sheet->mergeCells($range);
-                }
+                // $headerMergeRanges = ['A1:L1', 'A2:L2', 'A3:L3'];
+                // $headerMergeRanges = ['A1:L1'];
+                // foreach ($headerMergeRanges as $range) {
+                //     $sheet->mergeCells($range);
+                // }
 
                 // Set row heights
-                for ($row = 1; $row <= 4; $row++) {
-                    $sheet->getRowDimension($row)->setRowHeight(25);
-                }
+                // for ($row = 1; $row <= 4; $row++) {
+                //     $sheet->getRowDimension($row)->setRowHeight(25);
+                // }
 
                 // Apply font styling to header
-                $sheet->getStyle('A1:L4')->applyFromArray([
+                $sheet->getStyle('A1:L1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                     ]

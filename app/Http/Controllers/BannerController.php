@@ -134,7 +134,7 @@ class BannerController extends Controller
             ];
 
             if ($request->has('banner_image')) {
-                $rules['banner_image'] = 'required|image|mimes:jpeg,png,jpg';
+                $rules['banner_image'] = 'required|mimes:jpeg,jpg,png,gif|max:2000';
             }
 
             $validator = Validator::make($request->all(), $rules);

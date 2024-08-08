@@ -104,8 +104,8 @@ class TestimonialController extends Controller
                 'testimonial_name' => 'required|unique:testimonial,name,' . $iId . 'id',
                 'subtitle'         => 'required|string',
                 'description'      => 'required|string',
-                'testimonial_img'  => 'required'
-            ];
+                'testimonial_img'  => 'required|mimes:jpeg,jpg,png,gif|max:2000'
+            ]; 
             $testimonial_name = (!empty($request->testimonial_name)) ? $request->testimonial_name : '';
             $subtitle = (!empty($request->subtitle)) ? $request->subtitle : '';
             $description = (!empty($request->description)) ? $request->description : '';

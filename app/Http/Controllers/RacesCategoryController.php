@@ -116,7 +116,7 @@ class RacesCategoryController extends Controller
         //    dd($request->all());
             $Rules = [
                 'name' => 'required|unique:eTypes,name,' . $iId . 'id',
-                'logo' => 'required'
+                'logo' => 'required|mimes:jpeg,jpg,png,gif|max:2000'
             ];
     
             // Retrieve data from request

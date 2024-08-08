@@ -99,7 +99,7 @@ class AdvertiseController extends Controller
             ];
 
             if ($request->has('img')) {
-                $rules['img'] = 'required|image|mimes:jpeg,png,jpg';
+                $rules['img'] = 'required|mimes:jpeg,jpg,png,gif|max:2000';
             }
 
             $validator = Validator::make($request->all(), $rules);
