@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Role Master ')
+@section('title', 'Role Master List')
 
 
 @section('content')
@@ -130,6 +130,7 @@
                                     <tr>
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Role Name</th>
+                                        <th class="text-center">Access</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -145,6 +146,7 @@
                                         <tr>
                                             <td class="text-center">{{ $i }}</td>
                                             <td class="text-left">{{ $val->name }}</td>
+                                             <td class="text-center"><a href="{{ url('role_access', $val->id ) }}"><i class="fa fa-eye" style="cursor:pointer;" ></i></a></td>
                                             <td class="text-center">
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input"

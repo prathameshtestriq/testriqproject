@@ -28,6 +28,7 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\RoleController;
 
 //--------------------------------------------
 
@@ -184,5 +185,9 @@ Route::group(['middleware' => ['checkLogin']], function () {
  
     #LOGOUT
     Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+    
+    // Role Controller
+    Route::get('/role_access/{id}', [RoleController::class, 'index'])->name('role_master.index');
+    Route::post('/role_access/{id}', [RoleController::class, 'update'])->name('role_master.update');
 
 });

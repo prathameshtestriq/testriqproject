@@ -3,6 +3,7 @@ namespace App\Libraries;
 
 use App\Models\EmailLog;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class Emails
 {
@@ -246,6 +247,45 @@ Welcome aboard!
         $email_log->datetime = strtotime("now");
         $email_log->response = json_encode($responseData);
         $email_log->save();
+    }
+
+    public function send_admin_side_mail($EmailIds, $MessageContent, $Subject, $type)
+    {
+        
+        $email = new \SendGrid\Mail\Mail();
+        $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
+        $email->setSubject($Subject);
+        $email->addTo($EmailIds, $Subject);
+        $email->addContent("text/plain", "Dear, ");
+        $email->addContent(
+            "text/html",
+            "" . $MessageContent
+        );
+
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+        try {
+            $response = $sendgrid->send($email);
+            // send mail
+            $responseData = [
+                'statusCode' => $response->statusCode(),
+                'body' => $response->body(),
+                'headers' => $response->headers(),
+            ];
+
+            $send_mail_to = $EmailIds;
+            
+            $Binding8 = array(
+                "send_email_flag"  => 1,
+                "response" => json_encode($responseData),
+                "send_mail_to" => $send_mail_to,
+            );
+            $Sql8 = "UPDATE admin_send_email_log SET send_email_flag =:send_email_flag, response=:response WHERE send_mail_to=:send_mail_to";
+            DB::update($Sql8, $Binding8);
+           
+
+        } catch (Exception $e) {
+            echo 'Caught exception: ' . $e->getMessage() . "\n";
+        }
     }
 }
 
