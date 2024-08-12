@@ -850,7 +850,7 @@ class EventTicketController extends Controller
                 }
                 // $ResponseData['EventName'] = $EventName;
 
-
+                $OrgEmail = '';
                 $OrgSql = "SELECT email FROM organizer AS e WHERE e.user_id=:user_id";
                 $Org = DB::select($OrgSql, array('user_id' => $UserId));
                 if (count($Org) > 0) {
