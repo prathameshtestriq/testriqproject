@@ -1,10 +1,9 @@
 <?php 
-//print_r($_REQUEST); die;
-//header("Location: http://localhost:3000/payment_gateway");
+// Live server file //
 
 //-------------------
 // Database connection parameters
-$flag = 1; // prime - 1 / live - 2 / local - 3 
+$flag = 2; // prime - 1 / live - 2 / local - 3 
 
 if($flag == 1){                   // prime
     $servername = 'localhost'; 
@@ -29,6 +28,8 @@ $conn = new mysqli($servername, $username, $password, $database);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
+//echo '<pre>'; print_r($_POST); die;
 
     // Transcation data for insertion
     	$mihpayid = $_POST['mihpayid'];
@@ -131,10 +132,9 @@ if ($conn->connect_error) {
         // print_r($new_array); die;
         $jsonData = json_encode($transcation_array);
     
-    //----------- responce log entry --------------
-    $insert_sql = "INSERT INTO payment_response_log(txnid, response_data, payment_status) VALUES ('$txnid', '$jsonData', '$status')";
-    $aResult = mysqli_query($conn, $insert_sql);
-
+	$insert_sql2 = "INSERT INTO payment_response_log(txnid, response_data, payment_status) VALUES ('$txnid', '$jsonData', '$status')";
+	$aResult = mysqli_query($conn, $insert_sql2);	
+    
     // $mihpayid = '20080004972';
     // $txnid = 'Ytcr-5';
     // $amount = '1.00';
@@ -153,6 +153,9 @@ if ($conn->connect_error) {
         $booking_pay_id = !empty($row["id"]) ? $row["id"] : 0;
       }
     }
+
+//$insert_sql2 = "INSERT INTO temp_booking_payment_log(event_id, txnid, mihpayid, amount, post_data, created_by) VALUES ('1', '$txnid', '$mihpayid', '$amount', '$jsonData', '1')";
+//$aResult = mysqli_query($conn, $insert_sql2);
 
     //----------- log entry --------------
     $response_datetime = date('Y-m-d H:i:s');

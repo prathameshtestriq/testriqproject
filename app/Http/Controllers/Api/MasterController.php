@@ -157,6 +157,49 @@ class MasterController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    function getLocationCity(Request $request)
+    {
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = '';
+        $Events = [];
+
+        #GET CITY WISE
+        $CountryCode = isset($request->country_code) ? $request->country_code : "";
+        $CountryId = isset($request->country_id) ? $request->country_id : "";
+        $StateId = isset($request->state_id) ? $request->state_id : 0;
+
+        $sql = "SELECT c.* FROM cities AS c WHERE show_flag=1";
+        if (!empty($CountryCode)) {
+            $SearchText = strtolower($CountryCode);
+            $sql .= " AND LOWER(c.country_code) LIKE '%" . $SearchText . "%' ";
+        }
+        if (!empty($request->search_city)) {
+            $SearchText = strtolower($request->search_city);
+            $sql .= " AND LOWER(c.name) LIKE '%" . $SearchText . "%' ";
+        }
+        if (!empty($StateId)) {
+            $sql .= " AND c.state_id=" . $StateId;
+        }
+
+        if (!empty($CountryId)) {
+            $sql .= " AND c.country_id=" . $CountryId;
+        }
+        $AllCities = DB::select($sql);
+
+        $ResponseData['AllCities'] = $AllCities;
+
+        $response = [
+            'status' => 200,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
     function getTimezone(Request $request)
     {
         $ResponseData = [];

@@ -13,7 +13,7 @@
             <th style="text-align: center; font-weight: bold;">Payu ID</th>
             <th style="text-align: center; font-weight: bold;">Booking Date</th>
             <th style="text-align: center; font-weight: bold;">Payment Status</th>
-            <th style="text-align: center; font-weight: bold;">Inclusive/Exclusive</th>
+            <th style="text-align: center; font-weight: bold;">GST - Inclusive/Exclusive</th>
             
 
             <th style="text-align: center; font-weight: bold;">Registration Price</th>
@@ -27,7 +27,8 @@
             <th style="text-align: center; font-weight: bold;">Additional Amount Payment Gateway Charges</th>
             <th style="text-align: center; font-weight: bold;">Additional Amount Payment Gateway GST (18%)</th>
 
-            <th style="text-align: center; font-weight: bold;">Passed on/Bare by</th>
+            <th style="text-align: center; font-weight: bold;">Convenience Fee - Paid By</th>
+            <th style="text-align: center; font-weight: bold;">Payment Gateway - Paid By</th>
 
             <th style="text-align: center; font-weight: bold;">Convenience Fee</th>
             <th style="text-align: center; font-weight: bold;">Convenience Fee GST (18%)</th>
@@ -97,6 +98,7 @@
                    <td style="text-align: right;"><?php echo $res->Extra_amount_pg_GST; ?></td>
 
                    <td style="text-align: right;"><?php echo $res->Pass_Bare; ?></td>
+                   <td style="text-align: right;"><?php echo $res->Pg_Bare; ?></td>
 
                    <td style="text-align: right;"><?php echo $res->Convenience_fee; ?></td>
                    <td style="text-align: right;"><?php echo $res->Convenience_Fee_GST; ?></td>
@@ -137,6 +139,7 @@
                    <td style="text-align: right;"><strong><?php echo $total_Extra_amount_pg_GST; ?></strong></td>
 
                    <td style="text-align: center;"><strong>&nbsp;</strong></td>
+                   <td style="text-align: center;"><strong>&nbsp;</strong></td>
 
                    <td style="text-align: right;"><strong><?php echo $total_Convenience_fee; ?></strong></td>
                    <td style="text-align: right;"><strong><?php echo $total_Convenience_Fee_GST; ?></strong></td>
@@ -145,7 +148,7 @@
                    <td style="text-align: right;"><strong><?php echo $total_Platform_Fee_GST; ?></strong></td>
 
                    <td style="text-align: right;"><strong><?php echo $total_Payment_gateway_charges; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Payment_gateway_charges; ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo $total_Payment_Gateway_GST; ?></strong></td>
 
                    <td style="text-align: right;"><strong><?php echo $total_Organiser_amount; ?></strong></td>
                    <td style="text-align: right;"><strong><?php echo $total_Final_total_amount; ?></strong></td>

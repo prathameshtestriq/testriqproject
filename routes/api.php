@@ -59,6 +59,7 @@ Route::controller(MasterController::class)->group(function () {
     Route::post('timezone', 'getTimezone');
     Route::get('get_distance', 'getDistanceOfEvents');
     Route::post('get_location', 'getLocationData');
+    Route::post('location_city', 'getLocationCity');
 });
 
 Route::controller(LoginController::class)->group(function () {
@@ -116,6 +117,14 @@ Route::controller(UserController::class)->group(function () {
     Route::post('social_media', 'SocialMedia');
     Route::post('communication_settings', 'CommunicationSettings');
     Route::post('get_address', 'getAddress');
+    Route::post('get_roles', 'getRoles');
+    Route::post('get_events', 'getEvents');
+    Route::post('add_edit_org_user', 'addEditOrgUser');
+    Route::post('org_user_details', 'OrgUserDetails');
+    Route::post('delete_org_user', 'DeleteOrgUser');
+    Route::post('edit_org_user', 'EditOrgUser');
+
+
 });
 
 Route::controller(EventUserFollowController::class)->group(function () {

@@ -829,18 +829,22 @@ class EventDashboardController extends Controller
                 $WhoPayYtcrFee = isset($card_details_array[0]->player_of_fee) && !empty($card_details_array[0]->player_of_fee) ? $card_details_array[0]->player_of_fee : 0;
                 $WhoPayPaymentGatewayFee = isset($card_details_array[0]->player_of_gateway_fee) && !empty($card_details_array[0]->player_of_gateway_fee) ? $card_details_array[0]->player_of_gateway_fee : 0;
 
-                if($WhoPayYtcrFee == 1 && $WhoPayPaymentGatewayFee == 1){
-                    $aTemp->Pass_Bare = 'Passed on';
-                }else if($WhoPayYtcrFee == 2 && $WhoPayPaymentGatewayFee == 2){
-                    $aTemp->Pass_Bare = 'Bare by';
-                }else if($WhoPayYtcrFee == 1 && $WhoPayPaymentGatewayFee == 2){
-                    $aTemp->Pass_Bare = 'Bare by';
-                }else if($WhoPayYtcrFee == 2 && $WhoPayPaymentGatewayFee == 1){
-                    $aTemp->Pass_Bare = 'Passed on';
+                if($WhoPayYtcrFee == 1){
+                    $aTemp->Pass_Bare = 'Participant';
+                }else if($WhoPayYtcrFee == 2){
+                    $aTemp->Pass_Bare = 'Organiser';
                 }else{
                    $aTemp->Pass_Bare = ''; 
                 }
-                  
+
+                if($WhoPayPaymentGatewayFee == 2){
+                    $aTemp->Pg_Bare = 'Organiser';
+                }else if($WhoPayPaymentGatewayFee == 1){
+                    $aTemp->Pg_Bare = 'Participant';
+                }else{
+                   $aTemp->Pg_Bare = ''; 
+                }
+
                   
                     $aTemp->Ticket_count = isset($card_details_array[0]->count) && !empty($card_details_array[0]->count) ? $card_details_array[0]->count : 0;
                     $aTemp->Single_ticket_price = isset($card_details_array[0]->Main_Price) && !empty($card_details_array[0]->Main_Price) ? 

@@ -11,8 +11,6 @@ use App\Libraries\Authenticate;
 use App\Models\UserRight;
 use App\Models\Master;
 
-
-
 class UserController extends Controller
 {
     public function getProfile(Request $request)
@@ -1648,6 +1646,394 @@ class UserController extends Controller
         ];
 
         return response()->json($response, $responseCode);
+    }
+
+    public function getRoles(Request $request)
+    {
+        $ResponseData = $FullAddress = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+          
+                $Auth = new Authenticate();
+               
+                $SQL1 = "SELECT id,name FROM `role_master` WHERE status = 1 AND is_deleted = 0";
+                $aRoleData = DB::select($SQL1, array());
+                $ResponseData['AllRoles'] = $aRoleData;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+           
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function getEvents(Request $request)
+    {
+        $ResponseData = $FullAddress = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        $user_id = $aToken['data']->ID;
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+          
+                $Auth = new Authenticate();
+               
+                $SQL1 = "SELECT id,name FROM `events` WHERE active = 1 AND deleted = 0 AND created_by = ".$user_id." ";
+                $aEventData = DB::select($SQL1, array());
+
+                if(!empty($aEventData)){
+                    foreach($aEventData as $res){
+                        $res->checked = false;
+                    }
+                }
+                $ResponseData['AllEvents'] = $aEventData;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+           
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+     public function addEditOrgUser(Request $request)
+    {
+        // return $request->file('upload_csv');
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $flag = 0;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['user_role'])) {
+                $empty = true;
+                $field = 'User Role';
+            }
+
+             if (empty($aPost['email'])) {
+                $empty = true;
+                $field = 'Email';
+            }
+
+            if (!$empty) {
+
+                $UserRole = !empty($request->user_role) ? $request->user_role : 0;
+                $firstname = !empty($request->firstname) ? $request->firstname : '';
+                $lastname = !empty($request->lastname) ? $request->lastname : '';
+                $email = !empty($request->email) ? $request->email : '';
+                $mobile = !empty($request->mobile) ? $request->mobile : '';
+                $dob = !empty($request->dob) ? $request->dob : '';
+                $gender = !empty($request->gender) ? $request->gender : '';
+                $EventSelectedType = !empty($request->event_selected_type) ? $request->event_selected_type : 1;
+                $EventData = !empty($request->event_data) ? json_decode($request->event_data) : [];
+
+                $EditOrgUserId = !empty($request->edit_org_user_id) ? $request->edit_org_user_id : 0;
+
+                //---------- all ticket apply -----------
+                $event_ids = '';
+                if ($EventSelectedType == 1) {
+                    $Sql = 'SELECT id FROM events WHERE `created_by`=:userId AND active = 1 AND deleted = 0';
+                    $event_aResult = DB::select(
+                        $Sql,array(
+                            'userId' => $UserId
+                        )
+                    );
+                
+                    $event_id_array = !empty($event_aResult) ? array_column($event_aResult, 'id') : '';
+                    $event_ids = !empty($event_id_array) ? implode(",", $event_id_array) : '';
+                } else {
+                    $event_id_array = [];
+                    if (!empty($EventData)) {
+                        foreach ($EventData as $res) {
+                            if (isset($res->checked) && $res->checked == true)
+                                $event_id_array[] = $res->id;
+                        }
+                    }
+                    $event_ids = !empty($event_id_array) ? implode(",", $event_id_array) : '';
+                }
+
+
+                if (empty($EditOrgUserId)) {     // data insert
+
+                    $SQL = "SELECT email FROM organiser_users WHERE LOWER(email) = :email";
+                    $IsExist = DB::select($SQL, array('email' => strtolower($email)));
+                    // dd($IsExist);
+
+                    $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND id = :user_id";
+                    $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $UserId));
+                    //dd($IsCouponExist);
+
+                    if (!empty($IsExist)) {
+                        $ResposneCode = 200;
+                        $message = "Email id is already exists, please use another email.";
+                        $flag = 1;
+                        $ResponseData = $flag;
+                    } else if (!empty($IsExist1)) {
+                        $ResposneCode = 200;
+                        $message = "Email id is already exists, please use another email.";
+                        $flag = 2;
+                        $ResponseData = $flag;
+                    } else {
+
+                        $Bindings = array(
+                            "user_role" => $UserRole,
+                            "firstname" => $firstname,
+                            "lastname" => $lastname,
+                            "email" => $email,
+                            "mobile" => $mobile,
+                            "dob" => $dob,
+                            "gender" => $gender,
+                            "event_selected_type" => $EventSelectedType,
+                            "event_ids" => $event_ids,
+                            "created_by" => $UserId,
+                            "created_date" => time()
+                        );
+
+                        $insert_SQL = "INSERT INTO organiser_users (user_role,firstname,lastname,email,mobile,dob,gender,event_selected_type,event_ids,created_by,created_date) VALUES(:user_role,:firstname,:lastname,:email,:mobile,:dob,:gender,:event_selected_type,:event_ids,:created_by,:created_date)";
+                        DB::insert($insert_SQL, $Bindings);
+                        $last_inserted_id = DB::getPdo()->lastInsertId();
+                        //dd($last_inserted_id);
+
+                        $message = 'Organising user added successfully';
+                        $ResposneCode = 200;
+                    }
+
+                } else {                       // data update
+                   
+                    $SQL = "SELECT email FROM organiser_users WHERE LOWER(email) = :email AND id != :edit_id ";
+                    $IsExist = DB::select($SQL, array('email' => strtolower($email), "edit_id" => $EditOrgUserId));
+                    // dd($IsExist);
+
+                    $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND id = :user_id";
+                    $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $UserId));
+
+                    if (!empty($IsExist)) {
+                        $ResposneCode = 200;
+                        $message = "Email id is already exists, please use another email.";
+                        $flag = 1;
+                        $ResponseData = $flag;
+                    } else if (!empty($IsExist1)) {
+                        $ResposneCode = 200;
+                        $message = "Email id is already exists, please use another email.";
+                        $flag = 2;
+                        $ResponseData = $flag;
+                    } else {
+
+                        $Bindings = array(
+                            "user_role" => $UserRole,
+                            "firstname" => $firstname,
+                            "lastname" => $lastname,
+                            "email" => $email,
+                            "mobile" => $mobile,
+                            "dob" => $dob,
+                            "gender" => $gender,
+                            "event_selected_type" => $EventSelectedType,
+                            "event_ids" => $event_ids,
+                            'edit_id' => $EditOrgUserId
+                        );
+
+                        $edit_sql = 'UPDATE organiser_users SET user_role =:user_role, firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, dob =:dob, gender =:gender, event_selected_type =:event_selected_type, event_ids =:event_ids WHERE id = :edit_id';
+                        DB::update($edit_sql, $Bindings);
+
+                        $message = 'Organising user updated successfully';
+                        $ResposneCode = 200;
+                    }
+                }
+               
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function OrgUserDetails(Request $request)
+    {
+        $ResponseData = $FullAddress = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        $user_id = $aToken['data']->ID;
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+          
+                $Auth = new Authenticate();
+               
+                $SQL1 = "SELECT id,user_role,firstname,lastname,mobile,email,gender,status,dob FROM `organiser_users` WHERE status = 1 AND created_by = ".$user_id." ";
+                $aData = DB::select($SQL1, array());
+
+                if(!empty($aData)){
+                    foreach($aData as $res){
+                        $res->username = ucfirst($res->firstname.' '.$res->lastname);
+                        if($res->gender == 1){
+                           $res->gender = 'Male';
+                        }else if($res->gender == 2){
+                           $res->gender = 'Female';
+                        }else{
+                           $res->gender = 'Other';
+                        }
+
+                        $res->dob = date('d-m-Y',strtotime($res->dob));
+                    }
+                }
+                $ResponseData['AllOrgUsers'] = $aData;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+           
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    // Delete Org User
+    public function DeleteOrgUser(Request $request)
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $OrgUserId = !empty($request->org_user_id) ? $request->org_user_id : 0;
+           
+            $del_sSQL = 'DELETE FROM organiser_users WHERE `id`=:id ';
+            DB::delete(
+                $del_sSQL,array(
+                    'id' => $OrgUserId
+                )
+            );
+            
+            $response['data'] = [];
+            $response['message'] = 'Record removed successfully';
+            $ResposneCode = 200;
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function EditOrgUser(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        $user_id = $aToken['data']->ID;
+        // dd($aToken['data']->ID);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+          
+                $Auth = new Authenticate();
+                $OrgUserId = !empty($request->org_user_id) ? $request->org_user_id : 0;
+               
+                $SQL1 = "SELECT * FROM `organiser_users` WHERE status = 1 AND id = ".$OrgUserId." ";
+                $aData = DB::select($SQL1, array());
+
+                if(!empty($aData)){
+                    foreach($aData as $res){
+                        
+                        if(!empty($res->event_ids)){
+                            $new_array = explode(",", $res->event_ids);
+
+                            $SQL1 = "SELECT id,name FROM `events` WHERE active = 1 AND deleted = 0 AND created_by = ".$user_id." ";
+                            $aEventData = DB::select($SQL1, array());
+
+                            if (!empty($aEventData)) {
+                                foreach ($aEventData as $res1) {
+                                    if (in_array($res1->id, $new_array)) {
+                                        $res1->checked = true;
+                                    } else {
+                                        $res1->checked = false;
+                                    }
+                                }
+                            }
+                        }
+
+                        $res->eventData = isset($aEventData) ? $aEventData : [];
+                       
+                    }
+                }
+                $ResponseData['AllOrgUsers'] = $aData;
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+           
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
     }
 
 }
