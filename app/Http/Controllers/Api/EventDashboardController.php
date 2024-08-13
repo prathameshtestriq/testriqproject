@@ -899,7 +899,7 @@ class EventDashboardController extends Controller
 
                     // Extra Amount
                     
-                    $aTemp->Extra_amount = isset($card_details_array[0]->discount_ticket_price) && !empty($card_details_array[0]->discount_ticket_price) ? ($card_details_array[0]->discount_ticket_price)  : '0.00'; 
+                    $aTemp->Extra_amount = isset($card_details_array[0]->Extra_Amount) && !empty($card_details_array[0]->Extra_Amount) ? ($card_details_array[0]->Extra_Amount)  : '0.00'; 
 
                     $aTemp->Extra_amount_pg_charges = isset($card_details_array[0]->Extra_Amount_Payment_Gateway) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway * $card_details_array[0]->count)  : '0.00';  
                    

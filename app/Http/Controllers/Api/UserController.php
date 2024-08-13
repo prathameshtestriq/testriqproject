@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Libraries\Authenticate;
 use App\Models\UserRight;
 use App\Models\Master;
+use App\Libraries\Emails;
 
 class UserController extends Controller
 {
