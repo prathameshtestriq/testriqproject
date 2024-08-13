@@ -121,7 +121,7 @@ class UserController extends Controller
             }
         }
         // dd($completed_personal_details,($completed_personal_details / $total_personal_details) * 20);
-        $personal_details_percentage = ($completed_personal_details / $total_personal_details) * 20;
+        $personal_details_percentage = ($completed_personal_details / $total_personal_details) * 25;
         $TotalPercentage += $personal_details_percentage;
 
 
@@ -146,7 +146,7 @@ class UserController extends Controller
             }
         }
         // dd($completed_general_details,($completed_general_details / $total_general_details) * 20);
-        $general_details_percentage = ($completed_general_details / $total_general_details) * 20;
+        $general_details_percentage = ($completed_general_details / $total_general_details) * 25;
         $TotalPercentage += $general_details_percentage;
 
         #ADDRESS DETAILS
@@ -163,10 +163,10 @@ class UserController extends Controller
             'ca_state',
             'ca_city',
             'ca_pincode',
-            'nationality',
-            'address_proof_type',
-            'address_proof_no',
-            'address_proof_doc_upload'
+            'nationality'
+            // 'address_proof_type',
+            // 'address_proof_no',
+            // 'address_proof_doc_upload'
         ];
         $total_address = count($address);
         $completed_address = 0;
@@ -179,7 +179,7 @@ class UserController extends Controller
             }
         }
         // dd($completed_address,($completed_address / $total_address) * 20);
-        $address_percentage = ($completed_address / $total_address) * 20;
+        $address_percentage = ($completed_address / $total_address) * 25;
         $TotalPercentage += $address_percentage;
 
 
@@ -200,7 +200,7 @@ class UserController extends Controller
             }
         }
         // dd($completed_social_media_accounts,($completed_social_media_accounts / $total_social_media_accounts) * 20);
-        $social_media_accounts_percentage = ($completed_social_media_accounts / $total_social_media_accounts) * 20;
+        $social_media_accounts_percentage = ($completed_social_media_accounts / $total_social_media_accounts) * 25;
         $TotalPercentage += $social_media_accounts_percentage;
 
         #COMMUNICATION SETTINGS
@@ -268,7 +268,7 @@ class UserController extends Controller
             }
         }
         // dd($completed_health_details,($completed_health_details / $total_health_details) * 16);
-        $health_details_percentage = ($completed_health_details / $total_health_details) * 20;
+        $health_details_percentage = ($completed_health_details / $total_health_details) * 25;
         $TotalPercentage += $health_details_percentage;
 
         return number_format($TotalPercentage, 2);

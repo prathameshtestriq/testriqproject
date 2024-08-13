@@ -845,6 +845,14 @@ class EventDashboardController extends Controller
                    $aTemp->Pg_Bare = ''; 
                 }
 
+                if($res->ticket_status == 1){
+                   $aTemp->category_type = 'Paid';
+                }else if($res->ticket_status == 2){
+                   $aTemp->category_type = 'Free';
+                }else{
+                   $aTemp->category_type = '';
+                }
+
                   
                     $aTemp->Ticket_count = isset($card_details_array[0]->count) && !empty($card_details_array[0]->count) ? $card_details_array[0]->count : 0;
                     $aTemp->Single_ticket_price = isset($card_details_array[0]->Main_Price) && !empty($card_details_array[0]->Main_Price) ? 

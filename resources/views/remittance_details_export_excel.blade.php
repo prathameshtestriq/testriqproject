@@ -8,6 +8,7 @@
             <th style="text-align: center; font-weight: bold;">Email</th>
             <th style="text-align: center; font-weight: bold;">Mobile</th>
             <th style="text-align: center; font-weight: bold;">Event Category</th>
+            <th style="text-align: center; font-weight: bold;">Category Type</th>
             <th style="text-align: center; font-weight: bold;">Transaction/Order ID</th>
             <th style="text-align: center; font-weight: bold;">Registration ID</th>
             <th style="text-align: center; font-weight: bold;">Payu ID</th>
@@ -80,6 +81,7 @@
                    <td style="text-align: left;"><?php echo $res->email; ?></td>
                    <td style="text-align: left;"><?php echo $res->mobile; ?></td>
                    <td style="text-align: left;"><?php echo $res->category_name; ?></td>
+                   <td style="text-align: left;"><?php echo $res->category_type; ?></td>
                    <td style="text-align: left;"><?php echo $res->transaction_id; ?></td>
                    <td style="text-align: left;"><?php echo $res->registration_id; ?></td>
                    <td style="text-align: left;"><?php echo $res->payu_id; ?></td>
@@ -115,6 +117,7 @@
             <?php $i++; }} ?>
 
             <tr>
+                   <td style="text-align: center;">&nbsp;</td>
                    <td style="text-align: center;">&nbsp;</td>
                    <td style="text-align: center;">&nbsp;</td>
                    <td style="text-align: center;">&nbsp;</td>
