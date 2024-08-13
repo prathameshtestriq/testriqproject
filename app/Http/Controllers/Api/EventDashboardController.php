@@ -337,7 +337,7 @@ class EventDashboardController extends Controller
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
                 $couponUsedFlag = isset($aPost['coupon_used_flag']) ? $aPost['coupon_used_flag'] : 0;
 
-                $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name FROM attendee_booking_details AS a 
+                $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name, (SELECT ticket_status FROM event_tickets WHERE id=a.ticket_id) AS ticket_status FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id";
                 
@@ -784,7 +784,7 @@ class EventDashboardController extends Controller
 
     function remittanceDetailsExcellData($AttendeeData, $EventId)
     {
-        // dd($AttendeeData);
+         // dd($AttendeeData);
         $excel_url = '';
         $AttendeeDataArray = [];
 
@@ -829,18 +829,18 @@ class EventDashboardController extends Controller
                 $WhoPayYtcrFee = isset($card_details_array[0]->player_of_fee) && !empty($card_details_array[0]->player_of_fee) ? $card_details_array[0]->player_of_fee : 0;
                 $WhoPayPaymentGatewayFee = isset($card_details_array[0]->player_of_gateway_fee) && !empty($card_details_array[0]->player_of_gateway_fee) ? $card_details_array[0]->player_of_gateway_fee : 0;
 
-                if($WhoPayYtcrFee == 1){
-                    $aTemp->Pass_Bare = 'Participant';
-                }else if($WhoPayYtcrFee == 2){
+                if($WhoPayYtcrFee == 1 && $res->ticket_status !== 2){
                     $aTemp->Pass_Bare = 'Organiser';
+                }else if($WhoPayYtcrFee == 2 && $res->ticket_status !== 2){
+                    $aTemp->Pass_Bare = 'Participant';
                 }else{
                    $aTemp->Pass_Bare = ''; 
                 }
 
-                if($WhoPayPaymentGatewayFee == 2){
-                    $aTemp->Pg_Bare = 'Organiser';
-                }else if($WhoPayPaymentGatewayFee == 1){
+                if($WhoPayPaymentGatewayFee == 2 && $res->ticket_status !== 2){
                     $aTemp->Pg_Bare = 'Participant';
+                }else if($WhoPayPaymentGatewayFee == 1 && $res->ticket_status !== 2){
+                    $aTemp->Pg_Bare = 'Organiser';
                 }else{
                    $aTemp->Pg_Bare = ''; 
                 }
