@@ -90,7 +90,7 @@ class User extends Authenticatable
     {
         $a_return = [];
 
-        $s_sql = 'SELECT u.id, u.firstname,u.lastname,u.is_active,u.email,u.mobile,u.gender,u.dob,(SELECT name FROM  states s WHERE u.state = s.id) as state_name,(SELECT name FROM  cities s WHERE u.city = s.id) as city_name
+        $s_sql = 'SELECT u.id, u.firstname,u.lastname,u.is_active,u.email,u.mobile,u.gender,u.dob,u.profile_completion_percentage,(SELECT name FROM  states s WHERE u.state = s.id) as state_name,(SELECT name FROM  cities s WHERE u.city = s.id) as city_name
                 FROM users u WHERE 1=1';
 
     
@@ -188,7 +188,7 @@ class User extends Authenticatable
 
     public static function add_user($request)
     {
-        // dd($request->all());
+        dd($request->all());
         // $firstname = (!empty($request->firstname)) ? $request->firstname : '';
         // $lastname = (!empty($request->lastname)) ? $request->lastname : '';
         // $email = (!empty($request->email)) ? $request->email : '';
@@ -208,10 +208,14 @@ class User extends Authenticatable
         $password = (!empty($request->password)) ? $request->password : '';
         $username = !empty($request->username) ? $request->username : '';
         $user_role = !empty($request->type) ? $request->type : '0';
-        $status = $request->status == 'active' ? 1 : 0;
+        // $status = $request->status == 'active' ? 1 : 0;
+        $state = !empty($request->state) ? $request->state : '0';
+        $city = !empty($request->city) ? $request->city : '0';
+        $gender = !empty($request->gender) ? $request->gender : '0';
 
-        $sSQL = 'INSERT INTO users(firstname, lastname, email, password, mobile, type, is_active)
-                 VALUES(:firstname, :lastname, :email, :password, :mobile, :type, :is_active)';
+
+        $sSQL = 'INSERT INTO users(firstname, lastname, email, password, mobile, type,state,city,gender)
+                 VALUES(:firstname, :lastname, :email, :password, :mobile, :type,:state,:city,:gender)';
 
         $bindings = array(
             'firstname' => $firstname,
@@ -220,9 +224,11 @@ class User extends Authenticatable
             'password' => md5($password),
             'mobile' => $request->mobile,
             'type' => $user_role,
-            'is_active' => $status,
+            'state'=> $state,
+            'city'=>$city,
+            'gender'=>$gender
         );
-
+dd($bindings);
         $result = DB::insert($sSQL, $bindings);
         // dd($Result);
 
@@ -237,7 +243,10 @@ class User extends Authenticatable
         $password = (!empty($request->password)) ? $request->password : '';
         $mobile_no = !empty($request->mobile) ? $request->mobile : '';
         $user_role = !empty($request->type) ? $request->type : '0';
-        $status = $request->status == 'active' ? 1 : 0;
+        // $status = $request->status == 'active' ? 1 : 0;
+        $state = !empty($request->state) ? $request->state : '0';
+        $city = !empty($request->city) ? $request->city : '0';
+        $gender = !empty($request->gender) ? $request->gender : '0';
 
 
         if ($iId > 0) {
@@ -248,11 +257,13 @@ class User extends Authenticatable
                 'email' => $email,
                 'mobile' => $mobile_no,
                 'type' => $user_role,
-                'is_active' => $status,
+                'state'=> $state,
+                'city'=>$city,
+                'gender'=>$gender,
                 'id' => $iId
             );
 
-            $sSQL = 'UPDATE users SET firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, type =:type, is_active= :is_active WHERE id=:id';
+            $sSQL = 'UPDATE users SET firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, type =:type,state=:state,city=:city,gender=:gender WHERE id=:id';
 
             // dd($Bindings);
             $result = DB::update($sSQL, $Bindings);

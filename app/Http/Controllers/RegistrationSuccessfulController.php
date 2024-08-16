@@ -26,7 +26,7 @@ class RegistrationSuccessfulController extends Controller
        
         return redirect('/registration_successful/'.$event_id);
     }
-    public function index(Request $request, $event_id){
+    public function index(Request $request, $event_id = 0){
         $Return['search_registration_user_name'] = '';
         $Return['search_registration_transaction_status'] = '';
         $Return['search_registration_email'] = '';
@@ -34,9 +34,8 @@ class RegistrationSuccessfulController extends Controller
         $Return['search_start_registration_booking_date'] = '';
         $Return['search_end_registration_booking_date'] = '';
        
-
         if (isset($request->form_type) && $request->form_type == 'search_registration_successful') {
-         
+            
             session(['registration_user_name' => $request->registration_user_name]);
             session(['registration_transaction_status' => $request->registration_transaction_status]);
             session(['registration_email_id' => $request->registration_email_id]);
@@ -46,7 +45,7 @@ class RegistrationSuccessfulController extends Controller
         
             return redirect('/registration_successful/'.$event_id);
         }
-       
+    
         $Return['search_registration_user_name'] = (!empty(session('registration_user_name'))) ? session('registration_user_name') : '';
         $transaction_status = session('registration_transaction_status');
         $Return['search_registration_transaction_status'] = (isset($transaction_status) && $transaction_status != '') ? $transaction_status : '';
@@ -55,19 +54,28 @@ class RegistrationSuccessfulController extends Controller
         $Return['search_start_registration_booking_date'] = (!empty(session('start_registration_booking_date'))) ?  session('start_registration_booking_date') : '';
         $Return['search_end_registration_booking_date'] = (!empty(session('end_registration_booking_date'))) ? session('end_registration_booking_date'): '';
         
-        $CountRows = RegistrationSuccessfulModel::get_count($event_id,$Return);
+       if($event_id >0){
+        
+            $CountRows = RegistrationSuccessfulModel::get_count_event_registration($event_id,$Return);
+            $PageNo = request()->input('page', 1);
+            $Limit = config('custom.per_page');
+            // $Limit = 3;
+            $Return['Offset'] = ($PageNo - 1) * $Limit;
+            $Return["Registration_successful"] = RegistrationSuccessfulModel::get_all_event_registration($Limit,$event_id,$Return);
+           
+        }else{
+            
+            $CountRows = RegistrationSuccessfulModel::get_all_count($event_id,$Return);
+            $PageNo = request()->input('page', 1);
+            $Limit = config('custom.per_page');
+            $Return['Offset'] = ($PageNo - 1) * $Limit;   
+            $Return["Registration_successful"] = RegistrationSuccessfulModel::get_all($Limit,$event_id,$Return);
+          
+        }    
 
-        $PageNo = request()->input('page', 1);
-        $Limit = config('custom.per_page');
-        // $Limit = 3;
-        $Return['Offset'] = ($PageNo - 1) * $Limit;
-
-
-        $Return["Registration_successful"] = RegistrationSuccessfulModel::get_all($Limit,$event_id,$Return);
         $Return['event_id']   = $event_id;
         $Return['Paginator'] = new LengthAwarePaginator($Return["Registration_successful"] , $CountRows, $Limit, $PageNo);
         $Return['Paginator']->setPath(request()->url());
-
       
         return view('registration_successful.list',$Return);
     }

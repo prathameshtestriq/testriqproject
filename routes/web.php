@@ -29,6 +29,7 @@ use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\OrganiserController;
 
 //--------------------------------------------
 
@@ -111,16 +112,15 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::get('/event/remove_event/{id}', [EventController::class, 'remove_event'])->name('remove_event');
     Route::get('/event/clear_search', [EventController::class, 'clear_search'])->name('clear_search_event');
   
-    //  EVENT Participants 
-    Route::match(['get', 'post'],'/participants_event/{event_id}', [EventParticipantsController::class, 'index'])->name('participants_event_index');
+    // EVENT Participants 
+    Route::match(['get', 'post'],'/participants_event/{event_id?}', [EventParticipantsController::class, 'index'])->name('participants_event_index');
     Route::match (['get'],'/participants_event/{event_id}/delete/{id}', [EventParticipantsController::class, 'delete_participants_event'])->name('delete_participants_event');
     Route::get('/participants_event/{event_id}/clear_search', [EventParticipantsController::class, 'clear_search'])->name('clear_search_participants_event');
     Route::match(['get','post'],'participants_event/{event_id}/export_download',[EventParticipantsController::class,'export_event_participants'])->name('export_event_participants');
     Route::match(['get','post'],'participants_event/{event_id}/export_revenue',[EventParticipantsController::class,'export_participants_revenue'])->name('export_participants_revenue');
-    
 
     // EVENT Registration
-    Route::match(['get', 'post'], '/registration_successful/{event_id}', [RegistrationSuccessfulController::class, 'index'])->name('registration_successful_index');
+    Route::match(['get', 'post'], '/registration_successful/{event_id?}', [RegistrationSuccessfulController::class, 'index'])->name('registration_successful_index');
     Route::get('/registration_successful/{event_id}/clear_search', [RegistrationSuccessfulController::class, 'clear_search'])->name('clear_search_registration_successful');
     Route::match(['get','post'],'/registration_successful/{event_id}/export_registration',[RegistrationSuccessfulController::class,'export_registration_successful'])->name('export_registration_successful');
     
@@ -189,5 +189,8 @@ Route::group(['middleware' => ['checkLogin']], function () {
     // Role Controller
     Route::get('/role_access/{id}', [RoleController::class, 'index'])->name('role_master.index');
     Route::post('/role_access/{id}', [RoleController::class, 'update'])->name('role_master.update');
+
+    // Organiser
+    Route::match(['get', 'post'], '/organiser_master', [OrganiserController::class, 'index'])->name('organiser_index');
 
 });

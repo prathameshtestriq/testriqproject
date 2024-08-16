@@ -16,6 +16,12 @@
                                 <div class="col-sm-12">
                                     <h2 class="content-header-title float-left mb-0">Participants List</h2>
                                 </div>
+
+                                <?php if($event_id != 0){ ?>
+                                     <h5 class="content-header-title float-left mb-0 ml-2"><b>Event Name:-</b> {{$event_name[0]->name}}</h5>
+                                <?php } ?>
+
+                                <!-- <h5 class="content-header-title float-left mb-0 ml-2"><b>Event Name:-</b> {{$event_name[0]->name}}</h5> -->
                             </div>
                         </div>
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
@@ -170,8 +176,13 @@
                                                     @if (!empty($event_participants))
                                                       <a href="{{ url('participants_event/'.$event_id.'/export_download') }}" class="btn btn-danger text-white ">Download </a>
                                                     @endif
+                                                    <?php  if($event_id > 0){ ?>
                                                     <a href="{{ url('/event') }}"  class="btn btn-primary ">
                                                         <span>Back</span></a>
+                                                    <?php  }else{ ?>    
+                                                        <a href="{{ url('/dashboard') }}"  class="btn btn-primary ">
+                                                            <span>Back</span></a>
+                                                    <?php } ?>
                                                 </div>    
                                                   
                                             </div>
@@ -191,10 +202,12 @@
                                         <th class="text-center">Transaction/Order Id</th>
                                         <th class="text-center">Registration Id</th>
                                         <th class="text-center">Payu Id</th>
+                                        <th class="text-center">Amount</th>
                                         <th class="text-center">Transaction/Payment Status</th>
                                         <th class="text-center">Email Address</th>
                                         <th class="text-center">Mobile Number</th>
                                         <th class="text-center">Category Name</th>
+                                        <th class="text-center">View</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -217,6 +230,7 @@
                                                 <td class="text-left">{{ $val->Transaction_order_id }}</td>
                                                 <td class="text-left">{{ $val->registration_id }}</td>
                                                 <td class="text-left">{{ $val->payu_id }}</td>
+                                                <td class="text-left">{{ $val->amount }}</td>
                                                 <td class="text-left">
                                                     <?php
                                                  {{ 
@@ -237,7 +251,11 @@
                                                 <td class="text-left">
                                                  {{ $val->category_name }}
                                                 </td>
-                                             
+                                                 <td>
+                                                    <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showDetails({{ $val->id }},{{$val->event_id}})" title="show" data-bs-toggle="modal" data-bs-target="#exampleModallaptop1">
+                                                        <i class="fa fa-eye btn btn-success btn-sm "></i>
+                                                    </a>
+                                                 </td>
                                               
                                                
                                                 <td>
@@ -260,6 +278,27 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="modal fade" id="participant_details_modal" tabindex="-1" role="dialog" aria-labelledby="participant_details_modal" aria-hidden="true" >
+                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                              <div class="modal-content">
+                                <div class="col-xl-12">
+                                  <div class="card social-profile mb-0">
+                      
+                                    <div class="card-body" >
+                                        <form class="form" id="model" action="" method="post">
+                                            @csrf
+                                            <div class="card-body" id="participant_details_body">
+                                            
+                                            </div> 
+                                        </form>
+                                    </div> 
+                                    <br>
+                                  </div>
+                                </div>  
+                              </div>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
@@ -271,6 +310,7 @@
     </section>
 
     <script>
+            
             function remove_type(iId,event_id) {
                 // alert(iId);
                 var url = '<?php echo url('/participants_event') ?>';
@@ -284,6 +324,39 @@
                 }
             }
 
+
+            function showDetails(attendance_booking_id,event_id) {
+               
+                var Url= '<?php echo url('participants_event') ?>';
+                url = Url + '/'+ event_id + '/view/' + attendance_booking_id;
+                // alert(url);
+                // var url;
+                $.ajax({
+                    url:  url ,
+                    //  alert(url);
+                    beforeSend: function() {
+                        $('#loader').show();
+                    },
+                    // return the result
+                    success: function(result) {
+                        // console.log(result);
+
+                        $('#participant_details_body').html(result);
+                        $('#participant_details_modal').modal("show");
+                    }
+                    , complete: function() {
+                        $('#loader').hide();
+                    }
+                    , error: function(jqXHR, testStatus, error) {
+                        console.log(error);
+                        alert("Page " + url + " cannot open. Error:" + error);
+                        $('#loader').hide();
+                    }
+                    , timeout: 8000
+                })
+            }
+
     </script>
+    
 
 @endsection

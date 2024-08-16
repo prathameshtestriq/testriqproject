@@ -73,7 +73,7 @@
                             <input type="hidden" name="form_type" value="search_remittance_management">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2">
                                                 <label for="form-control">Remittance Name:</label>
@@ -118,9 +118,28 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-4 mt-2">
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control"> Events</label>
+                                                <select id="event" name="event" class="form-control select2 form-control">
+                                                    <option value="">Select  Event</option>
+                                                    <?php 
+                                                        foreach ($EventsData as $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('event',$search_event_id) == $value->id){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-sm-2 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_remittance_name) || !empty($search_start_remittance_date) || !empty($search_end_remittance_date) || ($search_remittance_status != ''))
+                                                @if (!empty($search_remittance_name) || !empty($search_start_remittance_date) || !empty($search_end_remittance_date) || ($search_remittance_status != '')||!empty($search_event_id))
                                                     <a title="Clear" href="{{ url('/remittance_management/clear_search') }}"
                                                         type="button" class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -129,16 +148,18 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @if (!empty($Remittance))
-                                    <div class="col-sm-3 mt-2">
-                                        <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right ml-2 ">Download </a>
-
-                                    </div>
-                                @endif   
-                                    <div class="col-sm-1 mt-2">
+                                
+                                    <div class="col-sm-12 mt-2 float-right">
+                                        {{-- @if (!empty($Remittance))  --}}
+                                            <div class="float-right">
+                                                <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right ml-2 ">Download </a>
+                                            </div>
+                                        {{-- @endif --}}
+                                        <div class="float-right ml-3">
                                         <a href="{{ url('remittance_management/add') }}"
-                                            class="btn btn-outline-primary float-right">
+                                        class="btn btn-outline-primary float-right">
                                             <i data-feather="plus"></i><span>Add </span></a>
+                                        </div>    
                                     </div>
                                    
                                 </div>
@@ -173,6 +194,7 @@
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Remittance Name</th>
                                         <th class="text-center">Remittance Date</th>
+                                        <th class="text-center">Event Name</th>
                                         <th class="text-center">Gross Amount</th>
                                         <th class="text-center">Service Charge</th>
                                         <th class="text-center">SGST</th>
@@ -198,6 +220,7 @@
                                             <td class="text-center">{{ $i }}</td>
                                             <td class="text-left">{{ $val->remittance_name }}</td>
                                             <td class="text-center">{{  date('d-m-Y H:i:s',$val->remittance_date) }}</td>
+                                            <td class="text-left">{{ $val->event_name }}</td>
                                             <td class="text-center">{{ number_format($val->gross_amount, 2)  }}</td>
                                             <td class="text-center">{{ number_format($val->service_charge,2) }}</td>
                                             <td class="text-center">{{ number_format($val->Sgst,2) }}</td>

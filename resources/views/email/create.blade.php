@@ -345,13 +345,11 @@
         function hideshow_event_receiver(value){
             //1=>All   
             if(value == '1'){
-                $('.event').show();
-                $('.event').next(".select2-container").show();
+                $('.event').hide();
+                $('.event').next(".select2-container").hide();
                 $('.receiver').show();
                 $('.receiver').next(".select2-container").show();
             }else{
-                $('.event').hide();
-                $('.event').next(".select2-container").hide();
                 $('.receiver').hide();
                 $('.receiver').next(".select2-container").hide();
             }
@@ -359,15 +357,8 @@
             if(value == '2'){
                 $('.email').show();
                 $('.email').next(".select2-container").show();
-
-                $('.event').hide();
-                $('.event').next(".select2-container").hide();
-                $('.receiver').hide();
-                $('.receiver').next(".select2-container").hide();
                
             }else{
-                 $('.event').hide();
-                $('.event').next(".select2-container").hide();
                 $('.email').hide();
                 $('.email').next(".select2-container").hide();
             }
@@ -375,15 +366,7 @@
             if(value == '3'){
                 $('.email_file').show();
                 $('.email_file').next(".select2-container").show();
-
-                $('.event').hide();
-                $('.event').next(".select2-container").hide();
-                $('.receiver').hide();
-                $('.receiver').next(".select2-container").hide();
-
             }else{
-                $('.event').hide();
-                $('.event').next(".select2-container").hide();
                 $('.email_file').hide();
                 $('.email_file').next(".select2-container").hide();
             }

@@ -187,7 +187,7 @@ if (!empty($edit_data)) {
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="start_time">Start Date<span style="color:red;">*</span></label>
-                                                <input type="datetime-local" id="start_time" class="form-control"
+                                                <input type="date" id="start_time" class="form-control"
                                                     placeholder="Start Date" name="start_time"
                                                     value="{{ old('start_time', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d\TH:i:s') : '') }}" 
                                                     autocomplete="off" />
@@ -201,7 +201,7 @@ if (!empty($edit_data)) {
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="end_time">End Date<span style="color:red;">*</span></label>
-                                                <input type="datetime-local" id="end_time" class="form-control"
+                                                <input type="date" id="end_time" class="form-control"
                                                     placeholder="End Date" name="end_time"
                                                     value="{{ old('end_time', $end_time ? \Carbon\Carbon::parse($end_time)->format('Y-m-d\TH:i') : '') }}"  
                                                     autocomplete="off" />

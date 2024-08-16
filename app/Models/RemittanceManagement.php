@@ -53,6 +53,10 @@ class RemittanceManagement extends Model
             $s_sql .= ' AND (LOWER(rm.active) LIKE \'%' . strtolower($a_search['search_remittance_status']) . '%\')';
         } 
 
+        if(isset( $a_search['search_event_id'])){
+            $s_sql .= ' AND (LOWER(rm.event_id) LIKE \'%' . strtolower($a_search['search_event_id']) . '%\')';
+        } 
+
         $CountsResult = DB::select($s_sql);
         if (!empty($CountsResult)) {
             $count = $CountsResult[0]->count;
@@ -62,9 +66,9 @@ class RemittanceManagement extends Model
     }
 
     public static function get_all_remittance($limit, $a_search = array()){
-        $a_return = [];
+        $a_return = []; 
 
-        $s_sql = 'SELECT * FROM remittance_management rm where 1=1';
+        $s_sql = 'SELECT *,(SELECT name FROM events as e where e.id =rm.event_id ) AS event_name FROM remittance_management rm where 1=1';
 
         if (!empty($a_search['search_remittance_name'])) {
             $s_sql .= ' AND LOWER(rm.remittance_name) LIKE \'%' . strtolower($a_search['search_remittance_name']) . '%\'';
@@ -85,6 +89,10 @@ class RemittanceManagement extends Model
         if(isset( $a_search['search_remittance_status'])){
             $s_sql .= ' AND (LOWER(rm.active) LIKE \'%' . strtolower($a_search['search_remittance_status']) . '%\')';
         } 
+
+        if(isset( $a_search['search_event_id'])){
+            $s_sql .= ' AND (LOWER(rm.event_id) LIKE \'%' . strtolower($a_search['search_event_id']) . '%\')';
+        } 
      
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
@@ -100,6 +108,7 @@ class RemittanceManagement extends Model
         $ssql = 'UPDATE remittance_management SET 
         remittance_name = :remittance_name,
         remittance_date = :remittance_date, 
+        event_id = :event_id,
         gross_amount = :gross_amount, 
         service_charge = :service_charge, 
         Sgst = :Sgst, 
@@ -114,6 +123,7 @@ class RemittanceManagement extends Model
         $bindings = array(
             'remittance_name' => $request->remittance_name,
             'remittance_date' => strtotime($request->remittance_date),
+            'event_id' => $request->event,
             'gross_amount' => $request->gross_amount,
             'service_charge' => $request->service_charge,
             'Sgst' => $request->Sgst,
@@ -133,16 +143,17 @@ class RemittanceManagement extends Model
 	{
        
         $ssql = 'INSERT INTO remittance_management(
-            remittance_name,remittance_date,gross_amount,service_charge,
+            remittance_name,remittance_date,event_id,gross_amount,service_charge,
             Sgst,Cgst,Igst,deductions,Tds,amount_remitted,bank_reference)
                 VALUES (
-            :remittance_name,:remittance_date,:gross_amount,:service_charge,
+            :remittance_name,:remittance_date,:event_id,:gross_amount,:service_charge,
             :Sgst,:Cgst,:Igst,:deductions,:Tds,:amount_remitted,:bank_reference
             )';
         
         $bindings = array(
             'remittance_name' => $request->remittance_name,
             'remittance_date' => strtotime($request->remittance_date),
+            'event_id' => $request->event,
             'gross_amount' => $request->gross_amount,
             'service_charge' => $request->service_charge,
             'Sgst' => $request->Sgst,

@@ -25,9 +25,9 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
         $start_remittance_date = Session::has('start_remittance_date') ? Session::get('start_remittance_date') : '';
         $end_remittance_date = Session::has('end_remittance_date') ? Session::get('end_remittance_date') : '';
         $remittance_status = Session::has('remittance_status') ? Session::get('remittance_status') : '';
-       
+        $event_id = Session::has('event') ? Session::get('event') : '';
        // Build the SQL query with search criteria
-       $s_sql = 'SELECT * FROM remittance_management rm where 1=1';
+       $s_sql = 'SELECT *,(SELECT name FROM events as e where e.id =rm.event_id ) AS event_name FROM remittance_management rm where 1=1';
 
        if (!empty($remittance_name)) {
            $s_sql .= ' AND LOWER(rm.remittance_name) LIKE \'%' . strtolower($remittance_name) . '%\'';
@@ -38,6 +38,9 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
            $s_sql .= " AND rm.remittance_date >= "." $startdate";
            // dd($sSQL);
        }
+       if(isset( $event_id)){
+            $s_sql .= ' AND (LOWER(rm.event_id) LIKE \'%' . strtolower($event_id) . '%\')';
+        } 
 
        if(!empty($end_remittance_date)){
            $endDate = strtotime($end_remittance_date);
@@ -57,6 +60,7 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
             $excelData[] = array(
                 'REMITTANCE NAME' => $val->remittance_name ,
                 'REMITTANCE DATE' => date('d-m-Y H:i:s', $val->remittance_date),
+                'EVENT NAME' => $val->event_name,
                 'GROSS AMOUNT' => $val->gross_amount,
                 'SERVICE CHARGE' => $val->service_charge,
                 'SGST' => $val->Sgst,
@@ -81,6 +85,7 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
             [
                 'Remittance Name',
                 'Remittance Date',
+                'Event Name',
                 'Gross Amount',
                 'Service Charge',
                 'Sgst',
@@ -101,7 +106,7 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
                 $sheet = $event->sheet->getDelegate();
 
                 // Set horizontal alignment for all cells
-                $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal('left');
+                $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal('left');
 
                 // Merge cells in the header
                 // $headerMergeRanges = ['A1:L1', 'A2:L2', 'A3:L3'];
@@ -116,7 +121,7 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
                 // }
 
                 // Apply font styling to header
-                $sheet->getStyle('A1:L1')->applyFromArray([
+                $sheet->getStyle('A1:M1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                     ]

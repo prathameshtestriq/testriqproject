@@ -186,6 +186,71 @@ class EventDashboardController extends Controller
                 $TotalPageViews = DB::select($SQL8, array('event_id' => $EventId));
                 $ResponseData['TotalPageViews'] = (count($TotalPageViews) > 0) ? $TotalPageViews[0]->TotalPageViews : 0;
 
+                // New added - Remittance Amount
+                $Sql9 = "SELECT gross_amount FROM remittance_management WHERE event_id = :event_id AND active = 1";
+                $RemittanceData = DB::select($Sql9, array('event_id' => $EventId));
+                $ResponseData['RemittanceAmount'] = !empty($RemittanceData) ? $RemittanceData[0]->gross_amount : 0;
+                // dd($ResponseData['RemittanceAmount']);
+
+                //------------
+
+                $sql = "SELECT e.event_id,e.cart_details FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id";
+                
+                $sql .= " WHERE b.event_id = :event_id AND e.transaction_status IN(1,3)";
+                
+                if (!empty($FromDate) && empty($ToDate)) {
+                    $sql .= " AND b.booking_date >= " . $FromDate;
+                }
+                if (empty($FromDate) && !empty($ToDate)) {
+                    $sql .= " AND b.booking_date <= " . $ToDate;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
+                }
+
+                $sql .= " ORDER BY a.id DESC";
+                // dd($sql);
+                $AttendeeData = DB::select($sql, array('event_id' => $EventId));
+                // dd($AttendeeData);
+                
+                $Applied_Coupon_Amount = $Organiser_amount = $Payment_Gateway_GST = $Payment_gateway_charges = $total_payment_gateway = $Platform_fee = $Platform_Fee_GST = $Convenience_fee = $Convenience_Fee_GST = 0;
+                if(!empty($AttendeeData)){
+                    foreach($AttendeeData as $res){
+                        $card_details_array = json_decode($res->cart_details);
+
+                        // Applied Coupon Amount
+                        $Applied_Coupon_Amount = isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount) ? ($card_details_array[0]->appliedCouponAmount * $card_details_array[0]->count)  : '0.00';  
+                        
+                        if(isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount)){
+                            $Organiser_amount += isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? ($card_details_array[0]->to_organiser - $card_details_array[0]->appliedCouponAmount) : 0;
+                        }else{
+                            $Organiser_amount += isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? $card_details_array[0]->to_organiser : 0;
+                        }
+
+                        $Payment_Gateway_GST += isset($card_details_array[0]->Payment_Gateway_GST_18) && !empty($card_details_array[0]->Payment_Gateway_GST_18) ? ($card_details_array[0]->Payment_Gateway_GST_18 * $card_details_array[0]->count)  : '0.00';
+                        $Payment_gateway_charges += isset($card_details_array[0]->Payment_Gateway_Charges) && !empty($card_details_array[0]->Payment_Gateway_Charges) ? ($card_details_array[0]->Payment_Gateway_Charges * $card_details_array[0]->count)  : '0.00';
+
+                       
+                        $Platform_fee += isset($card_details_array[0]->Platform_Fee) && !empty($card_details_array[0]->Platform_Fee) ? ($card_details_array[0]->Platform_Fee * $card_details_array[0]->count)  : '0.00';
+                        $Platform_Fee_GST += isset($card_details_array[0]->Platform_Fee_GST_18) && !empty($card_details_array[0]->Platform_Fee_GST_18) ? ($card_details_array[0]->Platform_Fee_GST_18 * $card_details_array[0]->count)  : '0.00';
+
+                        $Convenience_fee += isset($card_details_array[0]->Convenience_Fee) && !empty($card_details_array[0]->Convenience_Fee) ? 
+                                        ($card_details_array[0]->Convenience_Fee * $card_details_array[0]->count)  : '0.00';
+                        $Convenience_Fee_GST += isset($card_details_array[0]->Convenience_Fee_GST_18) && !empty($card_details_array[0]->Convenience_Fee_GST_18) ? ($card_details_array[0]->Convenience_Fee_GST_18 * $card_details_array[0]->count)  : '0.00';
+                    }
+                }
+
+                $total_payment_gateway = ($Payment_Gateway_GST + $Payment_gateway_charges);
+                $total_convenience_fee = ($Platform_fee + $Platform_Fee_GST + $Convenience_fee + $Convenience_Fee_GST);
+
+                // dd($Organiser_amount);
+                $ResponseData['OrganiserAmount'] = !empty($Organiser_amount) ? $Organiser_amount : 0;
+                $ResponseData['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $total_payment_gateway : 0;
+                $ResponseData['TotalConvenience'] = !empty($total_convenience_fee) ? number_format($total_convenience_fee,2) : 0;
+                
+
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
             } else {

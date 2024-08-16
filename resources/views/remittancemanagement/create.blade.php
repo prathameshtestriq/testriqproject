@@ -105,6 +105,29 @@
                                             </div>
                                         </div>
 
+                                        <div class="col-sm-6 col-12">
+                                            <label for="form-control"> Events<span style="color:red;">*</span></label>
+                                            <select id="event" name="event" class="form-control select2 form-control">
+                                                <option value="">Select  Event</option>
+                                                <?php 
+                                                    foreach ($EventsData as $value)
+                                                    {
+                                                        $selected = '';
+                                                        if(old('event',$event_id) == $value->id){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                        <?php 
+                                                    }
+                                                ?>
+                                            </select>
+                                            <h5><small class="text-danger" id="event_err"></small></h5>
+                                                @error('event')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                        </div>
+
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="gross_amount">Gross Amount <span style="color:red;">*</span></label>

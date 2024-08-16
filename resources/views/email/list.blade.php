@@ -85,7 +85,7 @@
                                         {{-- <th class="text-left">Message</th> --}}
                                         <th class="text-left">Recipient Type</th>
                                         <th class="text-left">Recipient Count</th>
-                                        <th class="text-left">Email</th>
+                                        {{-- <th class="text-left">Email</th> --}}
                                         <th class="text-left">Sent Email Date</th>
                                         <th class="text-left">status</th>
                                     </tr>
@@ -102,7 +102,7 @@
                                         <td class="text-left">{{ !empty($val->subject)?$val->subject :'-' }}</td>
                                         <td class="text-left">{{ !empty($val->recipient_type)?$val->recipient_type : '-'}}</td>
                                         <td class="text-left">{{ !empty($val->recipient_count)?$val->recipient_count:'-'  }}</td>
-                                        <td class="text-left">{{ !empty($val->email)?$val->email:'-' }}</td>
+                                        {{-- <td class="text-left">{{ !empty($val->email)?$val->email:'-' }}</td> --}}
                                         <td class="text-center">{{ date('d-m-Y H:i:s',$val->sent_date_time) }}</td>
                                         <td class="text-center">
                                             <div class="custom-control custom-switch custom-switch-success">

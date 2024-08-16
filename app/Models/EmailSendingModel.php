@@ -18,7 +18,7 @@ class EmailSendingModel extends Model
 
     public static function add_email($request,$email)
     {
-        
+        // dd($request->all());
         // Get the counts for different recipient types
         // $s_sql = 'SELECT count(u.id) As countId FROM users u WHERE u.is_active = 1 AND u.is_deleted = 0';
         // $user_count = DB::select($s_sql,array());

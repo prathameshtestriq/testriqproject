@@ -272,6 +272,11 @@ class UserController extends Controller
         $health_details_percentage = ($completed_health_details / $total_health_details) * 25;
         $TotalPercentage += $health_details_percentage;
 
+        $SQL = 'UPDATE users SET profile_completion_percentage =:profile_completion_percentage WHERE id=:id';
+        $Bindings = array('profile_completion_percentage' => $TotalPercentage,'id' => $UserId);
+        // dd( $Bindings);
+        DB::update($SQL, $Bindings);
+
         return number_format($TotalPercentage, 2);
     }
 

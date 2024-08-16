@@ -185,7 +185,7 @@
                                                 </select>
                                             </div>
                                          
-                                            <div class="col-sm-3 mt-2">
+                                            <div class="col-sm-9 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_name) || !empty($search_email_id) || !empty($search_mobile) || !empty($search_state) ||!empty($search_city) || !empty($search_gender) || ($search_status != '') ||(!empty($search_rows)) )
                                                     <a title="Clear" href="{{ url('user/clear_search') }}"
@@ -202,7 +202,7 @@
                                                 @endif 
                                               
                                                 <a href="{{ url('/user/add_edit') }}" class="btn btn-outline-primary float-right">
-                                                    <i data-feather="plus"></i><span>Add User</span></a> 
+                                                    <i data-feather="plus"></i><span>Add User</span></a> &nbsp;
                                             </div>
                                         </div>
                                     </div>
@@ -233,7 +233,7 @@
                                         <th class="text-left">State</th>
                                         <th class="text-left">City</th>
                                         <th class="text-center">Status</th>
-                                        <th class="text-left">Percentage</th>
+                                        <th class="text-left">Profile Completion Percentage</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -274,7 +274,7 @@
                                                         </label>
                                                     </div>
                                                 </td>
-                                                <td></td> 
+                                                <td class="text-center">{{ !empty($val->profile_completion_percentage) ? $val->profile_completion_percentage.'%' : '' }}</td> 
                                                
 
                                                 <td>

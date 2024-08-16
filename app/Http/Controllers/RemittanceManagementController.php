@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\RemittanceManagementExport;
+use App\Imports\RemittanceDetailsImport;
 use App\Models\RemittanceManagement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class RemittanceManagementController extends Controller
         session::forget('start_remittance_date');
         session::forget('end_remittance_date');
         session::forget('remittance_status');
+        session::forget('event');
         return redirect('/remittance_management');
     }
 
@@ -28,12 +30,15 @@ class RemittanceManagementController extends Controller
         $a_return['search_start_remittance_date'] = '';
         $a_return['search_end_remittance_date'] = '';
         $a_return['search_remittance_status'] = '';
+        $a_return['search_event_id'] = '';
+        
 
         if (isset($request->form_type) && $request->form_type == 'search_remittance_management') {
             session(['remittance_name' => $request->remittance_name]);
             session(['start_remittance_date' => $request->start_remittance_date]);
             session(['end_remittance_date' => $request->end_remittance_date]);
             session(['remittance_status' => $request->remittance_status]);
+            session(['event' => $request->event]);
 
             return redirect('/remittance_management');
         }
@@ -42,7 +47,7 @@ class RemittanceManagementController extends Controller
         $a_return['search_end_remittance_date'] = (!empty(session('end_remittance_date'))) ? session('end_remittance_date'): '';
         $remittance_status = session('remittance_status');
         $a_return['search_remittance_status'] = (isset($remittance_status) && $remittance_status != '') ? $remittance_status : '';
-   
+        $a_return['search_event_id'] = (!empty(session('event'))) ? session('event'): '';
 
         $CountRows = RemittanceManagement::get_count($a_return);
         // dd($CountRows);
@@ -56,6 +61,9 @@ class RemittanceManagementController extends Controller
     //  dd($a_return["Remittance"][0]);
         $a_return['Paginator'] = new LengthAwarePaginator($a_return['Remittance'], $CountRows, $Limit, $PageNo);
         $a_return['Paginator']->setPath(request()->url());
+
+        $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
+        $a_return['EventsData'] = DB::select($SQL, array());
 
         return view('remittancemanagement.list',$a_return);
     }
@@ -72,12 +80,14 @@ class RemittanceManagementController extends Controller
         $a_return['Tds'] = '';
         $a_return['amount_remitted'] = '';
         $a_return['bank_reference'] = '';
+        $a_return['event_id'] = '';
        
      
 
         if (isset($request->form_type) && $request->form_type == 'add_edit_remittance_management') {
             $rules = [
-                'remittance_name' => 'required|unique:remittance_management,remittance_name,' . $iId . 'id',
+                // 'remittance_name' => 'required|unique:remittance_management,remittance_name,' . $iId . 'id',
+                'remittance_name' => 'required|unique:remittance_management,remittance_name,'.$iId.',id',
                 'remittance_date' => 'required',
                 'gross_amount' => 'required|numeric',
                 'service_charge' => 'required|numeric',
@@ -87,7 +97,8 @@ class RemittanceManagementController extends Controller
                 'deductions' => 'required|numeric',
                 'Tds' => 'required|numeric',
                 'amount_remitted' => 'required|numeric',
-                'bank_reference' => 'required'
+                'bank_reference' => 'required',
+                'event'=> 'required'
             ];
 
             $request->validate($rules);
@@ -106,14 +117,16 @@ class RemittanceManagementController extends Controller
         }else{
             if($iId > 0){
             //   #SHOW EXISTING DETAILS ON EDIT
-              $sSQL = 'SELECT id,remittance_name,remittance_date,gross_amount,service_charge,Sgst,Cgst,Igst,deductions,Tds, amount_remitted, bank_reference FROM remittance_management WHERE id=:id';
+              $sSQL = 'SELECT id,remittance_name,remittance_date,gross_amount,service_charge,Sgst,Cgst,Igst,deductions,Tds, amount_remitted, bank_reference,event_id FROM remittance_management WHERE id=:id';
               $remittance_management_details = DB::select($sSQL, array( 'id' => $iId));
               $a_return = (array)$remittance_management_details[0];
-            //   dd($a_return );
+            //   dd(  $remittance_management_details);
             }
           }      
         
-          
+        $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
+        $a_return['EventsData'] = DB::select($SQL, array());
+       
         return view('remittancemanagement.create',$a_return);
     }
 
@@ -129,8 +142,25 @@ class RemittanceManagementController extends Controller
         return $aReturn;
     }
     
+    //-------------- remittance Export ---------------------
     public function export_remittance_management(){
-        return Excel::download(new RemittanceManagementExport(), ' Remittance_Report.xlsx');
+        $filename = "remittance_report_" . time();
+        return Excel::download(new RemittanceManagementExport(),  $filename.'.xlsx');
     }
+
+      //-------------- remittance import ---------------------
+      public function import_remittance_management(Request $request)
+      {
+        $request->validate([
+            'rem_file' => 'required'
+        ]);
+        $AllowedFormats = array('csv','xlsx','xls');
+        if(in_array(request()->file('rem_file')->getClientOriginalExtension(), $AllowedFormats)){
+            Excel::import(new RemittanceDetailsImport(), request()->file('rem_file'), \Maatwebsite\Excel\Excel::XLSX);
+            return redirect()->route('remittance_management_index');
+        }else{
+            return redirect()->route('remittance_management_index')->with('error', 'Invalid file format. Allowed formats '.implode(', ',$AllowedFormats) );   
+        }    
+      } 
     
 }
