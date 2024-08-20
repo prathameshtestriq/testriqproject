@@ -1834,6 +1834,8 @@ class UserController extends Controller
                         DB::insert($insert_SQL, $Bindings);
                         $last_inserted_id = DB::getPdo()->lastInsertId();
                         //dd($last_inserted_id);
+                        $Email = new Emails();
+                        $Email->send_OrganiserUser_mail($email, $firstname, $lastname);
 
                         $message = 'Organising user added successfully';
                         $ResposneCode = 200;

@@ -408,6 +408,9 @@ class LoginController extends Controller
             $field = 'Password';
         }
 
+        //------------------- Login As Organiser
+        $LoginAsOrganiser = isset($aPost['LoginAsOrganiser']) && !empty($aPost['LoginAsOrganiser']) ? $aPost['LoginAsOrganiser'] : 0;
+       //  dd($LoginAsOrganiser);
         if (!$empty) {
             // Check Multple Athlete Exists or not with same email or mobile?
             $sql1 = 'SELECT id FROM users WHERE email = :email';
@@ -415,7 +418,13 @@ class LoginController extends Controller
             // dd(count($oUser));
             if (count($oUser) == 1) {
                 $sql2 = 'SELECT * FROM users WHERE id=:id AND password =:password';
-                $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => md5($aPost['Password'])));
+
+                if(!empty($LoginAsOrganiser)){
+                    $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => $aPost['Password'])); 
+                }else{
+                     $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => md5($aPost['Password'])));
+                }
+               
                 // dd($aResult);
                 if ($aResult) {
                     if ($aResult[0]->is_deleted == 0) {

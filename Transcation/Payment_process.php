@@ -1,9 +1,8 @@
 <?php 
 // Live server file //
-
 //-------------------
 // Database connection parameters
-$flag = 2; // prime - 1 / live - 2 / local - 3 
+$flag = 1; // prime - 1 / live - 2 / local - 3 
 
 if($flag == 1){                   // prime
     $servername = 'localhost'; 
@@ -19,7 +18,7 @@ if($flag == 1){                   // prime
     $servername = 'localhost'; 
     $username   = 'root'; 
     $password   = '12345'; 
-    $database   = 'Races2.0_Web'; 
+    $database   = 'Races2.0_Web_Live'; 
 }
 
 $conn = new mysqli($servername, $username, $password, $database);
@@ -29,7 +28,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-//echo '<pre>'; print_r($_POST); die;
+// echo '<pre>'; print_r($_POST); die;
 
     // Transcation data for insertion
     	$mihpayid = $_POST['mihpayid'];
@@ -129,9 +128,10 @@ if ($conn->connect_error) {
             "error" => $error,
             "error_Message" => $error_Message
         );
-        // print_r($new_array); die;
+       
         $jsonData = json_encode($transcation_array);
-    
+
+       // print_r($transcation_array); die;
 	$insert_sql2 = "INSERT INTO payment_response_log(txnid, response_data, payment_status) VALUES ('$txnid', '$jsonData', '$status')";
 	$aResult = mysqli_query($conn, $insert_sql2);	
     
@@ -140,7 +140,6 @@ if ($conn->connect_error) {
     // $amount = '1.00';
     // $jsonData = 'testdata';
     // $status = 'failure';
-
     //-------- event details
     // $sel_Sql = "SELECT event_id FROM booking_payment_details WHERE txnid = '$txnid' ";
     $sel_Sql = "SELECT id,event_id FROM booking_payment_details WHERE txnid = '$txnid' ";
@@ -154,8 +153,8 @@ if ($conn->connect_error) {
       }
     }
 
-//$insert_sql2 = "INSERT INTO temp_booking_payment_log(event_id, txnid, mihpayid, amount, post_data, created_by) VALUES ('1', '$txnid', '$mihpayid', '$amount', '$jsonData', '1')";
-//$aResult = mysqli_query($conn, $insert_sql2);
+    //$insert_sql2 = "INSERT INTO temp_booking_payment_log(event_id, txnid, mihpayid, amount, post_data, created_by) VALUES ('1', '$txnid', '$mihpayid', '$amount', '$jsonData', '1')";
+    //$aResult = mysqli_query($conn, $insert_sql2);
 
     //----------- log entry --------------
     $response_datetime = date('Y-m-d H:i:s');
@@ -177,6 +176,53 @@ if ($conn->connect_error) {
 	// SQL query for insertion
 	//$sql = "INSERT INTO new_payment (status, post_data) VALUES ('$status', '$jsonData')";
 	$sql = "UPDATE booking_payment_details SET payment_status = '$status', post_data = '$jsonData', payment_mode = '$mode' WHERE txnid = '$txnid' ";
+
+    //-------------- applied coupon for end coupon flag to check payment success/faild 
+    // echo $transaction_status; die;
+    // echo $transaction_status; die;
+    if($transaction_status == 2){
+
+        $sel_Sql1 = "SELECT AllTickets FROM temp_booking_ticket_details WHERE booking_pay_id = ".$booking_pay_id." ";
+        $aResult1 = mysqli_query($conn, $sel_Sql1);
+    
+        $appliedCouponId =  $IsDiscountOneTime = 0;
+        if ($aResult1->num_rows > 0) {
+            while($res = $aResult1->fetch_assoc()) {
+
+                // $tikcet_array = json_decode($res['AllTickets']);
+                $dataArray = json_decode($res['AllTickets'], true);
+                $appliedCouponId = (!empty($dataArray) && isset($dataArray[0]['appliedCouponId'])) ? $dataArray[0]['appliedCouponId'] : 0;
+                // echo $appliedCouponId ; die;
+                //-----------
+                $sel_Sql2 = "SELECT id FROM event_booking WHERE booking_pay_id = ".$booking_pay_id." AND transaction_status IN(0,2) "; //AND transaction_status IN(1,3)
+                $aResult2 = mysqli_query($conn, $sel_Sql2);
+
+                while($res1 = $aResult2->fetch_assoc()){
+                    // print_r($res1); die;
+                    if(!empty($res1)){
+                        $sel_Sql3 = "SELECT discount_type FROM event_coupon_details WHERE event_coupon_id = ".$appliedCouponId." ";
+                        $aResult3 = mysqli_query($conn, $sel_Sql3);
+                        //$coupon_details = $aResult3->fetch_assoc();
+                        while($coupon_details = $aResult3->fetch_assoc()){
+                            if(!empty($coupon_details)){
+                                // print_r($coupon_details); die;
+                                $IsDiscountOneTime = $coupon_details["discount_type"];
+                                  //echo $IsDiscountOneTime; die;
+                                    if ($IsDiscountOneTime == 1) {
+                                        $update_sql2 = "UPDATE event_coupon_details SET end_coupon = 0 WHERE event_coupon_id = ".$appliedCouponId." ";
+                                        $result2 = mysqli_query($conn, $update_sql2);
+                                    }
+                            }
+                        }
+
+                    }
+                } 
+            }
+        }
+    }
+
+
+    //--------------------------------------------------------------------------------
 
 	if ($conn->query($sql) === TRUE) {
 	    //echo "New record created successfully";

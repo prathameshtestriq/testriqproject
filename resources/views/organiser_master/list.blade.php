@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Users ')
+@section('title', 'Organiser ')
 
 <!-- Dashboard Ecommerce start -->
 @section('content')
@@ -108,13 +108,15 @@
                                                 <td class="text-center">{{ $i }}</td>
                                                
                                                 <td class="text-left">{{ $val->name }}</td>
-                                                <td class="text-left">{{ $val->name }}</td>
+                                                <td class="text-left">{{ $val->user_name }}</td>
                                                 <td class="text-left">{{ $val->email }}</td>
                                                 <td class="text-left">{{ $val->mobile }}</td>
                                                 <td class="text-left">{{ $val->gst_number }}</td>
                                               
                                                 <td>
-                                                 
+                                                    <!-- <a href="http://localhost:3000/in/Nashik/<?php //echo $val->id; ?>/<?php //echo $val->user_email; ?>/<?php //echo $val->user_password; ?>" target="_blank">
+                                                        <i class="fa fa-eye btn btn-primary btn-sm" title="Login As Organiser"></i>
+                                                    </a> -->
                                                 </td>
                                             </tr>
                                       <?php }
@@ -141,93 +143,3 @@
 @endsection
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('#state').change(function() {
-        var stateId = $(this).val();
-        if (stateId) {
-            $.ajax({
-                url: '/get-cities/' + stateId,
-                type: 'GET',
-                success: function(data) {
-                    var cityDropdown = $('#city');
-                    cityDropdown.empty();
-                    cityDropdown.append('<option value="">Select City</option>');
-                    $.each(data.cities, function(index, city) {
-                        cityDropdown.append('<option value="' + city.id + '">' + city.name + '</option>');
-                    });
-                }
-            });
-        } else {
-            $('#city').empty().append('<option value="">Select City</option>');
-        }
-    });
-});
-</script>
-<script>
-  function delUser(id) {
-        // alert(id);
-        var url = '<?php echo url('user/delete'); ?>';
-        url = url + '/' + id;
-        //    alert(url);
-        bConfirm = confirm('Are you sure you want to remove this User');
-        if (bConfirm) {
-            window.location.href = url;
-        } else {
-            return false;
-        }
-    }
-
-
-    function change_status(_this, id) {
-        //  alert(id)
-;
-        var status = $(_this).prop('checked') == true ? 1 : 0;
-        // alert(status);
-        
-        if (confirm("Are you sure want to change this status?")) {
-            let _token = $('meta[name="csrf-token"]').attr('content');
-            //alert(_token);
-            $.ajax({
-                url: "<?php echo url('user/change_status') ?>",
-                type: 'post',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    id: id,
-                    status: status
-                },
-                success: function(result) {
-                    if(result == 1){
-                        console.log(result);
-                        alert('Status changed successfully')
-                        //location.reload(); 
-                    }else{
-                        alert('Some error occured');
-                        if(status)
-                            $(_this).prop("checked" , false)
-                        else
-                            $(_this).prop("checked" , true)
-                            return false;
-                    }
-                },
-                error:function(){
-                    alert('Some error occured');
-                    if(status)
-                        $(_this).prop("checked" , false)
-                    else
-                        $(_this).prop("checked" , true)
-                        return false;
-                }
-            });
-        }else{
-            if(status)
-                $(_this).prop("checked" , false)
-            else
-                $(_this).prop("checked" , true)
-            return false;
-        }
-    }
-    
-    
-  
-</script>

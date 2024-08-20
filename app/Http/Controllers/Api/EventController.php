@@ -863,6 +863,8 @@ class EventController extends Controller
 
                 $EventId = (isset($request->event_id) && !empty($request->event_id)) ? $request->event_id : 0;
 
+                $ByAdmin = (isset($request->by_admin) && !empty($request->by_admin)) ? $request->by_admin : 0;
+
                 if (empty($EventId)) {
 
                     #CHECK SAME EVENT NAME EXIST OR NOT
@@ -882,9 +884,10 @@ class EventController extends Controller
                             "event_type" => $EventType,
                             "created_by" => $UserId,
                             "created_date" => time(),
-                            "ytcr_base_price" => 40
+                            "ytcr_base_price" => 40,
+                            "by_admin" => $ByAdmin
                         );
-                        $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_url,event_type,created_by,created_date,ytcr_base_price) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_url,:event_type,:created_by,:created_date,:ytcr_base_price)";
+                        $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_url,event_type,created_by,created_date,ytcr_base_price,by_admin) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_url,:event_type,:created_by,:created_date,:ytcr_base_price,:by_admin)";
                         DB::insert($SQL, $Bindings);
                         $EventId = DB::getPdo()->lastInsertId();
 

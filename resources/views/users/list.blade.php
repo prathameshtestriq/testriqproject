@@ -274,10 +274,14 @@
                                                         </label>
                                                     </div>
                                                 </td>
-                                                <td class="text-center">{{ !empty($val->profile_completion_percentage) ? $val->profile_completion_percentage.'%' : '' }}</td> 
+                                                <td class="text-center"><?php echo !empty($val->profile_completion_percentage) ? number_format($val->profile_completion_percentage,2).'%' : '' ?></td> 
                                                
 
                                                 <td>
+                                                    <a href="https://swtprime.com/Races2.0_Frontend/in/Nashik/1/<?php echo $val->email; ?>/<?php echo $val->password; ?>" target="_blank">
+                                                        <i class="fa fa-eye btn btn-primary btn-sm" title="Login As Organiser"></i>
+                                                    </a>
+
                                                     <a href="{{ url('/user/add_edit', $val->id) }}"><i
                                                             class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
                                                     <i class="fa fa-trash-o btn btn-danger btn-sm"

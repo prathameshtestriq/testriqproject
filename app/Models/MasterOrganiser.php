@@ -41,7 +41,7 @@ class MasterOrganiser extends Model
     public static function get_all($limit, $a_search = array()){
         $a_return = [];
 
-        $s_sql = 'SELECT name,email,mobile,gst_number FROM organizer where 1=1';
+        $s_sql = 'SELECT id,name,email,mobile,gst_number,(select CONCAT(`firstname`, " ", `lastname`) AS user_name from users where id = organizer.user_id) as user_name,(select email from users where id = organizer.user_id) as user_email,(select password from users where id = organizer.user_id) as user_password FROM organizer where 1=1';
         // ,(select CONCAT(`firstname`, ' ', `lastname`) AS user_name from users where id = organizer.user_id ) as user_name
         // if (!empty($a_search['search_role_name'])) {
         //     $s_sql .= ' AND LOWER(rm.name) LIKE \'%' . strtolower($a_search['search_role_name']) . '%\'';
