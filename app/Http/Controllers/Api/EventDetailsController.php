@@ -12,7 +12,7 @@ use App\Models\Event;
 class EventDetailsController extends Controller
 {
    
-    public function page_view_details(Request $request)
+    public function page_view_details(Request $request) 
     {
         // dd($request);
         $response['data'] = [];
@@ -62,4 +62,40 @@ class EventDetailsController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+
+    public function check_organizer_user_details(Request $request)
+    {
+        // dd($request);
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $UserId = 0;
+            if (!empty($aToken)) {
+                $UserId = $aToken['data']->ID;
+            }
+
+            $OrganizerUserId  = !empty($request->organizer_user) ? $request->organizer_user : 0;
+            $UserEmail        = !empty($request->user_email) ? $request->user_email : '';
+           
+            $Sql = 'SELECT id FROM users WHERE email = "'.$UserEmail.'" ';
+            $aResult = DB::select($Sql);
+            
+            $response['data'] = !empty($aResult) ? $aResult : [];
+            $response['message'] = 'Request processed successfully';
+            $ResposneCode = 200;
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
+
 }

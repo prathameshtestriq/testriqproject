@@ -2,7 +2,7 @@
 // Live server file //
 //-------------------
 // Database connection parameters
-$flag = 1; // prime - 1 / live - 2 / local - 3 
+$flag = 2; // prime - 1 / live - 2 / local - 3 
 
 if($flag == 1){                   // prime
     $servername = 'localhost'; 

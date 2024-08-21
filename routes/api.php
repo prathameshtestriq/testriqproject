@@ -231,6 +231,7 @@ Route::controller(PaymentGatwayController::class)->group(function () {
 
 Route::controller(EventDetailsController::class)->group(function () {
     Route::post('/pageViewDetails', 'page_view_details');
+    Route::post('/checkOrganizerUserDetails', 'check_organizer_user_details');
 });
 
 

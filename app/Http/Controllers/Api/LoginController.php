@@ -467,6 +467,19 @@ class LoginController extends Controller
                                 $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->type);
                                 $ResponseData['modules'] = $aModules;
 
+                                //-------------- organizer user module access rights
+                                $SQL1 = 'SELECT id,(select name from role_master where id = organiser_users.user_role) as role_name FROM organiser_users WHERE id=:id AND status = 1';
+                                $aRoleResult = DB::select($SQL1, array('id' => $aResult[0]->organizer_user));
+                                $ResponseData['role_name'] = !empty($aRoleResult) ? $aRoleResult[0]->role_name : '';
+
+                                $aOrganizerUserModules = LoginController::OrganizerUserAccessMdules($aResult[0]->id,$aResult[0]->organizer_user);
+                                if(!empty($aOrganizerUserModules)){
+                                    $ResponseData['OrgUserAccessModules'] = $aOrganizerUserModules;
+                                    $ResponseData['AccessRightFlag'] = 1;
+                                }else{
+                                    $ResponseData['AccessRightFlag'] = 0;
+                                }
+
                                 $message = 'Login Successfully';
                                 $ResposneCode = 200;
                             } else {
@@ -521,6 +534,31 @@ class LoginController extends Controller
         ];
 
         return response()->json($response, $ResposneCode);
+    }
+
+    function OrganizerUserAccessMdules($UserId,$OrganizerUserId){
+        // dd($UserId,$OrganizerUserId);
+        $SQL1 = 'SELECT id,user_role FROM organiser_users WHERE id=:id AND status = 1';
+        $aOrgUserResult = DB::select($SQL1, array('id' => $OrganizerUserId));
+       
+        //dd($aOrgUserResult);
+        $UserAccessArray = [];
+        if(!empty($aOrgUserResult)){
+
+            $user_role = !empty($aOrgUserResult[0]->user_role) ? $aOrgUserResult[0]->user_role : 0;
+
+            $SQL2 = 'SELECT id,access,(select name from role_master where id = role_access.role_id) as role_name, (select module_name from module_master where id = role_access.module_id) as module_name FROM role_access WHERE role_id=:role_id';
+            $aRoleAccessResult = DB::select($SQL2, array('role_id' => $user_role));
+            // dd($aRoleAccessResult);
+
+            if(!empty($aRoleAccessResult)){
+                foreach($aRoleAccessResult as $res){
+                    $UserAccessArray[$res->module_name] = $res->access;
+                }
+            }
+        }
+      
+        return $UserAccessArray;
     }
 
     public function GoogleSignUp(Request $request)

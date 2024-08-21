@@ -925,6 +925,17 @@ class FormQuestionsController extends Controller
 
             $EventInfoStatus = !empty($request->event_info_status) ? $request->event_info_status : 0;
             $UserId          = !empty($request->user_id) ? $request->user_id : 0;
+            
+            //------------ check access right wise showing event
+            $sql = "SELECT organizer_user FROM users WHERE id =:id";
+            $UserDetails = DB::select($sql, array('id' => $UserId));
+            
+            $event_ids = 0;
+            if(!empty($UserDetails)){
+                $SQL1 = 'SELECT id,event_ids FROM organiser_users WHERE id=:id AND status = 1';
+                $aOrgUserResult = DB::select($SQL1, array('id' => $UserDetails[0]->organizer_user));
+                $event_ids = !empty($aOrgUserResult) ? $aOrgUserResult[0]->event_ids : '';
+            }
 
             $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, vm.registration_end_time, vm.banner_image, vm.display_name, vm.active, vm.event_type, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country,(select CONCAT(`firstname`, " ", `lastname`) as user_name from users where id = '.$UserId.') as user_name,(select created_at from users where id = '.$UserId.') as user_created_date, (select about_you from users where id = '.$UserId.') as user_about, vm.active FROM events AS vm WHERE vm.deleted = 0 ' ;
 
@@ -934,6 +945,10 @@ class FormQuestionsController extends Controller
 
             if(!empty($UserId)){
                 $sSQL .= ' and vm.created_by = '.$UserId;
+            }
+
+            if(!empty($event_ids)){
+                $sSQL .= ' and id IN('.$event_ids.') ';
             }
 
             $aResult = DB::select($sSQL);
