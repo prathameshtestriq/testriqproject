@@ -146,8 +146,10 @@ class EventParticipantsController extends Controller
                 $sSQL .= ' LIMIT ' . $Return['Offset'] . ',' . $Limit;
             }
             $Return['event_participants']  = DB::select($sSQL, array());
+            // dd(  $Return['event_participants']);
             // dd( $Return['event_participants']);
         }else{
+            
             $sSQL = 'SELECT count(a.id) as count
             FROM attendee_booking_details a
             LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
@@ -173,7 +175,9 @@ class EventParticipantsController extends Controller
                 $sSQL .= ' LIMIT ' . $Return['Offset'] . ',' . $Limit;
             }
             $aResult = DB::select($sSQL, array());
-            $Return['event_participants']  = !empty($aResult) ? $aResult : []
+
+            
+            $Return['event_participants']  = !empty($aResult) ? $aResult : [];
             
         }    
 
@@ -222,7 +226,9 @@ class EventParticipantsController extends Controller
 
     public function view(Request $request,$event_id,$attendance_id){
         $sSQL = 'SELECT abd.attendee_details FROM attendee_booking_details as abd where id=:id';
-        $Return['attendance_booking_details'] = DB::select($sSQL, array('id'=>$attendance_id)); 
+        $aResult = DB::select($sSQL, array('id'=>$attendance_id));
+       
+        $Return['attendance_booking_details'] = !empty($aResult) ? $aResult : [];
         $Return['event_id'] = $event_id;
         $Return['attendance_id'] = $attendance_id;
 
@@ -270,9 +276,9 @@ class EventParticipantsController extends Controller
                         $question['ActualValue'] = $request->input('date');
                     } elseif ($question['question_form_type'] == 'textarea' && $request->has('textarea')) {
                         $question['ActualValue'] = $request->input('textarea');
-                    } elseif ($question['question_form_type'] == 'select' && $request->input('select', [])) {  
+                    } elseif (array_key_exists($questionLabel, $request->input('select', []))) {  
                         $question['ActualValue'] = $request->input('select')[$questionLabel];
-                    } elseif ($question['question_form_type'] == 'radio' && $request->input('radio', [])) {   
+                    } elseif (array_key_exists($questionLabel, $request->input('radio', []))) {   
                         $question['ActualValue'] = $request->input('radio')[$questionLabel];   
                     } elseif ($question['question_form_type'] == 'countries' && $request->has('countries')) {
                         $question['ActualValue'] = $request->input('countries');

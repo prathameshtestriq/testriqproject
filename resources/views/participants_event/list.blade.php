@@ -16,13 +16,11 @@
                                 <div class="col-sm-12">
                                     <h2 class="content-header-title float-left mb-0">Participants List</h2>
                                 </div>
-
-                                <?php if($event_id != 0){ ?>
-                                     <h5 class="content-header-title float-left mb-0 ml-2"><b>Event Name:-</b> {{$event_name[0]->name}}</h5>
-                                <?php } ?>
-
-                                <!-- <h5 class="content-header-title float-left mb-0 ml-2"><b>Event Name:-</b> {{$event_name[0]->name}}</h5> -->
-                            </div>
+                                
+                              <?php if($event_id != 0){ ?>
+                                <h5 class="content-header-title float-left mb-0 ml-2"><b>Event Name:-</b> {{$event_name[0]->name}}</h5>
+                              <?php } ?>
+                                </div>
                         </div>
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
                             <nav aria-label="breadcrumb">
@@ -316,7 +314,7 @@
                 var url = '<?php echo url('/participants_event') ?>';
                 url = url + '/'+ event_id + '/delete/' + iId;
                
-                Confirmation = confirm('Are you sure you want to remove this type');
+                Confirmation = confirm('Are you sure you want to remove this record ?');
                 if (Confirmation) {
 
                     window.location.href = url;

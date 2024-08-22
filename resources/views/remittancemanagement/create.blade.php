@@ -21,9 +21,9 @@
                                     <div class="col-sm-12">
                                         <h2 class="content-header-title float-left mb-0">
                                             @if (!empty($aReturn['id']))
-                                                Edit remittance  Details
+                                                Edit Remittance  Details
                                             @else
-                                                Add remittance  Details
+                                                Add Remittance  Details
                                             @endif
                                         </h2>
                                     </div>
@@ -32,13 +32,13 @@
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
-                                        <li class="breadcrumb-item">Category</li>
+                                        <li class="breadcrumb-item">Home</li>
+                                        <li class="breadcrumb-item">Remittance</li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($aReturn['id']))
-                                                Edit remittance  
+                                                Edit Remittance  
                                             @else
-                                                Add remittance 
+                                                Add Remittance 
                                             @endif 
                                         </li>
                                     </ol>
@@ -94,7 +94,7 @@
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="remittance_date">Remittance Date<span style="color:red;">*</span></label>
-                                                <input type="datetime-local" id="remittance_date" class="form-control"
+                                                <input type="date" id="remittance_date" class="form-control"
                                                     placeholder="Remittance Date" name="remittance_date"
                                                     value="{{ old('remittance_date', $remittance_date ? \Carbon\Carbon::parse($remittance_date)->format('Y-m-d\TH:i') : '') }}"  
                                                     autocomplete="off" />

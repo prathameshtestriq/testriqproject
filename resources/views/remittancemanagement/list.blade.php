@@ -13,14 +13,14 @@
                             <div class="content-header-left">
                                 <div class="row breadcrumbs-top">
                                     <div class="col-sm-12">
-                                        <h2 class="content-header-title float-left mb-0">Remittance  List</h2>
+                                        <h2 class="content-header-title float-left mb-0">Remittance Management</h2>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Remittance </li>
                                         <li class="breadcrumb-item active" aria-current="page">Remittance List</li>
                                     </ol>
@@ -84,14 +84,14 @@
                                             
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Remittance Date:</label>
-                                                <input type="datetime-local" id="start_remittance_date" class="form-control"
+                                                <input type="date" id="start_remittance_date" class="form-control"
                                                     placeholder="Start Date" name="start_remittance_date" value="{{ old('start_remittance_date', $search_start_remittance_date ? \Carbon\Carbon::parse($search_start_remittance_date)->format('Y-m-d\TH:i') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Remittance Date:</label>
-                                                <input type="datetime-local" id="end_remittance_date" class="form-control"
+                                                <input type="date" id="end_remittance_date" class="form-control"
                                                     placeholder="End Date" name="end_remittance_date" value="{{ old('end_remittance_date', $search_end_remittance_date ? \Carbon\Carbon::parse($search_end_remittance_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
                                             </div>
@@ -150,15 +150,15 @@
                                     </div>
                                 
                                     <div class="col-sm-12 mt-2 float-right">
-                                        {{-- @if (!empty($Remittance))  --}}
+                                        @if (!empty($Remittance)) 
                                             <div class="float-right">
-                                                <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right ml-2 ">Download </a>
+                                                <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right ml-2 " title="Download">Download </a>
                                             </div>
-                                        {{-- @endif --}}
+                                        @endif
                                         <div class="float-right ml-3">
                                         <a href="{{ url('remittance_management/add') }}"
                                         class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add </span></a>
+                                            <i data-feather="plus"></i><span>Add Remittance</span></a>
                                         </div>    
                                     </div>
                                    
@@ -254,7 +254,7 @@
                                         <?php }
                                     }else{?>
                                         <tr>
-                                            <td colspan="13" class="text-center" style="color: red">No Record Found</td>
+                                            <td colspan="17" class="text-center" style="color: red">No Record Found</td>
                                         </tr>
                                     <?php }?>
                                 </tbody>
@@ -278,7 +278,7 @@
         var url = '<?php echo url('remittance_management/delete'); ?>';
         url = url + '/' + id;
         //    alert(url);
-        bConfirm = confirm('Are you sure you want to remove this remittance management');
+        bConfirm = confirm('Are you sure you want to remove this record ?');
         if (bConfirm) {
             window.location.href = url;
         } else {

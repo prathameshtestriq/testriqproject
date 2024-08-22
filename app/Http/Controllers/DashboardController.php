@@ -46,7 +46,7 @@ class DashboardController extends Controller
         $aReturn['search_from_date'] = (!empty(session('from_date'))) ? strtotime(session('from_date')) : '';
         $aReturn['search_to_date'] = (!empty(session('to_date'))) ? strtotime(session('to_date')) : '';
 
-        // dd( $aReturn['search_filter'] );
+        // dd( $aReturn['search_event_name'] );
 
         if (!empty($aReturn['search_filter'])) {
             switch ($aReturn['search_filter']) {
@@ -88,7 +88,7 @@ class DashboardController extends Controller
             $SQL1 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
         if (!empty($aReturn['search_event_name'])) {
-            $SQL1 .= ' AND b.event_id =' . $aReturn['search_event_name'];
+            $SQL1 .= ' AND e.event_id =' . $aReturn['search_event_name'];
         }
         // dd($SQL1);
         $TotalBooking = DB::select($SQL1, array());

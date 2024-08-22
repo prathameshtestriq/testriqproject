@@ -84,12 +84,12 @@
                                             <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-4 col-xxl-2">
                                                 <div class="form-group mb-0">
                                                     <?php
-                                                    $Filters = ['today', 'week', 'month'];
+                                                    $Filters = ['Today', 'Week', 'Month'];
                                                     ?>
                                                     <lable class="text-dark"> Filter</label>
                                                         <select id="search_filter" name="search_filter"
                                                             class="form-control select2 form-control">
-                                                            <option value="">Select Status</option>
+                                                            <option value="">Select Filter</option>
                                                             <?php 
                                                       foreach ($Filters as $key => $value)
                                                       {
@@ -559,7 +559,7 @@
 
         </div>
 
-
+       <?php if(!empty($search_event_name)){ ?>
         <div class="row">
             <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
                <div class="card">
@@ -670,100 +670,101 @@
                 </div>
             </div>
         </div>
+       <?php } ?>
 
-
-      <div class="row"> 
-         <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
-            <div class="card">
-                <div class="card-body">
+       <?php if(!empty($search_event_name)){ ?>
+        <div class="row"> 
+            <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+                <div class="card">
+                    <div class="card-body">
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4 class="text-dark m-0">Gender Wise</h4>
+                            </div>
+                        </div>
                     
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h4 class="text-dark m-0">Gender Wise</h4>
+                        <?php if(!empty($maleCount)||!empty($maleCount)||!empty($maleCount)){ ?>
+                        <div class="card-min-height d-flex justify-content-center py-2">
+                            {{-- Enter your data --}}
+                            <div id="container_male_female"></div>      
+                        </div>
+                        <?php }else{ ?>
+                            <div class="card-min-height d-flex align-items-center justify-content-center py-2">
+                            {{-- Enter your data --}}
+                                <img src="{{ asset('uploads/event_images/no-events.png') }}" width="auto" height="130px"
+                                alt="">
+                            </div>
+                            <?php } ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+                <div class="card">
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                            <h4 class="text-dark m-0">Coupons</h4>
+                            </div>
+                        </div>
+                    
+                        <div class="card-min-height d-flex justify-content-center py-2">
+                            <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Total</th>
+                                        <th>Used</th>
+                                        <th>Available</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                <?php 
+                                    if (!empty($CouponCodes)){
+                                    $totalDiscountCodeSum = 0;
+                                    $couponCountSum = 0;
+                                    $availableSum = 0;
+                                    $i = 0;
+                                ?>
+                                    <?php foreach ($CouponCodes as $val){
+                                    $available = $val->TotalDiscountCode - $val->CouponCount;
+                                    $totalDiscountCodeSum += $val->TotalDiscountCode;
+                                    $couponCountSum += $val->CouponCount;
+                                    $availableSum += $available;
+                                    $i++;
+                                ?>
+                                <tr>
+                                    <td>{{ $val->DiscountCode }}</td>
+                                    <td>{{ $val->TotalDiscountCode }}</td>
+                                    <td>{{ $val->CouponCount }}</td>
+                                    <td>{{ $available }}</td>
+                                </tr>
+                                <?php } ?>
+                                <tr>
+                                    <td><strong>Total</strong></td>
+                                    <td><strong>{{ $totalDiscountCodeSum }}</strong></td>
+                                    <td><strong>{{ $couponCountSum }}</strong></td>
+                                    <td><strong>{{ $availableSum }}</strong></td>
+                                </tr>
+                                <?php }else{ ?>
+                                <tr>
+                                    <td colspan="8" style="text-align:center; color:red;">No Record Found
+                                    </td>
+                                </tr>
+                                <?php }?>
+                                </tbody>
+                            </table>
+                            
+                        </div>
                         </div>
                     </div>
-                  
-                    <?php if(!empty($maleCount)||!empty($maleCount)||!empty($maleCount)){ ?>
-                    <div class="card-min-height d-flex justify-content-center py-2">
-                        {{-- Enter your data --}}
-                          <div id="container_male_female"></div>      
-                    </div>
-                    <?php }else{ ?>
-                        <div class="card-min-height d-flex align-items-center justify-content-center py-2">
-                         {{-- Enter your data --}}
-                            <img src="{{ asset('uploads/event_images/no-events.png') }}" width="auto" height="130px"
-                            alt="">
-                        </div>
-                        <?php } ?>
                 </div>
             </div>
         </div>
-
-         <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
-             <div class="card">
-                 <div class="card-body">
-
-                     <div class="row">
-                        <div class="col-md-12">
-                           <h4 class="text-dark m-0">Coupons</h4>
-                        </div>
-                     </div>
-                   
-                     <div class="card-min-height d-flex justify-content-center py-2">
-                        <div class="table-responsive">
-                           <table class="table table-striped table-bordered">
-                              <thead>
-                                 <tr>
-                                     <th>Code</th>
-                                     <th>Total</th>
-                                     <th>Used</th>
-                                     <th>Available</th>
-                                 </tr>
-                             </thead>
-                             <tbody class="text-center">
-                              <?php 
-                                 if (!empty($CouponCodes)){
-                                 $totalDiscountCodeSum = 0;
-                                 $couponCountSum = 0;
-                                 $availableSum = 0;
-                                 $i = 0;
-                              ?>
-                                <?php foreach ($CouponCodes as $val){
-                                  $available = $val->TotalDiscountCode - $val->CouponCount;
-                                  $totalDiscountCodeSum += $val->TotalDiscountCode;
-                                  $couponCountSum += $val->CouponCount;
-                                  $availableSum += $available;
-                                  $i++;
-                               ?>
-                              <tr>
-                                  <td>{{ $val->DiscountCode }}</td>
-                                  <td>{{ $val->TotalDiscountCode }}</td>
-                                  <td>{{ $val->CouponCount }}</td>
-                                  <td>{{ $available }}</td>
-                              </tr>
-                              <?php } ?>
-                              <tr>
-                                  <td><strong>Total</strong></td>
-                                  <td><strong>{{ $totalDiscountCodeSum }}</strong></td>
-                                  <td><strong>{{ $couponCountSum }}</strong></td>
-                                  <td><strong>{{ $availableSum }}</strong></td>
-                              </tr>
-                              <?php }else{ ?>
-                              <tr>
-                                  <td colspan="8" style="text-align:center; color:red;">No Record Found
-                                  </td>
-                              </tr>
-                              <?php }?>
-                             </tbody>
-                           </table>
-                          
-                       </div>
-                     </div>
-                 </div>
-             </div>
-         </div>
-     </div>
-
+       <?php } ?>
 
 
 

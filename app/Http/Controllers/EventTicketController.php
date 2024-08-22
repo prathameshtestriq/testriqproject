@@ -2057,12 +2057,13 @@ class EventTicketController extends Controller
         $empty = false;
         $field = '';
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-        // dd($aToken['data']->ID);
+        // dd($aToken);
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $attendee_id = !empty($request->attendee_id) ? $request->attendee_id : 0;
             $EventUrl = !empty($request->event_url) ? $request->event_url : '';
+            $EmailType = !empty($request->email_type) ? $request->email_type : 1;
 
             $UserId = $aToken['data']->ID;
 
@@ -2070,6 +2071,7 @@ class EventTicketController extends Controller
 
                 $SQL = "SELECT email,CONCAT(firstname, ' ', lastname) AS username,firstname,lastname,registration_id,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
+                
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
                 $attendee_username = !empty($attendeeResult) && $attendeeResult[0]->username ? $attendeeResult[0]->username : '';
                 $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? '₹ ' . $attendeeResult[0]->ticket_amount : '';
@@ -2083,7 +2085,7 @@ class EventTicketController extends Controller
 
                 if (!empty($attendee_email)) {
                     // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
-                    $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 0, $falg = 2, $attendee_array);
+                    $this->ResendEmailDetails($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 0, $falg = 2, $attendee_array, $EmailType);
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
@@ -2107,6 +2109,146 @@ class EventTicketController extends Controller
         ];
 
         return response()->json($response, $ResposneCode);
+    }
+
+
+    function ResendEmailDetails($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_array, $CommEmailType)
+    {
+        // $Email1 = new Emails();
+        // $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $UserEmail, $flag);
+
+        // dd($CommEmailType);
+        $master = new Master();
+        $sql1 = "SELECT * FROM users WHERE id=:user_id";
+        $User = DB::select($sql1, ['user_id' => $UserId]);
+
+        $sql2 = "SELECT * FROM events WHERE id=:event_id";
+        $Event = DB::select($sql2, ['event_id' => $EventId]);
+        $Venue = "";
+        if (count($Event) > 0) {
+            $Venue .= ($Event[0]->address !== "") ? $Event[0]->address . ", " : "";
+            $Venue .= ($Event[0]->city !== "") ? $master->getCityName($Event[0]->city) . ", " : "";
+            $Venue .= ($Event[0]->state !== "") ? $master->getStateName($Event[0]->state) . ", " : "";
+            $Venue .= ($Event[0]->country !== "") ? $master->getCountryName($Event[0]->country) . ", " : "";
+            $Venue .= ($Event[0]->pincode !== "") ? $Event[0]->pincode . ", " : "";
+            // $Venue = $Event[0]->address.", ".$Event[0]->city.", ".$Event[0]->state.", ".$Event[0]->country.", ".$Event[0]->pincode;
+        }
+
+        $sql3 = "SELECT * FROM organizer WHERE user_id=:user_id";
+        $Organizer = DB::select($sql3, ['user_id' => $UserId]);
+        $OrgName = "";
+        if (count($Organizer) > 0) {
+            $OrgName = $Organizer[0]->name;
+        }
+
+        //------ ticket registration id and race category
+        $sql2 = "select bd.id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
+        $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookingPayId));
+        // dd($booking_detail_Result);
+        $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
+
+        $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
+        $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
+        //dd($tAttendeeResult, $BookingPayId , $booking_detail_id, $flag , $EventId);
+        $registration_ids = $ticket_names = '';
+        if (!empty($tAttendeeResult)) {
+            $registration_ids_array = array_column($tAttendeeResult, "registration_id");
+            $registration_ids = implode(", ", $registration_ids_array);
+
+            $ticket_ids_array = array_column($tAttendeeResult, "ticket_name");
+            $ticket_names = implode(", ", array_unique($ticket_ids_array));
+        }
+        //dd($registration_ids,$ticket_names);
+        if ($flag == 2 && !empty($attendee_array)) {
+            $user_name = $attendee_array['username'];
+            $first_name = $attendee_array['firstname'];
+            $last_name = $attendee_array['lastname'];
+            $registration_id = $attendee_array['registration_id'];
+            $ticket_names = $attendee_array['ticket_name'];
+        }
+
+        //------------ new added
+        $sql5 = "SELECT ticket_names,registration_ids FROM booking_payment_details WHERE id=:id";
+        $BookingPaymentDetails = DB::select($sql5, ['id' => $BookingPayId]);
+       
+        $loc_registration_id = !empty($BookingPaymentDetails) ? $BookingPaymentDetails[0]->registration_ids : '';
+        $loc_ticket_names    = !empty($BookingPaymentDetails) ? $BookingPaymentDetails[0]->ticket_names : '';
+
+        $ConfirmationEmail = array(
+    
+            "USERNAME" => $user_name,
+            "FIRSTNAME" => $first_name,
+            "LASTNAME" => $last_name,
+            "EVENTID" => $EventId,
+            "EVENTNAME" => $Event[0]->name,
+            "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
+            "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
+            "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
+            "EVENTENDTIME" => (!empty($Event[0]->end_time)) ? date('H:i A', ($Event[0]->end_time)) : "",
+            "EVENTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
+            "EVENTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
+            "YTCRTEAM" => "YouTooCanRun Team",
+            "EVENTURL" => $EventUrl,
+            "COMPANYNAME" => $OrgName,
+            "TOTALTICKETS" => $TotalNoOfTickets,
+            "VENUE" => $Venue,
+            "TOTALAMOUNT" => $TotalPrice,
+            "TICKETAMOUNT" => $TotalPrice,
+            "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
+            "RACECATEGORY" => !empty($ticket_names) ? $ticket_names : $loc_ticket_names, // !empty($ticket_names) ? $ticket_names : ''
+        );
+
+        // dd($ConfirmationEmail); $CommEmailType
+
+        $sql = "SELECT subject_name FROM `communication_master` WHERE status = 1 AND id = ".$CommEmailType." ";
+        $CommunicationsMaster = DB::select($sql, array());
+
+        $SubjectName = !empty($CommunicationsMaster) ? $CommunicationsMaster[0]->subject_name : '';
+
+        $Subject = "";
+        $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND status = 1";
+
+        if(!empty($SubjectName)){
+            $sql .= ' AND subject_name = "'.$SubjectName.'" ';
+        }
+        $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
+        // dd($Communications);
+        if (count($Communications) > 0) {
+            $MessageContent = $Communications[0]->message_content;
+            $Subject = $Communications[0]->subject_name;
+        } else {
+            $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                 <br/><br/>
+                Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                 <br/><br/>
+                Event Details:
+                 <br/><br/>
+                ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
+                ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
+                ● Location: " . $Venue . "<br/>
+                <br/><br/>
+                Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
+                 <br/><br/>
+                We look forward to seeing you at the event!
+                 <br/><br/>
+                Best regards,<br/>
+                " . $Event[0]->name . " Team";
+            $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+        }
+
+        foreach ($ConfirmationEmail as $key => $value) {
+            if (isset($key)) {
+                $placeholder = '{' . $key . '}';
+                $MessageContent = str_replace($placeholder, $value, $MessageContent);
+            }
+        }
+
+        // Output the filled message
+        // dd($MessageContent);
+        $Email = new Emails();
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
+
+        return;
     }
 
 

@@ -59,13 +59,13 @@ if (!empty($edit_data)) {
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Banner</li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($id))
-                                                Edit Banner Details
+                                                Edit Banner 
                                             @else
-                                                Add Banner Details
+                                                Add Banner 
                                             @endif
                                         </li>
                                     </ol>
@@ -108,10 +108,10 @@ if (!empty($edit_data)) {
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="name">Banner Name<span
+                                                <label for="name">Banner Name <span
                                                         style="color:red;">*</span></label>
                                                 <input type="text" id="banner_name" class="form-control"
-                                                    placeholder="Banner Name" name="banner_name"
+                                                    placeholder="Enter Banner Name" name="banner_name"
                                                     value="{{ old('banner_name', $banner_name) }}" autocomplete="off" />
                                                 <h5><small class="text-danger" id="banner_name_err"></small></h5>
                                                 @error('banner_name')
@@ -122,9 +122,9 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="banner_url">Banner Url <span style="color:red;">*</span></label>
+                                                <label for="banner_url">Banner URL <span style="color:red;">*</span></label>
                                                 <input type="text" id="banner_url" class="form-control"
-                                                    placeholder="Banner Url" name="banner_url"
+                                                    placeholder="Enter Banner Url" name="banner_url"
                                                     value="{{ old('banner_url', $banner_url) }}"
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="banner_url_err"></small></h5>
@@ -136,13 +136,12 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
-                                                <label for="banner_image">Banner Image<span style="color:red;">*</span></label>
-                                                <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
+                                                <label for="banner_image">Banner Image <span style="color:red;">*</span></label>
                                                 <input type="file" id="banner_image" class="form-control"
-                                                    placeholder="Banner Url" name="banner_image"
+                                                    placeholder="Enter Banner Url" name="banner_image"
                                                     value="{{ old('banner_image', $banner_image) }}"
                                                     autocomplete="off" />
-                                                   
+                                                    <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>   
                                                 <h5><small class="text-danger" id="banner_image_err"></small></h5>
                                                 @error('banner_image')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -168,9 +167,9 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="start_time">Start Date<span style="color:red;">*</span></label>
-                                                <input type="datetime-local" id="start_time" class="form-control"
-                                                    placeholder="Start Date" name="start_time"
+                                                <label for="start_time">Start Date <span style="color:red;">*</span></label>
+                                                <input type="date" id="start_time" class="form-control"
+                                                    placeholder="Enter Start Date" name="start_time"
                                                     value="{{ old('start_time', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d\TH:i:s') : '') }}" 
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="start_time_err"></small></h5>
@@ -182,9 +181,9 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="end_time">End Date<span style="color:red;">*</span></label>
-                                                <input type="datetime-local" id="end_time" class="form-control"
-                                                    placeholder="End Date" name="end_time"
+                                                <label for="end_time">End Date <span style="color:red;">*</span></label>
+                                                <input type="date" id="end_time" class="form-control"
+                                                    placeholder="Enter End Date" name="end_time"
                                                     value="{{ old('end_time', $end_time ? \Carbon\Carbon::parse($end_time)->format('Y-m-d\TH:i') : '') }}"  
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="end_time_err"></small></h5>
@@ -196,7 +195,7 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="country">Country</label>
+                                                <label for="country">Country <span style="color:red;">*</span></label>
                                                 <select id="country" name="country" class="select2 form-control">
                                                     <option value="">Select Country</option>
                                                     @foreach ($countries_array as $res)
@@ -219,7 +218,7 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="state">State</label>
+                                                <label for="state">State <span style="color:red;">*</span></label>
                                                 <select id="state" name="state" class="select2 form-control">
                                                     <option value="">Select State</option>
                                                     @foreach ($states_array as $res)
@@ -243,7 +242,7 @@ if (!empty($edit_data)) {
                                       
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="city">City</label>
+                                                <label for="city">City <span style="color:red;">*</span></label>
                                                 <select id="city" name="city" class="select2 form-control">
                                                     <option value="">Select city</option>
                                                 @foreach ($cities_array as $res)

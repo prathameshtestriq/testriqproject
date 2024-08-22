@@ -21,7 +21,7 @@
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb mr-1">
-                                    <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                    <li class="breadcrumb-item">Home</li>
                                     <li class="breadcrumb-item">Registration</li>
                                     <li class="breadcrumb-item active" aria-current="page">Registration List</li>
                                 </ol>
@@ -122,7 +122,7 @@
 
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Booking Date:</label>
-                                                <input type="datetime-local" id="start_registration_booking_date" class="form-control"
+                                                <input type="date" id="start_registration_booking_date" class="form-control"
                                             value="{{ old('start_booking_date', $search_start_registration_booking_date ? \Carbon\Carbon::parse($search_start_registration_booking_date)->format('Y-m-d\TH:i') : '') }}"
                                             placeholder="Start Date" name="start_registration_booking_date" 
                                                     autocomplete="off" />
@@ -130,7 +130,7 @@
                                            
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">End Booking Date:</label>
-                                                <input type="datetime-local" id="end_registration_booking_date" class="form-control"
+                                                <input type="date" id="end_registration_booking_date" class="form-control"
                                                     placeholder="End Date" name="end_registration_booking_date"  value="{{ old('end_booking_date', $search_end_registration_booking_date ? \Carbon\Carbon::parse($search_end_registration_booking_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
                                             </div>
@@ -151,8 +151,13 @@
                                                     @if (!empty($Registration_successful))
                                                        <a href="{{ url('/registration_successful/'.$event_id.'/export_registration') }}" class="btn btn-danger text-white ">Download </a>
                                                     @endif
+                                                    <?php  if($event_id > 0){ ?>
                                                        <a href="{{ url('/event') }}"  class="btn btn-primary ">
                                                         <span>Back</span></a>
+                                                    <?php  }else{ ?> 
+                                                        <a href="{{ url('/dashboard') }}"  class="btn btn-primary ">
+                                                            <span>Back</span></a>
+                                                    <?php } ?>
                                                 </div>  
                                                   
                                             </div>

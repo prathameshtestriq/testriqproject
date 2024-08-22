@@ -154,8 +154,8 @@ class Advertisement extends Model
        $bindings = [
            'name' => $request->name,
            'position' => $request->position,
-           'start_time' => strtotime($request->start_time),
-           'end_time' => strtotime($request->end_time),
+           'start_time' => strtotime($request->start_date),
+           'end_time' => strtotime($request->end_date),
            'url' => $request->url,
            'img' => $img_name
        ];
@@ -191,8 +191,8 @@ class Advertisement extends Model
        $bindings = [
            'name' => $request->name,
            'position' =>$request->position,
-           'start_time' => strtotime($request->start_time),
-           'end_time' => strtotime($request->end_time),
+           'start_time' => strtotime($request->start_date),
+           'end_time' => strtotime($request->end_date),
            'url' => $request->url,
            'id' => $id
        ];

@@ -32,7 +32,7 @@
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Marketing</li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($aReturn['id']))
@@ -118,7 +118,7 @@
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="start_date">Start Date<span style="color:red;">*</span></label>
-                                                <input type="datetime-local" id="start_date" class="form-control"
+                                                <input type="date" id="start_date" class="form-control"
                                                     placeholder="Start Date" name="start_date"
                                                     value="{{ old('start_date', $start_date ? \Carbon\Carbon::parse($start_date)->format('Y-m-d\TH:i:s') : '') }}" 
                                                     autocomplete="off" />
@@ -132,7 +132,7 @@
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="end_date">End Date<span style="color:red;">*</span></label>
-                                                <input type="datetime-local" id="end_date" class="form-control"
+                                                <input type="date" id="end_date" class="form-control"
                                                     placeholder="End Date" name="end_date"
                                                     value="{{ old('end_date', $end_date ? \Carbon\Carbon::parse($end_date)->format('Y-m-d\TH:i') : '') }}"  
                                                     autocomplete="off" />

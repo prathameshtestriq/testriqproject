@@ -14,14 +14,14 @@
                         <div class="content-header-left">
                             <div class="row breadcrumbs-top">
                                 <div class="col-sm-12">
-                                    <h2 class="content-header-title float-left mb-0">Races Category List</h2>
+                                    <h2 class="content-header-title float-left mb-0">Races Category </h2>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb mr-1">
-                                    <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                    <li class="breadcrumb-item">Home</li>
                                     <li class="breadcrumb-item">Races Category</li>
                                     <li class="breadcrumb-item active" aria-current="page">Races Category List</li>
                                 </ol>
@@ -203,7 +203,7 @@
         var url = '<?php echo url('/type/remove_type') ?>';
         url = url + '/' + iId;
         // alert(url);
-        Confirmation = confirm('Are you sure you want to remove this type');
+        Confirmation = confirm('Are you sure you want to remove this record ?');
         if (Confirmation) {
 
             window.location.href = url;

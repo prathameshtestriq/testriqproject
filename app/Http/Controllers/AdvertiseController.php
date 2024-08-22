@@ -70,8 +70,8 @@ class AdvertiseController extends Controller
         $a_return['name'] = '';
         $a_return['status'] = '';
         $a_return['position'] = '';
-        $a_return['start_time'] = '';
-        $a_return['end_time'] = '';
+        $a_return['start_date'] = '';
+        $a_return['end_date'] = '';
         $a_return['url'] = '';
         $a_return['img'] = '';
         $aResult = [];
@@ -91,9 +91,12 @@ class AdvertiseController extends Controller
 
             $rules = [
                 'name' => 'required|unique:advertisement,name,' . $iId . 'id',
-                'url' => 'required',
-                'start_time' => 'required',
-                'end_time' => 'required',
+                'url' => [
+                    'required',
+                    'regex:/^(www\.|http:\/\/|https:\/\/).*/i', 
+                ],
+                'start_date' => 'required',
+                'end_date' => 'required',
                 'position' => 'required', 
                 'img' => !empty($aResult) && $aResult['img'] !== '' ? '' : 'required',
             ];
@@ -102,8 +105,12 @@ class AdvertiseController extends Controller
                 $rules['img'] = 'required|mimes:jpeg,jpg,png,gif|max:2000';
                 // $rules['img'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
             }
-
-            $validator = Validator::make($request->all(), $rules);
+            $message = [ 
+                'url.required' => 'The URL field is required.',
+                'url.regex' => 'The URL must start with "www.", "http://", or "https://".',
+                
+            ];
+            $validator = Validator::make($request->all(), $rules,$message);
 
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();

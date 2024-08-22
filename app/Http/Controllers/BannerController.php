@@ -135,7 +135,7 @@ class BannerController extends Controller
 
             if ($request->has('banner_image')) {
                 $rules['banner_image'] = 'required|mimes:jpeg,jpg,png,gif|max:2000';
-            }
+            }   
 
             $validator = Validator::make($request->all(), $rules);
 
@@ -146,11 +146,11 @@ class BannerController extends Controller
             //  dd($image_name);
             if ($iId > 0) {
                 $result = Banner::update_banner($iId, $request);
-                $successMessage = 'banner updated successfully';
+                $successMessage = 'Banner updated successfully';
             } else {
 
                 $result = Banner::add_banner($request);
-                $successMessage = 'banner added successfully';
+                $successMessage = 'Banner added successfully';
             }
 
             return redirect('/banner')->with('success', $successMessage);
@@ -197,7 +197,7 @@ class BannerController extends Controller
     public function delete_banner($iId)
     {
         Banner::remove_banner($iId);
-        return redirect(url('/banner'))->with('success', 'banner deleted successfully');
+        return redirect(url('/banner'))->with('success', 'Banner deleted successfully');
     }
 
     public function getStates(Request $request)

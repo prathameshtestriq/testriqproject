@@ -21,9 +21,9 @@
                                     <div class="col-sm-12">
                                         <h2 class="content-header-title float-left mb-0">
                                             @if (!empty($aReturn['id']))
-                                                Edit Category Details
+                                                Edit Category Type Details
                                             @else
-                                                Add Category Details
+                                                Add Category Type Details
                                             @endif
                                         </h2>
                                     </div>
@@ -32,13 +32,13 @@
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
-                                        <li class="breadcrumb-item">Category</li>
+                                        <li class="breadcrumb-item">Home</li>
+                                        <li class="breadcrumb-item">Category Type</li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($aReturn['id']))
-                                                Edit category 
+                                                Edit Category Type
                                             @else
-                                                Add category
+                                                Add Category Type
                                             @endif 
                                         </li>
                                     </ol>
@@ -81,9 +81,9 @@
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="category_name">Category type name<span style="color:red;">*</span></label>
+                                                <label for="category_name">Category Type Name<span style="color:red;">*</span></label>
                                                 <input type="text" id="category_name" class="form-control"
-                                                    placeholder="Category Type Name" name="category_name"  value="<?php echo isset($aReturn['category_name']) ? $aReturn['category_name'] : (isset($request->category_name) ? $request->category_name : ''); ?>" autocomplete="off" />
+                                                    placeholder="Enter Category Type Name" name="category_name"  value="<?php echo isset($aReturn['category_name']) ? $aReturn['category_name'] : (isset($request->category_name) ? $request->category_name : ''); ?>" autocomplete="off" />
                                                 <h5><small class="text-danger" id="category_name_err"></small></h5>
                                                 @error('category_name')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -95,7 +95,7 @@
                                             <div class="form-group">
                                                 <label for="lastname">Logo Name <span style="color:red;">*</span></label>
                                                 <input type="text" id="category_logo" class="form-control"
-                                                    placeholder="Logo Name" name="category_logo"  value="{{ old('category_logo', isset($aReturn['category_logo']) ? $aReturn['category_logo'] : '') }}" autocomplete="off" />
+                                                    placeholder="Enter Logo Name" name="category_logo"  value="{{ old('category_logo', isset($aReturn['category_logo']) ? $aReturn['category_logo'] : '') }}" autocomplete="off" />
                                                 <h5><small class="text-danger" id="category_logo_err"></small></h5>
                                                 @error('category_logo')
                                                     <span class="error" style="color:red;">{{ $message }}</span>

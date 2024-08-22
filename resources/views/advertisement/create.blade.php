@@ -6,16 +6,16 @@ if (!empty($edit_data)) {
     $img = $edit_data['img'];
     $url = $edit_data['url'];
     $position = $edit_data['position'];
-    $start_time = $edit_data['start_time'];
-    $end_time = $edit_data['end_time'];
+    $start_date = $edit_data['start_time'];
+    $end_date = $edit_data['end_time'];
 } else {
     $id = '';
     $name = '';
     $img = '';
     $url = '';
     $position = '';
-    $start_time = '';
-    $end_time = '';
+    $start_date = '';
+    $end_date = '';
 }
 
 ?>
@@ -53,7 +53,7 @@ if (!empty($edit_data)) {
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Advertisement</li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($id))
@@ -158,13 +158,12 @@ if (!empty($edit_data)) {
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="img">Image <span style="color:red;">*</span></label>
-                                                <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
                                                 <input type="file" id="img" class="form-control"
                                                     placeholder="img" name="img"
                                                     style="text-transform: capitalize; display: block; width: 100%;"
                                                     accept="image/jpeg, image/png" 
                                                     autocomplete="off" />
-                                                  
+                                                    <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>  
                                                 <h5><small class="text-danger" id="image_err"></small></h5>
                                                 @error('img')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -186,13 +185,13 @@ if (!empty($edit_data)) {
  
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="start_time">Start Date<span style="color:red;">*</span></label>
-                                                <input type="date" id="start_time" class="form-control"
-                                                    placeholder="Start Date" name="start_time"
-                                                    value="{{ old('start_time', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d\TH:i:s') : '') }}" 
+                                                <label for="start_date">Start Date<span style="color:red;">*</span></label>
+                                                <input type="date" id="start_date" class="form-control"
+                                                    placeholder="Start Date" name="start_date"
+                                                    value="{{ old('start_date', $start_date ? \Carbon\Carbon::parse($start_date)->format('Y-m-d\TH:i:s') : '') }}" 
                                                     autocomplete="off" />
-                                                <h5><small class="text-danger" id="start_time_err"></small></h5>
-                                                @error('start_time')
+                                                <h5><small class="text-danger" id="start_date_err"></small></h5>
+                                                @error('start_date')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -200,13 +199,13 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="end_time">End Date<span style="color:red;">*</span></label>
-                                                <input type="date" id="end_time" class="form-control"
-                                                    placeholder="End Date" name="end_time"
-                                                    value="{{ old('end_time', $end_time ? \Carbon\Carbon::parse($end_time)->format('Y-m-d\TH:i') : '') }}"  
+                                                <label for="end_date">End Date<span style="color:red;">*</span></label>
+                                                <input type="date" id="end_date" class="form-control"
+                                                    placeholder="End Date" name="end_date"
+                                                    value="{{ old('end_date', $end_date ? \Carbon\Carbon::parse($end_date)->format('Y-m-d\TH:i') : '') }}"  
                                                     autocomplete="off" />
-                                                <h5><small class="text-danger" id="end_time_err"></small></h5>
-                                                @error('end_time')
+                                                <h5><small class="text-danger" id="end_date_err"></small></h5>
+                                                @error('end_date')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>

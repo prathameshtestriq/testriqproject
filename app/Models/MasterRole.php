@@ -63,8 +63,8 @@ class MasterRole extends Model
 	{
        
         $ssql = 'UPDATE role_master SET 
-        name = : name,
-        WHERE id=:id';
+        name = :name
+        WHERE id = :id';
 
         $bindings = array(
             'name' => $request->role_name,

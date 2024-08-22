@@ -13,14 +13,14 @@
                             <div class="content-header-left">
                                 <div class="row breadcrumbs-top">
                                     <div class="col-sm-12">
-                                        <h2 class="content-header-title float-left mb-0">Users List</h2>
+                                        <h2 class="content-header-title float-left mb-0">Users</h2>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</a></li>
                                         <li class="breadcrumb-item">Users</li>
                                         <li class="breadcrumb-item active" aria-current="page">Users List</li>
                                     </ol>
@@ -75,55 +75,65 @@
                                     <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-3 col-12">
-                                                <label for="form-control">User Name:</label>
+                                                <label for="form-control">User Name</label>
                                                 <input type="text" id="user_name" class="form-control"
                                                         placeholder="User Name" name="name"
                                                         value="{{ $search_name }}" autocomplete="off" />
                                             </div>
+
                                             <div class="col-sm-3 col-12">
-                                                <label for="form-control">Email Id:</label>
+                                                <label for="form-control">Email Id</label>
                                                 <input type="text" id="email_id" class="form-control"
                                                     placeholder="Email Id" name="email_id" value="{{ $search_email_id }}"
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-3 col-12">
-                                                <label for="form-control">Mobile No:</label>
+                                                <label for="form-control">Mobile No</label>
                                                 <input type="text" id="mobile_no" class="form-control"
                                                     placeholder="Mobile No" name="mobile_no" value="{{ $search_mobile }}"
                                                     autocomplete="off" />
                                             </div>
 
                                             <div class="col-sm-3 col-12">
-                                                <label for="state">States:</label>
-                                                <select id="state" name="state" class="form-control select2">
-                                                    <option value="">Select State</option>
-                                                    <?php 
-                                                        foreach ($states as $value) {
-                                                            $selected = (old('state',$search_state) == $value->id) ? 'selected' : '';
-                                                            ?>
-                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>>
-                                                                <?php echo $value->name; ?>
-                                                            </option>
-                                                            <?php 
+                                                <label for="form-control">Country</label>
+                                                <select id="country" name="country" class="select2 form-control">
+                                                    <option value="">All country</option>
+                                                    <?php  
+                                                    foreach ($countries as $value)
+                                                    {  
+                                                        $selected = '';
+                                                        if(old('country', $search_country) == $value->id){
+                                                            $selected = 'selected';
                                                         }
+                                                        ?>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                        <?php 
+                                                    }
                                                     ?>
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-3 col-12">
-                                                <label for="city">Cities:</label>
-                                                <select id="city" name="city" class="form-control select2">
-                                                    <option value="">Select City</option>
-                                                    <!-- Cities will be populated via AJAX -->
-                                                </select>
+                                            <div class="col-sm-3 col-12 mt-1">
+                                                <label for="form-control">State</label>
+                                                <select id="state" name="state" class="select2 form-control">
+                                                    <option value="">All state</option>
+                                                </select>  
+                                            
                                             </div>
-
-                                            <div class="col-sm-3 col-12">
+    
+                                            <div class="col-sm-3 col-12 mt-1">
+                                                <label for="form-control">City</label>
+                                                <select id="city" name="city" class="select2 form-control">
+                                                    <option value="">All City</option>
+                                                </select>  
+                                               
+                                            </div>
+                                            <div class="col-sm-3 col-12 mt-1">
                                                 <?php 
                                                    $Gender = array(1=>'Male',2=>'Female',3=>'Other' );    
                                                 ?>
-                                                <label for="form-control"> Gender:</label>
+                                                <label for="form-control">Gender</label>
                                                 <select id="gender" name="gender" class="form-control select2 form-control">
                                                     <option value="">Select  Gender</option>
                                                     <?php 
@@ -141,11 +151,11 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-3 col-12">
+                                            <div class="col-sm-3 col-12 mt-1">
                                                 <?php 
                                                    $Status = array(0=>'Inactive',1=>'Active' );    
                                                 ?>
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="status" name="status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -162,8 +172,27 @@
                                                     ?>
                                                 </select>
                                             </div>
+
+                                            <div class="col-sm-3 col-12 mt-1">
+                                                <label for="form-control">Role</label>
+                                                <select id="role" name="role" class="select2 form-control">
+                                                    <option value="">All Role</option>
+                                                    <?php  
+                                                    foreach ($role_details as $value)
+                                                    {  
+                                                        $selected = '';
+                                                        if(old('role', $search_role) == $value->id){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                        <?php 
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
                                             
-                                            <div class="col-sm-3">
+                                            <div class="col-sm-3 mt-1">
                                                 <?php 
                                                    $Rows = ['10','25','50','100'];    
                                                 ?>
@@ -185,9 +214,10 @@
                                                 </select>
                                             </div>
                                          
-                                            <div class="col-sm-9 mt-2">
+                                            <div class="col-sm-3 mt-1">
+                                                <label for="form-control">&nbsp;</label><br>
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_name) || !empty($search_email_id) || !empty($search_mobile) || !empty($search_state) ||!empty($search_city) || !empty($search_gender) || ($search_status != '') ||(!empty($search_rows)) )
+                                                @if (!empty($search_name) || !empty($search_email_id) || !empty($search_mobile) || !empty($search_state) ||!empty($search_city) || !empty($search_gender) || ($search_status != '') || (!empty($search_rows)) || (!empty($search_country)) || (!empty($search_role)) )
                                                     <a title="Clear" href="{{ url('user/clear_search') }}"
                                                         type="button" class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -196,13 +226,14 @@
                                             </div>
                                            
                                         
-                                            <div class="col-sm-3 float-right mt-2 ">
+                                            <div class="col-sm-3 float-right mt-1">
+                                                <label for="form-control">&nbsp;</label><br>
                                                 @if (!empty($user_array))
-                                                    <a href="{{ url('/user/export_download') }}" class="btn btn-danger text-white float-right ">Download </a>
+                                                    <a href="{{ url('/user/export_download') }}" class="btn btn-danger text-white float-right ml-1">Download </a>
                                                 @endif 
-                                              
-                                                <a href="{{ url('/user/add_edit') }}" class="btn btn-outline-primary float-right">
+                                                <a href="{{ url('/user/add_edit') }}" class="btn btn-outline-primary float-right ">
                                                     <i data-feather="plus"></i><span>Add User</span></a> &nbsp;
+
                                             </div>
                                         </div>
                                     </div>
@@ -211,7 +242,7 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
+                            <table class="table table-striped table-bordered mt-1">
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
@@ -226,14 +257,16 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        {{-- <th class="text-left">User Name</th> --}}
+                                      
                                         <th class="text-left">Email ID/Contact Number</th>
                                         <th class="text-left">Gender</th>
                                         <th class="text-left">Date of Birth</th>
+                                        <th class="text-left">Country</th>
                                         <th class="text-left">State</th>
                                         <th class="text-left">City</th>
+                                        <th class="text-center">Role Name</th>
                                         <th class="text-center">Status</th>
-                                        <th class="text-left">Profile Completion Percentage</th>
+                                        <th class="text-center">Profile Completion <br> Percentage</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -244,8 +277,11 @@
                                         $i = $Offset;
                                         // $i = 0;
                                         ?>
-                                        <?php foreach ($user_array as $val){
-                                                $i++;?>
+                                        <?php 
+                                            foreach ($user_array as $val){
+                                                $i++;
+                                                $url =  config('custom.url_link');
+                                        ?>
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
                                                 <td class="text-left">{{ $val->firstname }} {{ $val->lastname }}</td>
@@ -261,8 +297,10 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-left">{{ date('d-m-Y',strtotime($val->dob)) }}</td>
+                                                <td class="text-left">{{ !empty($val->country_name) ? $val->country_name : '-' }}</td>
                                                 <td class="text-left">{{ !empty($val->state_name) ? $val->state_name : '-'}}</td>
                                                 <td class="text-left">{{ !empty($val->city_name) ? $val->city_name : '-' }}</td>
+                                                <td class="text-left">{{ !empty($val->role_name) ? $val->role_name : '-' }}</td>
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success">
                                                         <input type="checkbox" class="custom-control-input"
@@ -274,18 +312,20 @@
                                                         </label>
                                                     </div>
                                                 </td>
-                                                <td class="text-center"><?php echo !empty($val->profile_completion_percentage) ? number_format($val->profile_completion_percentage,2).'%' : '' ?></td> 
+                                                <td class="text-center">
+                                                <?php echo !empty($val->profile_completion_percentage) ? number_format($val->profile_completion_percentage,2).'%' : ''  ?>
+                                                </td> 
                                                
 
-                                                <td>
-                                                    <a href="https://swtprime.com/Races2.0_Frontend/in/Nashik/1/<?php echo $val->email; ?>/<?php echo $val->password; ?>" target="_blank">
+                                                <td width="10%">
+                                                     <a href="<?php echo  $url.''.$val->email; ?>/<?php echo $val->password; ?>" target="_blank">
                                                         <i class="fa fa-eye btn btn-primary btn-sm" title="Login As Organiser"></i>
                                                     </a>
-
+                                                    
                                                     <a href="{{ url('/user/add_edit', $val->id) }}"><i
-                                                            class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
+                                                            class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                                     <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                        onclick="delUser({{ $val->id }})" title="delete"></i>
+                                                        onclick="delUser({{ $val->id }})" title="Delete"></i>
                                                 </td>
                                             </tr>
                                       <?php }
@@ -341,7 +381,7 @@ $(document).ready(function() {
         var url = '<?php echo url('user/delete'); ?>';
         url = url + '/' + id;
         //    alert(url);
-        bConfirm = confirm('Are you sure you want to remove this User');
+        bConfirm = confirm('Are you sure you want to remove this record ?');
         if (bConfirm) {
             window.location.href = url;
         } else {
@@ -398,6 +438,59 @@ $(document).ready(function() {
             return false;
         }
     }
+
+
+
+$(document).ready(function() {
+  $('#country').change(function() {
+      var countryId = $(this).val();
+      if (countryId) {
+          $.ajax({
+              url: '/get_states/' + countryId,
+              type: 'GET',
+              success: function(data) {
+                  console.log(data);
+                  var stateDropdown = $('#state');
+                  stateDropdown.empty();
+                  stateDropdown.append('<option value="">All State</option>');
+                  $.each(data.states, function(index, state) {
+                      stateDropdown.append('<option value="' + state.id + '">' + state.name + '</option>');
+                  });
+              }
+          });
+      } else {
+          $('#state').empty().append('<option value="">All state</option>');
+          $('#city').empty().append('<option value="">All City</option>');
+      }
+  });
+ 
+  
+});
+$(document).ready(function() {
+  $('#state').change(function() {
+      // alert("hereemldcklk");
+      var stateId = $(this).val();
+      if (stateId) {
+          $.ajax({
+              url: '/get_cities/' + stateId,
+              type: 'GET',
+              success: function(data) {
+                  console.log(data);
+                  var cityDropdown = $('#city');
+                  cityDropdown.empty();
+                  cityDropdown.append('<option value="">All City</option>');
+                  $.each(data.cities, function(index, city) {
+                      cityDropdown.append('<option value="' + city.id + '">' + city.name + '</option>');
+                  });
+              
+              }
+          });
+      } else {
+          $('#city').empty().append('<option value="">All City</option>');
+      }
+  }); 
+   
+});
     
     
   

@@ -90,10 +90,10 @@ class User extends Authenticatable
     {
         $a_return = [];
 
-        $s_sql = 'SELECT u.id, u.firstname,u.lastname,u.is_active,u.email,u.mobile,u.gender,u.dob,u.profile_completion_percentage,u.password,(SELECT name FROM  states s WHERE u.state = s.id) as state_name,(SELECT name FROM  cities s WHERE u.city = s.id) as city_name
-                FROM users u WHERE 1=1';
+        $s_sql = 'SELECT u.id, u.firstname,u.lastname,u.is_active,u.email,u.password,u.mobile,u.gender,u.dob,u.profile_completion_percentage,u.role,(SELECT name FROM  states s WHERE u.state = s.id) as state_name,(SELECT name FROM  cities s WHERE u.city = s.id) as city_name,(SELECT name FROM  countries cs WHERE u.country = cs.id) as country_name, (SELECT name FROM role_master WHERE id = u.role) as role_name
+        FROM users u WHERE 1=1';
 
-        if(!empty( $a_search['search_name'])){
+        if(!empty($a_search['search_name'])){
             $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
         } 
 
@@ -116,10 +116,17 @@ class User extends Authenticatable
             $s_sql .= ' AND (LOWER(u.gender) LIKE \'%' . strtolower($a_search['search_gender']) . '%\')';
         }
 
-
         if(isset( $a_search['search_status'])){
             $s_sql .= ' AND (LOWER(u.is_active) LIKE \'%' . strtolower($a_search['search_status']) . '%\')';
         } 
+        if(!empty( $a_search['search_country'])){
+            $s_sql .= ' AND (LOWER(u.country) LIKE \'%' . strtolower($a_search['search_country']) . '%\')';
+        } 
+
+        if(!empty($a_search['search_role'])){
+            $s_sql .= ' AND u.role = '.$a_search['search_role'].' ';
+        } 
+
 
         // dd($s_sql);
         if ($limit > 0) {
@@ -141,12 +148,6 @@ class User extends Authenticatable
         // dd($a_search);
         $s_sql = 'SELECT count(id) as count FROM users u WHERE 1=1';
 
-        // if (!empty($a_search['search_name'])) {
-        //     $s_sql .= ' AND (LOWER(u.firstname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-        //     $s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-        //     $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
-        // }
-
         if(!empty( $a_search['search_name'])){
             $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
         } 
@@ -157,6 +158,9 @@ class User extends Authenticatable
 
         if(!empty( $a_search['search_mobile'])){
             $s_sql .= ' AND (LOWER(u.mobile) LIKE \'%' . strtolower($a_search['search_mobile']) . '%\')';
+        } 
+        if(!empty( $a_search['search_country'])){
+            $s_sql .= ' AND (LOWER(u.country) LIKE \'%' . strtolower($a_search['search_country']) . '%\')';
         } 
 
         if(!empty( $a_search['search_state'])){
@@ -174,7 +178,9 @@ class User extends Authenticatable
             $s_sql .= ' AND (LOWER(u.is_active) LIKE \'%' . strtolower($a_search['search_status']) . '%\')';
         } 
 
-       
+        if(!empty($a_search['search_role'])){
+            $s_sql .= ' AND u.role = '.$a_search['search_role'].' ';
+        } 
         
         $CountsResult = DB::select($s_sql);
         if (!empty($CountsResult)) {
@@ -186,47 +192,40 @@ class User extends Authenticatable
 
     public static function add_user($request)
     {
-        dd($request->all());
-        // $firstname = (!empty($request->firstname)) ? $request->firstname : '';
-        // $lastname = (!empty($request->lastname)) ? $request->lastname : '';
-        // $email = (!empty($request->email)) ? $request->email : '';
-        // $password = (!empty($request->password)) ? $request->password : '';
-        // $username = !empty($request->username) ? $request->username : '';
-        // $user_role = !empty($request->user_role) ? $request->user_role : '0';
-        // if ($request->status == 'active') {
-        //     $status = 1;
-        // }
-        // if ($request->status == 'inactive') {
-        //     $status = 0;
-        // }
-
+       
         $firstname = (!empty($request->firstname)) ? $request->firstname : '';
         $lastname = (!empty($request->lastname)) ? $request->lastname : '';
         $email = (!empty($request->email)) ? $request->email : '';
         $password = (!empty($request->password)) ? $request->password : '';
-        $username = !empty($request->username) ? $request->username : '';
+        // $username = !empty($request->username) ? $request->username : '';
         $user_role = !empty($request->type) ? $request->type : '0';
-        // $status = $request->status == 'active' ? 1 : 0;
+        $country = !empty($request->country) ? $request->country : '0';
         $state = !empty($request->state) ? $request->state : '0';
         $city = !empty($request->city) ? $request->city : '0';
         $gender = !empty($request->gender) ? $request->gender : '0';
+        $dob = !empty($request->dob) ? $request->dob : '0';
+        $mobile = !empty($request->contact_number) ? $request->contact_number :' '; 
 
+        $role = !empty($request->role) ? $request->role : 0; 
 
-        $sSQL = 'INSERT INTO users(firstname, lastname, email, password, mobile, type,state,city,gender)
-                 VALUES(:firstname, :lastname, :email, :password, :mobile, :type,:state,:city,:gender)';
+        $sSQL = 'INSERT INTO users(firstname, lastname, email, password, mobile, type,country,state,city,dob,gender,role)
+                 VALUES(:firstname, :lastname, :email, :password, :mobile, :type,:country,:state,:city,:dob,:gender,:role)';
 
         $bindings = array(
             'firstname' => $firstname,
             'lastname' => $lastname,
             'email' => $email,
             'password' => md5($password),
-            'mobile' => $request->mobile,
+            'mobile' => $mobile,
             'type' => $user_role,
+            'country' => $country,
             'state'=> $state,
             'city'=>$city,
-            'gender'=>$gender
+            'dob'=>$dob,
+            'gender'=>$gender,
+            'role'=>$role
         );
-dd($bindings);
+        //  dd($bindings);
         $result = DB::insert($sSQL, $bindings);
         // dd($Result);
 
@@ -234,18 +233,19 @@ dd($bindings);
     public static function update_user($iId, $request)
     {  
         // dd($request->all());
-       
         $firstname = (!empty($request->firstname)) ? $request->firstname : '';
         $lastname = (!empty($request->lastname)) ? $request->lastname : '';
         $email = (!empty($request->email)) ? $request->email : '';
         $password = (!empty($request->password)) ? $request->password : '';
-        $mobile_no = !empty($request->mobile) ? $request->mobile : '';
+        // $username = !empty($request->username) ? $request->username : '';
         $user_role = !empty($request->type) ? $request->type : '0';
-        // $status = $request->status == 'active' ? 1 : 0;
+        $country = !empty($request->country) ? $request->country : '0';
         $state = !empty($request->state) ? $request->state : '0';
         $city = !empty($request->city) ? $request->city : '0';
         $gender = !empty($request->gender) ? $request->gender : '0';
-
+        $dob = !empty($request->dob) ? $request->dob : '0';
+        $mobile = !empty($request->contact_number) ? $request->contact_number :' '; 
+        $role = !empty($request->role) ? $request->role : 0; 
 
         if ($iId > 0) {
 
@@ -253,15 +253,18 @@ dd($bindings);
                 'firstname' => $firstname,
                 'lastname' => $lastname,
                 'email' => $email,
-                'mobile' => $mobile_no,
+                'mobile' => $mobile,
                 'type' => $user_role,
                 'state'=> $state,
                 'city'=>$city,
+                'country' => $country,
+                'dob' => $dob,
                 'gender'=>$gender,
+                'role'=>$role,
                 'id' => $iId
             );
 
-            $sSQL = 'UPDATE users SET firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, type =:type,state=:state,city=:city,gender=:gender WHERE id=:id';
+            $sSQL = 'UPDATE users SET firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, type =:type,state=:state,city=:city,country=:country,dob=:dob,gender=:gender,role=:role WHERE id=:id';
 
             // dd($Bindings);
             $result = DB::update($sSQL, $Bindings);

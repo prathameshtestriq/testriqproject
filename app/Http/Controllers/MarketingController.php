@@ -79,11 +79,11 @@ class MarketingController extends Controller
 
             if ($iId > 0) {
                 MarketingModel::update_marketing($iId, $request);
-                $successMessage = ' Marketing Details Updated Successfully';
+                $successMessage = ' Marketing details updated successfully';
             }else{
               
                 MarketingModel::add_marketing($request);
-                $successMessage = 'Marketing Details Added Successfully';
+                $successMessage = 'Marketing details added successfully';
             }
             return redirect('/marketing')->with('success', $successMessage);
 
@@ -103,7 +103,7 @@ class MarketingController extends Controller
 
     public function delete_marketing($iId){
         MarketingModel::delete_marketing($iId);
-        return redirect(url('/marketing'))->with('success', 'Marketing deleted successfully');
+        return redirect(url('/marketing'))->with('success', 'Marketing details deleted successfully');
     }
 
     public function change_active_status(Request $request)

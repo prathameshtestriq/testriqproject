@@ -38,7 +38,7 @@
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Email</li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($id))
@@ -90,7 +90,7 @@
                                             //    $Email_Type = array(1=>'All ',2=>'Email',3=>'Upload CSV' ); 
                                             $Email_Type = array(1=>'Select Filter ',2=>'Manual Emails',3=>'Upload CSV' ); 
                                             ?>
-                                            <label for="form-control">Email Type<span
+                                            <label for="form-control">Email Type <span
                                                 style="color:red;">*</span></label>
                                             <select id="email_type" name="email_type" class="form-control select2 form-control" onchange="hideshow_event_receiver(event.target.value)">
                                                 <option value="">Select Type</option>
@@ -120,7 +120,7 @@
                                             //    $Receivers = ['All User','All Organizer','All Registration','All Participant'];  
                                             $Receivers = ['All Organizer','All Registration','All Participant'];      
                                             ?>
-                                            <label for="form-control">Receivers<span
+                                            <label for="form-control">Receivers <span
                                                 style="color:red;">*</span></label>
                                             <select id="receiver" name="receiver" class="form-control select2 form-control"  onchange="hideshow_event(event.target.value)" >
                                                 <option value="">Select Receiver</option>
@@ -147,7 +147,7 @@
                                         <div class="col-md-6 col-12 event mt-2" style="display:none;">
                                             <div class="form-group ">
                                                 <label for="event">Event
-                                                    <span style="color:red;">*</span>
+                                                     <span style="color:red;">*</span>
                                                 </label>
                                                     <?php $event_name=[];
                                                    if(!empty($event_ids))
@@ -190,7 +190,7 @@
                                        
                                         <div class="col-md-6 col-12 email mt-2" style="display:none;">
                                             <div class="form-group ">
-                                                <label for="email">Email Address<span
+                                                <label for="email">Email Address <span
                                                         style="color:red;">*</span></label>
                                                  <textarea name="email" id="email" value="{{ old('email') }}" class="form-control" cols="1" rows="1"></textarea>   
                                                 <h5><small class="text-danger" id="email_err"></small></h5>
@@ -220,7 +220,7 @@
                                         {{-- {{ old('subject', $subject) }} --}}
                                         <div class="col-md-6 col-12 mt-2">
                                             <div class="form-group">
-                                                <label for="subject">Subject<span
+                                                <label for="subject">Subject <span
                                                         style="color:red;">*</span></label>
                                                 <input type="text" id="subject" class="form-control"
                                                     placeholder="Subject Name" name="subject"
@@ -258,7 +258,7 @@
                                         
                                         <div class="col-md-6 col-12">
                                             <div class="form-group email_date" style="{{ old('date') == 'shedule_date' ? '' : 'display:none;' }}">
-                                                <label for="date">Date<span style="color:red;">*</span></label>
+                                                <label for="date">Date <span style="color:red;">*</span></label>
                                                 <input type="datetime-local" id="date" class="form-control"
                                                        placeholder="Start Date" name="shedulingdate" value="{{ old('shedulingdate') }}"
                                                        autocomplete="off" />
@@ -273,7 +273,7 @@
                                        
                                         <div class="col-md-12 col-12 mt-2">
                                             <div class="form-group">
-                                                <label for="message">message<span
+                                                <label for="message">Message <span
                                                         style="color:red;">*</span></label>
                                                  <textarea name="message" id="message" value="{{ old('message') }}" class="form-control" cols="30" rows="10"></textarea>   
                                                 <h5><small class="text-danger" id="message_err"></small></h5>

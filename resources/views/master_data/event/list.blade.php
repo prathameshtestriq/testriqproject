@@ -12,14 +12,14 @@
                             <div class="content-header-left">
                                 <div class="row breadcrumbs-top">
                                     <div class="col-sm-12">
-                                        <h2 class="content-header-title float-left mb-0">Event List</h2>
+                                        <h2 class="content-header-title float-left mb-0">Event </h2>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Events</li>
                                         <li class="breadcrumb-item active" aria-current="page">Event List</li>
                                     </ol>
@@ -81,14 +81,14 @@
                                           
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Booking Date:</label>
-                                                <input type="datetime-local" id="event_start_date" class="form-control"
+                                                <input type="date" id="event_start_date" class="form-control"
                                                     placeholder="Start Date" name="event_start_date"   value="{{ old('start_date', $search_event_start_date ? \Carbon\Carbon::parse($search_event_start_date)->format('Y-m-d\TH:i') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Booking Date:</label>
-                                                <input type="datetime-local" id="event_end_date" class="form-control"
+                                                <input type="date" id="event_end_date" class="form-control"
                                                     placeholder="End Date" name="event_end_date" value="{{ old('end_date', $search_event_end_date ? \Carbon\Carbon::parse($search_event_end_date)->format('Y-m-d\TH:i') : '') }}"
                                                     autocomplete="off" />
                                             </div>
@@ -249,7 +249,7 @@
 
             url = url + '/' + iId;
             // alert(url);
-            Confirmation = confirm('Are you sure you want to remove this event');
+            Confirmation = confirm('Are you sure you want to remove this record ?');
             if (Confirmation) {
 
                 window.location.href = url;

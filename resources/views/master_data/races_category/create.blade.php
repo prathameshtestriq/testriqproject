@@ -34,7 +34,7 @@
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Type</li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($id))
@@ -96,13 +96,14 @@
 
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
-                                                <label for="logo">Image <span style="color:red;">*</span></label>
-                                                <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
+                                                <label for="logo">Races Logo <span style="color:red;">*</span></label>
+                                               
                                                 <input type="file" id="logo" class="form-control"
                                                     placeholder="Logo Name" name="logo"
                                                     style="text-transform: capitalize; display: block; width: 100%;"
                                                     accept="image/jpeg, image/png"
                                                     autocomplete="off" />
+                                                    <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
                                                 <h5><small class="text-danger" id="logo_err"></small></h5>
                                                 @error('logo')
                                                     <span class="error" style="color:red;">{{ $message }}</span>

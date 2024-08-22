@@ -1729,9 +1729,9 @@ class UserController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-     public function addEditOrgUser(Request $request)
+    public function addEditOrgUser(Request $request)
     {
-        // return $request->file('upload_csv');
+
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
@@ -1816,6 +1816,10 @@ class UserController extends Controller
                         $ResponseData = $flag;
                     } else {
 
+                        $SQL1 = "SELECT CONCAT(firstname,' ', lastname) AS username FROM users WHERE id = :user_id";
+                        $aUserResult = DB::select($SQL1, array("user_id" => $UserId));
+                        $username = !empty($aUserResult) ? $aUserResult[0]->username : '';
+
                         $Bindings = array(
                             "user_role" => $UserRole,
                             "firstname" => $firstname,
@@ -1835,7 +1839,7 @@ class UserController extends Controller
                         $last_inserted_id = DB::getPdo()->lastInsertId();
                         //dd($last_inserted_id);
                         $Email = new Emails();
-                        $Email->send_OrganiserUser_mail($email, $firstname, $lastname);
+                        $Email->send_OrganiserUser_mail($email, $firstname, $lastname, $username, $last_inserted_id);
 
                         $message = 'Organising user added successfully';
                         $ResposneCode = 200;

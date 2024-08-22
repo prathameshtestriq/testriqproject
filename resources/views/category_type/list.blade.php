@@ -13,14 +13,14 @@
                             <div class="content-header-left">
                                 <div class="row breadcrumbs-top">
                                     <div class="col-sm-12">
-                                        <h2 class="content-header-title float-left mb-0">Category Type List</h2>
+                                        <h2 class="content-header-title float-left mb-0">Category Type </h2>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Category Type</li>
                                         <li class="breadcrumb-item active" aria-current="page">Category Type List</li>
                                     </ol>
@@ -158,7 +158,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="text-center">No Record Found</td>
+                                            <td colspan="5" class="text-center" style="text-align:center; color:red;">No Record Found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -191,7 +191,7 @@
     // }
 
     function delCategory(id) {
-        var bConfirm = confirm('Are you sure you want to remove this category?');
+        var bConfirm = confirm('Are you sure you want to remove this record ?');
         if (bConfirm) {
             var url = '{{ url('category/delete') }}/' + id;
             window.location.href = url;

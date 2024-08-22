@@ -2,6 +2,18 @@
 
 // use Illuminate\Support\Facades\Facade;
 
+$flag = 2;  // 1 - Local / 2 - Prime / 3 - Live
+
+if($flag == 1){
+    $url = 'http://localhost:3000/in/Nashik/1/';
+}else if($flag == 2){
+    $url = 'https://swtprime.com/Races2.0_Frontend/in/Mumbai/1/';
+}else if($flag == 3){
+    $url = 'https://racesregistrations.com/in/Mumbai/1/';
+}else{
+    $url = '';
+}
+
 return [
     'ytcr_fee_percent' =>18,
     'platform_fee_percent' => 18, // previos 10 per set
@@ -101,4 +113,6 @@ return [
 
     'merchant_key' => 'ozLEHc',  // payment details key
     'salt' => 'vvHOCdxxbkTXYASLCevSJ7iDkE8DRBT4',  // payment details salt
+
+    'url_link' => $url, // set url
 ];

@@ -24,10 +24,12 @@ class UserController extends Controller
         session::forget('name');
         session::forget('email');
         session::forget('mobile'); 
+        session::forget('country'); 
         session::forget('state'); 
         session::forget('city'); 
         session::forget('status'); 
         session::forget('gender'); 
+        session::forget('role'); 
         session::forget('rows'); 
         return redirect('/users');
     }
@@ -37,20 +39,24 @@ class UserController extends Controller
         $aReturn['search_name'] = '';
         $aReturn['search_email_id'] ='';
         $aReturn['search_mobile'] = '';
+        $aReturn['search_country'] = '';
         $aReturn['search_state'] = '';
         $aReturn['search_city'] = '';
         $aReturn['search_gender'] = '';
         $aReturn['search_rows'] = '';
+        $aReturn['search_role'] = '';
 
         if(isset($request->form_type) && $request->form_type ==  'search_user'){
             // dd($request->gender);
            session(['name' => $request->name]);
            session(['email' => $request->email_id]);
            session(['mobile' => $request->mobile_no]);
+           session(['country' => $request->country]);
            session(['state' => $request->state]);
            session(['city' => $request->city]);
            session(['status' => $request->status]);
            session(['gender' => $request->gender]);
+           session(['role' => $request->role]);
            session(['rows' => $request->rows]);
 
             return redirect('/users');
@@ -60,13 +66,14 @@ class UserController extends Controller
         $aReturn['search_mobile'] =  (!empty(session('mobile'))) ? session('mobile') : '';
         $status = session('status');
         $aReturn['search_status'] = (isset($status) && $status != '') ? $status : '';
+        $aReturn['search_country'] =  (!empty(session('country'))) ? session('country') :'';
         $aReturn['search_state'] =  (!empty(session('state'))) ? session('state') : '';
         $aReturn['search_city'] =  (!empty(session('city'))) ? session('city') : '';
         $aReturn['search_gender'] =  (!empty(session('gender'))) ? session('gender') : '';
+        $aReturn['search_role'] =  (!empty(session('role'))) ? session('role') : '';
         $aReturn['search_rows'] =  (!empty(session('rows'))) ? session('rows') : '';
 
-
-        // dd($aReturn);
+        // dd($aReturn['search_role']);
         $CountRows=User::get_count($aReturn);
         $PageNo = request()->input('page', 1);
         $Limit = !empty($aReturn['search_rows']) ? $aReturn['search_rows'] : config('custom.per_page');
@@ -75,10 +82,21 @@ class UserController extends Controller
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
         $aReturn["user_array"] =User::get_all($Limit,$aReturn);
+        // dd($aReturn["user_array"]);
+        // $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. 101;
+        // $aReturn["states"] = DB::select($sSQL, array());
 
-        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. 101;
+        $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
+        $aReturn["countries"] = DB::select($sSQL, array());
+
+        $sSQL = 'SELECT id, name,country_id FROM states WHERE 1=1';
         $aReturn["states"] = DB::select($sSQL, array());
 
+        $sSQL = 'SELECT id,name,state_id FROM cities WHERE 1=1';
+        $aReturn["cities"] = DB::select($sSQL, array());
+
+        $sSQL = 'SELECT id,name FROM role_master WHERE status = 1 AND is_deleted = 0';
+        $aReturn["role_details"] = DB::select($sSQL, array());
 
         $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['user_array'], $CountRows, $Limit, $PageNo);
         $aReturn['Paginator']->setPath(request()->url());
@@ -86,47 +104,58 @@ class UserController extends Controller
         return view('users.list',$aReturn);
     }
 
-    public function get_cities(Request $request,$state_id){
-        $sSQL = 'SELECT id,name,state_id FROM cities WHERE state_id =' .$state_id.' AND country_id = '. 101;
-        $aReturn["cities"] = DB::select($sSQL, array());
-        return $aReturn;
-    }
 
-    public function add_edit(Request $request, $iId = 0)
-    {
 
-        $aReturn = [
-            'id' => '',
-            'firstname' => '',
-            'lastname' => '',
-            'email' => '',
-            'mobile' => '',
-            'username' => '',
-            'password' => '',
-            'is_active' => 1,
-            'type' => ''
-        ];
-         // dd($aReturn);
- 
+    public function add_edit(Request $request, $iId = 0){
+        $aReturn['id'] = '';
+        $aReturn['firstname'] = '';
+        $aReturn['lastname'] = '';
+        $aReturn['email'] = '';
+        $aReturn['contact_number'] = '';
+        $aReturn['username'] = '';
+        $aReturn['password'] = '';
+        $aReturn['type'] = '';
+        $aReturn['Tds'] = '';
+        $aReturn['country'] = '';
+        $aReturn['state'] = '';
+        $aReturn['city'] = '';
+        $aReturn['gender'] = '';
+        $aReturn['role'] = '';
+       
         if ($request->has('form_type') && $request->form_type == 'add_edit_user') {
 
             $rules = [
-                'mobile' => 'required|digits:10',
-                'status' => 'required',
-                'type' => 'required'
+                'contact_number' => 'required|digits:10',
+                // 'city'=>'required',
+                'country'=>'required',
+                // 'state'=>'required',
+                'dob' => [
+                    'required',
+                    'date',
+                    function ($attribute, $value, $fail) {
+                        $minAge = 18;
+                        $maxAge = 60;
+                        $birthDate = \Carbon\Carbon::parse($value);
+                        $age = $birthDate->age;
+            
+                        if ($age < $minAge || $age > $maxAge) {
+                            $fail('You must be between 18 and 60 years old.');
+                        }
+                    }
+                ],
+                'type' => 'required',
+                'gender'=> 'required',
             ];
 
-            
-
             if ($iId > 0) {
-                $rules['firstname'] = 'required';
+                $rules['firstname'] = 'required|regex:/^[a-zA-Z\s]+$/';
                 $rules['lastname'][] = Rule::unique('users')->ignore($iId, 'id')->where(function ($query) {
                     return $query->where('firstname', request()->input('firstname'));
                 });
                 $rules['email'] = 'required|email:rfc,dns|unique:users,email,'.$iId.',Id';
                 $rules['password'] = 'nullable|confirmed|min:5';
             } else {
-                $rules['firstname'] = 'required';
+                $rules['firstname'] = 'required|regex:/^[a-zA-Z\s]+$/';
                 $rules['lastname'] = [
                     'required',
                     Rule::unique('users')->where(function ($query) {
@@ -137,45 +166,60 @@ class UserController extends Controller
                 $rules['password'] = 'required|confirmed|min:5';
             }
 
+            $messages = [
+                'firstname.required' => 'The first name field is required.',
+                'firstname.regex' => 'The first name can only contain alphabetic characters.',
+                'lastname.required' => 'The last name field is required.', 
+            ];
 
-            $validator = Validator::make($request->all(), $rules);
+            $request->validate($rules, $messages);
 
-
-            if ($validator->fails()) {
-                return redirect()->back()->withErrors($validator)->withInput();
-            }
 
             if ($iId > 0) {
-                $result = User::update_user($iId, $request);
+                User::update_user($iId, $request);
                 $successMessage = 'User updated successfully';
-            } else {
-
-                $result = User::add_user($request);
+            }else{
+                User::add_user($request);
                 $successMessage = 'User added successfully';
             }
-
             return redirect('/users')->with('success', $successMessage);
-        } else {
 
+        }else{
             if ($iId > 0) { 
-                // $user = User::find($iId);
 
-                // if ($user) {
-                //     $aReturn = $user->toArray();
-                // }
-
-                $Sql = 'SELECT id,firstname,lastname,email,mobile,is_active,type FROM  users WHERE id = '.$iId.' ';
+                $Sql = 'SELECT id,firstname,lastname,email,state,city,mobile,is_active,dob,country,type,role,(SELECT name FROM countries WHERE id = u.country)As country_name,(SELECT name FROM states WHERE id = u.state)As state_name,(SELECT name FROM cities WHERE id = u.city)As city_name,gender FROM  users u WHERE id = '.$iId.' ';
                 $aResult = DB::select($Sql);
                 $aReturn['edit_data'] = !empty($aResult) ? $aResult[0] : [];
-            }
-          
+                // dd( $aReturn['edit_data']);
+            }  
+          }      
+        
+          $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
+          $aReturn["countries"] = DB::select($sSQL, array());
+  
+          $sSQL = 'SELECT id, name,country_id FROM states WHERE 1=1';
+          $aReturn["states"] = DB::select($sSQL, array());
+  
+          $sSQL = 'SELECT id,name,state_id FROM cities WHERE 1=1';
+          $aReturn["cities"] = DB::select($sSQL, array());
 
-            // $userRoles = DB::table('master_roles')->get()->toArray(); // Convert collection to array
-            // $aReturn['type'] = $userRoles;
-            // dd($aReturn);
-            // Return the view with data
-            return view('users.create', $aReturn);
-        }
+          $sSQL = 'SELECT id,name FROM role_master WHERE status = 1 AND is_deleted = 0';
+          $aReturn["role_details"] = DB::select($sSQL, array());
+  
+          return view('users.create', $aReturn);
+    }
+
+ 
+    public function get_states(Request $request,$country_id){
+        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $country_id;
+        $Return["states"] = DB::select($sSQL, array());
+        // dd($Return["states"]);
+        return $Return;
+    }
+    public function get_cities(Request $request,$state_id){
+        $sSQL = 'SELECT id,name,state_id FROM cities WHERE state_id =' .$state_id.' AND country_id = '. 101;
+        $Return["cities"] = DB::select($sSQL, array());
+        return $Return;
     }
 
     public function change_active_status(Request $request)

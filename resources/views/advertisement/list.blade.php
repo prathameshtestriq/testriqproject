@@ -37,14 +37,14 @@
                         <div class="content-header-left">
                             <div class="row breadcrumbs-top">
                                 <div class="col-sm-12">
-                                    <h2 class="content-header-title float-left mb-0">Advertisemnt List</h2>
+                                    <h2 class="content-header-title float-left mb-0">Advertisement </h2>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb mr-1">
-                                    <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                    <li class="breadcrumb-item">Home</li>
                                     <li class="breadcrumb-item">Advertisement</li>
                                     <li class="breadcrumb-item active" aria-current="page">Advertisement List</li>
                                 </ol>
@@ -108,14 +108,14 @@
                                            
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Date:</label>
-                                                <input type="datetime-local" id="start_booking_date1" class="form-control"
+                                                <input type="date" id="start_booking_date1" class="form-control"
                                                     placeholder="Start Date" name="start_date"   value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d\TH:i') : '') }}"  
                                                     autocomplete="off" />
                                             </div>
                                            
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Date:</label>
-                                                <input type="datetime-local" id="end_booking_date1" class="form-control"
+                                                <input type="date" id="end_booking_date1" class="form-control"
                                                     placeholder="End Date" name="end_date"  value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d\TH:i') : '') }}" 
                                                     autocomplete="off" />
                                             </div>
@@ -156,7 +156,7 @@
                                     </div>
                                     <div class="col-sm-4 mt-2">
                                         <a href="{{ url('/advertisement/add_edit') }}" class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add advertisement</span></a>
+                                            <i data-feather="plus"></i><span>Add Advertisement</span></a>
                                     </div>
                                 </div>
                             </div>
@@ -198,8 +198,8 @@
                                                 <td class="text-center">{{ $i }}</td>
                                                 <td class="text-left">{{ $val->name }}</td>
                                                 <td class="text-left">{{ $val->position }}</td>
-                                                <td class="text-left">{{ date('d-m-Y H:i:s', $val->start_time)  }}</td>
-                                                <td class="text-left">{{ date('d-m-Y H:i:s', $val->end_time)  }}</td>
+                                                <td class="text-left">{{ date('d-m-Y ', $val->start_time)  }}</td>
+                                                <td class="text-left">{{ date('d-m-Y ', $val->end_time)  }}</td>
                                                 <td class="t-center text-center">
 
                                                     <a target="_blank" href="{{ asset('uploads/images/' . $val->img) }}">
@@ -258,7 +258,7 @@
         var url = '<?php echo url('advertisement/delete'); ?>';
         url = url + '/' + id;
         //    alert(url);
-        bConfirm = confirm('Are you sure you want to remove this advertisement');
+        bConfirm = confirm('Are you sure you want to remove this record ?');
         if (bConfirm) {
             window.location.href = url;
         } else {

@@ -133,7 +133,7 @@ class EmailSendingController extends Controller
             // dd($email);
            
             EmailSendingModel::add_email($request, $email);
-            $successMessage = 'Email Sending Successfully';
+            $successMessage = 'Email sending successfully';
 
             return redirect('/email_sending')->with('success', $successMessage);
 

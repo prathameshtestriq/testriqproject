@@ -99,6 +99,7 @@ class LoginController extends Controller
                                     $Exist = DB::select($SQL1, array('email' => $aPost['email'], 'mobile' => $aPost['mobile']));
 
                                     if (sizeof($Exist) == 0) {
+                                        $organising_user_id = !empty($aPost['organising_user_id']) ? $aPost['organising_user_id'] : 0;
 
                                         $Binding = array(
                                             'firstname' => $aPost['firstname'],
@@ -108,10 +109,11 @@ class LoginController extends Controller
                                             'dob' => date('Y-m-d', strtotime($aPost['dob'])),
                                             'gender' => $aPost['gender'],
                                             'password' => md5($aPost['password']),
-                                            'created_at' => strtotime('now')
+                                            'created_at' => strtotime('now'),
+                                            'organizer_user' => $organising_user_id
                                         );
 
-                                        $SQL2 = 'INSERT INTO users (firstname,lastname,mobile,email,dob,gender,password,created_at) VALUES(:firstname,:lastname,:mobile,:email,:dob,:gender,:password,:created_at)';
+                                        $SQL2 = 'INSERT INTO users (firstname,lastname,mobile,email,dob,gender,password,created_at,organizer_user) VALUES(:firstname,:lastname,:mobile,:email,:dob,:gender,:password,:created_at,:organizer_user)';
                                         DB::select($SQL2, $Binding);
 
                                         $lastInsertedId = DB::getPdo()->lastInsertId();
@@ -417,7 +419,7 @@ class LoginController extends Controller
             $oUser = DB::select($sql1, array('email' => $aPost['Email']));
             // dd(count($oUser));
             if (count($oUser) == 1) {
-                $sql2 = 'SELECT * FROM users WHERE id=:id AND password =:password';
+                $sql2 = 'SELECT *,(select name from role_master where id = users.role) as role_name FROM users WHERE id=:id AND password =:password';
 
                 if(!empty($LoginAsOrganiser)){
                     $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => $aPost['Password'])); 
@@ -470,9 +472,16 @@ class LoginController extends Controller
                                 //-------------- organizer user module access rights
                                 $SQL1 = 'SELECT id,(select name from role_master where id = organiser_users.user_role) as role_name FROM organiser_users WHERE id=:id AND status = 1';
                                 $aRoleResult = DB::select($SQL1, array('id' => $aResult[0]->organizer_user));
-                                $ResponseData['role_name'] = !empty($aRoleResult) ? $aRoleResult[0]->role_name : '';
 
-                                $aOrganizerUserModules = LoginController::OrganizerUserAccessMdules($aResult[0]->id,$aResult[0]->organizer_user);
+                                if(!empty($aRoleResult)){
+                                    $ResponseData['role_name'] = $aRoleResult[0]->role_name;
+                                }else if(!empty($value->role_name)) {
+                                   $ResponseData['role_name'] = $value->role_name;
+                                }else{
+                                    $ResponseData['role_name'] = '';
+                                }
+
+                                $aOrganizerUserModules = LoginController::OrganizerUserAccessMdules($aResult[0]->id,$aResult[0]->organizer_user,$value->role);
                                 if(!empty($aOrganizerUserModules)){
                                     $ResponseData['OrgUserAccessModules'] = $aOrganizerUserModules;
                                     $ResponseData['AccessRightFlag'] = 1;
@@ -536,16 +545,22 @@ class LoginController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function OrganizerUserAccessMdules($UserId,$OrganizerUserId){
-        // dd($UserId,$OrganizerUserId);
-        $SQL1 = 'SELECT id,user_role FROM organiser_users WHERE id=:id AND status = 1';
-        $aOrgUserResult = DB::select($SQL1, array('id' => $OrganizerUserId));
+    function OrganizerUserAccessMdules($UserId,$OrganizerUserId,$RoleId){
+        // dd($UserId,$OrganizerUserId,$RoleId);
+        
+        $UserAccessArray = [];
+        $user_role = 0;
+        if(!empty($OrganizerUserId)){
+            $SQL1 = 'SELECT id,user_role FROM organiser_users WHERE id=:id AND status = 1';
+            $aOrgUserResult = DB::select($SQL1, array('id' => $OrganizerUserId));
+            $user_role = !empty($aOrgUserResult[0]->user_role) ? $aOrgUserResult[0]->user_role : 0;
+        }else if(!empty($RoleId)){
+            $user_role = $RoleId;
+        }
        
         //dd($aOrgUserResult);
-        $UserAccessArray = [];
-        if(!empty($aOrgUserResult)){
-
-            $user_role = !empty($aOrgUserResult[0]->user_role) ? $aOrgUserResult[0]->user_role : 0;
+        
+        if(!empty($user_role)){
 
             $SQL2 = 'SELECT id,access,(select name from role_master where id = role_access.role_id) as role_name, (select module_name from module_master where id = role_access.module_id) as module_name FROM role_access WHERE role_id=:role_id';
             $aRoleAccessResult = DB::select($SQL2, array('role_id' => $user_role));

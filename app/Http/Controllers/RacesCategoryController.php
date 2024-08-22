@@ -206,7 +206,7 @@ class RacesCategoryController extends Controller
             );
             // dd($Result);       
         }
-        return redirect(url('/type'))->with('success', 'Type Deleted Successfully');
+        return redirect(url('/type'))->with('success', 'Races deleted successfully');
     }
     public function change_active_status(Request $request)
     {

@@ -367,7 +367,7 @@ class EventController extends Controller
             $Result = DB::update($sSQL, array('id' => $iId));
             //    dd($Result);       
         }
-        return redirect('/event')->with('success', 'event deleted successfully');
+        return redirect('/event')->with('success', 'Event deleted successfully');
     }
 
     public function getStates(Request $request)

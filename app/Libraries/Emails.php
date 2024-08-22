@@ -231,11 +231,15 @@ Welcome aboard!
     }
     
     // //----------- send email for Organiser Users
-    public function send_OrganiserUser_mail($user_email, $firstname, $lastname)
+    public function send_OrganiserUser_mail($user_email, $firstname, $lastname, $username, $orgId)
     {   
+        $send_link = "http://localhost:3000/in/Nashik/".$orgId."/".$user_email;
+
         $message = 'RACES invitation - Your been added as a team member To .<br><br>';
-        $message = 'Hi '.$firstname.' '.$lastname.', you’ve been added as a team member Vino Mohandas has invited you...<br><br>';
-        $message .= '<br><br><br>';
+        $message = 'Hi '.$firstname.' '.$lastname.', you’ve been added as a team member '.ucfirst($username).' has invited you...<br><br>';
+        $message .= '<br><br>';
+        $message .= '<a href='.$send_link.'>Click Here</a>';
+        $message .= '<br><br>';
         $message .= "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
 
         // $message = "Dear " . $firstname . " " . $lastname . ", <br/>".$user_message.".<br/>";
@@ -250,10 +254,10 @@ Welcome aboard!
         // try {
         $response = $sendgrid->send($email);
         // send mail
-        // $type = "contact us";
-        // $send_mail_to = $user_message;
-        // $subject = "New Inquiry From Contact Page";
-        // $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
+        $type = "Organising Team - RACES Invitation";
+        $send_mail_to = '';
+        $subject = "RACES invitation - You've been added as a team member";
+        $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
     }
 
 
