@@ -153,7 +153,7 @@
                                                 <label for="contact_number">Contact Number <span style="color:red;">*</span></label>
                                                 <input type="text" id="contact_number" class="form-control" name="contact_number"
                                                     placeholder="Enter Contact Number" autocomplete="off" value="{{ old('contact_number', $mobile) }}"
-                                                    inputmode="numeric" pattern="\d*" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+                                                    inputmode="numeric" pattern="\d*" oninput="this.value = this.value.replace(/[^0-9]/g, '');" maxlength="12" />
                                                 <h5><small class="text-danger" id="email_err"></small></h5>
                                                 @error('contact_number')
                                                     <span class="error" style="color:red;">{{ $message }}</span>

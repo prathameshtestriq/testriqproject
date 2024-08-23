@@ -381,6 +381,8 @@ class PaymentGatwayController extends Controller
     {
         // dd($tranid);
 
+        //--------------------------------
+
         $url = 'https://info.payu.in/merchant/postservice?form=2';
         $Merchant_key = config('custom.merchant_key'); // set on custom file
         $SALT = config('custom.salt'); // set on custom file
@@ -388,7 +390,7 @@ class PaymentGatwayController extends Controller
 
         $Sql = 'SELECT id,txnid,amount,created_by FROM booking_payment_details WHERE txnid = "' . $tranid . '" ';
         $aResult = DB::select($Sql);
-        //dd($aResult);
+        // dd($aResult);
         if (!empty($aResult)) {
 
             //-------------
@@ -397,7 +399,7 @@ class PaymentGatwayController extends Controller
 
             $Sql1 = 'SELECT id FROM event_booking WHERE booking_pay_id = ' . $booking_pay_id . ' ';
             $eventBookingResult = DB::select($Sql1);
-            // dd($eventBookingResult);
+            //dd($eventBookingResult);
             if (empty($eventBookingResult)) {
                 $BookingProcess = PaymentGatwayController::book_tickets_third_party($booking_pay_id, $UserId);
             }

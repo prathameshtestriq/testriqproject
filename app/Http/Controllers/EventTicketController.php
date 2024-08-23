@@ -2057,7 +2057,7 @@ class EventTicketController extends Controller
         $empty = false;
         $field = '';
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-        // dd($aToken);
+        //dd($aToken);
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
@@ -2213,6 +2213,7 @@ class EventTicketController extends Controller
         }
         $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
         // dd($Communications);
+        $MessageContent = '';
         if (count($Communications) > 0) {
             $MessageContent = $Communications[0]->message_content;
             $Subject = $Communications[0]->subject_name;
@@ -2243,7 +2244,14 @@ class EventTicketController extends Controller
             }
         }
 
-        // Output the filled message
+        // attach image
+        if(!empty($Communications[0]->content_image)){
+
+            $image_path = url('/').'/uploads/communication_email_images/'.$Communications[0]->content_image;
+            $attach_image = '<img src="'.$image_path.'" alt="Image">';
+            $MessageContent .= ' <br/><br/>';
+            $MessageContent .= $attach_image;
+        }
         // dd($MessageContent);
         $Email = new Emails();
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);

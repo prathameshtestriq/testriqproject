@@ -1987,6 +1987,68 @@ class EventController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function communicationMessageImage(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                    $EventId = $aPost['event_id'];
+                    $UserId = $aPost['user_id'];
+                    $EventCommunicationId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+                
+                    if (!empty($request->file('file'))) {
+                        $Path = public_path('uploads/communication_email_images/');
+                        $logo_image = $request->file('file');
+                        $originalName = $logo_image->getClientOriginalName();
+                        $content_image = $originalName;
+                        $logo_image->move($Path, $content_image);
+
+                        $Bindings = array(
+                            "content_image" => $content_image,
+                            "event_comm_id" => $EventCommunicationId,
+                            "event_id" => $EventId
+                        );
+
+                        $sql = 'UPDATE event_communication SET content_image =:content_image WHERE id = :event_comm_id AND event_id =:event_id';
+                        // dd($sql);
+                        DB::update($sql, $Bindings);
+                    }
+               
+                    $ResposneCode = 200;
+                    $message = "Communication updated successfully";
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+    }
+
     public function addFAQ(Request $request)
     {
         $ResponseData = [];

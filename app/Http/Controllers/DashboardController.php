@@ -84,6 +84,7 @@ class DashboardController extends Controller
         if (!empty($aReturn['search_category'])) {
             $SQL1 .= ' AND b.ticket_id =' . $aReturn['search_category'];
         }
+        // dd($aReturn['search_from_date'],$aReturn['search_to_date']);
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
             $SQL1 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
@@ -254,7 +255,7 @@ class DashboardController extends Controller
             $SQL13 .= ' AND b.ticket_id =' . $aReturn['search_category'];
         }
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
-            $SQL13 .= ' AND b.booking_date BETWEEN ' . $$aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+            $SQL13 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
 
         if (!empty($aReturn['search_event_name'])) {
@@ -297,7 +298,7 @@ class DashboardController extends Controller
             $SQL14 .= ' AND ticket_ids =' . $aReturn['search_category'];
         }
         if (!empty( $aReturn['search_from_date']) && !empty($aReturn['search_to_date'] )) {
-            $SQL14 .= ' AND created_at BETWEEN ' . $$aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'] ;
+            $SQL14 .= ' AND created_at BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'] ;
         }
 
         if (!empty( $aReturn['search_event_name'] )) {
@@ -337,7 +338,7 @@ class DashboardController extends Controller
             $SQL16 .= ' AND b.ticket_id =' . $aReturn['search_category'];
         }
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
-            $SQL16 .= ' AND b.booking_date BETWEEN ' . $$aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+            $SQL16 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
 
         if (!empty($aReturn['search_event_name'])) {
