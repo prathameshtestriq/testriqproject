@@ -49,7 +49,7 @@ if (!empty($edit_data)) {
                                         </h2>
                                     </div>
                                 </div>
-                            </div>
+                            </div> 
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
@@ -157,14 +157,15 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
-                                                <label for="img">Image <span style="color:red;">*</span></label>
+                                                <label for="img">Image <span style="color:red;">*</span>
+                                                <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
+                                                </label>
                                                 <input type="file" id="img" class="form-control"
                                                     placeholder="img" name="img"
-                                                    style="text-transform: capitalize; display: block; width: 100%;"
-                                                    accept="image/jpeg, image/png" 
-                                                    autocomplete="off" />
-                                                    <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>  
-                                                <h5><small class="text-danger" id="image_err"></small></h5>
+                                                    autocomplete="off"  onchange="validateSize(this)" />
+                                                    
+                                                 <span class="error" id="image_err" style="color:red;"></span>
+
                                                 @error('img')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
@@ -231,8 +232,29 @@ if (!empty($edit_data)) {
 @endsection
 
 <script type="text/javascript">
-    function validation() {
+    function validateSize(input) {
+        var isValid = true;
+      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
+      var img = $('#img').val().trim();
+      if(fileSize > 2) {
+        //  alert('File size exceeds 2 MB');
+         if (img !== "") {
+            // alert("here");
+            $('#img').parent().addClass('has-error');
+            $('#image_err').html('The image must be 2MB or below.');
+            $('#img').focus();
+            $('#img').keyup(function() {
+                $('#img').parent().removeClass('has-error');
+                $('#image_err').html('');
+            });
+            isValid = false;
+        }
 
-      
-    }
+        return isValid;
+      }else{
+        
+      }
+   }
+
+   
 </script>

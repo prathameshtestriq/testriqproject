@@ -191,8 +191,8 @@ class Banner extends Model
             'banner_name' => $request->banner_name,
             'banner_image' => $banner_image_name, // Use $banner_image_name here
             'banner_url' => $request->banner_url,
-            'start_time' => strtotime($request->start_time),
-            'end_time' => strtotime($request->end_time),
+            'start_time' => strtotime($request->start_date),
+            'end_time' => strtotime($request->end_date),
             'city' => $request->city,
             'state' => $request->state,
             'country' => $request->country,
@@ -235,8 +235,8 @@ class Banner extends Model
         $bindings = array(
             'banner_name' => $request->banner_name,
             'banner_url' => $request->banner_url,
-            'start_time' => strtotime($request->start_time),
-            'end_time' => strtotime($request->end_time),
+            'start_time' => strtotime($request->start_date),
+            'end_time' => strtotime($request->end_date),
             'city' => $request->city,
             'state' => $request->state,
             'country' => $request->country

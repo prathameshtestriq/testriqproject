@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Role Master List')
+@section('title', 'Role Master')
 
 @section('content')
 <section>
@@ -12,14 +12,14 @@
                         <div class="content-header-left">
                             <div class="row breadcrumbs-top">
                                 <div class="col-sm-12">
-                                    <h2 class="content-header-title float-left mb-0">Access Master List</h2>
+                                    <h2 class="content-header-title float-left mb-0">Access Master </h2>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb mr-1">
-                                    <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                    <li class="breadcrumb-item">Home</li>
                                     <li class="breadcrumb-item">Access Master</li>
                                     <li class="breadcrumb-item active" aria-current="page">Access Master List</li>
                                 </ol>

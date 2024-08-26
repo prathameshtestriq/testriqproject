@@ -136,16 +136,18 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
-                                                <label for="banner_image">Banner Image <span style="color:red;">*</span></label>
+                                                <label for="banner_image">Banner Image <span style="color:red;">*</span>
+                                                    <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
+                                                </label>
                                                 <input type="file" id="banner_image" class="form-control"
                                                     placeholder="Enter Banner Url" name="banner_image"
                                                     value="{{ old('banner_image', $banner_image) }}"
-                                                    autocomplete="off" />
-                                                    <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>   
-                                                <h5><small class="text-danger" id="banner_image_err"></small></h5>
-                                                @error('banner_image')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
+                                                    autocomplete="off" onchange="validateSize(this)"  />
+                                                   
+                                                    <span class="error" id="banner_image_err" style="color:red;"></span>
+                                                    @error('banner_image')
+                                                        <span class="error" style="color:red;">{{ $message }}</span>
+                                                    @enderror 
                                             </div>
                                         </div>
                                         <div class="col-md-2 col-12">
@@ -165,15 +167,15 @@ if (!empty($edit_data)) {
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6 col-12">
+                                        <div class="col-md-6 col-12"> 
                                             <div class="form-group">
-                                                <label for="start_time">Start Date <span style="color:red;">*</span></label>
-                                                <input type="date" id="start_time" class="form-control"
-                                                    placeholder="Enter Start Date" name="start_time"
-                                                    value="{{ old('start_time', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d\TH:i:s') : '') }}" 
+                                                <label for="start_date">Start Date <span style="color:red;">*</span></label>
+                                                <input type="date" id="start_date" class="form-control"
+                                                    placeholder="Enter Start Date" name="start_date"
+                                                    value="{{ old('start_date', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d') : '') }}" 
                                                     autocomplete="off" />
-                                                <h5><small class="text-danger" id="start_time_err"></small></h5>
-                                                @error('start_time')
+                                                <h5><small class="text-danger" id="start_date_err"></small></h5>
+                                                @error('start_date')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -181,13 +183,13 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="end_time">End Date <span style="color:red;">*</span></label>
-                                                <input type="date" id="end_time" class="form-control"
-                                                    placeholder="Enter End Date" name="end_time"
-                                                    value="{{ old('end_time', $end_time ? \Carbon\Carbon::parse($end_time)->format('Y-m-d\TH:i') : '') }}"  
+                                                <label for="end_date">End Date <span style="color:red;">*</span></label>
+                                                <input type="date" id="end_date" class="form-control"
+                                                    placeholder="Enter End Date" name="end_date"
+                                                    value="{{ old('end_date', $end_time ? \Carbon\Carbon::parse($end_time)->format('Y-m-d') : '') }}"  
                                                     autocomplete="off" />
-                                                <h5><small class="text-danger" id="end_time_err"></small></h5>
-                                                @error('end_time')
+                                                <h5><small class="text-danger" id="end_date_err"></small></h5>
+                                                @error('end_date')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -352,5 +354,32 @@ if (!empty($edit_data)) {
             }
         });
     });
+  
+    function validateSize(input) {
+        var isValid = true;
+      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
+      var banner_image = $('#banner_image').val().trim();
+ 
+    
+      if(fileSize > 2) {
+         // alert('File size exceeds 2 MB');
+         if (banner_image !== "") {
+            // alert("here");
+            $('#banner_image').parent().addClass('has-error');
+            $('#banner_image_err').html('The image must be 2MB or below.');
+            $('#banner_image').focus();
+            $('#banner_image').keyup(function() {
+                $('#banner_image').parent().removeClass('has-error');
+                $('#banner_image_err').html('');
+            });
+            isValid = false;
+        }
+
+        return isValid;
+      }
+      
+   }
+   
+
 </script>
 

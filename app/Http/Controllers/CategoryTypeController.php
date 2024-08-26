@@ -59,16 +59,16 @@ class CategoryTypeController extends Controller
     {
         $aReturn = [
             'id' => '',
-            'category_name' => '',
-            'category_logo' => '',
+            'category_type_name' => '',
+            'category_logo_name' => '',
             'status' => 1,
             'events' => Event::all()->pluck('name', 'id')->toArray(),
         ];
 
         if ($request->has('form_type') && $request->form_type == 'add_edit_category') {
             $rules = [
-                'category_name' => 'required|unique:category,name,' . $iId . 'id',
-                'category_logo' => 'required',
+                'category_type_name' => 'required|unique:category,name,' . $iId . 'id',
+                'category_logo_name' => 'required',
             ]; 
 
             $validator = Validator::make($request->all(), $rules);

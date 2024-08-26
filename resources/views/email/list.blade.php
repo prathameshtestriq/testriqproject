@@ -72,8 +72,8 @@
                     <div class="card "><br>
                       <form action=""></form>
                         <div class="col-sm-12 mt-2 flaot-end">
-                            <a href="{{ url('email_sending/add') }}" class="btn btn-outline-primary float-right">
-                                <i data-feather="plus"></i><span>Add Email</span></a>
+                            <a href="{{ url('email_sending/add') }}" class="btn btn-outline-primary float-right pr-2">
+                                <i data-feather="plus"></i><span>Add </span></a>
                         </div><br>
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered">

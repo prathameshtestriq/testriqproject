@@ -17,6 +17,7 @@ class RacesCategoryController extends Controller
     {
         session()->forget('name');
         session()->forget('type_status');
+        session()->forget('show_as_home');
         return redirect('/type');
     }
 
@@ -28,16 +29,21 @@ class RacesCategoryController extends Controller
         $aReturn = array();
         $aReturn['search_name'] = '';
         $aReturn['search_type_status'] = '';
+        $aReturn['search_show_as_home'] = '';
         if (isset($request->form_type) && $request->form_type == 'search_type') {
-            // dd('here1');
+            // dd($request->Show_as_home);
             session(['name' => $request->name]);
             session(['type_status' => $request->type_status]);
+            session(['show_as_home' => $request->Show_as_home]);
             return redirect('/type');
         }
         $aReturn['search_name'] = (!empty(session('name'))) ? session('name') : '';
         $type_status = session('type_status');
         $aReturn['search_type_status'] = (isset($type_status) && $type_status != '') ? $type_status : '';
-
+        $show_as_home = session('show_as_home');
+       
+        $aReturn['search_show_as_home'] = (isset($show_as_home) && $show_as_home != '') ? $show_as_home : '';
+     
         $FiltersSql = '';
         //  dd($aReturn['search_district_name']);
 
@@ -47,8 +53,11 @@ class RacesCategoryController extends Controller
             $aReturn['search_name'] = '';
         }
 
-        if(isset( $aReturn['search_type_status'])){
-            $FiltersSql .= ' AND (LOWER(active) LIKE \'%' . strtolower($aReturn['search_type_status']) . '%\')';
+        // if(isset( $aReturn['search_type_status'])){
+        //     $FiltersSql .= ' AND (LOWER(active) LIKE \'%' . strtolower($aReturn['search_type_status']) . '%\')';
+        // } 
+        if(isset( $aReturn['search_show_as_home'])){
+            $FiltersSql .= ' AND (LOWER(show_as_home) LIKE \'%' . strtolower($aReturn['search_show_as_home']) . '%\')';
         } 
      
         //  dd($FiltersSql);
@@ -87,7 +96,7 @@ class RacesCategoryController extends Controller
     {
         // Initialize return data
         $aReturn['name'] = '';
-        $aReturn['logo'] = '';
+        $aReturn['races_logo'] = '';
         $aReturn['show_as_home'] = '';
       
         $aReturn['id'] = '';
@@ -109,30 +118,43 @@ class RacesCategoryController extends Controller
         //dd($allTypes);
         $aReturn['allTypes'] = $selectedTypes; // Pass $allTypes to the view
 
-        //dd($aReturn['allTypes']);
+        // dd($aReturn['allTypes']);
             
         if (isset($request->form_type) && $request->form_type == 'add_edit_type') {
             // Validation rules
         //    dd($request->all());
             $Rules = [
-                'name' => 'required|unique:eTypes,name,' . $iId . 'id',
-                'logo' => 'required|mimes:jpeg,jpg,png,gif|max:2000'
+                'race_category_name' => 'required|unique:eTypes,name,' . $iId . 'id',
+              
+            ];
+
+           if($request->input('show_as_home', '') == 1){
+              $Rules = [
+                'races_logo' =>  'required|mimes:jpeg,jpg,png,gif|max:2000' ,
+              ]; 
+           }
+            $message = [ 
+                'races_logo.required' => 'The logo field is required .',
+                'races_logo.mimes' => 'The logo must be a file of type: jpeg, jpg, png, gif.',
+                // 'logo.size' => 'The logo must be 2MB or below.', 
             ];
     
             // Retrieve data from request
-            $name = $request->input('name', '');
+            $name = $request->input('race_category_name', '');
             $show_as_home = !empty($request->input('show_as_home', ''))? $request->input('show_as_home', '') :'0';
      
             if($iId>0){
               
                 // Determine if image update is required
-                $updateImage = $request->hasFile('logo');
+                if($request->input('show_as_home', '') == 1){
+                   $updateImage = $request->hasFile('races_logo');
+                }
         
                 // Handle image update if necessary
                 $image_name = '';
                 if ($updateImage) {
-                    $image_name = $request->file('logo')->getClientOriginalName();
-                    $request->file('logo')->move(public_path('uploads/type_images/'), $image_name);
+                    $image_name = $request->file('races_logo')->getClientOriginalName();
+                    $request->file('races_logo')->move(public_path('uploads/type_images/'), $image_name);
                 }
         
                 // Update record
@@ -157,17 +179,17 @@ class RacesCategoryController extends Controller
             } else {
                 
                 if ((!empty($request->logo))) {
-                    $image_name = $request->file('logo')->getClientOriginalName();
+                    $image_name = $request->file('races_logo')->getClientOriginalName();
                     //    dd($image_name);
-                    $file = $request->file('logo');
+                    $file = $request->file('races_logo');
                     $url = env('APP_URL');
                     $final_url = $url . 'uploads/type_images';
                     $file->move(public_path('uploads/type_images/'), $final_url . '/' . $image_name);
                 } else {
                     $image_name = '';
                 }
-
-                $request->validate($Rules);
+               
+                $request->validate($Rules, $message);
                 // New event insert logic
                 $sql = 'INSERT INTO eTypes (name, logo, show_as_home) VALUES (:name, :logo, :show_as_home)';
                 $bindings = [

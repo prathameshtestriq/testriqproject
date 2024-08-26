@@ -109,14 +109,14 @@
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Date:</label>
                                                 <input type="date" id="start_booking_date1" class="form-control"
-                                                    placeholder="Start Date" name="start_date"   value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d\TH:i') : '') }}"  
+                                                    placeholder="Start Date" name="start_date"   value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d') : '') }}"  
                                                     autocomplete="off" />
                                             </div>
                                            
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Date:</label>
                                                 <input type="date" id="end_booking_date1" class="form-control"
-                                                    placeholder="End Date" name="end_date"  value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d\TH:i') : '') }}" 
+                                                    placeholder="End Date" name="end_date"  value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d') : '') }}" 
                                                     autocomplete="off" />
                                             </div>
 
@@ -155,8 +155,8 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-4 mt-2">
-                                        <a href="{{ url('/advertisement/add_edit') }}" class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add Advertisement</span></a>
+                                        <a href="{{ url('/advertisement/add_edit') }}" class="btn btn-outline-primary float-right pr-2">
+                                            <i data-feather="plus"></i><span>Add</span></a>
                                     </div>
                                 </div>
                             </div>

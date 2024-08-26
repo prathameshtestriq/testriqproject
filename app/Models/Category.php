@@ -128,8 +128,8 @@ class Category extends Model
         // $logo = $request->category_logo; // Corrected field name
         // $active = $request->status == 'active' ? 1 : 0; // Corrected field name
 
-        $name = $request['category_name'];
-        $logo = $request['category_logo'];
+        $name = $request['category_type_name'];
+        $logo = $request['category_logo_name'];
         //dd($logo);
         $active = $request['status'] == 'active' ? 1 : 0;
     
@@ -150,8 +150,8 @@ class Category extends Model
     
     public static function update_category($iId, $request)
     {
-        $name = $request['category_name'];
-        $logo = $request['category_logo'];
+        $name = $request['category_type_name'];
+        $logo = $request['category_logo_name'];
         $active = $request['status'] == 'active' ? 1 : 0;
     
         if ($iId > 0) {

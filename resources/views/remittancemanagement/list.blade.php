@@ -85,14 +85,14 @@
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Remittance Date:</label>
                                                 <input type="date" id="start_remittance_date" class="form-control"
-                                                    placeholder="Start Date" name="start_remittance_date" value="{{ old('start_remittance_date', $search_start_remittance_date ? \Carbon\Carbon::parse($search_start_remittance_date)->format('Y-m-d\TH:i') : '') }}"   
+                                                    placeholder="Start Date" name="start_remittance_date" value="{{ old('start_remittance_date', $search_start_remittance_date ? \Carbon\Carbon::parse($search_start_remittance_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Remittance Date:</label>
                                                 <input type="date" id="end_remittance_date" class="form-control"
-                                                    placeholder="End Date" name="end_remittance_date" value="{{ old('end_remittance_date', $search_end_remittance_date ? \Carbon\Carbon::parse($search_end_remittance_date)->format('Y-m-d\TH:i') : '') }}"
+                                                    placeholder="End Date" name="end_remittance_date" value="{{ old('end_remittance_date', $search_end_remittance_date ? \Carbon\Carbon::parse($search_end_remittance_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
@@ -157,8 +157,8 @@
                                         @endif
                                         <div class="float-right ml-3">
                                         <a href="{{ url('remittance_management/add') }}"
-                                        class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add Remittance</span></a>
+                                        class="btn btn-outline-primary float-right pr-2">
+                                            <i data-feather="plus"></i><span>Add </span></a>
                                         </div>    
                                     </div>
                                    

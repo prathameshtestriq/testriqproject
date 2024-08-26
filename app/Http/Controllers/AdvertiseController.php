@@ -83,7 +83,7 @@ class AdvertiseController extends Controller
 
             $addetails = DB::select($sql, array($iId));
             $aResult = (array) $addetails[0];
-            // dd($aResult);
+           
         }
 
         if ($request->has('form_type') && $request->form_type == 'add_edit_ad') {
@@ -98,17 +98,15 @@ class AdvertiseController extends Controller
                 'start_date' => 'required',
                 'end_date' => 'required',
                 'position' => 'required', 
-                'img' => !empty($aResult) && $aResult['img'] !== '' ? '' : 'required',
+                'img' => empty($aResult) || $aResult['img'] === '' ? 'required|mimes:jpeg,jpg,png,gif' : '',
             ];
 
-            if ($request->has('img')) {
-                $rules['img'] = 'required|mimes:jpeg,jpg,png,gif|max:2000';
-                // $rules['img'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
-            }
             $message = [ 
                 'url.required' => 'The URL field is required.',
                 'url.regex' => 'The URL must start with "www.", "http://", or "https://".',
-                
+                'img.required' => 'The image field is required .',
+                'img.mimes' => 'The image must be a file of type: jpeg, jpg, png, gif.',
+                // 'img.size' => 'The image must be 2MB or below.', 
             ];
             $validator = Validator::make($request->all(), $rules,$message);
 
@@ -128,7 +126,8 @@ class AdvertiseController extends Controller
 
             return redirect('/advertisement')->with('success', $successMessage);
         } else {
-            $a_return['edit_data'] = $aResult;
+             $a_return['edit_data'] = $aResult;
+            
         }
      
 

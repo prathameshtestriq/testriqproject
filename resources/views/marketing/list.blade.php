@@ -85,14 +85,14 @@
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Date:</label>
                                                 <input type="date" id="start_marketing_date" class="form-control"
-                                                    placeholder="Start Date" name="start_marketing_date" value="{{ old('start_marketing_date', $search_start_marketing_date ? \Carbon\Carbon::parse($search_start_marketing_date)->format('Y-m-d\TH:i') : '') }}"   
+                                                    placeholder="Start Date" name="start_marketing_date" value="{{ old('start_marketing_date', $search_start_marketing_date ? \Carbon\Carbon::parse($search_start_marketing_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Date:</label>
                                                 <input type="date" id="end_marketing_date" class="form-control"
-                                                    placeholder="End Date" name="end_marketing_date" value="{{ old('end_marketing_date', $search_end_marketing_date ? \Carbon\Carbon::parse($search_end_marketing_date)->format('Y-m-d\TH:i') : '') }}"
+                                                    placeholder="End Date" name="end_marketing_date" value="{{ old('end_marketing_date', $search_end_marketing_date ? \Carbon\Carbon::parse($search_end_marketing_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
@@ -131,8 +131,8 @@
                                     </div>
                                     <div class="col-sm-3 mt-2">
                                         <a href="{{ url('marketing/add') }}"
-                                            class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add Markets </span></a>
+                                            class="btn btn-outline-primary float-right pr-2">
+                                            <i data-feather="plus"></i><span>Add </span></a>
                                     </div>
                                         
                                 </div>

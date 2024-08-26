@@ -82,14 +82,14 @@
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Booking Date:</label>
                                                 <input type="date" id="event_start_date" class="form-control"
-                                                    placeholder="Start Date" name="event_start_date"   value="{{ old('start_date', $search_event_start_date ? \Carbon\Carbon::parse($search_event_start_date)->format('Y-m-d\TH:i') : '') }}"   
+                                                    placeholder="Start Date" name="event_start_date"   value="{{ old('start_date', $search_event_start_date ? \Carbon\Carbon::parse($search_event_start_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Booking Date:</label>
                                                 <input type="date" id="event_end_date" class="form-control"
-                                                    placeholder="End Date" name="event_end_date" value="{{ old('end_date', $search_event_end_date ? \Carbon\Carbon::parse($search_event_end_date)->format('Y-m-d\TH:i') : '') }}"
+                                                    placeholder="End Date" name="event_end_date" value="{{ old('end_date', $search_event_end_date ? \Carbon\Carbon::parse($search_event_end_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 

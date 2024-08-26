@@ -25,7 +25,7 @@
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb mr-1">
-                                    <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                    <li class="breadcrumb-item">Home</li>
                                     <li class="breadcrumb-item">Participant</li>
                                     <li class="breadcrumb-item active" aria-current="page">Participants List</li>
                                 </ol>
@@ -139,15 +139,15 @@
                                             </div>
                                             <div class="col-sm-2 col-12 ">
                                                 <label for="form-control">Start Booking Date:</label>
-                                                <input type="datetime-local" id="start_booking_date" class="form-control"
-                                                    placeholder="Start Date" name="start_booking_date" value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d\TH:i') : '') }}"
+                                                <input type="date" id="start_booking_date" class="form-control"
+                                                    placeholder="Start Date" name="start_booking_date" value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
                                           
                                             <div class="col-sm-2 col-12 mt-2">
                                                 <label for="form-control">End Booking Date:</label>
-                                                <input type="datetime-local" id="end_booking_date" class="form-control"
-                                                    placeholder="End Date" name="end_booking_date" value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d\TH:i') : '') }}"
+                                                <input type="date" id="end_booking_date" class="form-control"
+                                                    placeholder="End Date" name="end_booking_date" value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
@@ -170,9 +170,9 @@
                                                     </a>
                                                 @endif
                                                 <div class="float-right">
-                                                    <a href="{{ url('participants_event/'.$event_id.'/export_revenue') }}" class="btn btn-danger text-white ">Revenue </a>
+                                                    <a href="{{ url('participants_event/'.$event_id.'/export_revenue') }}" class="btn btn-danger text-white " title = "Revenue">Revenue </a>
                                                     @if (!empty($event_participants))
-                                                      <a href="{{ url('participants_event/'.$event_id.'/export_download') }}" class="btn btn-danger text-white ">Download </a>
+                                                      <a href="{{ url('participants_event/'.$event_id.'/export_download') }}" class="btn btn-danger text-white " title = "Download">Download </a>
                                                     @endif
                                                     <?php  if($event_id > 0){ ?>
                                                     <a href="{{ url('/event') }}"  class="btn btn-primary ">

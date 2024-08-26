@@ -90,8 +90,8 @@ class BannerController extends Controller
         $a_return['banner_name'] = '';
         $a_return['banner_image'] = ''; 
         $a_return['banner_url'] = '';
-        $a_return['start_time'] = '';
-        $a_return['end_time'] = '';
+        $a_return['start_date'] = '';
+        $a_return['end_date'] = '';
         $a_return['city'] = '';
         $a_return['state'] = 'select id,name from states where flag ';
         $a_return['country'] = '';
@@ -118,26 +118,29 @@ class BannerController extends Controller
             $edit_array = (array) $bannerdetails[0];
            
         }
-         // dd($edit_array);
+        //  dd($edit_array);
 
         if ($request->has('form_type') && $request->form_type == 'add_edit_banner') {
 
             $rules = [
                 'banner_name' => 'required|unique:banner,banner_name,' . $iId . 'id',
                 'banner_url' => 'required',
-                'banner_image' => !empty($edit_array) && $edit_array['banner_image'] !== '' ? '' : 'required',
-                'start_time' => 'required',
-                'end_time' => 'required',
+                'banner_image' => empty($edit_array) || $edit_array['banner_image'] === '' ? 'required|mimes:jpeg,jpg,png,gif' : '',
+                'start_date' => 'required',
+                'end_date' => 'required',
                 'city' => 'required',
                 'state' => 'required',
                 'country' => 'required'
             ];
 
-            if ($request->has('banner_image')) {
-                $rules['banner_image'] = 'required|mimes:jpeg,jpg,png,gif|max:2000';
-            }   
+            
+            $message = [ 
+                'banner_image.required' => 'The image field is required .',
+                'banner_image.mimes' => 'The image must be a file of type: jpeg, jpg, png, gif.',
+                // 'img.size' => 'The image must be 2MB or below.', 
+            ];  
 
-            $validator = Validator::make($request->all(), $rules);
+            $validator = Validator::make($request->all(), $rules,$message);
 
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();
@@ -158,34 +161,10 @@ class BannerController extends Controller
             $a_return['edit_data'] = !empty($edit_array) ? $edit_array : [] ;
         }
 
-        // $cSql = 'select id,name FROM countries where flag = 1';
-        // $a_return['countries_array'] = DB::select($cSql);
-
-        // $a_return['states_array'] = DB::select($sSql);
-        // $ccSql = 'select id,name FROM cities where show_flag = 1';
-
-        // $ccSql = 'select id,name FROM cities where show_flag = 1';
-        // $a_return['cities_array'] = DB::select($ccSql);
-        // dd($a_return['edit_data']);
+      
         return view('Banner.create', $a_return);
     }
 
-
-    // public function get_country_info(Request $request)
-    // {
-    //     $country_data = array();
-    //     if($request->country_id == 1) {
-    //         $country_id = !empty($request->country_id) ? $request->country_id : 0;
-    //         $post = array('country_id' => $country_id);
-    //         $country_data = Master_farmer::get_country_info($country_id, $post);
-    //     }
-
-    //     if($country_data) {
-    //         return $country_data;
-    //     } else {
-    //         return [];
-    //     }
-    // }
 
     public function change_status(Request $request)
     {

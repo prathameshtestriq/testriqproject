@@ -82,30 +82,41 @@
                                     <div class="row">
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
-                                                <label for="name">Race Category Name<span
+                                                <label for="race_category_name">Race Category Name <span
                                                         style="color:red;">*</span></label>
-                                                <input type="text" id="name" class="form-control mt-2"
-                                                    placeholder="Race Category Name" name="name"
-                                                    value="{{ old('name', $name) }}" autocomplete="off" />
-                                                <h5><small class="text-danger" id="name_err"></small></h5>
-                                                @error('name')
+                                                <input type="text" id="race_category_name" class="form-control "
+                                                    placeholder="Race Category Name" name="race_category_name"
+                                                    value="{{ old('race_category_name', $name) }}" autocomplete="off" />
+                                                <h5><small class="text-danger" id="race_category_name_err"></small></h5>
+                                                @error('race_category_name')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-12">
+                                            <div class="form-group mt-2">
+                                                <input type="checkbox" id="show_as_home" class="checkbox m-1" name="show_as_home" value="1"<?php if(old('show_as_home', $show_as_home)==1){ echo 'checked';};?> autocomplete="off" style="transform: scale(1.5);" />
+                                                <label for="show_as_home">Show as home</label>
+                                                <h5><small class="text-danger" id="show_as_home_err"></small></h5>
+                                                @error('show_as_home')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                         </div>
 
-                                        <div class="col-md-4 col-12">
+                                        <div class="col-md-4 col-12" id="races_logo_section" style="display: none;">
                                             <div class="form-group">
-                                                <label for="logo">Races Logo <span style="color:red;">*</span></label>
+                                                <label for="races_logo">Races Logo <span style="color:red;">*</span>
+                                                    <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
+                                                </label>
                                                
-                                                <input type="file" id="logo" class="form-control"
-                                                    placeholder="Logo Name" name="logo"
+                                                <input type="file" id="races_logo" class="form-control"
+                                                    placeholder="Logo Name" name="races_logo"
                                                     style="text-transform: capitalize; display: block; width: 100%;"
                                                     accept="image/jpeg, image/png"
-                                                    autocomplete="off" />
-                                                    <p style="color:red;">Allowed JPEG, JPG or PNG. Max file size of 2 MB</p>
-                                                <h5><small class="text-danger" id="logo_err"></small></h5>
-                                                @error('logo')
+                                                    autocomplete="off" onchange="validateSize(this)"/>
+                                                    <span class="error" id="races_logo_err" style="color:red;"></span>
+                                                @error('races_logo')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -123,16 +134,7 @@
                                             @endif
                                         </div>
 
-                                        <div class="col-md-3 col-12">
-                                            <div class="form-group mt-2">
-                                                <input type="checkbox" id="show_as_home" class="checkbox m-1" name="show_as_home" value="1"<?php if($show_as_home==1){ echo 'checked';};?> autocomplete="off" style="transform: scale(1.5);" />
-                                                <label for="show_as_home">Show as home</label>
-                                                <h5><small class="text-danger" id="show_as_home_err"></small></h5>
-                                                @error('show_as_home')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
+                                        
 
                                         <div class="col-12 text-center mt-1">
                                             <button type="submit" class="btn btn-primary mr-1"
@@ -151,65 +153,51 @@
     </section>
 @endsection
 
-<script type="text/javascript">
-    // function validation() {
 
-    //     var isValid = true;
-    //     if ($('#name').val() == "") {
-    //         $('#name_err').html('Please enter name.');
-    //         $('#name').focus();
-    //         $('#name').keyup(function () {
-    //             $('#name').parent().removeClass('has-error');
-    //             $('#name_err').html('');
-    //         });
-    //         isValid = false;
-    //     }
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Show/Hide races logo section based on checkbox status on page load
+        toggleRacesLogo();
 
-    //     if ($('#type').val() == "") {
-    //         $('#type_err').html('Please enter type.');
-    //         $('#type').focus();
-    //         $('#type').keyup(function () {
-    //             $('#type').parent().removeClass('has-error');
-    //             $('#type_err').html('');
-    //         });
-    //         isValid = false;
-    //     }
+        // Show/Hide races logo section when checkbox is clicked
+        $('#show_as_home').change(function() {
+            toggleRacesLogo();
+        });
 
-    //     if ($('#status').val() == "") {
-    //         $('#status_err').html('Please select status.');
-    //         $('#status').focus();
-    //         $('#status').keyup(function () {
-    //             $('#status').parent().removeClass('has-error');
-    //             $('#status_err').html('');
-    //         });
-    //         isValid = false;
-    //     }
+        function toggleRacesLogo() {
+            if ($('#show_as_home').is(':checked')) {
+                $('#races_logo_section').show();
+                $('#current_logo_section').show();
+            } else {
+                $('#races_logo_section').hide();
+                $('#current_logo_section').hide();
+            }
+        }
+    });
 
-    //     $('.error').html('');
-    //     var logo = $('#logo').prop('files')[0];
-    //     var existingImage = $('input[name="hidden_logo"]').val();
-    //     if (!logo && !existingImage) {
-    //     //  alert('here');
-    //         $('#logo_err').html('Please select a image.');
-    //         isValid = false;
-    //     } else if (logo) {
-    //         var maxSize = 2 * 1024 * 1024; // 2MB in bytes
-    //         if (logo.size > maxSize) {
-    //             $('#logo_err').html('Please select a file smaller than 2MB.');
-    //             $('#logo').val('');
-    //             isValid = false;
-    //         }
+    function validateSize(input) {
+        var isValid = true;
+      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
+      var races_logo = $('#races_logo').val().trim();
+      if(fileSize > 2) {
+        //  alert('File size exceeds 2 MB');
+         if (races_logo !== "") {
+            // alert("here");
+            $('#races_logo').parent().addClass('has-error');
+            $('#races_logo_err').html('The image must be 2MB or below.');
+            $('#races_logo').focus();
+            $('#races_logo').keyup(function() {
+                $('#races_logo').parent().removeClass('has-error');
+                $('#races_logo_err').html('');
+            });
+            isValid = false;
+        }
 
-    //         var allowedTypes = ['jpg', 'jpeg', 'png'];
-    //         var fileType = logo.name.split('.').pop().toLowerCase();
-    //         if ($.inArray(fileType, allowedTypes) === -1) {
-    //             $('#logo_err').html('Please select a valid file type (jpg, jpeg, png).');
-    //             $('#logo').val('');
-    //             isValid = false;
-    //         }
-    //     }
-
-    //     return isValid;
-
-    // }
+        return isValid;
+      }else{
+        
+      }
+   }
 </script>
+

@@ -116,8 +116,8 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-4 mt-2">
-                                    <a href="{{ url('/testimonial/add') }}" class="btn btn-outline-primary float-right">
-                                        <i data-feather="plus"></i><span>Add Testimonial</span></a>
+                                    <a href="{{ url('/testimonial/add') }}" class="btn btn-outline-primary float-right pr-2">
+                                        <i data-feather="plus"></i><span>Add </span></a>
                                 </div>
                             </div>
                         </div>

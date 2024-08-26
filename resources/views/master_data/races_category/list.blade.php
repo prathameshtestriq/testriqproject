@@ -105,9 +105,32 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-4 mt-2">
+                                            <div class="col-sm-3 "> 
+                                                <?php 
+                                                   $Show_as_home = array(0=>'No',1=>'Yes' );    
+                                                ?>
+                                                <label for="form-control"> Show As Home:</label>
+                                                <select id="Show_as_home" name="Show_as_home" class="form-control select2 form-control">
+                                                    <option value="">Select Show As Home </option>
+                                                    <?php 
+                                                        foreach ($Show_as_home as $key => $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('Show_as_home',$search_show_as_home) == $key){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                           
+
+                                            <div class="col-sm-3 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_name) || ($search_type_status != ''))
+                                                @if (!empty($search_name) || ($search_type_status != '') || ($search_show_as_home != '') )
                                                     <a title="Clear" href="{{ url('type/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -118,8 +141,8 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-4 mt-2">
-                                        <a href="{{ url('/type/add') }}" class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add Races Category</span></a>
+                                        <a href="{{ url('/type/add') }}" class="btn btn-outline-primary float-right pr-2">
+                                            <i data-feather="plus"></i><span>Add </span></a>
                                     </div>
                                 </div>
                             </div>
@@ -133,6 +156,7 @@
                                         {{-- <th class="text-left">User Name</th> --}}
                                        
                                         <th class="text-center">Image</th>
+                                        <th class="text-center">Show As Home</th>
                                         <th style="text-align: center;">Active</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -154,8 +178,12 @@
                                                             <img style="width:50px;"
                                                             src="{{ asset('uploads/type_images/' . $val->logo) }}">
                                                         </a>
-                                                    <?php } ?>
+                                                    <?php }else{
+                                                        echo '';
+                                                    }
+                                                    ?>
                                                  </td>
+                                                 <td>{{ !empty($val->show_as_home == 1) ? 'Yes' : 'No'}}</td>
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success" >
                                                         <input type="checkbox" class="custom-control-input"  id="{{ $val->id }}" 

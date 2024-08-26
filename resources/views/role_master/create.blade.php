@@ -1,8 +1,8 @@
 @extends('layout.index')
 @if (!empty($id))
-    @section('title', ' Role Master ')
+    @section('title', 'Edit Role Master Details')
 @else
-    @section('title', ' Role Master')
+    @section('title', 'Add Role Master Details')
 @endif
 
 @section('title', 'Marketing Create')
@@ -20,7 +20,7 @@
                                 <div class="row breadcrumbs-top">
                                     <div class="col-sm-12">
                                         <h2 class="content-header-title float-left mb-0">
-                                            @if (!empty($aReturn['id']))
+                                            @if (!empty($id))
                                                 Edit Role Master Details
                                             @else
                                                 Add Role Master Details
@@ -32,10 +32,10 @@
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Role Master</li>
                                         <li class="breadcrumb-item active" aria-current="page">
-                                            @if (!empty($aReturn['id']))
+                                            @if (!empty($id))
                                                 Edit Role Master 
                                             @else
                                                 Add Role Master
@@ -83,7 +83,7 @@
                                             <div class="form-group">
                                                 <label for="role_name">Role Name<span style="color:red;">*</span></label>
                                                 <input type="text" id="role_name" class="form-control"
-                                                    placeholder="Campaign Name" name="role_name"  value="{{ old('role_name', $name) }}" autocomplete="off" />
+                                                    placeholder="Role Name" name="role_name"  value="{{ old('role_name', $name) }}" autocomplete="off" />
                                                 <h5><small class="text-danger" id="role_name_err"></small></h5>
                                                 @error('role_name')
                                                     <span class="error" style="color:red;">{{ $message }}</span>

@@ -81,11 +81,11 @@
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="category_name">Category Type Name<span style="color:red;">*</span></label>
-                                                <input type="text" id="category_name" class="form-control"
-                                                    placeholder="Enter Category Type Name" name="category_name"  value="<?php echo isset($aReturn['category_name']) ? $aReturn['category_name'] : (isset($request->category_name) ? $request->category_name : ''); ?>" autocomplete="off" />
-                                                <h5><small class="text-danger" id="category_name_err"></small></h5>
-                                                @error('category_name')
+                                                <label for="category_type_name">Category Type Name<span style="color:red;">*</span></label>
+                                                <input type="text" id="category_type_name" class="form-control"
+                                                    placeholder="Enter Category Type Name" name="category_type_name"  value="<?php echo isset($aReturn['category_name']) ? $aReturn['category_name'] : (isset($request->category_name) ? $request->category_name : ''); ?>" autocomplete="off" />
+                                                <h5><small class="text-danger" id="category_type_name_err"></small></h5>
+                                                @error('category_type_name')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -93,11 +93,11 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="lastname">Logo Name <span style="color:red;">*</span></label>
-                                                <input type="text" id="category_logo" class="form-control"
-                                                    placeholder="Enter Logo Name" name="category_logo"  value="{{ old('category_logo', isset($aReturn['category_logo']) ? $aReturn['category_logo'] : '') }}" autocomplete="off" />
-                                                <h5><small class="text-danger" id="category_logo_err"></small></h5>
-                                                @error('category_logo')
+                                                <label for="category_logo_name">Category Logo Name <span style="color:red;">*</span></label>
+                                                <input type="text" id="category_logo_name" class="form-control"
+                                                    placeholder="Enter Category Logo Name" name="category_logo_name"  value="{{ old('category_logo', isset($aReturn['category_logo']) ? $aReturn['category_logo'] : '') }}" autocomplete="off" />
+                                                <h5><small class="text-danger" id="category_logo_name_err"></small></h5>
+                                                @error('category_logo_name')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -160,7 +160,7 @@
         </div>
     </section>
 @endsection
-
+ 
 <script type="text/javascript">
     function validation() {
         

@@ -2,7 +2,7 @@
 @section('title', 'Category Type ')
 
 
-@section('content')
+@section('content') 
     <section>
         <div class="content-body">
             <!-- Bordered table start -->
@@ -75,13 +75,13 @@
                                 <div class="row w-100">
                                     <div class="col-sm-8">
                                         <div class="row">
-                                            <div class="col-sm-3">
+                                            <div class="col-sm-4">
                                                 <label for="form-control">Category Type Name:</label>
                                                 <input type="text" id="category_name" class="form-control"
                                                     placeholder="Category Type Name" name="category_name"
                                                     value="{{ $search_category }}" autocomplete="off" />
                                             </div>
-                                            <div class="col-sm-3 ">
+                                            <div class="col-sm-4 ">
                                                 <?php 
                                                    $category_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?>
@@ -117,8 +117,8 @@
                                     </div>
                                     <div class="col-sm-4 mt-2">
                                         <a href="{{ url('/category/add_edit') }}"
-                                            class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add Category Type</span></a>
+                                            class="btn btn-outline-primary float-right pr-2">
+                                            <i data-feather="plus"></i><span>Add </span></a>
                                     </div>
                                 </div>
                             </div>
@@ -134,34 +134,41 @@
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @forelse ($category_array as $category)
+                               
+                                <tbody class="text-center">
+                                
+                                    <?php 
+                                    if (!empty($category_array)){
+                                        $i = $Offset;?>
+                                        <?php foreach ($category_array as $category){
+                                                $i++;?>
+                                              <tr>
+                                                <td class="text-center">{{ $i }}</td>
+                                                <td class="text-left">{{ $category->name }}</td>
+                                                {{-- <td class="text-center">{{ $category->logo }}</td> --}}
+                                                <td class="text-center">
+                                                    <div class="custom-control custom-switch custom-switch-success">
+                                                        <input type="checkbox" class="custom-control-input"
+                                                            id="{{ $category->id }}" {{ $category->active ? 'checked' : '' }}
+                                                            onclick="change_status(event.target, {{ $category->id }});" />
+                                                        <label class="custom-control-label" for="{{ $category->id }}"></label>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <a href="{{ url('/category/add_edit', $category->id) }}">
+                                                        <i class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i>
+                                                    </a>
+                                                    <i class="fa fa-trash-o btn btn-danger btn-sm"
+                                                        onclick="delCategory({{ $category->id }})" title="Delete"></i>
+                                                </td>
+                                            </tr>
+                                      <?php }
+                                    }else{?>
                                         <tr>
-                                            <td class="text-center">{{ $category->id }}</td>
-                                            <td class="text-left">{{ $category->name }}</td>
-                                            {{-- <td class="text-center">{{ $category->logo }}</td> --}}
-                                            <td class="text-center">
-                                                <div class="custom-control custom-switch custom-switch-success">
-                                                    <input type="checkbox" class="custom-control-input"
-                                                        id="{{ $category->id }}" {{ $category->active ? 'checked' : '' }}
-                                                        onclick="change_status(event.target, {{ $category->id }});" />
-                                                    <label class="custom-control-label" for="{{ $category->id }}"></label>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                <a href="{{ url('/category/add_edit', $category->id) }}">
-                                                    <i class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i>
-                                                </a>
-                                                <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                    onclick="delCategory({{ $category->id }})" title="Delete"></i>
-                                            </td>
+                                            <td colspan="8" style="text-align:center; color:red;">No Record Found</td>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center" style="text-align:center; color:red;">No Record Found</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
+                                  <?php }?>
+                                </tbody> 
                             </table>
                             <div class="card-body">
                                 <div class="d-flex justify-content-end">
@@ -177,19 +184,7 @@
 @endsection
 
 <script>
-    // function delCategory(id) {
-    //     // alert(id);
-    //     var url = '<?php echo url('category/delete'); ?>';
-    //     url = url + '/' + id;
-    //     //    alert(url);
-    //     bConfirm = confirm('Are you sure you want to remove this category');
-    //     if (bConfirm) {
-    //         window.location.href = url;
-    //     } else {
-    //         return false;
-    //     }
-    // }
-
+   
     function delCategory(id) {
         var bConfirm = confirm('Are you sure you want to remove this record ?');
         if (bConfirm) {
@@ -197,8 +192,6 @@
             window.location.href = url;
         }
     }
-
-
 
     function change_status(_this, id) {
         //  alert(id)

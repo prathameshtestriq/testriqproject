@@ -2,7 +2,7 @@
 
 // use Illuminate\Support\Facades\Facade;
 
-$flag = 2;  // 1 - Local / 2 - Prime / 3 - Live 
+$flag = 3;  // 1 - Local / 2 - Prime / 3 - Live 
 
 if($flag == 1){
     $url = 'http://localhost:3000/in/Nashik/1/';

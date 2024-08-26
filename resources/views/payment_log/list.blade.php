@@ -87,14 +87,14 @@
                                             <div class="col-sm-2 ">
                                                 <label for="form-control">Start Date:</label>
                                                 <input type="date" id="start_payment_date" class="form-control"
-                                                    placeholder="Start Date" name="start_payment_date" value="{{ old('start_payment_date', $search_start_payment_date ? \Carbon\Carbon::parse($search_start_payment_date)->format('Y-m-d\TH:i') : '') }}"
+                                                    placeholder="Start Date" name="start_payment_date" value="{{ old('start_payment_date', $search_start_payment_date ? \Carbon\Carbon::parse($search_start_payment_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
                                                 <label for="form-control">End Date:</label>
                                                 <input type="date" id="end_payment_date" class="form-control"
-                                                    placeholder="End Date" name="end_payment_date" value="{{ old('end_payment_date', $search_end_payment_date ? \Carbon\Carbon::parse($search_end_payment_date)->format('Y-m-d\TH:i') : '') }}"
+                                                    placeholder="End Date" name="end_payment_date" value="{{ old('end_payment_date', $search_end_payment_date ? \Carbon\Carbon::parse($search_end_payment_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 

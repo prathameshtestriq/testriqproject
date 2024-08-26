@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Role Master List')
+@section('title', 'Role Master ')
 
 
 @section('content')
@@ -13,14 +13,14 @@
                             <div class="content-header-left">
                                 <div class="row breadcrumbs-top">
                                     <div class="col-sm-12">
-                                        <h2 class="content-header-title float-left mb-0">Role Master List</h2>
+                                        <h2 class="content-header-title float-left mb-0">Role Master </h2>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item">Home</li>
                                         <li class="breadcrumb-item">Role Master</li>
                                         <li class="breadcrumb-item active" aria-current="page">Role Master List</li>
                                     </ol>
@@ -117,10 +117,9 @@
                                     </div>
                                     <div class="col-sm-3 mt-2">
                                         <a href="{{ url('role_master/add') }}"
-                                            class="btn btn-outline-primary float-right">
-                                            <i data-feather="plus"></i><span>Add Details </span></a>
+                                            class="btn btn-outline-primary float-right pr-2">
+                                            <i data-feather="plus"></i><span>Add </span></a>
                                     </div>
-                                        
                                 </div>
                             </div>
                         </form>
@@ -130,7 +129,7 @@
                                     <tr>
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Role Name</th>
-                                        <th class="text-center">Access</th>
+                                        <th class="text-left">Access</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -146,7 +145,7 @@
                                         <tr>
                                             <td class="text-center">{{ $i }}</td>
                                             <td class="text-left">{{ $val->name }}</td>
-                                             <td class="text-center"><a href="{{ url('role_access', $val->id ) }}"><i class="fa fa-eye" style="cursor:pointer;" ></i></a></td>
+                                             <td class="text-left"><a href="{{ url('role_access', $val->id ) }}"><i class="fa fa-eye" style="cursor:pointer;" ></i></a></td>
                                             <td class="text-center">
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input"
@@ -194,7 +193,7 @@
         var url = '<?php echo url('role_master/delete'); ?>';
         url = url + '/' + id;
         //    alert(url);
-        bConfirm = confirm('Are you sure you want to remove this record');
+        bConfirm = confirm('Are you sure you want to remove or delete role master details ?');
         if (bConfirm) {
             window.location.href = url;
         } else {

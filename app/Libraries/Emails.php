@@ -233,7 +233,7 @@ Welcome aboard!
     // //----------- send email for Organiser Users
     public function send_OrganiserUser_mail($user_email, $firstname, $lastname, $username, $orgId)
     {   
-        $send_link = "http://localhost:3000/in/Nashik/".$orgId."/".$user_email;
+        $send_link = url('/')."in/Mumbai/".$orgId."/".$user_email;
 
         $message = 'RACES invitation - Your been added as a team member To .<br><br>';
         $message = 'Hi '.$firstname.' '.$lastname.', you’ve been added as a team member '.ucfirst($username).' has invited you...<br><br>';
