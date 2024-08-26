@@ -280,7 +280,7 @@
                                         <?php 
                                             foreach ($user_array as $val){
                                                 $i++;
-                                                $url =  config('custom.url_link');
+                                                $url1 =  config('custom.url_link');
                                         ?>
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
@@ -318,7 +318,7 @@
                                                
 
                                                 <td width="10%">
-                                                     <a href="<?php echo  $url.''.$val->email; ?>/<?php echo $val->password; ?>" target="_blank">
+                                                     <a href="<?php echo  $url1.''.$val->email; ?>/<?php echo $val->password; ?>" target="_blank">
                                                         <i class="fa fa-eye btn btn-primary btn-sm" title="Login As Organiser"></i>
                                                     </a>
                                                     
