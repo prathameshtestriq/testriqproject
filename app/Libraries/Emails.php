@@ -239,7 +239,7 @@ Welcome aboard!
         $message = 'RACES invitation - Your been added as a team member To .<br><br>';
         $message = 'Hi '.$firstname.' '.$lastname.', you’ve been added as a team member '.ucfirst($username).' has invited you...<br><br>';
         $message .= '<br><br>';
-        $message .= '<a href='.$send_link.'>Click Here</a>';
+        $message .= '<a href="'.$send_link.'">Click Here</a>';
         $message .= '<br><br>';
         $message .= "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
 
