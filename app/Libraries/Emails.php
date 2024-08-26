@@ -255,7 +255,7 @@ Welcome aboard!
         $response = $sendgrid->send($email);
         // send mail
         $type = "Organising Team - RACES Invitation";
-        $send_mail_to = '';
+        $send_mail_to = $user_email;
         $subject = "RACES invitation - You've been added as a team member";
         $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
     }
