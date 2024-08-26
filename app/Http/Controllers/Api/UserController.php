@@ -1793,6 +1793,9 @@ class UserController extends Controller
                     $event_ids = !empty($event_id_array) ? implode(",", $event_id_array) : '';
                 }
 
+                $SQL1 = "SELECT CONCAT(firstname,' ', lastname) AS username FROM users WHERE id = :user_id";
+                $aUserResult = DB::select($SQL1, array("user_id" => $UserId));
+                $username = !empty($aUserResult) ? $aUserResult[0]->username : '';
 
                 if (empty($EditOrgUserId)) {     // data insert
 
@@ -1815,10 +1818,6 @@ class UserController extends Controller
                         $flag = 2;
                         $ResponseData = $flag;
                     } else {
-
-                        $SQL1 = "SELECT CONCAT(firstname,' ', lastname) AS username FROM users WHERE id = :user_id";
-                        $aUserResult = DB::select($SQL1, array("user_id" => $UserId));
-                        $username = !empty($aUserResult) ? $aUserResult[0]->username : '';
 
                         $Bindings = array(
                             "user_role" => $UserRole,
