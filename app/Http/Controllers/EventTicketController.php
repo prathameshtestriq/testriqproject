@@ -2234,7 +2234,17 @@ class EventTicketController extends Controller
                  <br/><br/>
                 Best regards,<br/>
                 " . $Event[0]->name . " Team";
-            $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+
+            if($CommEmailType == 1){
+                $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+            }else if($CommEmailType == 2){
+                $Subject = "BIB Collection Details - " . $Event[0]->name . "";
+            }else if($CommEmailType == 3){
+                $Subject = "Event Day Details - " . $Event[0]->name . "";
+            }else if($CommEmailType == 4){
+                $Subject = "Thank You Mailer - " . $Event[0]->name . "";
+            }
+           
         }
 
         foreach ($ConfirmationEmail as $key => $value) {
