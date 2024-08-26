@@ -1143,6 +1143,13 @@ class EventController extends Controller
                 $event->diplay_registration_end_date = (!empty($event->registration_end_time)) ? date("Y-m-d", $event->registration_end_time) : 0;
                 $event->diplay_registration_end_time = (!empty($event->registration_end_time)) ? date("H:i", $event->registration_end_time) : 0;
 
+                if(!empty($event->description_image)){
+                    $img_url = url('/').'/uploads/description_images/'.$event->description_image;
+                    $event->content_image = '<img src="'.$img_url.'" height="50%" width="50%" alt="Image">';
+                }else{
+                    $event->content_image   = '';
+                }
+
             }
             // dd($Events);
             $ResponseData['EventData'] = $Events;
@@ -1612,14 +1619,41 @@ class EventController extends Controller
                 $banner_image = '';
                 $event_image = '';
 
-                $sql = 'UPDATE events SET event_description=:description,event_keywords=:event_keywords WHERE id=:id';
-                $bindings = [
-                    "description" => $Description,
+                //------------ description image upload for (ckeditor)
+                $content_image = '';
+                $description_image = !empty($request->description_image) ? $request->description_image : '';
+                if(!empty($description_image)){
+                    $Path1 = public_path('uploads/description_images/');
+                    $desc_image = $request->file('description_image');
+                    $originalName1 = $desc_image->getClientOriginalName();
+                    $content_image = $originalName1;
+                    $desc_image->move($Path1, $content_image);
+                }
+               
+                $pattern = '/<img[^>]*>/i';  // Case-insensitive match for <img> tags
+                $updatedHtml = preg_replace($pattern, '', $Description);
+                $updatedHtml = str_replace('<p></p>','', $updatedHtml);
+                $final_description = str_replace('<p>&nbsp;</p>','', $updatedHtml);
+                $final_description = str_replace('<figure class="image"></figure>','', $final_description);
+                
+                if(!empty($description_image)){
+                    $bindings = [
+                    "description" => $final_description,
+                    "event_keywords" => $event_keywords,
+                    "description_image" => $content_image,
+                    "id" => $EventId
+                    ];
+                    $sql = 'UPDATE events SET event_description=:description, event_keywords=:event_keywords, description_image=:description_image WHERE id=:id';
+                }else{
+                    $bindings = [
+                    "description" => $final_description,
                     "event_keywords" => $event_keywords,
                     "id" => $EventId
-                ];
-                // $ResponseData['sql'] = $sql;
-
+                    ];
+                    $sql = 'UPDATE events SET event_description=:description, event_keywords=:event_keywords WHERE id=:id';
+                }
+               
+        
                 $Result = DB::update($sql, $bindings);
                 // dd($res);
                 // if ($Result) {
@@ -1938,6 +1972,10 @@ class EventController extends Controller
 
                 // $SQL = "SELECT id FROM event_communication WHERE event_id =:event_id";
                 // $IsExist = DB::select($SQL, array('event_id' => $EventId));
+                $pattern = '/<img[^>]*>/i';  // Case-insensitive match for <img> tags
+                $updatedHtml = preg_replace($pattern, '', $MessageContent);
+                $updatedHtml = str_replace('<p></p>','', $updatedHtml);
+                $updatedHtml = str_replace('<p>&nbsp;</p>','', $updatedHtml);
 
                 if (empty($EventCommunicationId)) {
 
@@ -1958,7 +1996,7 @@ class EventController extends Controller
 
                     $Bindings = array(
                         "subject_name" => $SubjectName,
-                        "message_content" => $MessageContent,
+                        "message_content" => $updatedHtml,
                         "event_comm_id" => $EventCommunicationId
                     );
 
@@ -2011,7 +2049,8 @@ class EventController extends Controller
                     $EventId = $aPost['event_id'];
                     $UserId = $aPost['user_id'];
                     $EventCommunicationId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
-                
+                    // $MessageContent = !empty($request->message_content) ? $request->message_content : '';
+
                     if (!empty($request->file('file'))) {
                         $Path = public_path('uploads/communication_email_images/');
                         $logo_image = $request->file('file');
@@ -2019,14 +2058,20 @@ class EventController extends Controller
                         $content_image = $originalName;
                         $logo_image->move($Path, $content_image);
 
+                        // $pattern = '/<img[^>]*>/i';  // Case-insensitive match for <img> tags
+                        // $updatedHtml = preg_replace($pattern, '', $MessageContent);
+                        // $updatedHtml = str_replace('<p></p>','', $updatedHtml);
+                        // $updatedHtml = str_replace('<p>&nbsp;</p>','', $updatedHtml);
+
                         $Bindings = array(
                             "content_image" => $content_image,
+                            // "message_content" => $updatedHtml,
                             "event_comm_id" => $EventCommunicationId,
                             "event_id" => $EventId
                         );
 
                         $sql = 'UPDATE event_communication SET content_image =:content_image WHERE id = :event_comm_id AND event_id =:event_id';
-                        // dd($sql);
+                        // dd($sql); , message_content =:message_content
                         DB::update($sql, $Bindings);
                     }
                
@@ -2231,8 +2276,8 @@ class EventController extends Controller
 
             if ($EventEditFlag == 'communication_edit') {
 
-                $Sql = 'SELECT id,subject_name,message_content FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
-                $aResult['communication_edit_details'] = DB::select(
+                $Sql = 'SELECT id,subject_name,message_content,content_image FROM event_communication WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
+                $aCommResult = DB::select(
                     $Sql,
                     array(
                         'eventId' => $EventId,
@@ -2240,6 +2285,19 @@ class EventController extends Controller
                     )
                 );
 
+               if(!empty($aCommResult)){
+                   foreach($aCommResult as $res){
+                        if(!empty($res->content_image)){
+                            $img_url = url('/').'/uploads/communication_email_images/'.$res->content_image;
+                            $res->content_image = '<img src="'.$img_url.'" height="50%" width="50%" alt="Image">';
+                        }else{
+                            $res->message_content = $res->message_content;
+                            $res->content_image   = '';
+                        }
+                   }
+               } 
+
+                $aResult['communication_edit_details'] = $aCommResult; 
             } else if ($EventEditFlag == 'faq_edit') {
 
                 $Sql = 'SELECT id,question,answer FROM event_FAQ WHERE `event_id`=:eventId AND `id`=:event_comm_id  ';
