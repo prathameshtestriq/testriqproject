@@ -6,12 +6,16 @@ $flag = 3;  // 1 - Local / 2 - Prime / 3 - Live
 
 if($flag == 1){
     $url1 = 'http://localhost:3000/in/Nashik/1/';
+    $new_url = 'http://localhost:3000/in/Nashik/';
 }else if($flag == 2){
     $url1 = 'https://swtprime.com/Races2.0_Frontend/in/Mumbai/1/';
+    $new_url = 'https://swtprime.com/Races2.0_Frontend/in/Mumbai/';
 }else if($flag == 3){
     $url1 = 'https://racesregistrations.com/in/Mumbai/1/';
+    $new_url = 'https://racesregistrations.com/in/Mumbai/';
 }else{
     $url1 = '';
+    $new_url = '';
 }
 
 return [
@@ -115,4 +119,5 @@ return [
     'salt' => 'vvHOCdxxbkTXYASLCevSJ7iDkE8DRBT4',  // payment details salt
 
     'url_link' => $url1, // set url
+    'send_email_url' => $new_url, // set url
 ];
