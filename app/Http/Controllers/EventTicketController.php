@@ -2200,16 +2200,16 @@ class EventTicketController extends Controller
 
         // dd($ConfirmationEmail); $CommEmailType
 
-        $sql = "SELECT subject_name FROM `communication_master` WHERE status = 1 AND id = ".$CommEmailType." ";
-        $CommunicationsMaster = DB::select($sql, array());
+        // $sql = "SELECT subject_name FROM `communication_master` WHERE status = 1 AND id = ".$CommEmailType." ";
+        // $CommunicationsMaster = DB::select($sql, array());
 
-        $SubjectName = !empty($CommunicationsMaster) ? $CommunicationsMaster[0]->subject_name : '';
+        // $SubjectName = !empty($CommunicationsMaster) ? $CommunicationsMaster[0]->subject_name : '';
 
         $Subject = "";
         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND status = 1";
 
-        if(!empty($SubjectName)){
-            $sql .= ' AND subject_name = "'.$SubjectName.'" ';
+        if(!empty($CommEmailType)){
+            $sql .= ' AND comm_id = '.$CommEmailType.' ';
         }
         $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
         // dd($Communications);

@@ -911,8 +911,8 @@ class EventController extends Controller
 
                         //------------ added manual Communication questions -------------
                         if (!empty($EventId)) {
-                            $insert_sSQL1 = 'INSERT INTO event_communication (event_id, user_id, subject_name, message_content, email_type)';
-                            $insert_sSQL1 .= 'SELECT :eventId, :user_id, subject_name, message_content, email_type
+                            $insert_sSQL1 = 'INSERT INTO event_communication (event_id, user_id, subject_name, message_content, email_type,comm_id)';
+                            $insert_sSQL1 .= 'SELECT :eventId, :user_id, subject_name, message_content, email_type, id
                                 FROM communication_master
                                 WHERE status = 1 ';
                             //dd($insert_sSQL);
