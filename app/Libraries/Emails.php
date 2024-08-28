@@ -233,67 +233,67 @@ Welcome aboard!
     // //----------- send email for Organiser Users
     public function send_OrganiserUser_mail($user_email, $firstname, $lastname, $username, $orgId)
     {   
-        // $send_link = url('/')."in/Mumbai/".$orgId."/".$user_email;
-        // $send_link = config('custom.send_email_url').$orgId."/".$user_email;
+        $send_link = url('/')."in/Mumbai/".$orgId."/".$user_email;
+        $send_link = config('custom.send_email_url').$orgId."/".$user_email;
 
-        // $message = 'RACES invitation - Your been added as a team member To .<br><br>';
-        // $message = 'Hi '.$firstname.' '.$lastname.', you’ve been added as a team member '.ucfirst($username).' has invited you...<br><br>';
-        // $message .= '<br><br>';
-        // // $message .= '<a href="'.$send_link.'">Click Here</a>';
+        $message = 'RACES invitation - Your been added as a team member To .<br><br>';
+        $message = 'Hi '.$firstname.' '.$lastname.', you’ve been added as a team member '.ucfirst($username).' has invited you...<br><br>';
+        $message .= '<br><br>';
         // $message .= '<a href="'.$send_link.'">Click Here</a>';
-        // $message .= '<br><br>';
-        // $message .= "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
+        $message .= '<a href="'.$send_link.'">Click Here</a>';
+        $message .= '<br><br>';
+        $message .= "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
 
-        // // $message = "Dear " . $firstname . " " . $lastname . ", <br/>".$user_message.".<br/>";
-        // $email = new \SendGrid\Mail\Mail();
-        // $email->setFrom($user_email, $firstname);
-        // $email->setSubject("RACES invitation - You've been added as a team member");
-        // $email->addTo("support@youtoocanrun.com", "RACES ");
-        // // $email->addContent("text/plain", "Dear Customer,");
-        // $email->addContent("text/html",$message);
-
-        // $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
-        // // try {
-        // $response = $sendgrid->send($email);
-        // // send mail
-        // $type = "Organising Team - RACES Invitation";
-        // $send_mail_to = $user_email;
-        // $subject = "RACES invitation - You've been added as a team member";
-        // $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
-
-        $message = "Dear Prashant,
- <br/><br/>
-Thank you for registering with RACES! We are excited to have you join our community.
- <br/><br/>
-If you have any questions or need assistance, feel free to reach out to our support team.
- <br/><br/>
- Email: support@youtoocanrun.com<br/>
-Phone Number:+91 9920142195
- <br/><br/>
-Welcome aboard!
- <br/><br/>
-<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
+        // $message = "Dear " . $firstname . " " . $lastname . ", <br/>".$user_message.".<br/>";
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocanrun.com", "RACES Registrations"); //YouTooCanRun
-        $email->setSubject("Test to RACES!");
-        $email->addTo($mail, "Registration");
-        $email->addContent("text/plain", "Dear Customer, ");
-        $email->addContent(
-            "text/html",
-            $message
-        );
-        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
-        try {
-            $response = $sendgrid->send($email);
-            // send mail
-            $type = "registration";
-            $send_mail_to = $user_email;
-            $subject = "Registration";
-            $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
+        $email->setFrom("support@youtoocanrun.com", "RACES Invitation"); //YouTooCanRun
+        $email->setSubject("RACES invitation - You've been added as a team member");
+        $email->addTo($user_email, "RACES Invitation");
+        // $email->addContent("text/plain", "Dear Customer,");
+        $email->addContent("text/html",$message);
 
-        } catch (Exception $e) {
-            echo 'Caught exception: ' . $e->getMessage() . "\n";
-        }
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+        // try {
+        $response = $sendgrid->send($email);
+        // send mail
+        $type = "Organising Team - RACES Invitation";
+        $send_mail_to = $user_email;
+        $subject = "RACES invitation - You've been added as a team member";
+        $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
+
+//         $message = "Dear Prashant,
+//  <br/><br/>
+// Thank you for registering with RACES! We are excited to have you join our community.
+//  <br/><br/>
+// If you have any questions or need assistance, feel free to reach out to our support team.
+//  <br/><br/>
+//  Email: support@youtoocanrun.com<br/>
+// Phone Number:+91 9920142195
+//  <br/><br/>
+// Welcome aboard!
+//  <br/><br/>
+// <p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
+//         $email = new \SendGrid\Mail\Mail();
+//         $email->setFrom("support@youtoocanrun.com", "RACES Registrations"); //YouTooCanRun
+//         $email->setSubject("Test to RACES!");
+//         $email->addTo($user_email, "Registration");
+//         $email->addContent("text/plain", "Dear Customer, ");
+//         $email->addContent(
+//             "text/html",
+//             $message
+//         );
+//         $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+//         try {
+//             $response = $sendgrid->send($email);
+//             // send mail
+//             $type = "registration";
+//             $send_mail_to = $user_email;
+//             $subject = "Registration";
+//             $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
+
+//         } catch (Exception $e) {
+//             echo 'Caught exception: ' . $e->getMessage() . "\n";
+//         }
     }
 
 
