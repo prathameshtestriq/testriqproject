@@ -36,13 +36,13 @@ class VerifyPaymentStatus extends Command
         $SALT = config('custom.salt'); // set on custom file
         $command = 'verify_payment';
        
-        $Sql = 'SELECT txnid,amount FROM booking_payment_details WHERE payment_status != "success" ';
+        $Sql = 'SELECT id,txnid,amount FROM booking_payment_details WHERE payment_status != "success" ';
         $aResult = DB::select($Sql);
      
         if(!empty($aResult)){
             foreach($aResult as $res){
                 $Transaction_id = $res->txnid;
-                $BookingPayId   = $res->booking_pay_id;
+                $BookingPayId   = $res->id;
 
                 //dd($Transaction_id);
                 $hashString = $Merchant_key . '|' . $command . '|' . $Transaction_id . '|' . $SALT;
