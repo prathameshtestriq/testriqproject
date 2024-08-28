@@ -287,7 +287,7 @@ Welcome aboard!
             $response = $sendgrid->send($email);
             // send mail
             $type = "registration";
-            $send_mail_to = $mail;
+            $send_mail_to = $user_email;
             $subject = "Registration";
             $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
 
