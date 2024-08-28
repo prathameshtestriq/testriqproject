@@ -412,12 +412,27 @@ class LoginController extends Controller
 
         //------------------- Login As Organiser
         $LoginAsOrganiser = isset($aPost['LoginAsOrganiser']) && !empty($aPost['LoginAsOrganiser']) ? $aPost['LoginAsOrganiser'] : 0;
-       //  dd($LoginAsOrganiser);
+        //  dd($LoginAsOrganiser);
+
+        //--------------------------
         if (!$empty) {
             // Check Multple Athlete Exists or not with same email or mobile?
             $sql1 = 'SELECT id FROM users WHERE email = :email';
             $oUser = DB::select($sql1, array('email' => $aPost['Email']));
             // dd(count($oUser));
+
+            //--------------- alredy exist user to update in role (for organising team user register only)
+            $SQL1 = 'SELECT id,user_role FROM organiser_users WHERE email=:email AND status = 1';
+            $aOrgUserResult = DB::select($SQL1, array('email' => $aPost['Email']));
+            
+            if(!empty($aOrgUserResult) && !empty($oUser[0]->id)){
+                $UserRole = $aOrgUserResult[0]->user_role;
+                $OrgID = $aOrgUserResult[0]->id;
+                
+                $SQL = 'UPDATE users SET organizer_user =:organizer_user, role =:role WHERE id =:id';
+                DB::update($SQL, array('organizer_user' => $OrgID,'role' => $UserRole, 'id' => $oUser[0]->id));
+            }
+
             if (count($oUser) == 1) {
                 $sql2 = 'SELECT *,(select name from role_master where id = users.role) as role_name FROM users WHERE id=:id AND password =:password';
 

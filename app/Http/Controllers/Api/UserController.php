@@ -1837,9 +1837,18 @@ class UserController extends Controller
                         DB::insert($insert_SQL, $Bindings);
                         $last_inserted_id = DB::getPdo()->lastInsertId();
                         //dd($last_inserted_id);
-                       
-                        // $Email = new Emails();
-                        // $Email->send_OrganiserUser_mail($email, $firstname, $lastname, $username, $last_inserted_id);
+
+                        //------------ user table update role
+                        $sSQL = 'SELECT role FROM users WHERE email =:email';
+                        $aResult = DB::select($sSQL, array('email' => $email));
+
+                        if(!empty($aResult)){
+                            $sSQL1 = 'UPDATE users SET role =:role WHERE email=:email';
+                            DB::update($sSQL1,array('role' => $UserRole ,'email' => $email));
+                        }
+
+                        $Email = new Emails();
+                        $Email->send_OrganiserUser_mail($email, $firstname, $lastname, $username, $last_inserted_id);
 
                         $message = 'Organising user added successfully';
                         $ResposneCode = 200;
@@ -1851,8 +1860,8 @@ class UserController extends Controller
                     $IsExist = DB::select($SQL, array('email' => strtolower($email), "edit_id" => $EditOrgUserId));
                     // dd($IsExist);
 
-                    $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND id = :user_id";
-                    $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $UserId));
+                    $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND organizer_user != :user_id";
+                    $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $EditOrgUserId));
 
                     if (!empty($IsExist)) {
                         $ResposneCode = 200;
@@ -1861,7 +1870,7 @@ class UserController extends Controller
                         $ResponseData = $flag;
                     } else if (!empty($IsExist1)) {
                         $ResposneCode = 200;
-                        $message = "Email id is already exists, please use another email.";
+                        $message = "Email id is already exists, please use another email1.";
                         $flag = 2;
                         $ResponseData = $flag;
                     } else {
@@ -1881,9 +1890,18 @@ class UserController extends Controller
 
                         $edit_sql = 'UPDATE organiser_users SET user_role =:user_role, firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, dob =:dob, gender =:gender, event_selected_type =:event_selected_type, event_ids =:event_ids WHERE id = :edit_id';
                         DB::update($edit_sql, $Bindings);
+
+                        //------------ user table update role
+                        $sSQL = 'SELECT role FROM users WHERE email =:email';
+                        $aResult = DB::select($sSQL, array('email' => $email));
+
+                        if(!empty($aResult)){
+                            $sSQL1 = 'UPDATE users SET role =:role WHERE email=:email';
+                            DB::update($sSQL1,array('role' => $UserRole ,'email' => $email));
+                        }
                         
-                        // $Email = new Emails();
-                        // $Email->send_OrganiserUser_mail($email, $firstname, $lastname, $username, $EditOrgUserId);
+                        $Email = new Emails();
+                        $Email->send_OrganiserUser_mail($email, $firstname, $lastname, $username, $EditOrgUserId);
 
                         $message = 'Organising user updated successfully';
                         $ResposneCode = 200;
@@ -1922,7 +1940,7 @@ class UserController extends Controller
           
                 $Auth = new Authenticate();
                
-                $SQL1 = "SELECT id,user_role,firstname,lastname,mobile,email,gender,status,dob,(select name from role_master where id=organiser_users.user_role) as user_role FROM `organiser_users` WHERE status = 1 AND created_by = ".$user_id." ";
+                $SQL1 = "SELECT id,user_role,firstname,lastname,mobile,email,gender,status,dob,(select name from role_master where id=organiser_users.user_role) as user_role FROM `organiser_users` WHERE status = 1 AND created_by = ".$user_id." order by id desc ";
                 $aData = DB::select($SQL1, array());
 
                 if(!empty($aData)){

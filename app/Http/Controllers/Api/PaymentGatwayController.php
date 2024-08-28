@@ -399,7 +399,7 @@ class PaymentGatwayController extends Controller
 
             $Sql1 = 'SELECT id FROM event_booking WHERE booking_pay_id = ' . $booking_pay_id . ' ';
             $eventBookingResult = DB::select($Sql1);
-            //dd($eventBookingResult);
+            // dd($eventBookingResult);
             if (empty($eventBookingResult)) {
                 $BookingProcess = PaymentGatwayController::book_tickets_third_party($booking_pay_id, $UserId);
             }
@@ -478,7 +478,7 @@ class PaymentGatwayController extends Controller
             }
 
             //-------- update status for booking_payment_log
-            $response_datetime = date('Y-m-d H:i:s');
+            $response_datetime = date('Y-m-d h:i:s');
             $up_sSQL = 'UPDATE booking_payment_log SET `mihpayid` =:mihpayid, `payment_status` =:payment_status, `response_datetime` =:response_datetime WHERE `txnid`=:Txnid ';
             DB::update(
                 $up_sSQL,
@@ -506,7 +506,7 @@ class PaymentGatwayController extends Controller
                 )
             );
 
-            echo 'Request processed successfully.';
+            //echo 'Request processed successfully.';
 
         } else {
             echo 'Transaction Id Not Found.';
@@ -519,8 +519,9 @@ class PaymentGatwayController extends Controller
         $BookingPaymentId = !empty($booking_pay_id) ? $booking_pay_id : 0;
         $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
         $BookingPayment = DB::select($sql, array('booking_pay_id' => $BookingPaymentId));
-
+      
         if (count($BookingPayment) > 0) {
+             // dd($BookingPayment);
             $EventId = $BookingPayment[0]->event_id;
             $TotalAttendee = $BookingPayment[0]->total_attendees;
             $FormQuestions = !empty($BookingPayment[0]->FormQuestions) ? json_decode($BookingPayment[0]->FormQuestions) : [];
@@ -794,8 +795,60 @@ class PaymentGatwayController extends Controller
                     }
                 }
             }
-            return 'Request processed successfully';
+            
+            //------------- send email
+            $sendEmail =  PaymentGatwayController::send_email_payment_success($booking_pay_id,$EventId,$UserId);
+           
+            if($sendEmail)
+                return 'Request processed successfully';
         }
+    }
+
+    public function send_email_payment_success($booking_pay_id, $EventId, $UserId)
+    {
+        $EventId = !empty($EventId) ? $EventId : 0;
+        $EventUrl = config('custom.send_email_url');;
+        $BookingPayId = !empty($booking_pay_id) ? $booking_pay_id : 0;
+        $UserId = $UserId;
+        //dd($EventId,$EventUrl,$BookingPayId,$UserId);
+            if (!empty($BookingPayId)) {
+
+                $SQL = "SELECT name as event_name,(select email from users where id = " . $UserId . ") as email FROM events WHERE id =:id";
+                $aResult = DB::select($SQL, array('id' => $EventId, ));
+                // dd($aResult);
+                $user_email = !empty($aResult) && $aResult[0]->email ? $aResult[0]->email : '';
+                $event_name = !empty($aResult) && $aResult[0]->event_name ? $aResult[0]->event_name : '';
+                $event_url = $EventUrl . '' . $event_name;
+
+                $SQL1 = "SELECT total_attendees as no_of_tickets,TotalPrice as total_price,booking_pay_id FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
+                $TicketDetailsResult = DB::select($SQL1, array('booking_pay_id' => $BookingPayId));
+
+                // dd($TicketDetailsResult,$user_email,$event_url);
+                $no_of_tickets = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->no_of_tickets ? $TicketDetailsResult[0]->no_of_tickets : 0;
+                $total_price = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->total_price ? '₹ ' . $TicketDetailsResult[0]->total_price : 0;
+                $booking_pay_id = !empty($TicketDetailsResult) && $TicketDetailsResult[0]->booking_pay_id ? $TicketDetailsResult[0]->booking_pay_id : 0;
+
+                $attendee_array = [];
+
+                // echo $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price; die;
+
+                if (!empty($user_email)) {
+
+                    // $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag = 1, $attendee_array);
+                    $SendEmail = app('App\Http\Controllers\EventTicketController')->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag = 1, $attendee_array);
+
+                    //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
+                    $up_sSQL = 'UPDATE booking_payment_details SET `send_email_flag` = 1 WHERE `id`=:booking_pay_id ';
+                    DB::update(
+                        $up_sSQL,
+                        array(
+                            'booking_pay_id' => $BookingPayId
+                        )
+                    );
+                  
+                } 
+            }
+        return true;    
     }
 
 

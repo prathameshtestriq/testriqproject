@@ -927,16 +927,11 @@ class FormQuestionsController extends Controller
             $UserId          = !empty($request->user_id) ? $request->user_id : 0;
             
             //------------ check access right wise showing event
-            $sql = "SELECT organizer_user FROM users WHERE id =:id";
-            $UserDetails = DB::select($sql, array('id' => $UserId));
-            
-            $event_ids = 0;
-            if(!empty($UserDetails)){
-                $SQL1 = 'SELECT id,event_ids FROM organiser_users WHERE id=:id AND status = 1';
-                $aOrgUserResult = DB::select($SQL1, array('id' => $UserDetails[0]->organizer_user));
-                $event_ids = !empty($aOrgUserResult) ? $aOrgUserResult[0]->event_ids : '';
-            }
-
+            // $sql = "SELECT organizer_user FROM users WHERE id =:id";
+            // $UserDetails = DB::select($sql, array('id' => $UserId));
+    
+            $loginAsOrganiserId = !empty($request->login_as_organiser_id) ? $request->login_as_organiser_id : 0;
+           
             $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, vm.registration_end_time, vm.banner_image, vm.display_name, vm.active, vm.event_type, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country,(select CONCAT(`firstname`, " ", `lastname`) as user_name from users where id = '.$UserId.') as user_name,(select created_at from users where id = '.$UserId.') as user_created_date, (select about_you from users where id = '.$UserId.') as user_about, vm.active FROM events AS vm WHERE vm.deleted = 0 ' ;
 
             if(!empty($EventInfoStatus)){
@@ -947,12 +942,12 @@ class FormQuestionsController extends Controller
                 $sSQL .= ' and vm.created_by = '.$UserId;
             }
 
-            if(!empty($event_ids)){
-                $sSQL .= ' and id IN('.$event_ids.') ';
-            }
+            // if(!empty($event_ids)){
+            //     $sSQL .= ' and id IN('.$event_ids.') ';
+            // }
 
             $aResult = DB::select($sSQL);
-
+             // dd($aResult);
             $new_array = [];
             foreach ($aResult as $res) {
 
@@ -975,9 +970,56 @@ class FormQuestionsController extends Controller
 
                 $res->TicketDetails = $e->getEventTicketDetails($res->id);
 
-                $new_array[] = $res;
+                $new_array['event_data'][] = $res;
             }
             //dd($new_array);
+
+            //---------------- create by as organiser events
+            
+            $event_ids = 0; $new_array['org_event_data'] = [];
+            if(!empty($loginAsOrganiserId)){
+                $SQL1 = 'SELECT id,event_ids FROM organiser_users WHERE id=:id AND status = 1';
+                $aOrgUserResult = DB::select($SQL1, array('id' => $loginAsOrganiserId));
+                $event_ids = !empty($aOrgUserResult) ? $aOrgUserResult[0]->event_ids : '';
+
+                $sSQL1 = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time, vm.registration_end_time, vm.banner_image, vm.display_name, vm.active, vm.event_type, (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country,(select CONCAT(`firstname`, " ", `lastname`) as user_name from users where id = '.$UserId.') as user_name,(select created_at from users where id = '.$UserId.') as user_created_date, (select about_you from users where id = '.$UserId.') as user_about, vm.active FROM events AS vm WHERE vm.deleted = 0 ' ;
+
+                if(!empty($EventInfoStatus)){
+                    $sSQL1 .= ' and vm.event_info_status = '.$EventInfoStatus;
+                }
+
+                if(!empty($event_ids)){
+                    $sSQL1 .= ' and id IN('.$event_ids.') ';
+                }
+
+                $aResult1 = DB::select($sSQL1);
+                // dd($aResult1);
+                foreach ($aResult1 as $res) {
+
+                    $res->event_status   = !empty($res->active) ? true : false;
+                    $res->event_name   = !empty($res->name) && $res->name != null ? ucfirst($res->name) : '';
+                    $res->display_name = !empty($res->display_name) && $res->display_name != null ? ucfirst($res->display_name) : '';
+                    $res->registration_end_date = !empty($res->registration_end_time) ? date("d F Y", $res->registration_end_time) : '';
+                    $res->start_event_month = (!empty($res->start_time)) ? date("M", $res->start_time) : '';
+                    $res->start_event_date = (!empty($res->start_time)) ? date("d", $res->start_time) : '';
+
+                    #GET ALL TICKETS
+                    $SQL = "SELECT COUNT(event_id) AS no_of_tickets,min(ticket_price) AS min_price,max(ticket_price) AS max_price, early_bird FROM event_tickets WHERE event_id=:event_id AND active = 1 AND is_deleted = 0 ORDER BY ticket_price";
+                    $Tickets = DB::select($SQL, array('event_id' => $res->id));
+
+                    $res->min_price = !empty($Tickets) && !empty($Tickets[0]->min_price) ? $Tickets[0]->min_price : 0;
+                    $res->max_price = !empty($Tickets) && !empty($Tickets[0]->max_price) ? $Tickets[0]->max_price : 0;
+                    $res->banner_image = !empty($res->banner_image) ? url('/') . '/uploads/banner_image/' . $res->banner_image . '' : '';
+                    $res->user_join_date = !empty($res->user_created_date) ? date('M d, Y',$res->user_created_date) : 0;
+                    $res->early_bird = !empty($Tickets) && !empty($Tickets[0]->early_bird) ? 1 : 0;
+
+                    //$res->TicketDetails = $e->getEventTicketDetails($res->id);
+                    $new_array['org_event_data'][] = $res;
+                }
+            }else{
+                $new_array['org_event_data'] = [];
+            }
+            // dd($new_array['org_event_data']);
 
             $response['data'] = $new_array;
             $response['message'] = 'Request processed successfully';

@@ -30,7 +30,7 @@ class CommonFilesRemove extends Command
      */
     public function handle()
     {
-        \Log::info("is log working");
+        // \Log::info("is log working");
 
         $current_day = date('Ymd');
 

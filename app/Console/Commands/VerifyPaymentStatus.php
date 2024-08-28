@@ -29,7 +29,7 @@ class VerifyPaymentStatus extends Command
      */
     public function handle()
     {
-        \Log::info("is log working");
+        // \Log::info("is log working");
 
         $url = 'https://info.payu.in/merchant/postservice?form=2';
         $Merchant_key = config('custom.merchant_key'); // set on custom file
@@ -42,6 +42,8 @@ class VerifyPaymentStatus extends Command
         if(!empty($aResult)){
             foreach($aResult as $res){
                 $Transaction_id = $res->txnid;
+                $BookingPayId   = $res->booking_pay_id;
+
                 //dd($Transaction_id);
                 $hashString = $Merchant_key . '|' . $command . '|' . $Transaction_id . '|' . $SALT;
                 $hash = hash('sha512', $hashString);
@@ -71,9 +73,11 @@ class VerifyPaymentStatus extends Command
                 $payment_sub_status = !empty($result['transaction_details'][$Transaction_id]['unmappedstatus']) ? $result['transaction_details'][$Transaction_id]['unmappedstatus'] : '';
                 $response_error_message = !empty($result['transaction_details'][$Transaction_id]['error_Message']) && isset($result['transaction_details'][$Transaction_id]['error_Message']) ? $result['transaction_details'][$Transaction_id]['error_Message'] : '';
                 $payment_mode = !empty($result['transaction_details'][$Transaction_id]['mode']) ? $result['transaction_details'][$Transaction_id]['mode'] : '';
+                $mih_pay_id = !empty($result['transaction_details'][$Transaction_id]['mihpayid']) ? $result['transaction_details'][$Transaction_id]['mihpayid'] : '';
             
                 //dd($verify_payment_status,$payment_sub_status);
-                 
+                
+                //------------- All transcation update entry 
                 $up_sSQL = 'UPDATE booking_payment_details SET `verify_payment_status` =:verify_payment_status, `payment_sub_status` =:payment_sub_status, `response_error_message` =:response_error_message, `payment_mode` =:payment_mode WHERE `txnid`=:Txnid ';
                 DB::update($up_sSQL,array(
                     'verify_payment_status' => $verify_payment_status,
@@ -82,6 +86,36 @@ class VerifyPaymentStatus extends Command
                     'payment_mode' => $payment_mode,
                     'Txnid' => $Transaction_id
                 ));
+                 
+                //------------------ new added for update payment_status 
+                if($verify_payment_status == 'success'){
+                    $up_sSQL1 = 'UPDATE booking_payment_details SET `payment_status` =:payment_status, `payment_mode` =:payment_mode WHERE `txnid`=:Txnid ';
+                    DB::update($up_sSQL1,array(
+                        'payment_status' => $verify_payment_status,
+                        'payment_mode' => $payment_mode,
+                        'Txnid' => $Transaction_id
+                    ));
+                    
+                    //------------- event booking table update transaction_status
+                    $up_sSQL2 = 'UPDATE event_booking SET `transaction_status` =:transaction_status WHERE `booking_pay_id`=:booking_pay_id ';
+                    DB::update($up_sSQL2,array(
+                        'transaction_status' => 1,
+                        'booking_pay_id' => $BookingPayId
+                    ));
+                }
+
+                //-------- update status for booking_payment_log
+                $response_datetime = date('Y-m-d h:i:s');
+                $up_sSQL = 'UPDATE booking_payment_log SET `mihpayid` =:mihpayid, `payment_status` =:payment_status, `response_datetime` =:response_datetime WHERE `txnid`=:Txnid ';
+                DB::update(
+                    $up_sSQL,
+                    array(
+                        'mihpayid' => $mih_pay_id,
+                        'payment_status' => $verify_payment_status,
+                        'response_datetime' => $response_datetime,
+                        'Txnid' => $Transaction_id
+                    )
+                );
                 
                 //--------- generate log
                 $post_data = json_encode($postData);

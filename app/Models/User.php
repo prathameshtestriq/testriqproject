@@ -281,6 +281,14 @@ class User extends Authenticatable
                 );
             }
 
+            //------------ organiser user update role
+            $sSQL = 'SELECT email,user_role FROM organiser_users WHERE email =:email';
+            $aResult = DB::select($sSQL, array('email' => $email));
+
+            if(!empty($aResult)){
+                $sSQL1 = 'UPDATE organiser_users SET user_role =:user_role WHERE email=:email';
+                DB::update($sSQL1,array('user_role' => $role ,'email' => $email));
+            }
 
             // return $Result;
         }
