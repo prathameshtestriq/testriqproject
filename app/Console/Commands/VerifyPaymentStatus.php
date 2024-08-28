@@ -36,8 +36,10 @@ class VerifyPaymentStatus extends Command
         $SALT = config('custom.salt'); // set on custom file
         $command = 'verify_payment';
        
-        $Sql = 'SELECT id,txnid,amount FROM booking_payment_details WHERE payment_status != "success" ';
+        $Sql = 'SELECT id,txnid,amount FROM booking_payment_details WHERE payment_status != "success" AND change_status_manual = 0';
         $aResult = DB::select($Sql);
+
+        //dd($aResult);
      
         if(!empty($aResult)){
             foreach($aResult as $res){
@@ -89,6 +91,7 @@ class VerifyPaymentStatus extends Command
                  
                 //------------------ new added for update payment_status 
                 if($verify_payment_status == 'success'){
+
                     $up_sSQL1 = 'UPDATE booking_payment_details SET `payment_status` =:payment_status, `payment_mode` =:payment_mode WHERE `txnid`=:Txnid ';
                     DB::update($up_sSQL1,array(
                         'payment_status' => $verify_payment_status,
