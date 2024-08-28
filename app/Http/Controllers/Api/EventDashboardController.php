@@ -246,8 +246,8 @@ class EventDashboardController extends Controller
                 $total_convenience_fee = ($Platform_fee + $Platform_Fee_GST + $Convenience_fee + $Convenience_Fee_GST);
 
                 // dd($Organiser_amount);
-                $ResponseData['OrganiserAmount'] = !empty($Organiser_amount) ? $Organiser_amount : 0;
-                $ResponseData['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $total_payment_gateway : 0;
+                $ResponseData['OrganiserAmount'] = !empty($Organiser_amount) ? number_format($Organiser_amount,2) : 0;
+                $ResponseData['TotalPaymentGateway'] = !empty($total_payment_gateway) ? number_format($total_payment_gateway,2) : 0;
                 $ResponseData['TotalConvenience'] = !empty($total_convenience_fee) ? number_format($total_convenience_fee,2) : 0;
                 
 
