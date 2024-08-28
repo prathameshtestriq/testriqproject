@@ -236,12 +236,13 @@ Welcome aboard!
         // $send_link = url('/')."in/Mumbai/".$orgId."/".$user_email;
         $send_link = config('custom.send_email_url').$orgId."/".$user_email;
 
-        $message = 'RACES invitation - Your been added as a team member To .<br><br>';
-        $message = 'Hi '.$firstname.' '.$lastname.', you’ve been added as a team member '.ucfirst($username).' has invited you...<br><br>';
-        $message .= '<br><br>';
-        $message .= '<a href="'.$send_link.'">Click Here</a>';
-        $message .= '<br><br>';
-        $message .= "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
+        $message = "RACES invitation - Your been added as a team member To <br><br>";
+        // $message = 'Hi '.$firstname.' '.$lastname.', you’ve been added as a team member '.ucfirst($username).' has invited you...<br><br>';
+        // $message .= '<br><br>';
+        // // $message .= '<a href="'.$send_link.'">Click Here</a>';
+        // $message .= '<a href="'.$send_link.'">Click Here</a>';
+        // $message .= '<br><br>';
+         $message .= "<p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
 
         // $message = "Dear " . $firstname . " " . $lastname . ", <br/>".$user_message.".<br/>";
         $email = new \SendGrid\Mail\Mail();
