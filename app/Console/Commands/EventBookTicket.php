@@ -361,7 +361,7 @@ class EventBookTicket extends Command
                 }
 
                 //-------------------------- send email
-                $SendEmail = app('App\Http\Controllers\Api\PaymentGatwayController')->send_email_payment_success($booking_pay_id,$BookEventId,$UserId);
+                //$SendEmail = app('App\Http\Controllers\Api\PaymentGatwayController')->send_email_payment_success($booking_pay_id,$BookEventId,$UserId);
 
             }
         }
