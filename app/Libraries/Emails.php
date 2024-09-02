@@ -135,34 +135,38 @@ Thank you for your attention to this matter.<br/>";
 
     public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0)
     {
-        $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
-        $email->setSubject($Subject);
-        $email->addTo($UserEmail, $Subject);
-        $email->addContent("text/plain", "Dear, ");
-        $email->addContent(
-            "text/html",
-            "" . $MessageContent
-        );
+        // $email = new \SendGrid\Mail\Mail();
+        // $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
+        // $email->setSubject($Subject);
+        // $email->addTo($UserEmail, $Subject);
+        // $email->addContent("text/plain", "Dear, ");
+        // $email->addContent(
+        //     "text/html",
+        //     "" . $MessageContent
+        // );
 
-        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
-        try {
-            $response = $sendgrid->send($email);
-            // send mail
-            if ($Subject == "Welcome to RACES - Organiser Onboarding Successful") {
-                $type = "Organiser Email";
-            } else if($flag == 2){
-               $type = "Manual Attendee Email";
-            }else {
-                $type = "Ticket Booking";
-            }
+        // $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+        // try {
+        //     $response = $sendgrid->send($email);
+        //     // send mail
+        //     if ($Subject == "Welcome to RACES - Organiser Onboarding Successful") {
+        //         $type = "Organiser Email";
+        //     } else if($flag == 2){
+        //        $type = "Manual Attendee Email";
+        //     }else {
+        //         $type = "Ticket Booking";
+        //     }
 
-            $send_mail_to = $UserEmail;
-            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response);
+        //     $send_mail_to = $UserEmail;
+        //     $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response);
 
-        } catch (Exception $e) {
-            echo 'Caught exception: ' . $e->getMessage() . "\n";
-        }
+        // } catch (Exception $e) {
+        //     echo 'Caught exception: ' . $e->getMessage() . "\n";
+        // }
+        $type = "Ticket Booking";
+         $send_mail_to = $UserEmail;
+            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response='');
+
     }
 
     public function registered_email($mail, $firstname, $lastname)
