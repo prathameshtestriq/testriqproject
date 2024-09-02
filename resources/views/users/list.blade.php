@@ -8,7 +8,7 @@
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card"> 
                         <div class="card-header w-100">
                             <div class="content-header-left">
                                 <div class="row breadcrumbs-top">
@@ -107,7 +107,7 @@
                                                             $selected = 'selected';
                                                         }
                                                         ?>
-                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
                                                         <?php 
                                                     }
                                                     ?>
@@ -127,7 +127,6 @@
                                                 <select id="city" name="city" class="select2 form-control">
                                                     <option value="">All City</option>
                                                 </select>  
-                                               
                                             </div>
                                             <div class="col-sm-3 col-12 mt-1">
                                                 <?php 
@@ -185,7 +184,7 @@
                                                             $selected = 'selected';
                                                         }
                                                         ?>
-                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
                                                         <?php 
                                                     }
                                                     ?>
@@ -196,7 +195,7 @@
                                                 <?php 
                                                    $Rows = ['10','25','50','100'];    
                                                 ?>
-                                                <label for="form-control">Rows :</label>
+                                                <label for="form-control">Rows </label>
                                                 <select id="rows" name="rows" class="form-control select2 form-control">
                                                     <option value="">Select Rows</option>
                                                     <?php 
@@ -242,11 +241,12 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table class="table table-striped table-bordered mt-1">
+                            <table class="table table-striped table-bordered mt-1" style="border-bottom: 1px solid #ebe9f1;">
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-left">User Name</th>                                                <div class="col-xs-12 col-md-12">
+                                        <th class="text-left">User Name</th>                                                
+                                        <div class="col-xs-12 col-md-12">
                                             <div class="form-group mb-5">
                                                 {{-- <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Contact Number <span style="color:red;">*</span></label> --}}
                                                 {{-- <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
@@ -264,7 +264,7 @@
                                         <th class="text-left">Country</th>
                                         <th class="text-left">State</th>
                                         <th class="text-left">City</th>
-                                        <th class="text-center">Role Name</th>
+                                        <th class="text-left">Role Name</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Profile Completion <br> Percentage</th>
                                         <th class="text-center">Actions</th>
@@ -284,9 +284,9 @@
                                         ?>
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
-                                                <td class="text-left">{{ $val->firstname }} {{ $val->lastname }}</td>
+                                                <td class="text-left">{{ ucfirst($val->firstname) }} {{ ucfirst($val->lastname) }}</td>
                                                 {{-- <td class="text-left">{{ $val->username }}</td> --}}
-                                                <td class="text-left">{{ $val->email }}<br>{{ $val->mobile }}</td>
+                                                <td class="text-left">{{ ucfirst($val->email) }}<br>{{ $val->mobile }}</td>
                                                 <td class="text-left">
                                                     @if ($val->gender == 1)
                                                         Male
@@ -297,10 +297,10 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-left">{{ date('d-m-Y',strtotime($val->dob)) }}</td>
-                                                <td class="text-left">{{ !empty($val->country_name) ? $val->country_name : '-' }}</td>
-                                                <td class="text-left">{{ !empty($val->state_name) ? $val->state_name : '-'}}</td>
-                                                <td class="text-left">{{ !empty($val->city_name) ? $val->city_name : '-' }}</td>
-                                                <td class="text-left">{{ !empty($val->role_name) ? $val->role_name : '-' }}</td>
+                                                <td class="text-left">{{ !empty($val->country_name) ? ucfirst($val->country_name) : '-' }}</td>
+                                                <td class="text-left">{{ !empty($val->state_name) ? ucfirst($val->state_name) : '-'}}</td>
+                                                <td class="text-left">{{ !empty($val->city_name) ? ucfirst($val->city_name) : '-' }}</td>
+                                                <td class="text-left">{{ !empty($val->role_name) ? ucfirst($val->role_name) : '-' }}</td>
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success">
                                                         <input type="checkbox" class="custom-control-input"
@@ -316,16 +316,25 @@
                                                 <?php echo !empty($val->profile_completion_percentage) ? number_format($val->profile_completion_percentage,2).'%' : ''  ?>
                                                 </td> 
                                                
-
-                                                <td width="10%">
-                                                     <a href="<?php echo  $url1.''.$val->email; ?>/<?php echo $val->password; ?>" target="_blank">
-                                                        <i class="fa fa-eye btn btn-primary btn-sm" title="Login As Organiser"></i>
+                                                <td style="display: flex;width: 100%; gap: 5px; border-bottom: none;">
+                                                        
+                                                    <a href="<?php echo  $url1.''.$val->email; ?>/<?php echo $val->password; ?>" target="_blank" style="background-color: #7367f0 !important;
+                                                            border-radius: 0.358rem;
+                                                            display: flex;
+                                                            justify-content: center;
+                                                            align-items: center;
+                                                            padding: 0.486rem 1rem;" title="Login As Organiser">
+                                                        <img class="" src="{{ asset('uploads/dashboard/login_as_organiser.png') }}" style="height: 16px;">
                                                     </a>
-                                                    
-                                                    <a href="{{ url('/user/add_edit', $val->id) }}"><i
-                                                            class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
+
+                                                    <a href="{{ url('/user/add_edit', $val->id) }}">
+                                                        <i class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i>
+                                                    </a>
+
+                                                    <a onclick="delUser({{ $val->id }})">
                                                     <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                        onclick="delUser({{ $val->id }})" title="Delete"></i>
+                                                         title="Delete"></i>
+                                                    </a>
                                                 </td>
                                             </tr>
                                       <?php }
@@ -343,7 +352,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
             <!-- Bordered table end -->
@@ -352,29 +360,7 @@
 @endsection
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('#state').change(function() {
-        var stateId = $(this).val();
-        if (stateId) {
-            $.ajax({
-                url: '/get-cities/' + stateId,
-                type: 'GET',
-                success: function(data) {
-                    var cityDropdown = $('#city');
-                    cityDropdown.empty();
-                    cityDropdown.append('<option value="">Select City</option>');
-                    $.each(data.cities, function(index, city) {
-                        cityDropdown.append('<option value="' + city.id + '">' + city.name + '</option>');
-                    });
-                }
-            });
-        } else {
-            $('#city').empty().append('<option value="">Select City</option>');
-        }
-    });
-});
-</script>
+
 <script>
   function delUser(id) {
         // alert(id);
@@ -391,8 +377,7 @@ $(document).ready(function() {
 
 
     function change_status(_this, id) {
-        //  alert(id)
-;
+        //  alert(id);
         var status = $(_this).prop('checked') == true ? 1 : 0;
         // alert(status);
         
@@ -441,56 +426,78 @@ $(document).ready(function() {
 
 
 
-$(document).ready(function() {
-  $('#country').change(function() {
-      var countryId = $(this).val();
-      if (countryId) {
-          $.ajax({
-              url: '/get_states/' + countryId,
-              type: 'GET',
-              success: function(data) {
-                  console.log(data);
-                  var stateDropdown = $('#state');
-                  stateDropdown.empty();
-                  stateDropdown.append('<option value="">All State</option>');
-                  $.each(data.states, function(index, state) {
-                      stateDropdown.append('<option value="' + state.id + '">' + state.name + '</option>');
-                  });
-              }
-          });
-      } else {
-          $('#state').empty().append('<option value="">All state</option>');
-          $('#city').empty().append('<option value="">All City</option>');
-      }
-  });
- 
-  
-});
-$(document).ready(function() {
-  $('#state').change(function() {
-      // alert("hereemldcklk");
-      var stateId = $(this).val();
-      if (stateId) {
-          $.ajax({
-              url: '/get_cities/' + stateId,
-              type: 'GET',
-              success: function(data) {
-                  console.log(data);
-                  var cityDropdown = $('#city');
-                  cityDropdown.empty();
-                  cityDropdown.append('<option value="">All City</option>');
-                  $.each(data.cities, function(index, city) {
-                      cityDropdown.append('<option value="' + city.id + '">' + city.name + '</option>');
-                  });
-              
-              }
-          });
-      } else {
-          $('#city').empty().append('<option value="">All City</option>');
-      }
-  }); 
-   
-});
+    $(document).ready(function() {
+        var CountryId = '<?php echo old('country', $search_country); ?>';
+        var StateId = '<?php echo old('state', $search_state); ?>';
+        var CityId = '<?php echo old('city', $search_city); ?>';
+
+        // Fetch states based on the selected country
+        if (CountryId !== '') {
+            $.ajax({
+                url: '/get_states', // Replace with your URL to fetch states
+                type: 'GET',
+                data: { country_id: CountryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'" '+ (StateId == value.id ? 'selected' : '') +'>'
+                            + value.name +'</option>');
+                    });
+
+                    // Fetch cities based on the selected state
+                    if (StateId !== '') {
+                        $.ajax({
+                            url: '/get_cities', // Replace with your URL to fetch cities
+                            type: 'GET',
+                            data: { state_id: StateId },
+                            success: function(cities) {
+                                $('#city').empty().append('<option value="">Select City</option>');
+                                $.each(cities, function(key, value) {
+                                    $('#city').append('<option value="'+ value.id +'" '+ (CityId == value.id ? 'selected' : '') +'>'
+                                        + value.name +'</option>');
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Handle country change
+        $('#country').change(function() {
+            var countryId = $(this).val();
+            $.ajax({
+                url: '/get_states',
+                type: 'GET',
+                data: { country_id: countryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    });
+                    $('#city').empty().append('<option value="">Select City</option>'); // Clear cities
+                }
+            });
+        });
+
+        // Handle state change
+        $('#state').change(function() {
+            var stateId = $(this).val();
+            $.ajax({
+                url: '/get_cities',
+                type: 'GET',
+                data: { state_id: stateId },
+                success: function(cities) {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                    $.each(cities, function(key, value) {
+                        $('#city').append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    });
+                }
+            });
+        });
+    });
+
+
     
     
   

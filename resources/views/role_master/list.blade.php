@@ -76,7 +76,7 @@
                                     <div class="col-sm-9">
                                         <div class="row">
                                             <div class="col-sm-3">
-                                                <label for="form-control">Role Name:</label>
+                                                <label for="form-control">Role Name</label>
                                                 <input type="text" id="role_name" class="form-control"
                                                     placeholder="Role Name" name="role_name"
                                                     value="{{old('role_name',$search_role_name)}}" autocomplete="off" />
@@ -86,7 +86,7 @@
                                                 <?php 
                                                    $Role_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="role_status" name="role_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -129,7 +129,7 @@
                                     <tr>
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Role Name</th>
-                                        <th class="text-left">Access</th>
+                                        <th class="text-center">Role Access</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -144,8 +144,8 @@
                                     ?>
                                         <tr>
                                             <td class="text-center">{{ $i }}</td>
-                                            <td class="text-left">{{ $val->name }}</td>
-                                             <td class="text-left"><a href="{{ url('role_access', $val->id ) }}"><i class="fa fa-eye" style="cursor:pointer;" ></i></a></td>
+                                            <td class="text-left">{{ ucfirst($val->name) }}</td>
+                                             <td class="text-center"><a href="{{ url('role_access', $val->id ) }}"><i class="fa fa-eye" style="cursor:pointer;" ></i></a></td>
                                             <td class="text-center">
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input"

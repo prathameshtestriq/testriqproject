@@ -252,7 +252,7 @@
                                                         $selected = 'selected';
                                                     }
                                                     ?>
-                                                    <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                    <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
                                                     <?php 
                                                 }
                                                 ?>
@@ -283,11 +283,13 @@
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                         </div>
+
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="password">Password <span style="color:red;">*</span></label>
-                                                <input type="password" id="password" class="form-control"
-                                                    name="password" placeholder="Enter Password" autocomplete="off" />
+                                                <i class="fa fa-eye" id="togglePassword" style="cursor:pointer; position: absolute; top: 35px; right: 30px;"></i>
+                                                <input type="password" id="password" class="form-control" name="password" placeholder="Enter Password" autocomplete="off" />
+                                                
                                                 <h5><small class="text-danger" id="password_err"></small></h5>
                                                 @error('password')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -297,8 +299,8 @@
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="password_confirmation">Confirm Password <span style="color:red;">*</span> </label>
-                                                <input type="password" id="password_confirmation" class="form-control"
-                                                    name="password_confirmation" placeholder="Enter Confirm Password" />
+                                                <i class="fa fa-eye" id="toggleConfirmPassword" style="cursor:pointer; position: absolute; top: 35px; right: 30px;"></i>
+                                                <input type="password" id="password_confirmation" class="form-control" name="password_confirmation" placeholder="Enter Confirm Password" />
                                                 <h5><small class="text-danger" id="password_confirmation_err"></small>
                                                 </h5>
                                                 @error('password_confirmation')
@@ -307,7 +309,7 @@
                                             </div>
                                         </div>
                                        
-                                       
+                                   
 
                                         <div class="col-12 text-center mt-1">
                                             <button type="submit" class="btn btn-primary mr-1"
@@ -327,91 +329,98 @@
    
 @endsection
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
 
-    $(document).ready(function() {
-         
+<script>
+    $(document).ready(function () {
+        $('#togglePassword').on('click', function () {
+            const passwordField = $('#password');
+            const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
+            passwordField.attr('type', type);
+            $(this).toggleClass('fa-eye-slash'); // Toggle the icon
+        });
+
+        $('#toggleConfirmPassword').on('click', function () {
+            const confirmPasswordField = $('#password_confirmation');
+            const type = confirmPasswordField.attr('type') === 'password' ? 'text' : 'password';
+            confirmPasswordField.attr('type', type);
+            $(this).toggleClass('fa-eye-slash'); // Toggle the icon
+        });
+    });
+</script>
+<script>
+     $(document).ready(function() {
+        var CountryId = '<?php echo old('country', $country); ?>';
+        var StateId = '<?php echo old('state', $state); ?>';
+        var CityId = '<?php echo old('city', $city); ?>';
+      
+        // alert(CountryId);
+         //console.log("CountryId "+CountryId);
+        // Fetch states based on the selected country
+        if (CountryId !== '') {
+            // alert("here");
+            $.ajax({
+                url: '/get_states', // Replace with your URL to fetch states
+                type: 'GET',
+                data: { country_id: CountryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'" '+ (StateId == value.id ? 'selected' : '') +'>'
+                            + value.name +'</option>');
+                    });
+
+                    // Fetch cities based on the selected state
+                    if (StateId !== '') {
+                        $.ajax({
+                            url: '/get_cities', // Replace with your URL to fetch cities
+                            type: 'GET',
+                            data: { state_id: StateId },
+                            success: function(cities) {
+                                $('#city').empty().append('<option value="">Select City</option>');
+                                $.each(cities, function(key, value) {
+                                    $('#city').append('<option value="'+ value.id +'" '+ (CityId == value.id ? 'selected' : '') +'>'
+                                        + value.name +'</option>');
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Handle country change
         $('#country').change(function() {
             var countryId = $(this).val();
-            if (countryId) {
-                $.ajax({
-                    url: '/get_states/' + countryId,
-                    type: 'GET',
-                    success: function(data) {
-                        var stateDropdown = $('#state');
-                        stateDropdown.empty();
-                        stateDropdown.append('<option value="">All State</option>');
-                        $.each(data.states, function(index, state) {
-                            stateDropdown.append('<option value="' + state.id + '">' + state.name + '</option>');
-                        });
-                    }
-                });
-            } else {
-                $('#state').empty().append('<option value="">All State</option>');
-                $('#city').empty().append('<option value="">All City</option>');
-            }
-        });
-
-        var country_id = <?php echo json_encode($country); ?>;
-        var state_id = <?php echo json_encode($state); ?>;
-
-        if (country_id) {
             $.ajax({
-                url: '/get_states/' + country_id,
+                url: '/get_states',
                 type: 'GET',
-                success: function(data) {
-                    var stateDropdown = $('#state');
-                    stateDropdown.empty();
-                    stateDropdown.append('<option value="">All State</option>');
-                    $.each(data.states, function(index, state) {
-                        stateDropdown.append('<option value="' + state.id + '">' + state.name + '</option>');
+                data: { country_id: countryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'">'+ value.name +'</option>');
                     });
-                    if (state_id) {
-                        stateDropdown.val(state_id);
-                    }
+                    $('#city').empty().append('<option value="">Select City</option>'); // Clear cities
                 }
             });
-        }
+        });
 
+        // Handle state change
         $('#state').change(function() {
             var stateId = $(this).val();
-            if (stateId) {
-                $.ajax({
-                    url: '/get_cities/' + stateId,
-                    type: 'GET',
-                    success: function(data) {
-                        var cityDropdown = $('#city');
-                        cityDropdown.empty();
-                        cityDropdown.append('<option value="">All City</option>');
-                        $.each(data.cities, function(index, city) {
-                            cityDropdown.append('<option value="' + city.id + '">' + city.name + '</option>');
-                        });
-                    }
-                });
-            } else {
-                $('#city').empty().append('<option value="">All City</option>');
-            }
-        });
-
-        var city_id = <?php echo json_encode($city); ?>;
-
-        if (state_id) {
             $.ajax({
-                url: '/get_cities/' + state_id,
+                url: '/get_cities',
                 type: 'GET',
-                success: function(data) {
-                    var cityDropdown = $('#city');
-                    cityDropdown.empty();
-                    cityDropdown.append('<option value="">All City</option>');
-                    $.each(data.cities, function(index, city) {
-                        cityDropdown.append('<option value="' + city.id + '">' + city.name + '</option>');
+                data: { state_id: stateId },
+                success: function(cities) {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                    $.each(cities, function(key, value) {
+                        $('#city').append('<option value="'+ value.id +'">'+ value.name +'</option>');
                     });
-                    if (city_id) {
-                        cityDropdown.val(city_id);
-                    }
                 }
             });
-        }
+        });
     });
+
 </script>
 

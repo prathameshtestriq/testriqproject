@@ -37,7 +37,7 @@ class MarketingController extends Controller
             return redirect('/marketing');
         }
         $a_return['search_campaign_name'] = (!empty(session('campaign_name'))) ? session('campaign_name') : '';
-        $a_return['search_start_marketing_date'] = (!empty(session('end_marketing_date'))) ?  session('end_marketing_date') : '';
+        $a_return['search_start_marketing_date'] = (!empty(session('start_marketing_date'))) ?  session('start_marketing_date') : '';
         $a_return['search_end_marketing_date'] = (!empty(session('end_marketing_date'))) ? session('end_marketing_date'): '';
         $marketing_status = session('marketing_status');
         $a_return['search_marketing_status'] = (isset($marketing_status) && $marketing_status != '') ? $marketing_status : '';

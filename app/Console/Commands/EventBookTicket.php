@@ -33,7 +33,9 @@ class EventBookTicket extends Command
 
         $Sql = 'SELECT id,created_by,payment_status,event_id FROM booking_payment_details WHERE id NOT IN(select booking_pay_id from event_booking where booking_pay_id = booking_payment_details.id)';
         $aResult = DB::select($Sql);
-        // dd($aResult);
+       
+        // $ss = array_column($aResult,'id');
+        //  dd(implode(",",$ss));
         if (!empty($aResult)) {
 
             foreach($aResult as $res){
@@ -52,8 +54,8 @@ class EventBookTicket extends Command
                     $BookingPaymentId = !empty($booking_pay_id) ? $booking_pay_id : 0;
                     $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                     $BookingPayment = DB::select($sql, array('booking_pay_id' => $BookingPaymentId));
-
-                    if (count($BookingPayment) > 0) {
+                    
+                    if (!empty($BookingPayment) && count($BookingPayment) > 0) {
                         $EventId = $BookingPayment[0]->event_id;
                         $TotalAttendee = $BookingPayment[0]->total_attendees;
                         $FormQuestions = !empty($BookingPayment[0]->FormQuestions) ? json_decode($BookingPayment[0]->FormQuestions) : [];
@@ -357,12 +359,14 @@ class EventBookTicket extends Command
                             }
                         }
                         // return 'Request processed successfully';
+                       
+                        //-------------------------- send email
+                        $SendEmail = app('App\Http\Controllers\Api\PaymentGatwayController')->send_email_payment_success($booking_pay_id,$BookEventId,$UserId);
+
                     }
                 }
 
-                //-------------------------- send email
-                //$SendEmail = app('App\Http\Controllers\Api\PaymentGatwayController')->send_email_payment_success($booking_pay_id,$BookEventId,$UserId);
-
+                
             }
         }
 

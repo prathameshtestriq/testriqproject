@@ -143,7 +143,7 @@ if (!empty($edit_data)) {
                                                             $selected = 'selected';
                                                         }
                                                         ?>
-                                                        <option value="<?php echo $value; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                        <option value="<?php echo $value; ?>" <?php echo $selected; ?>><?php echo ucfirst($value); ?></option>
                                                         <?php 
                                                     }
                                                     ?>
@@ -162,7 +162,7 @@ if (!empty($edit_data)) {
                                                 </label>
                                                 <input type="file" id="img" class="form-control"
                                                     placeholder="img" name="img"
-                                                    autocomplete="off"  onchange="validateSize(this)" />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this); validateSize(this);" />
                                                     
                                                  <span class="error" id="image_err" style="color:red;"></span>
 
@@ -173,13 +173,17 @@ if (!empty($edit_data)) {
                                         </div>
                                         <div class="col-md-2 mt-2">
                                             <span><br /></span>
-                                            @if (!empty($img))
-                                                <a href="{{ asset('uploads/images/' . $img) }}" target="_blank">
-                                                  <img src="{{ asset('uploads/images/' . $img) }}" alt="Current Image" style="width: 50px;">
-                                                </a>
-                                                <input type="hidden" name="hidden_image" value="{{ old('img', $img) }}" accept="image/jpeg, image/png">
-                                            @endif
-
+                                            <!-- Image preview section -->
+                                            <div id="imagePreview">
+                                                <?php if(!empty($img)){ ?>
+                                                    <a href="{{ asset('uploads/images/' . $img) }}" target="_blank">
+                                                        <img id="preview" src="{{ asset('uploads/images/' . $img) }}" alt="Current Image" style="width: 50px;">
+                                                    </a>
+                                                    <input type="hidden" name="hidden_image" value="{{ old('img', $img) }}" accept="image/jpeg, image/png">
+                                                <?php } else { ?>
+                                                    <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
+                                                <?php } ?>
+                                            </div>    
                                         </div>
                                           
                                         
@@ -189,7 +193,7 @@ if (!empty($edit_data)) {
                                                 <label for="start_date">Start Date<span style="color:red;">*</span></label>
                                                 <input type="date" id="start_date" class="form-control"
                                                     placeholder="Start Date" name="start_date"
-                                                    value="{{ old('start_date', $start_date ? \Carbon\Carbon::parse($start_date)->format('Y-m-d\TH:i:s') : '') }}" 
+                                                    value="{{ old('start_date', $start_date ? \Carbon\Carbon::parse($start_date)->format('Y-m-d') : '') }}" 
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="start_date_err"></small></h5>
                                                 @error('start_date')
@@ -203,7 +207,7 @@ if (!empty($edit_data)) {
                                                 <label for="end_date">End Date<span style="color:red;">*</span></label>
                                                 <input type="date" id="end_date" class="form-control"
                                                     placeholder="End Date" name="end_date"
-                                                    value="{{ old('end_date', $end_date ? \Carbon\Carbon::parse($end_date)->format('Y-m-d\TH:i') : '') }}"  
+                                                    value="{{ old('end_date', $end_date ? \Carbon\Carbon::parse($end_date)->format('Y-m-d') : '') }}"  
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="end_date_err"></small></h5>
                                                 @error('end_date')
@@ -231,7 +235,20 @@ if (!empty($edit_data)) {
     </section>
 @endsection
 
+
 <script type="text/javascript">
+    function previewImage(input) {
+        var file = input.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var preview = document.getElementById('preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
     function validateSize(input) {
         var isValid = true;
       const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB

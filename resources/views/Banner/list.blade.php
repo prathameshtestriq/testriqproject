@@ -68,7 +68,7 @@
         <div class="content-body">
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
-                <div class="col-12">
+                <div class="col-12"> 
                     <div class="card ">
                         <form class="dt_adv_search" action="{{ url('banner') }}" method="POST">
                             @csrf
@@ -78,21 +78,21 @@
                                     <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2">
-                                                <label for="form-control">Banner Name:</label>
+                                                <label for="form-control">Banner Name</label>
                                                 <input type="text" id="name" class="form-control"
                                                     placeholder="Banner Name" name="name" value="{{ $search_banner }}"
                                                     autocomplete="off" />
                                             </div>
                                          
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Date:</label>
+                                                <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_booking_date" class="form-control"
                                                     placeholder="Start Date" name="start_booking_date" value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
-                                                <label for="form-control">End Date:</label>
+                                                <label for="form-control">End Date</label>
                                                 <input type="date" id="end_booking_date" class="form-control"
                                                     placeholder="End Date" name="end_booking_date" value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
@@ -102,7 +102,7 @@
                                                 <?php 
                                                    $banner_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="banner_status" name="banner_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -145,24 +145,12 @@
                                     <tr>
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Banner Name</th>
-                                        <div class="col-xs-12 col-md-12">
-                                            <div class="form-group mb-5">
-                                                {{-- <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Contact Number <span style="color:red;">*</span></label> --}}
-                                                {{-- <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
-                                                    placeholder="mobile" autocomplete="off" value="{{ old('mobile',$mobile) }}" /> --}}
-                                                <h5><small class="text-danger" id="mobile_err"></small></h5>
-                                                @error('mobile')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        {{-- <th class="text-left">User Name</th> --}}
-                                        <th class="text-left">banner image</th>
                                         <th class="text-left">start date</th>
                                         <th class="text-left">end date</th>
                                         <th class="text-left">Country</th>
                                         <th class="text-left">state</th>
                                         <th class="text-left">City</th>
+                                        <th class="text-left">banner image</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -176,28 +164,20 @@
                                                 $i++;?>
                                     <tr>
                                         <td class="text-center">{{ $i }}</td>
-                                        <td class="text-left">{{ $val->banner_name }}</td>
-                                        {{-- <td class="text-left">{{ $val->username }}</td> --}}
-                                        {{-- <td class="text-left">{{ $val->banner_image }}</td> --}}
-
+                                        <td class="text-left">{{ ucfirst($val->banner_name) }}</td>
+                                        <td class="text-left">{{ date('d-m-Y ', $val->start_time) }}</td>
+                                        <td class="text-left">{{ date('d-m-Y ', $val->end_time) }}</td>
+                                        <td class="text-left">{{ ucfirst($val->country) }}</td>
+                                        <td class="text-left">{{ ucfirst($val->state) }}</td>
+                                        <td class="text-left">{{ ucfirst($val->city) }}</td>
                                         <td class="t-center text-center">
-                                            <a target="_blank"
+                                            <a target="_blank" title="View Image"
                                                 href="{{ asset('uploads/banner_image/' . $val->banner_image) }}">
                                                 <img style="width:50px;"
                                                     src="{{ asset('uploads/banner_image/' . $val->banner_image) }}"
                                                     alt="Banner Image">
                                             </a>
                                         </td>
-
-
-                                        {{-- <td class="text-center"><img src="{{ $val->banner_image }}" alt="Banner Image" style="width: 100px;"></td> --}}
-
-                                        <td class="text-left">{{ date('d-m-Y ', $val->start_time) }}</td>
-                                        <td class="text-left">{{ date('d-m-Y ', $val->end_time) }}</td>
-                                        <td class="text-left">{{ $val->country }}</td>
-                                        <td class="text-left">{{ $val->state }}</td>
-                                        <td class="text-left">{{ $val->city }}</td>
-
                                         <td class="text-center">
                                             <div class="custom-control custom-switch custom-switch-success">
                                                 <input type="checkbox" class="custom-control-input"
@@ -214,7 +194,7 @@
 
                                         <td>
                                             <a href="{{ url('/banner/add_edit', $val->id) }}"><i
-                                                    class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
+                                                    class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                             <i class="fa fa-trash-o btn btn-danger btn-sm"
                                                 onclick="delbanner({{ $val->id }})" title="delete"></i>
                                         </td>
@@ -245,13 +225,7 @@
 
 @endsection
 <script>
-    //    function delbanner(id) {
-    //         var bConfirm = confirm('Are you sure you want to remove this banner?');
-    //         if (bConfirm) {
-    //             var url = '{{ url('banner/delete') }}/' + id;
-    //             window.location.href = url;
-    //         }
-    //     }
+    
 
 
     function delbanner(id) {

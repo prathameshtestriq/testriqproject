@@ -76,21 +76,21 @@
                                     <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2">
-                                                <label for="form-control">Remittance Name:</label>
+                                                <label for="form-control">Remittance Name</label>
                                                 <input type="text" id="remittance_name" class="form-control"
                                                     placeholder="Remittance Name" name="remittance_name"
                                                     value="{{old('remittance_name',$search_remittance_name)}}" autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Remittance Date:</label>
+                                                <label for="form-control">Start Remittance Date</label>
                                                 <input type="date" id="start_remittance_date" class="form-control"
                                                     placeholder="Start Date" name="start_remittance_date" value="{{ old('start_remittance_date', $search_start_remittance_date ? \Carbon\Carbon::parse($search_start_remittance_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
-                                                <label for="form-control">End Remittance Date:</label>
+                                                <label for="form-control">End Remittance Date</label>
                                                 <input type="date" id="end_remittance_date" class="form-control"
                                                     placeholder="End Date" name="end_remittance_date" value="{{ old('end_remittance_date', $search_end_remittance_date ? \Carbon\Carbon::parse($search_end_remittance_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
@@ -100,7 +100,7 @@
                                                 <?php 
                                                    $remittance_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="remittance_status" name="remittance_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -130,7 +130,7 @@
                                                                 $selected = 'selected';
                                                             }
                                                             ?>
-                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
                                                             <?php 
                                                         }
                                                     ?>
@@ -148,20 +148,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                
-                                    <div class="col-sm-12 mt-2 float-right">
-                                        @if (!empty($Remittance)) 
-                                            <div class="float-right">
-                                                <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right ml-2 " title="Download">Download </a>
-                                            </div>
-                                        @endif
-                                        <div class="float-right ml-3">
-                                        <a href="{{ url('remittance_management/add') }}"
-                                        class="btn btn-outline-primary float-right pr-2">
-                                            <i data-feather="plus"></i><span>Add </span></a>
-                                        </div>    
-                                    </div>
-                                   
                                 </div>
                             </div>
                         </form>
@@ -169,15 +155,19 @@
                         <form method="post" action="{{route('remittance_management.import_remittance_management') }}" enctype="multipart/form-data">
                             @csrf 
                             <div class="row">
-                                <div class="col-sm-2">
-                                    <div class="form-group m-1">
-                                       Remittance Data Import:
+                                <div class="col-sm-2 ">
+                                    <div class="form-group p-2">
+                                       Remittance Data Import <span style="color:red;">*</span>
                                     </div>
                                 </div>
-                                <div class="col-sm-3 ml-3">
-                                    <div class="form-group mr-1">
+                                <div class="col-sm-3">
+                                    <div class="form-group mr-3">
                                         <input type="file" id="rem_file" name="rem_file" class="form-control">
                                         <input type="hidden" name="remittance_id">
+                                        <h5><small class="text-danger" id="rem_file_err"></small></h5>
+                                        @error('rem_file')
+                                            <span class="error" style="color:red;">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-sm-2">
@@ -185,6 +175,20 @@
                                        <button type="submit" class="btn btn-primary">Submit</button>
                                     </div>
                                 </div>
+
+                                <div class="col-sm-5 float-right ">
+                                    @if (!empty($Remittance)) 
+                                        <div class="float-right">
+                                            <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right mr-1 ml-2 " title="Download">Download </a>
+                                        </div>
+                                    @endif
+                                    <div class="float-right ml-3">
+                                    <a href="{{ url('remittance_management/add') }}"
+                                    class="btn btn-outline-primary float-right pr-2">
+                                        <i data-feather="plus"></i><span>Add </span></a>
+                                    </div>    
+                                </div>
+                               
                             </div>
                         </form>
                         <div class="table-responsive">
@@ -193,8 +197,8 @@
                                     <tr>
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Remittance Name</th>
-                                        <th class="text-center">Remittance Date</th>
-                                        <th class="text-center">Event Name</th>
+                                        <th class="text-left">Remittance Date</th>
+                                        <th class="text-left">Event Name</th>
                                         <th class="text-center">Gross Amount</th>
                                         <th class="text-center">Service Charge</th>
                                         <th class="text-center">SGST</th>
@@ -203,7 +207,7 @@
                                         <th class="text-center">Deductions</th>
                                         <th class="text-center">TDS</th>
                                         <th class="text-center">Amount Remitted</th>
-                                        <th class="text-center">Bank Reference</th>
+                                        <th class="text-left">Bank Reference</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -218,9 +222,9 @@
                                     ?>
                                         <tr>
                                             <td class="text-center">{{ $i }}</td>
-                                            <td class="text-left">{{ $val->remittance_name }}</td>
-                                            <td class="text-center">{{  date('d-m-Y H:i:s',$val->remittance_date) }}</td>
-                                            <td class="text-left">{{ $val->event_name }}</td>
+                                            <td class="text-left">{{ ucfirst($val->remittance_name) }}</td>
+                                            <td class="text-left">{{  date('d-m-Y',$val->remittance_date) }}</td>
+                                            <td class="text-left">{{ ucfirst($val->event_name) }}</td>
                                             <td class="text-center">{{ number_format($val->gross_amount, 2)  }}</td>
                                             <td class="text-center">{{ number_format($val->service_charge,2) }}</td>
                                             <td class="text-center">{{ number_format($val->Sgst,2) }}</td>
@@ -229,7 +233,7 @@
                                             <td class="text-center">{{ number_format($val->deductions,2) }}</td>
                                             <td class="text-center">{{ number_format($val->Tds,2) }}</td>
                                             <td class="text-center">{{ number_format($val->amount_remitted,2) }}</td>
-                                            <td class="text-center">{{ $val->bank_reference }}</td>
+                                            <td class="text-left">{{ ucfirst($val->bank_reference) }}</td>
                                             <td class="text-center">
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input"

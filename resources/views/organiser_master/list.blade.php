@@ -62,19 +62,60 @@
            </div>
         @endif
 
-        <div class="content-body">
+        <div class="content-body"> 
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
                 <div class="col-12">
                     <div class="card ">
-                        <form class="dt_adv_search" action="{{ url('users') }}" method="POST">
+                        <form class="dt_adv_search" action="{{ url('/organiser_master') }}" method="POST">
                             @csrf
                             <input type="hidden" name="form_type" value="search_user">
                             <div class="card-header w-100 m-0"> 
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                          
+                                            <div class="col-sm-2">
+                                                <label for="form-control">Organiser Name</label>
+                                                <input type="text" id="organiser_name" class="form-control"
+                                                    placeholder="Organiser Name" name="organiser_name" value="{{ $search_organiser_name }}"
+                                                    autocomplete="off" />
+                                            </div>
+
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control"> User Name</label>
+                                                <select id="organiser_user_name" name="organiser_user_name" class="form-control select2 form-control">
+                                                    <option value="">Select  user name</option>
+                                                    <?php 
+                                                        foreach ($UserDetails as $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('organiser_user_name',$search_organiser_user_name) == $value->id){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-sm-2">
+                                                <label for="form-control">GST Number</label>
+                                                <input type="text" id="gst_number" class="form-control"
+                                                    placeholder="GST Number" name="gst_number" value="{{ $search_gst_number }}"
+                                                    autocomplete="off" />
+                                            </div>
+
+                                            <div class="col-sm-2 mt-2">
+                                                <button type="submit" class="btn btn-primary">Search</button>
+                                                @if ((!empty($search_organiser_name)) || (!empty($search_gst_number)) || !empty($search_organiser_user_name))
+                                                    <a title="Clear" href="{{ url('/organiser_master/clear_search') }}" type="button"
+                                                        class="btn btn-outline-primary">
+                                                        <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
+                                                    </a>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -108,11 +149,14 @@
                                                 <td class="text-center">{{ $i }}</td>
                                                
                                                 <td class="text-left">{{ $val->name }}</td>
-                                                <td class="text-left">{{ $val->user_name }}</td>
-                                                <td class="text-left">{{ $val->email }}</td>
+                                                <td class="text-left">{{ ucfirst($val->user_name) }}</td>
+                                                <td class="text-left">{{ ucfirst($val->email) }}</td>
                                                 <td class="text-left">{{ $val->mobile }}</td>
                                                 <td class="text-left">{{ $val->gst_number }}</td>
-                                              
+                                                {{-- <td class="text-center">
+                                                    <a href="{{ url('organiser_master/edit', $val->id) }}"><i
+                                                        class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
+                                                </td> --}}
                                                 <td>
                                                     <!-- <a href="http://localhost:3000/in/Nashik/<?php //echo $val->id; ?>/<?php //echo $val->user_email; ?>/<?php //echo $val->user_password; ?>" target="_blank">
                                                         <i class="fa fa-eye btn btn-primary btn-sm" title="Login As Organiser"></i>

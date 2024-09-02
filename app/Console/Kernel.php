@@ -19,8 +19,8 @@ class Kernel extends ConsoleKernel
                 ->everyFiveMinutes();
         $schedule->command('app:common-files-remove')
                 ->dailyAt('23:30'); //dailyAt('13:00');
-        $schedule->command('app:event-book-ticket')
-                ->dailyAt('23:30'); //dailyAt('13:00');
+        // $schedule->command('app:event-book-ticket')
+                // ->dailyAt('23:30'); //dailyAt('13:00');
     }
 
     /**

@@ -1102,52 +1102,44 @@ class EventDashboardController extends Controller
                 }
                 
                 // (select SUM(e.total_amount) AS TotalAmount from booking_details as bd left join event_booking as eb on eb.id=bd.booking_id and eb.transaction_status IN (1,3)) as TotalAmount // SUM(e.total_amount) AS TotalAmount
-                $SQL1 = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice, SUM(e.total_amount) AS TotalAmount
-                FROM booking_details AS b
-                LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+                
+                // $SQL1 = "SELECT b.ticket_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice, SUM(e.total_amount) AS TotalAmount
+                // FROM booking_details AS b
+                // LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                // WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+                
+                // AND bd.ticket_amount != '0.00' AND bd.quantity != 0
+
+                // $SQL1 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,SUM(bd.quantity) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id AND transaction_status IN (1,3)) AS TicketPrice
+                // FROM event_booking AS e LEFT JOIN booking_details AS bd ON bd.booking_id = e.id
+                // WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) ";
+
+                // (select SUM(e.total_amount) as TotalAmount from event_booking as eb left join booking_details as bde on bde.booking_id = eb.id AND eb.transaction_status IN (1,3) AND bde.ticket_amount != '0.00' AND bde.quantity != 0) as TotalAmount
+
+                $SQL1 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,SUM(bd.quantity) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id) AS TicketPrice
+                FROM event_booking AS e LEFT JOIN booking_details AS bd ON bd.booking_id = e.id
+                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) AND bd.ticket_amount != '0.00' AND bd.quantity != 0 ";
+
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
-                        $SQL1 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                        $SQL1 .= " AND bd.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
                     }
                 }
                 if (!empty($Ticket)) {
-                    $SQL1 .= ' AND b.ticket_id =' . $Ticket;
+                    $SQL1 .= ' AND bd.ticket_id =' . $Ticket;
                 }
                 if (!empty($FromDate) && !empty($ToDate)) {
-                    $SQL1 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                    $SQL1 .= ' AND bd.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate; 
                 }
-                $SQL1 .= " GROUP BY b.ticket_id";
+                $SQL1 .= " GROUP BY bd.ticket_id"; // e.id,
                 $params = array('event_id' => $EventId);
+
                 // dd($SQL1);
                 $BookingData = DB::select($SQL1, $params);
                 // dd($BookingData);
                 
                 foreach ($BookingData as $key => $value) {
-                    
-                   //  $SQL2 = "SELECT DISTINCT(e.id) AS TotalRegistration ,e.total_amount AS TotalAmount,e.transaction_status FROM booking_details AS b LEFT JOIN event_booking AS e ON b.booking_id = e.id WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND b.ticket_id = ".$value->ticket_id." ";
-
-                   //  if ($Filter !== "") {
-                   //      if (isset($StartDate) && isset($EndDate)) {
-                   //          $SQL2 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
-                   //      }
-                   //  }
-                   //  if (!empty($Ticket)) {
-                   //      $SQL2 .= ' AND b.ticket_id =' . $Ticket;
-                   //  }
-                   //  if (!empty($FromDate) && !empty($ToDate)) {
-                   //      $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
-                   //  }
-                   //  $params = array('event_id' => $EventId);
-                   //  $aResult = DB::select($SQL2, $params);
-                   //  // dd($aResult);
-                   // $tot_amount = 0;
-                   //  if(!empty($aResult)){
-                   //      foreach($aResult as $res){
-                   //          $tot_amount += $res->TotalAmount;
-                   //      }
-                   //  }
-
+                 
                     $value->TicketCount = (int) $value->TicketCount;
                     // $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
                     $value->TotalTicketPrice = $value->TotalAmount;
@@ -1157,7 +1149,7 @@ class EventDashboardController extends Controller
                 }
                 $ResponseData['BookingData'] = (count($BookingData) > 0) ? $BookingData : [];
 
-
+               //dd($ResponseData['BookingData']);
                 $AllDates = [];
                 $FinalBarChartData = [];
 

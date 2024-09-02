@@ -142,7 +142,7 @@ if (!empty($edit_data)) {
                                                 <input type="file" id="banner_image" class="form-control"
                                                     placeholder="Enter Banner Url" name="banner_image"
                                                     value="{{ old('banner_image', $banner_image) }}"
-                                                    autocomplete="off" onchange="validateSize(this)"  />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this); validateSize(this);"  />
                                                    
                                                     <span class="error" id="banner_image_err" style="color:red;"></span>
                                                     @error('banner_image')
@@ -153,17 +153,17 @@ if (!empty($edit_data)) {
                                         <div class="col-md-2 col-12">
                                             <div class="form-group">
                                                 <span><br></span>
-                                            
-                                                <?php if(!empty($banner_image)){ ?>
-                                                    <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank"><img src="{{ asset('uploads/banner_image/' . $banner_image) }}"
-                                                        alt="Current Image" style="width: 50px;"></a> 
-                                                    <input type="hidden" name="hidden_banner_image"
-                                                        value="{{ old('banner_image', $banner_image) }}" accept="image/jpeg, image/png">
-                                                <?php } //else{ ?>
-                                                    <!-- <div id="imagePreview">
-                                                        <img id="preview" class="preview-image" src="#" alt="Image Preview">
-                                                    </div> -->
-                                                <?php //} ?>
+                                               <!-- Image preview section -->
+                                                <div id="imagePreview">
+                                                    <?php if(!empty($banner_image)){ ?>
+                                                        <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
+                                                            <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;">
+                                                        </a>
+                                                        <input type="hidden" name="hidden_banner_image" value="{{ old('banner_image', $banner_image) }}">
+                                                    <?php } else { ?>
+                                                        <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
+                                                    <?php } ?>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -195,76 +195,48 @@ if (!empty($edit_data)) {
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6 col-12">
-                                            <div class="form-group">
-                                                <label for="country">Country <span style="color:red;">*</span></label>
-                                                <select id="country" name="country" class="select2 form-control">
-                                                    <option value="">Select Country</option>
-                                                    @foreach ($countries_array as $res)
-                                                    @php
+                                        <div class="col-sm-6 col-12">
+                                            <label for="country">Country: <span style="color:red;">*</span></label>
+                                            <select id="country" name="country" class="select2 form-control">
+                                                <option value="">All country</option>
+                                                <?php  
+                                                foreach ($countries as $value)
+                                                {  
                                                     $selected = '';
-                                                    if (old('country', $country) == $res->id) {
-                                                    $selected = 'selected';
+                                                    if(old('country', $country) == $value->id){
+                                                        $selected = 'selected';
                                                     }
-                                                    @endphp
-                                                    <option value="{{ $res->id }}" {{ $selected }}>
-                                                        {{ $res->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                                <h5><small class="text-danger" id="country_err"></small></h5>
+                                                    ?>
+                                                    <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                    <?php 
+                                                }
+                                                ?>
+                                            </select>
+                                            <h5><small class="text-danger" id="country_err"></small></h5>
                                                 @error('country')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
-                                            </div>
                                         </div>
-
-                                        <div class="col-md-6 col-12">
-                                            <div class="form-group">
-                                                <label for="state">State <span style="color:red;">*</span></label>
-                                                <select id="state" name="state" class="select2 form-control">
-                                                    <option value="">Select State</option>
-                                                    @foreach ($states_array as $res)
-                                                    @php
-                                                    $selected = '';
-                                                    if (old('state', $state) == $res->id) {
-                                                    $selected = 'selected';
-                                                    }
-                                                    @endphp
-                                                    <option value="{{ $res->id }}" {{ $selected }}>
-                                                        {{ $res->name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                                <h5><small class="text-danger" id="state_err"></small></h5>
+                                        <div class="col-sm-6 col-12">
+                                            <label for="state">States: <span style="color:red;">*</span></label>
+                                            <select id="state" name="state" class="select2 form-control">
+                                                <option value="" class="placeholder">All state</option>
+                                            </select>  
+                                            <h5><small class="text-danger" id="state_err"></small></h5>
                                                 @error('state')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
-                                            </div> 
                                         </div>
-                                      
-                                        <div class="col-md-6 col-12">
-                                            <div class="form-group">
-                                                <label for="city">City <span style="color:red;">*</span></label>
-                                                <select id="city" name="city" class="select2 form-control">
-                                                    <option value="">Select city</option>
-                                                @foreach ($cities_array as $res)
-                                                
-                                                @php
-                                                $selected = '';
-                                                if (old('city', $city) == $res->id) {
-                                                $selected = 'selected';
-                                                }
-                                                @endphp
 
-                                                <option value="{{ $res->id }}" {{ $selected }}>
-                                                    {{ $res->name }}</option>
-                                                @endforeach
-                                                </select>
-                                                <h5><small class="text-danger" id="city_err"></small></h5>
+                                        <div class="col-sm-6 col-12">
+                                            <label for="city">Cities: <span style="color:red;">*</span></label>
+                                            <select id="city" name="city" class="select2 form-control">
+                                                <option value="">All City</option>
+                                            </select>  
+                                            <h5><small class="text-danger" id="city_err"></small></h5>
                                                 @error('city')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
-                                            </div>
                                         </div>
 
                                         <div class="col-12 text-center mt-1">
@@ -285,76 +257,19 @@ if (!empty($edit_data)) {
 @endsection
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    function previewImage() {
-        var event = document.getElementById('banner_image');
-        console.log('ss');
-        var reader = new FileReader();
-        reader.onload = function() {
-            var output = document.getElementById('preview');
-            output.src = reader.result;
+    function previewImage(input) {
+        var file = input.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var preview = document.getElementById('preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
         }
-        reader.readAsDataURL(event.target.file[0]);
     }
 
-    
-</script>
-<script>
-     $(document).ready(function() {
-        $('#country').change(function() {
-            //alert('here');
-            var countryId = $(this).val();
-            // console.log("Country Id: " + countryId);
-            if (countryId) {
-                $.ajax({
-                    url: "{{ url('get-states') }}?country_id=" + countryId,
-                    type: 'GET',
-                    success: function(res) {
-                        // console.log("Response from get-states:");
-                        // console.log(res);
-                        $('#state').empty();
-                        $('#state').append('<option value="">Select</option>');
-                        $.each(res, function(key, value) {
-                            $('#state').append('<option value="' + key + '">' +
-                                value + '</option>');
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            } else {
-                $('#state').empty();
-                $('#city').empty();
-            }
-        });
-
-        $('#state').change(function() {
-            var stateId = $(this).val();
-            // console.log("State Id: " + stateId);
-            if (stateId) {
-                $.ajax({
-                    url: "{{ url('get-cities') }}?state_id=" + stateId,
-                    type: 'GET',
-                    success: function(res) {
-                        // console.log("Response from get-cities:");
-                        // console.log(res);
-                        $('#city').empty();
-                        $('#city').append('<option value="">Select</option>');
-                        $.each(res, function(key, value) {
-                            $('#city').append('<option value="' + key + '">' +
-                                value + '</option>');
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            } else {
-                $('#city').empty();
-            }
-        });
-    });
-  
     function validateSize(input) {
         var isValid = true;
       const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
@@ -378,8 +293,89 @@ if (!empty($edit_data)) {
         return isValid;
       }
       
-   }
-   
+    }
+
+    
+</script>
+
+<script>
+     $(document).ready(function() {
+        var CountryId = '<?php echo old('country', $country); ?>';
+        var StateId = '<?php echo old('state', $state); ?>';
+        var CityId = '<?php echo old('city', $city); ?>';
+      
+        // alert(CountryId);
+         //console.log("CountryId "+CountryId);
+        // Fetch states based on the selected country
+        if (CountryId !== '') {
+            // alert("here");
+            $.ajax({
+                url: '/get_states', // Replace with your URL to fetch states
+                type: 'GET',
+                data: { country_id: CountryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'" '+ (StateId == value.id ? 'selected' : '') +'>'
+                            + value.name +'</option>');
+                    });
+
+                    // Fetch cities based on the selected state
+                    if (StateId !== '') {
+                        $.ajax({
+                            url: '/get_cities', // Replace with your URL to fetch cities
+                            type: 'GET',
+                            data: { state_id: StateId },
+                            success: function(cities) {
+                                $('#city').empty().append('<option value="">Select City</option>');
+                                $.each(cities, function(key, value) {
+                                    $('#city').append('<option value="'+ value.id +'" '+ (CityId == value.id ? 'selected' : '') +'>'
+                                        + value.name +'</option>');
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Handle country change
+        $('#country').change(function() {
+            var countryId = $(this).val();
+            $.ajax({
+                url: '/get_states',
+                type: 'GET',
+                data: { country_id: countryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    });
+                    $('#city').empty().append('<option value="">Select City</option>'); // Clear cities
+                }
+            });
+        });
+
+        // Handle state change
+        $('#state').change(function() {
+            var stateId = $(this).val();
+            $.ajax({
+                url: '/get_cities',
+                type: 'GET',
+                data: { state_id: stateId },
+                success: function(cities) {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                    $.each(cities, function(key, value) {
+                        $('#city').append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    });
+                }
+            });
+        });
+    });
 
 </script>
+  
+   
+
+
 

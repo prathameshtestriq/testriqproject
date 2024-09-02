@@ -20,17 +20,25 @@ class MasterOrganiser extends Model
     public static function get_count($a_search = array()){
         $count = 0;
         // dd($a_search);
-        $s_sql = 'SELECT count(id) as count FROM organizer WHERE 1=1';
+        $s_sql = 'SELECT count(o.id) as count FROM organizer o';
+        $s_sql .= ' LEFT JOIN users u ON u.id = o.user_id WHERE 1=1';
 
-        // if (!empty($a_search['search_role_name'])) {
-        //     $s_sql .= ' AND LOWER(rm.name) LIKE \'%' . strtolower($a_search['search_role_name']) . '%\'';
-        // }
+        if (!empty($a_search['search_organiser_name'])) {
+            $s_sql .= ' AND LOWER(o.name) LIKE \'%' . strtolower($a_search['search_organiser_name']) . '%\'';
+        }
+        if (isset($a_search['search_gst_number'])) {
+            $s_sql .= ' AND LOWER(o.gst_number) LIKE \'%' . strtolower($a_search['search_gst_number']) . '%\'';
+        }
+        if (!empty($a_search['search_organiser_user_name'])) {
+            $s_sql .= ' AND LOWER(u.id) LIKE \'%' . strtolower($a_search['search_organiser_user_name']) . '%\'';
+        }
 
         // if(isset( $a_search['search_role_status'])){
         //     $s_sql .= ' AND (LOWER(rm.status) LIKE \'%' . strtolower($a_search['search_role_status']) . '%\')';
         // } 
 
         $CountsResult = DB::select($s_sql);
+        // dd($CountsResult);
         if (!empty($CountsResult)) {
             $count = $CountsResult[0]->count;
         }
@@ -41,21 +49,27 @@ class MasterOrganiser extends Model
     public static function get_all($limit, $a_search = array()){
         $a_return = [];
 
-        $s_sql = 'SELECT id,name,email,mobile,gst_number,(select CONCAT(`firstname`, " ", `lastname`) AS user_name from users where id = organizer.user_id) as user_name,(select email from users where id = organizer.user_id) as user_email,(select password from users where id = organizer.user_id) as user_password FROM organizer where 1=1';
+        $s_sql = 'SELECT id,name,email,mobile,gst_number,(select CONCAT(`firstname`, " ", `lastname`) AS user_name from users where id = organizer.user_id) as user_name,(select id from users u where u.id = organizer.user_id) as user_id,(select email from users where id = organizer.user_id) as user_email,(select password from users where id = organizer.user_id) as user_password FROM organizer where 1=1';
+        
         // ,(select CONCAT(`firstname`, ' ', `lastname`) AS user_name from users where id = organizer.user_id ) as user_name
-        // if (!empty($a_search['search_role_name'])) {
-        //     $s_sql .= ' AND LOWER(rm.name) LIKE \'%' . strtolower($a_search['search_role_name']) . '%\'';
-        // }
+        if (!empty($a_search['search_organiser_name'])) {
+            $s_sql .= ' AND LOWER(name) LIKE \'%' . strtolower($a_search['search_organiser_name']) . '%\'';
+        }
+        
+        if(isset( $a_search['search_gst_number'])){
+            $s_sql .= ' AND (LOWER(gst_number) LIKE \'%' . strtolower($a_search['search_gst_number']) . '%\')';
+        } 
+    //  dd($a_search['search_organiser_user_name']);
+        if(!empty($a_search['search_organiser_user_name'])){
+            $s_sql .= ' AND user_id = ' . strtolower($a_search['search_organiser_user_name']);
+        } 
 
-        // if(isset( $a_search['search_role_status'])){
-        //     $s_sql .= ' AND (LOWER(rm.status) LIKE \'%' . strtolower($a_search['search_role_status']) . '%\')';
-        // } 
-     
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
         }
-
+         // dd($s_sql);
         $a_return = DB::select($s_sql);
+        // dd($a_return );
         return $a_return;
     }
 

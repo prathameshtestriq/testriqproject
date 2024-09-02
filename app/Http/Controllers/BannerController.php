@@ -99,12 +99,12 @@ class BannerController extends Controller
         $image_name = '';
 
         // $a_return['country_array'] = DB::table('countries')->pluck('name', 'id')->toArray();
-        $cSql = 'select id,name FROM countries where flag = 1 and id = 101';
-        $a_return['countries_array'] = DB::select($cSql);
-        $sSql = 'select id,name FROM states where flag = 1 and country_id = 101';
-        $a_return['states_array'] = DB::select($sSql);
-        $ccSql = 'select id,name FROM cities where show_flag = 1 and country_id = 101';
-        $a_return['cities_array'] = DB::select($ccSql);
+        // $cSql = 'select id,name FROM countries where flag = 1 and id = 101';
+        // $a_return['countries_array'] = DB::select($cSql);
+        // $sSql = 'select id,name FROM states where flag = 1 and country_id = 101';
+        // $a_return['states_array'] = DB::select($sSql);
+        // $ccSql = 'select id,name FROM cities where show_flag = 1 and country_id = 101';
+        // $a_return['cities_array'] = DB::select($ccSql);
         // dd($a_return['city_array']);
 
         $edit_array = [];
@@ -124,7 +124,10 @@ class BannerController extends Controller
 
             $rules = [
                 'banner_name' => 'required|unique:banner,banner_name,' . $iId . 'id',
-                'banner_url' => 'required',
+                'banner_url' => [
+                    'required',
+                    'regex:/^(www\.|http:\/\/|https:\/\/).*/i', 
+                ],
                 'banner_image' => empty($edit_array) || $edit_array['banner_image'] === '' ? 'required|mimes:jpeg,jpg,png,gif' : '',
                 'start_date' => 'required',
                 'end_date' => 'required',
@@ -135,6 +138,8 @@ class BannerController extends Controller
 
             
             $message = [ 
+                'banner_url.required' => 'The Banner URL field is required.',
+                'banner_url.regex' => 'The Banner URL must start with "www.", "http://", or "https://".',
                 'banner_image.required' => 'The image field is required .',
                 'banner_image.mimes' => 'The image must be a file of type: jpeg, jpg, png, gif.',
                 // 'img.size' => 'The image must be 2MB or below.', 
@@ -161,7 +166,9 @@ class BannerController extends Controller
             $a_return['edit_data'] = !empty($edit_array) ? $edit_array : [] ;
         }
 
-      
+        $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
+        $a_return["countries"] = DB::select($sSQL, array());
+
         return view('Banner.create', $a_return);
     }
 
@@ -179,19 +186,20 @@ class BannerController extends Controller
         return redirect(url('/banner'))->with('success', 'Banner deleted successfully');
     }
 
-    public function getStates(Request $request)
-    {
-        $states = DB::table('states')
-            ->where('country_id', $request->country_id)
-            ->pluck('name', 'id');
-        return $states;
+    public function get_states(Request $request){
+        $countryId = $request->get('country_id');
+        // dd($countryId);
+        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $countryId;
+        $states = DB::select($sSQL, array());
+        return response()->json($states);
+        //dd($Return["states"]);
+        // return $Return;
     }
-
-    public function getCities(Request $request)
-    {
-        $cities = DB::table('cities')
-            ->where('state_id', $request->state_id)
-            ->pluck('name', 'id');
-        return $cities;
+    public function get_cities(Request $request){
+        $stateId = $request->get('state_id');
+        $sSQL = 'SELECT id,name,state_id FROM cities WHERE state_id =' .$stateId;
+        $cities = DB::select($sSQL, array());
+        return response()->json($cities);
+        // return $Return;
     }
 }

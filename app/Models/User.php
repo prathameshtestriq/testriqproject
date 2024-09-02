@@ -104,30 +104,31 @@ class User extends Authenticatable
         if(!empty( $a_search['search_mobile'])){
             $s_sql .= ' AND (LOWER(u.mobile) LIKE \'%' . strtolower($a_search['search_mobile']) . '%\')';
         } 
+
         if(!empty( $a_search['search_state'])){
-            $s_sql .= ' AND (LOWER(u.state) LIKE \'%' . strtolower($a_search['search_state']) . '%\')';
+            $s_sql .= ' AND u.state = '. $a_search['search_state']. ' ';
         } 
 
         if(!empty( $a_search['search_city'])){
-            $s_sql .= ' AND (LOWER(u.city) LIKE \'%' . strtolower($a_search['search_city']) . '%\')';
+            $s_sql .= ' AND u.city = '. $a_search['search_city']. ' ';
         } 
-        
+        // dd($a_search['search_gender']);
         if(isset( $a_search['search_gender'])){
             $s_sql .= ' AND (LOWER(u.gender) LIKE \'%' . strtolower($a_search['search_gender']) . '%\')';
         }
-
+        
         if(isset( $a_search['search_status'])){
             $s_sql .= ' AND (LOWER(u.is_active) LIKE \'%' . strtolower($a_search['search_status']) . '%\')';
         } 
+        
+        // dd($a_search['search_country']);
         if(!empty( $a_search['search_country'])){
-            $s_sql .= ' AND (LOWER(u.country) LIKE \'%' . strtolower($a_search['search_country']) . '%\')';
+            $s_sql .= ' AND u.country = '. $a_search['search_country']. ' ';
         } 
 
         if(!empty($a_search['search_role'])){
             $s_sql .= ' AND u.role = '.$a_search['search_role'].' ';
         } 
-
-
         // dd($s_sql);
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
@@ -160,16 +161,17 @@ class User extends Authenticatable
             $s_sql .= ' AND (LOWER(u.mobile) LIKE \'%' . strtolower($a_search['search_mobile']) . '%\')';
         } 
         if(!empty( $a_search['search_country'])){
-            $s_sql .= ' AND (LOWER(u.country) LIKE \'%' . strtolower($a_search['search_country']) . '%\')';
+            $s_sql .= ' AND u.country = '. $a_search['search_country']. ' ';
         } 
 
         if(!empty( $a_search['search_state'])){
-            $s_sql .= ' AND (LOWER(u.state) LIKE \'%' . strtolower($a_search['search_state']) . '%\')';
+            $s_sql .= ' AND u.state = '. $a_search['search_state']. ' ';
         } 
 
         if(!empty( $a_search['search_city'])){
-            $s_sql .= ' AND (LOWER(u.city) LIKE \'%' . strtolower($a_search['search_city']) . '%\')';
+            $s_sql .= ' AND u.city = '. $a_search['search_city']. ' ';
         } 
+        
         if(isset( $a_search['search_gender'])){
             $s_sql .= ' AND (LOWER(u.gender) LIKE \'%' . strtolower($a_search['search_gender']) . '%\')';
         }

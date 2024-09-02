@@ -50,17 +50,17 @@ class DashboardController extends Controller
 
         if (!empty($aReturn['search_filter'])) {
             switch ($aReturn['search_filter']) {
-                case 'today':
+                case 'Today':
                     $StartDate = strtotime(date('Y-m-d 00:00:00'));
                     $EndDate = strtotime(date('Y-m-d 23:59:59'));
                     break;
 
-                case 'week':
+                case 'Week':
                     $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
                     $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
                     break;
 
-                case 'month':
+                case 'Month':
                     $StartDate = strtotime(date('Y-m-01'));
                     $EndDate = strtotime(date('Y-m-t'));
                     break;
@@ -108,6 +108,7 @@ class DashboardController extends Controller
         if (!empty($aReturn['search_category'])) {
             $SQL2 .= ' AND b.ticket_id =' . $aReturn['search_category'];
         }
+       
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
             $SQL2 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
@@ -254,7 +255,7 @@ class DashboardController extends Controller
             $SQL13 .= ' AND b.ticket_id =' . $aReturn['search_category'];
         }
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
-            $SQL13 .= ' AND b.booking_date BETWEEN ' . $$aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+            $SQL13 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
 
         if (!empty($aReturn['search_event_name'])) {
@@ -297,7 +298,7 @@ class DashboardController extends Controller
             $SQL14 .= ' AND ticket_ids =' . $aReturn['search_category'];
         }
         if (!empty( $aReturn['search_from_date']) && !empty($aReturn['search_to_date'] )) {
-            $SQL14 .= ' AND created_at BETWEEN ' . $$aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'] ;
+            $SQL14 .= ' AND created_at BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'] ;
         }
 
         if (!empty( $aReturn['search_event_name'] )) {
@@ -337,7 +338,7 @@ class DashboardController extends Controller
             $SQL16 .= ' AND b.ticket_id =' . $aReturn['search_category'];
         }
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
-            $SQL16 .= ' AND b.booking_date BETWEEN ' . $$aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+            $SQL16 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
 
         if (!empty($aReturn['search_event_name'])) {
@@ -409,6 +410,78 @@ class DashboardController extends Controller
         // dd($aReturn['maleCount'], $aReturn['femaleCount'],   $aReturn['otherCount'] ,$aReturn['ageCategoryCount'], $aReturn['ageCategory'] );
 
 
+        $sql17 = "SELECT e.event_id,e.cart_details FROM attendee_booking_details AS a 
+        LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+        LEFT JOIN event_booking AS e ON b.booking_id = e.id";
+        
+        $sql17 .= " WHERE e.transaction_status IN(1,3)";
+       
+
+        if ($aReturn['search_filter'] !== "") {
+            if (!empty($StartDate) && empty($EndDate)) {
+                $sql17 .= " AND b.booking_date >= " . $StartDate;
+            }
+            if (empty($StartDate) && !empty($EndDate)) {
+                $sql17 .= " AND b.booking_date <= " . $EndDate;
+            }
+            if (isset($StartDate) && isset($EndDate)) {
+                $sql17 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+            }
+        }
+
+        if (!empty($aReturn['search_category'])) {
+            $sql17 .= ' AND b.ticket_id =' . $aReturn['search_category'];
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $sql17 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+        }
+
+        if (!empty($aReturn['search_event_name'])) {
+            $sql17 .= ' AND b.event_id =' . $aReturn['search_event_name'];
+        }
+
+        $sql17 .= " ORDER BY a.id DESC";
+        // dd($sql);
+        $AttendeeData = DB::select($sql17, array());
+        // dd($AttendeeData);
+
+        $Applied_Coupon_Amount = $Organiser_amount = $Payment_Gateway_GST = $Payment_gateway_charges = $total_payment_gateway = $Platform_fee = $Platform_Fee_GST = $Convenience_fee = $Convenience_Fee_GST = 0;
+        if(!empty($AttendeeData)){
+            foreach($AttendeeData as $res){
+               
+                $card_details_array = json_decode($res->cart_details);
+               
+                // Applied Coupon Amount
+                $Applied_Coupon_Amount = isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount) ? ($card_details_array[0]->appliedCouponAmount * $card_details_array[0]->count)  : '0.00';  
+               
+                if(isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount)){
+                    $Organiser_amount += isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? ($card_details_array[0]->to_organiser - $card_details_array[0]->appliedCouponAmount) : 0;
+                }else{
+                    $Organiser_amount += isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? $card_details_array[0]->to_organiser : 0;
+                }
+
+                $Payment_Gateway_GST += isset($card_details_array[0]->Payment_Gateway_GST_18) && !empty($card_details_array[0]->Payment_Gateway_GST_18) ? ($card_details_array[0]->Payment_Gateway_GST_18 * $card_details_array[0]->count)  : '0.00';
+                $Payment_gateway_charges += isset($card_details_array[0]->Payment_Gateway_Charges) && !empty($card_details_array[0]->Payment_Gateway_Charges) ? ($card_details_array[0]->Payment_Gateway_Charges * $card_details_array[0]->count)  : '0.00';
+
+               
+                $Platform_fee += isset($card_details_array[0]->Platform_Fee) && !empty($card_details_array[0]->Platform_Fee) ? ($card_details_array[0]->Platform_Fee * $card_details_array[0]->count)  : '0.00';
+                $Platform_Fee_GST += isset($card_details_array[0]->Platform_Fee_GST_18) && !empty($card_details_array[0]->Platform_Fee_GST_18) ? ($card_details_array[0]->Platform_Fee_GST_18 * $card_details_array[0]->count)  : '0.00';
+
+                $Convenience_fee += isset($card_details_array[0]->Convenience_Fee) && !empty($card_details_array[0]->Convenience_Fee) ? 
+                                ($card_details_array[0]->Convenience_Fee * $card_details_array[0]->count)  : '0.00';
+                $Convenience_Fee_GST += isset($card_details_array[0]->Convenience_Fee_GST_18) && !empty($card_details_array[0]->Convenience_Fee_GST_18) ? ($card_details_array[0]->Convenience_Fee_GST_18 * $card_details_array[0]->count)  : '0.00';
+            }
+        }
+
+        $total_payment_gateway = ($Payment_Gateway_GST + $Payment_gateway_charges);
+        $total_convenience_fee = ($Platform_fee + $Platform_Fee_GST + $Convenience_fee + $Convenience_Fee_GST);
+           
+        // dd($Organiser_amount);
+        $aReturn['OrganiserAmount'] = !empty($Organiser_amount) ? $Organiser_amount : 0;
+        $aReturn['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $total_payment_gateway : 0;
+        $aReturn['TotalConvenience'] = !empty($total_convenience_fee) ? number_format($total_convenience_fee,2) : 0;
+       
+     
 
         return view('dashboard.admin_dashboard', $aReturn);
     }

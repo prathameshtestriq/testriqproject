@@ -16,6 +16,7 @@ class TestimonialController extends Controller
     public function clear_search() 
     {
         session()->forget('user_id');
+        session()->forget('subtitle');
         session()->forget('testimonial_status');
         return redirect('/testimonial');
     }
@@ -27,18 +28,21 @@ class TestimonialController extends Controller
 
         $aReturn = array();
         $aReturn['search_name'] = '';
+        $aReturn['search_subtitle'] = '';
         $aReturn['search_testimonial_status'] = '';
         if (isset($request->form_type) && $request->form_type == 'search_testimonial') {
             // dd('here1');
             session(['user_id' => $request->user_id]);
+            session(['subtitle' => $request->subtitle]);
             session(['testimonial_status' => $request->testimonial_status]);
             return redirect('/testimonial');
         }
         $aReturn['search_name'] = (!empty(session('user_id'))) ? session('user_id') : '';
+        $aReturn['search_subtitle'] = (!empty(session('subtitle'))) ? session('subtitle') : '';
         $testimonial_status = session('testimonial_status');
         $aReturn['search_testimonial_status'] = (isset($testimonial_status) && $testimonial_status != '') ? $testimonial_status : '';
         $FiltersSql = '';
-        //  dd($aReturn['search_district_name']);
+        //  dd($aReturn['search_subtitle']);
 
         // if (!empty($aReturn['search_name'])) {
         //     $FiltersSql .= '(SELECT firstname FROM users WHERE Id = name)As name'' AND (LOWER(name) LIKE \'%' . strtolower($aReturn['search_name']) . '%\')';
@@ -49,6 +53,12 @@ class TestimonialController extends Controller
             $FiltersSql .= " AND name LIKE '%" . strtolower($aReturn['search_name']) . "%'";
         } else {
             $aReturn['search_name'] = '';
+        }
+
+        if (!empty($aReturn['search_subtitle'])) {
+            $FiltersSql .= " AND subtitle LIKE '%" . strtolower($aReturn['search_subtitle']) . "%'";
+        } else {
+            $aReturn['search_subtitle'] = '';
         }
 
         if(isset( $aReturn['search_testimonial_status'])){
@@ -107,7 +117,7 @@ class TestimonialController extends Controller
             ]; 
             $testimonial_name = (!empty($request->testimonial_name)) ? $request->testimonial_name : '';
             $subtitle = (!empty($request->subtitle)) ? $request->subtitle : '';
-            $description = (!empty($request->description)) ? $request->description : '';
+            $description = (!empty($request->description)) ? strip_tags($request->description) : '';
             $testimonial_img = (!empty($request->testimonial_img)) ? $request->testimonial_img : '';
             $hidden_testimonial_img = (!empty($request->testimonial_img)) ? $request->hidden_testimonial_img : '';
             $image_name = '';

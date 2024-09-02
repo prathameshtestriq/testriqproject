@@ -151,9 +151,16 @@ class RemittanceManagementController extends Controller
       //-------------- remittance import ---------------------
       public function import_remittance_management(Request $request)
       {
-        $request->validate([
+
+        $rules = [
             'rem_file' => 'required'
-        ]);
+        ];
+
+        $messages = [
+            'rem_file.required' => 'The file is required. Please upload a file.'
+        ];
+        $request->validate($rules,$messages);
+        
         $AllowedFormats = array('csv','xlsx','xls');
         if(in_array(request()->file('rem_file')->getClientOriginalExtension(), $AllowedFormats)){
             Excel::import(new RemittanceDetailsImport(), request()->file('rem_file'), \Maatwebsite\Excel\Excel::XLSX);
@@ -161,6 +168,5 @@ class RemittanceManagementController extends Controller
         }else{
             return redirect()->route('remittance_management_index')->with('error', 'Invalid file format. Allowed formats '.implode(', ',$AllowedFormats) );   
         }    
-      } 
-    
+      }   
 }

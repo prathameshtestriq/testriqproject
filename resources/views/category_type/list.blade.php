@@ -76,7 +76,7 @@
                                     <div class="col-sm-8">
                                         <div class="row">
                                             <div class="col-sm-4">
-                                                <label for="form-control">Category Type Name:</label>
+                                                <label for="form-control">Category Type Name</label>
                                                 <input type="text" id="category_name" class="form-control"
                                                     placeholder="Category Type Name" name="category_name"
                                                     value="{{ $search_category }}" autocomplete="off" />
@@ -85,7 +85,7 @@
                                                 <?php 
                                                    $category_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?>
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="category_status" name="category_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -144,7 +144,7 @@
                                                 $i++;?>
                                               <tr>
                                                 <td class="text-center">{{ $i }}</td>
-                                                <td class="text-left">{{ $category->name }}</td>
+                                                <td class="text-left">{{ ucfirst($category->name) }}</td>
                                                 {{-- <td class="text-center">{{ $category->logo }}</td> --}}
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success">
@@ -185,7 +185,7 @@
 
 <script>
    
-    function delCategory(id) {
+    function delCategory(id) { 
         var bConfirm = confirm('Are you sure you want to remove this record ?');
         if (bConfirm) {
             var url = '{{ url('category/delete') }}/' + id;

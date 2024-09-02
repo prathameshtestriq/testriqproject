@@ -35,12 +35,15 @@ class VerifyPaymentStatus extends Command
         $Merchant_key = config('custom.merchant_key'); // set on custom file
         $SALT = config('custom.salt'); // set on custom file
         $command = 'verify_payment';
-       
-        $Sql = 'SELECT id,txnid,amount FROM booking_payment_details WHERE payment_status != "success" AND change_status_manual = 0';
-        $aResult = DB::select($Sql);
 
-        //dd($aResult);
-     
+        $today = date('Y-m-d');
+        $startTime = strtotime(date('Y-m-d 00:00:00', strtotime($today)));
+        $endTime = strtotime(date('Y-m-d 23:59:59', strtotime($today)));
+       
+        $Sql = 'SELECT id,txnid,amount,created_datetime FROM booking_payment_details WHERE payment_status != "success" AND change_status_manual = 0 AND created_datetime BETWEEN '.$startTime.' AND '.$endTime.' ';
+        $aResult = DB::select($Sql);
+        // dd($aResult);
+        $counter = 1;
         if(!empty($aResult)){
             foreach($aResult as $res){
                 $Transaction_id = $res->txnid;
@@ -127,11 +130,13 @@ class VerifyPaymentStatus extends Command
                                 "txnid" => $Transaction_id,
                                 "amount" => !empty($res->amount) ? $res->amount : 0,
                                 "post_data" => $post_data,
+                                "count_no" => $counter,
                                 "verify_payment_status" => $verify_payment_status
                             );
-                $insert_SQL = "INSERT INTO cron_verify_payment_log(txnid,amount,post_data,verify_payment_status) VALUES(:txnid,:amount,:post_data,:verify_payment_status)";
+                $insert_SQL = "INSERT INTO cron_verify_payment_log(txnid,amount,post_data,count_no,verify_payment_status) VALUES(:txnid,:amount,:post_data,:count_no,:verify_payment_status)";
                 DB::insert($insert_SQL, $Binding);
                 // die;
+                $counter++;
             }
         }
 

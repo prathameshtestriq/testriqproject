@@ -15,7 +15,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource. 
      *
      * @return \Illuminate\Http\Response
      */
@@ -73,7 +73,7 @@ class UserController extends Controller
         $aReturn['search_role'] =  (!empty(session('role'))) ? session('role') : '';
         $aReturn['search_rows'] =  (!empty(session('rows'))) ? session('rows') : '';
 
-        // dd($aReturn['search_role']);
+        // dd($aReturn['search_country']);
         $CountRows=User::get_count($aReturn);
         $PageNo = request()->input('page', 1);
         $Limit = !empty($aReturn['search_rows']) ? $aReturn['search_rows'] : config('custom.per_page');
@@ -85,15 +85,9 @@ class UserController extends Controller
         // dd($aReturn["user_array"]);
         // $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. 101;
         // $aReturn["states"] = DB::select($sSQL, array());
-
+  
         $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
         $aReturn["countries"] = DB::select($sSQL, array());
-
-        $sSQL = 'SELECT id, name,country_id FROM states WHERE 1=1';
-        $aReturn["states"] = DB::select($sSQL, array());
-
-        $sSQL = 'SELECT id,name,state_id FROM cities WHERE 1=1';
-        $aReturn["cities"] = DB::select($sSQL, array());
 
         $sSQL = 'SELECT id,name FROM role_master WHERE status = 1 AND is_deleted = 0';
         $aReturn["role_details"] = DB::select($sSQL, array());
@@ -126,9 +120,9 @@ class UserController extends Controller
 
             $rules = [
                 'contact_number' => 'required|digits:10',
-                // 'city'=>'required',
+                'city'=>'required',
                 'country'=>'required',
-                // 'state'=>'required',
+                'state'=>'required',
                 'dob' => [
                     'required',
                     'date',
@@ -155,6 +149,8 @@ class UserController extends Controller
                 $rules['email'] = 'required|email:rfc,dns|unique:users,email,'.$iId.',Id';
                 $rules['password'] = 'nullable|confirmed|min:5';
             } else {
+                // dd( $request->all());
+                
                 $rules['firstname'] = 'required|regex:/^[a-zA-Z\s]+$/';
                 $rules['lastname'] = [
                     'required',
@@ -192,34 +188,34 @@ class UserController extends Controller
                 $aReturn['edit_data'] = !empty($aResult) ? $aResult[0] : [];
                 // dd( $aReturn['edit_data']);
             }  
-          }      
-        
+        }      
+         
+   
           $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
           $aReturn["countries"] = DB::select($sSQL, array());
   
-          $sSQL = 'SELECT id, name,country_id FROM states WHERE 1=1';
-          $aReturn["states"] = DB::select($sSQL, array());
-  
-          $sSQL = 'SELECT id,name,state_id FROM cities WHERE 1=1';
-          $aReturn["cities"] = DB::select($sSQL, array());
-
           $sSQL = 'SELECT id,name FROM role_master WHERE status = 1 AND is_deleted = 0';
           $aReturn["role_details"] = DB::select($sSQL, array());
-  
+       
           return view('users.create', $aReturn);
     }
 
  
-    public function get_states(Request $request,$country_id){
-        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $country_id;
-        $Return["states"] = DB::select($sSQL, array());
-        // dd($Return["states"]);
-        return $Return;
+    public function get_states(Request $request){
+        $countryId = $request->get('country_id');
+        // dd($countryId);
+        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $countryId;
+        $states = DB::select($sSQL, array());
+        return response()->json($states);
+        //dd($Return["states"]);
+        // return $Return;
     }
-    public function get_cities(Request $request,$state_id){
-        $sSQL = 'SELECT id,name,state_id FROM cities WHERE state_id =' .$state_id.' AND country_id = '. 101;
-        $Return["cities"] = DB::select($sSQL, array());
-        return $Return;
+    public function get_cities(Request $request){
+        $stateId = $request->get('state_id');
+        $sSQL = 'SELECT id,name,state_id FROM cities WHERE state_id =' .$stateId;
+        $cities = DB::select($sSQL, array());
+        return response()->json($cities);
+        // return $Return;
     }
 
     public function change_active_status(Request $request)

@@ -78,28 +78,28 @@
                                     <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2">
-                                                <label for="form-control">Username:</label>
+                                                <label for="form-control">Username</label>
                                                 <input type="text" id="name" class="form-control"
                                                     placeholder="User Name" name="name" value="{{$search_user_name }}"
                                                     autocomplete="off" />
                                             </div>
                                          
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Date:</label>
+                                                <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_payment_date" class="form-control"
                                                     placeholder="Start Date" name="start_payment_date" value="{{ old('start_payment_date', $search_start_payment_date ? \Carbon\Carbon::parse($search_start_payment_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
-                                                <label for="form-control">End Date:</label>
+                                                <label for="form-control">End Date</label>
                                                 <input type="date" id="end_payment_date" class="form-control"
                                                     placeholder="End Date" name="end_payment_date" value="{{ old('end_payment_date', $search_end_payment_date ? \Carbon\Carbon::parse($search_end_payment_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
                                             <div class="col-sm-2">
-                                                <label for="form-control">Transaction Id:</label>
+                                                <label for="form-control">Transaction Id</label>
                                                 <input type="text" id="transaction_id_payment" class="form-control"
                                                     placeholder="Transaction Id" name="transaction_id_payment" value=""
                                                     autocomplete="off" />
@@ -109,7 +109,7 @@
                                                 <?php 
                                                    $Transaction_Status = ['success','initiate','failure','Free'];    
                                                 ?>
-                                                <label for="form-control">Transaction Status:</label>
+                                                <label for="form-control">Transaction Status</label>
                                                 <select id="transaction_status_payment" name="transaction_status_payment" class="form-control select2 form-control">
                                                     <option value="">Select Transaction Status</option>
                                                     <?php 
@@ -184,7 +184,7 @@
                                         $i++;?>
                                     <tr> 
                                         <td class="text-center">{{ $i }}</td>
-                                        <td class="text-left">{{ $val->firstname }} {{ $val->lastname }}</td>
+                                        <td class="text-left">{{ ucfirst($val->firstname) }} {{ ucfirst($val->lastname) }}</td>
                                         <td class="text-left">{{ $val->email }}</td>
                                         <td class="text-left">{{ $val->mobile }}</td>
                                         <td class="text-left">{{ $val->txnid }}</td>

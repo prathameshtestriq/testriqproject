@@ -81,7 +81,7 @@
                                     <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2 col-12">
-                                                <label for="form-control">Participant name:</label>
+                                                <label for="form-control">Participant name</label>
                                                 <input type="text" id="search_participant_name" class="form-control"
                                                     placeholder="Participant name" name="participant_name" value="{{ $search_participant_name }}"
                                                     autocomplete="off" />
@@ -92,7 +92,7 @@
                                                     <?php 
                                                        $Transaction_Status = array(0=>'Inprocess',1=>'Success', 2=>'Fail', 3=>'Free' );    
                                                     ?>
-                                                    <label for="form-control">Payment Status:</label>
+                                                    <label for="form-control">Payment Status</label>
                                                     <select id="transaction_status" name="transaction_status" class="form-control select2 form-control">
                                                         <option value="">Select Payment Status</option>
                                                         <?php 
@@ -111,48 +111,61 @@
                                             </div>
 
                                             <div class="col-sm-2 col-12">
-                                                <label for="form-control">Registration Id:</label>
+                                                <label for="form-control">Registration Id</label>
                                                 <input type="text" id="registration_id" class="form-control"
                                                     placeholder="Registration Id" name="registration_id" value="{{ $search_registration_id }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            
-                                            {{-- <div class="col-sm-2 col-12">
-                                                <label for="form-control">Mobile No:</label>
-                                                <input type="text" id="mobile_no" class="form-control"
-                                                    placeholder="Mobile No" name="mobile_no" value="{{ $search_mobile_no }}"
-                                                    autocomplete="off" />
-                                            </div> --}}
-
                                             <div class="col-sm-2 col-12 ">
-                                                <label for="form-control">Email/Mobile Id:</label>
+                                                <label for="form-control">Email/Mobile Id</label>
                                                 <input type="text" id="email_id" class="form-control"
                                                     placeholder="Email/Mobile Id" name="email_id" value="{{ $search_email_id }}"
                                                     autocomplete="off" />
                                             </div>
-                                            <div class="col-sm-2 col-12 ">
-                                                <label for="form-control">Category:</label>
+                                            {{-- <div class="col-sm-2 col-12 ">
+                                                <label for="form-control">Category</label>
                                                 <input type="text" id="category" class="form-control"
                                                     placeholder="Category" name="category" value="{{ $search_category }}"
                                                     autocomplete="off" />
+                                            </div> --}}
+
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control"> Category</label>
+                                                <select id="category" name="category" class="form-control select2 form-control">
+                                                    <option value="">Select  category</option>
+                                                    <?php 
+                                                        foreach ($Categories as $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('category',$search_category) == $value->ticket_name){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value->ticket_name; ?>" <?php echo $selected; ?>><?php echo $value->ticket_name; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
                                             </div>
+
+
                                             <div class="col-sm-2 col-12 ">
-                                                <label for="form-control">Start Booking Date:</label>
+                                                <label for="form-control">Start Booking Date</label>
                                                 <input type="date" id="start_booking_date" class="form-control"
                                                     placeholder="Start Date" name="start_booking_date" value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
                                           
                                             <div class="col-sm-2 col-12 mt-2">
-                                                <label for="form-control">End Booking Date:</label>
+                                                <label for="form-control">End Booking Date</label>
                                                 <input type="date" id="end_booking_date" class="form-control"
                                                     placeholder="End Date" name="end_booking_date" value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
                                             <div class="col-sm-2 col-12  mt-2">
-                                                <label for="form-control">Transaction/Order Id:</label>
+                                                <label for="form-control">Transaction/Order Id</label>
                                                 <input type="text" id="transaction_order_id" class="form-control"
                                                     placeholder="Transaction/Order Id" name="transaction_order_id" value="{{ $search_transaction_order_id }}"
                                                     autocomplete="off" />
@@ -223,8 +236,8 @@
                                                 $i++;?>
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
-                                                <td class="text-left">{{ $val->user_name }}</td>
-                                                <td class="text-left">{{ date('d-m-Y H:i:s', $val->booking_date) }}</td>
+                                                <td class="text-left">{{ ucfirst($val->user_name) }}</td>
+                                                <td class="text-left">{{ date('d-m-Y ', $val->booking_date) }}</td>
                                                 <td class="text-left">{{ $val->Transaction_order_id }}</td>
                                                 <td class="text-left">{{ $val->registration_id }}</td>
                                                 <td class="text-left">{{ $val->payu_id }}</td>
@@ -247,7 +260,7 @@
                                                 <td class="text-left">{{ $val->email }}</td>
                                                 <td class="text-left">{{ $val->mobile }}</td>
                                                 <td class="text-left">
-                                                 {{ $val->category_name }}
+                                                 {{ ucfirst($val->category_name) }}
                                                 </td>
                                                  <td>
                                                     <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showDetails({{ $val->id }},{{$val->event_id}})" title="show" data-bs-toggle="modal" data-bs-target="#exampleModallaptop1">

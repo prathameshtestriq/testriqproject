@@ -10,7 +10,11 @@
 <!-- Dashboard Ecommerce start -->
 @section('content')
     <section>
-
+        <style>
+            .ck-editor__editable {
+                min-height: 200px; /* Set the minimum height as needed */
+            }
+        </style>
         <div class="content-body">
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
@@ -80,7 +84,7 @@
                                 {{ csrf_field() }}
 
                                     <div class="row">
-                                        <div class="col-md-6 col-12">
+                                        <div class="col-md-3 col-12">
                                             <div class="form-group">
                                                 <label for="testimonial_name">Testimonial Name<span
                                                         style="color:red;">*</span></label>
@@ -94,7 +98,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6 col-12">
+                                        <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="subtitle">Subtitle <span style="color:red;">*</span></label>
                                                 <input type="text" id="subtitle" class="form-control"
@@ -108,47 +112,51 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6 mt-1 col-12">
-                                            <div class="form-group">
-                                                <label for="description">Description <span style="color:red;">*</span></label>
-                                                <input type="text" id="description" class="form-control mt-2"
-                                                    placeholder="Description" name="description"
-                                                    value="{{ old('description', $description) }}" 
-                                                    autocomplete="off" />
-                                                <h5><small class="text-danger" id="description_err"></small></h5>
-                                                @error('description')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
-                                                <label for="testimonial_img">Image <span style="color:red;">*</span>
+                                                <label for="testimonial_img">Testimonial Image <span style="color:red;">*</span>
                                                     <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
                                                 </label>
                                                 
                                                 <input type="file" id="testimonial_img" class="form-control"
                                                     name="testimonial_img"
                                                     accept="image/jpeg, image/png" 
-                                                    autocomplete="off" />
+                                                    autocomplete="off" onchange="previewImage(this); validateSize(this);" />
                                                 <h5><small class="text-danger" id="testimonial_img_err"></small></h5>
                                                 @error('testimonial_img')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                         </div>
-                                          
-                                        <div class="col-sm-2 mt-2">
-                                            @if (!empty($testimonial_img))
-                                                <a href="{{ asset('uploads/testimonial_images/' . $testimonial_img) }}" target="_blank">
-                                                    <img src="{{ asset('uploads/testimonial_images/' . $testimonial_img) }}" alt="Current Image" style="width: 50px;">
-                                                </a>
-                                                <input type="hidden" name="hidden_testimonial_img" value="{{ old('testimonial_img', $testimonial_img) }}" accept="image/jpeg, image/png">
-                                            @endif
+
+                                        <div class="col-sm-1 mt-2">
+                                            <span><br /></span>
+                                            <!-- Image preview section -->
+                                            <div id="imagePreview">
+
+                                                <?php 
+                                                    if(!empty($testimonial_img)){ ?>
+                                                    <a href="{{ asset('uploads/testimonial_images/' . $testimonial_img) }}" target="_blank">
+                                                        <img id="preview" src="{{ asset('uploads/testimonial_images/' . $testimonial_img) }}" alt="Current Image" style="width: 50px;">
+                                                    </a>
+                                                    <input type="hidden" name="hidden_testimonial_img" value="{{ old('testimonial_img', $testimonial_img) }}" accept="image/jpeg, image/png">
+                                                <?php } else { ?>
+                                                    <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
+                                                <?php } ?>
+                                            </div>    
                                         </div>
 
-                                  
+                                        <div class="col-md-12 col-12">
+                                            <div class="form-group">
+                                                <label for="description">Description <span style="color:red;">*</span></label>
+                                                    <textarea id="description" class="form-control" placeholder="Description"
+                                                    name="description" autocomplete="off">{{ old('description', $description) }}</textarea> 
+                                                <h5><small class="text-danger" id="description_err"></small></h5>
+                                                @error('description')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
 
                                         <div class="col-12 text-center mt-1">
                                             <button type="submit" class="btn btn-primary mr-1"
@@ -166,14 +174,51 @@
         </div>
     </section>
 @endsection
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src={{ asset('/app-assets/js/scripts/Ckeditor/ckeditor.js') }}></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        ClassicEditor
+            .create(document.querySelector('#description'))
+            .catch(error => {
+                console.error('Error initializing CKEditor:', error);
+            });
+    });
+</script>
 <script type="text/javascript">
-    function validation() {
+    function previewImage(input) {
+        var file = input.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var preview = document.getElementById('preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    } 
+    function validateSize(input) {
         var isValid = true;
+      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
+      var testimonial_img = $('#testimonial_img').val().trim();
+      if(fileSize > 2) {
+        //  alert('File size exceeds 2 MB');
+         if (testimonial_img !== "") {
+            // alert("here");
+            $('#testimonial_img').parent().addClass('has-error');
+            $('#testimonial_img_err').html('The image must be 2MB or below.');
+            $('#testimonial_img').focus();
+            $('#testimonial_img').keyup(function() {
+                $('#testimonial_img').parent().removeClass('has-error');
+                $('#testimonial_img_err').html('');
+            });
+            isValid = false;
+        }
 
-
-        $('.error').html('');
-
-     
-    }
+        return isValid;
+      }else{
+        
+      }
+   }
 </script>

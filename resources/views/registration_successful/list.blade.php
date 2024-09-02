@@ -77,7 +77,7 @@
                                     <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">User name:</label>
+                                                <label for="form-control">User name</label>
                                                 <input type="text" id="search_registration_user_name" class="form-control"
                                                     placeholder="User name" name="registration_user_name" value="{{ $search_registration_user_name }}"
                                                     autocomplete="off" />
@@ -88,7 +88,7 @@
                                                     <?php 
                                                        $Transaction_Status = array(0=>'Initiate',1=>'Success', 2=>'Fail', 3=>'Free' );    
                                                     ?>
-                                                    <label for="form-control">Payment Status:</label>
+                                                    <label for="form-control">Payment Status</label>
                                                     <select id="registration_transaction_status" name="registration_transaction_status" class="form-control select2 form-control">
                                                         <option value="">Select Payment Status</option>
                                                         <?php 
@@ -107,21 +107,21 @@
                                             </div>
 
                                             <div class="col-sm-2 col-12">
-                                                <label for="form-control">Email Id:</label>
+                                                <label for="form-control">Email Id</label>
                                                 <input type="text" id="registration_email_id" class="form-control"
                                                     placeholder="Email Id" name="registration_email_id" value="{{ $search_registration_email }}"
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2 col-12">
-                                                <label for="form-control">Mobile No:</label>
+                                                <label for="form-control">Mobile No</label>
                                                 <input type="text" id="registration_mobile_no" class="form-control"
                                                     placeholder="Mobile No" name="registration_mobile_no" value="{{ $search_registration_mobile }}"
                                                     autocomplete="off" />
                                             </div>
 
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Booking Date:</label>
+                                                <label for="form-control">Start Booking Date</label>
                                                 <input type="date" id="start_registration_booking_date" class="form-control"
                                             value="{{ old('start_booking_date', $search_start_registration_booking_date ? \Carbon\Carbon::parse($search_start_registration_booking_date)->format('Y-m-d') : '') }}"
                                             placeholder="Start Date" name="start_registration_booking_date" 
@@ -129,7 +129,7 @@
                                             </div>
                                            
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">End Booking Date:</label>
+                                                <label for="form-control">End Booking Date</label>
                                                 <input type="date" id="end_registration_booking_date" class="form-control"
                                                     placeholder="End Date" name="end_registration_booking_date"  value="{{ old('end_booking_date', $search_end_registration_booking_date ? \Carbon\Carbon::parse($search_end_registration_booking_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
@@ -196,7 +196,7 @@
                                                 $i++;?>
                                             <tr>
                                                 <td class="text-center">{{$i}}</td>
-                                                <td class="text-left">{{ $val->firstname.' '.$val->lastname }}</td>
+                                                <td class="text-left">{{ ucfirst($val->firstname).' '.ucfirst($val->lastname) }}</td>
                                                 <td class="text-left">{{ $val->email }}</td>
                                                 <td class="text-left">{{ $val->mobile }}</td>
                                                 <td class="text-left">{{ $val->TotalTickets }}</td>

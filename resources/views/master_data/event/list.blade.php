@@ -73,21 +73,21 @@
                                     <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-2">
-                                                <label for="form-control">Event Name:</label>
+                                                <label for="form-control">Event Name</label>
                                                 <input type="text" id="name" class="form-control"
                                                     placeholder="Event Name" name="name" value="{{ $search_event_name }}"
                                                     autocomplete="off" />
                                             </div>
                                           
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Booking Date:</label>
+                                                <label for="form-control">Start Booking Date</label>
                                                 <input type="date" id="event_start_date" class="form-control"
                                                     placeholder="Start Date" name="event_start_date"   value="{{ old('start_date', $search_event_start_date ? \Carbon\Carbon::parse($search_event_start_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
-                                                <label for="form-control">End Booking Date:</label>
+                                                <label for="form-control">End Booking Date</label>
                                                 <input type="date" id="event_end_date" class="form-control"
                                                     placeholder="End Date" name="event_end_date" value="{{ old('end_date', $search_event_end_date ? \Carbon\Carbon::parse($search_event_end_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
@@ -97,7 +97,7 @@
                                                 <?php 
                                                    $event_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="event_status" name="event_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -116,7 +116,7 @@
                                             </div>
 
                                             <div class="col-sm-2 col-12">
-                                                <label for="form-control"> Organizer:</label>
+                                                <label for="form-control"> Organizer</label>
                                                 <select id="organizer" name="organizer" class="form-control select2 form-control">
                                                     <option value="">Select  Organizer</option>
                                                     <?php 
@@ -161,11 +161,9 @@
                                     <tr>
                                         <th style="text-align: center;">Sr No.</th>
                                         <th>Event Name</th>
-                                        <th>Event Start Time</th>
-                                        <th>Event End Time</th>
+                                        <th>Event Start Date</th>
+                                        <th>Event End Date</th>
                                         <th>City</th>
-                                        <!-- <th>State</th>
-                                                                                <th style="text-align: center;">Country</th> -->
                                         <th style="text-align: center;">View</th>
                                         <th style="text-align: center;">Status</th>
                                         <th style="text-align: center;">Action</th>
@@ -177,8 +175,8 @@
                                             <tr>
                                                 <td style="text-align: center;">{{ $key + 1 }}</td>
                                                 <td>{{ ucfirst($event->name) }}</td>
-                                                <td>{{ date('d-m-Y H:i:s', $event->start_time) }}</td>
-                                                <td>{{ date('d-m-Y H:i:s', $event->end_time) }}</td>
+                                                <td>{{ date('d-m-Y', $event->start_time) }}</td>
+                                                <td>{{ date('d-m-Y', $event->end_time) }}</td>
                                                 <td>{{ ucfirst($event->city) }}</td>
                                                 <td style="text-align: center;">
                                                     <a href={{ url('participants_event', $event->id) }}> 

@@ -76,21 +76,21 @@
                                     <div class="col-sm-9">
                                         <div class="row">
                                             <div class="col-sm-3">
-                                                <label for="form-control">Campaign Name:</label>
+                                                <label for="form-control">Campaign Name</label>
                                                 <input type="text" id="campaign_name" class="form-control"
                                                     placeholder="Campaign Name" name="campaign_name"
                                                     value="{{old('campaign_name',$search_campaign_name)}}" autocomplete="off" />
                                             </div>
-                                            
+                                         
                                             <div class="col-sm-2 ">
-                                                <label for="form-control">Start Date:</label>
+                                                <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_marketing_date" class="form-control"
                                                     placeholder="Start Date" name="start_marketing_date" value="{{ old('start_marketing_date', $search_start_marketing_date ? \Carbon\Carbon::parse($search_start_marketing_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-2">
-                                                <label for="form-control">End Date:</label>
+                                                <label for="form-control">End Date</label>
                                                 <input type="date" id="end_marketing_date" class="form-control"
                                                     placeholder="End Date" name="end_marketing_date" value="{{ old('end_marketing_date', $search_end_marketing_date ? \Carbon\Carbon::parse($search_end_marketing_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
@@ -100,7 +100,7 @@
                                                 <?php 
                                                    $marketing_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="marketing_status" name="marketing_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -144,9 +144,9 @@
                                     <tr>
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Campaign Name</th>
-                                        <th class="text-left">Count</th>
-                                        <th class="text-center">Start Date</th>
-                                        <th class="text-center">End Date</th>
+                                        <th class="text-center">Count</th>
+                                        <th class="text-left">Start Date</th>
+                                        <th class="text-left">End Date</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -161,10 +161,10 @@
                                     ?>
                                         <tr>
                                             <td class="text-center">{{ $i }}</td>
-                                            <td class="text-left">{{ $val->campaign_name }}</td>
-                                            <td class="text-left">{{ $val->count }}</td>
-                                            <td class="text-center">{{  date('d-m-Y H:i:s',$val->start_date) }}</td>
-                                            <td class="text-center">{{  date('d-m-Y H:i:s',$val->end_date) }}</td>
+                                            <td class="text-left">{{ ucfirst($val->campaign_name) }}</td>
+                                            <td class="text-center">{{ $val->count }}</td>
+                                            <td class="text-left">{{  date('d-m-Y ',$val->start_date) }}</td>
+                                            <td class="text-left">{{  date('d-m-Y ',$val->end_date) }}</td>
                                             <td class="text-center">
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input"

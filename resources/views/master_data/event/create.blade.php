@@ -13,7 +13,11 @@
 <!-- Dashboard Ecommerce start -->
 @section('content')
     <section>
-
+        <style>
+            .ck-editor__editable {
+                min-height: 200px; /* Set the minimum height as needed */
+            }
+        </style>
         <div class="content-body">
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
@@ -112,7 +116,7 @@
                                                 <label for="start_time">Start Date<span style="color:red;">*</span></label>
                                                 <input type="date" id="start_time" class="form-control"
                                                     placeholder="Start Date" name="start_time"
-                                                    value="{{ old('start_time', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d\TH:i') : '') }}"
+                                                    value="{{ old('start_time', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="start_time_err"></small></h5>
                                                 @error('start_time')
@@ -126,7 +130,7 @@
                                                 <label for="end_time">End Date<span style="color:red;">*</span></label>
                                                 <input type="date" id="end_time" class="form-control"
                                                     placeholder="End Date" name="end_time"
-                                                    value="{{ old('end_time', $end_time ? \Carbon\Carbon::parse($end_time)->format('Y-m-d\TH:i') : '') }}" 
+                                                    value="{{ old('end_time', $end_time ? \Carbon\Carbon::parse($end_time)->format('Y-m-d') : '') }}" 
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="end_time_err"></small></h5>
                                                 @error('end_time')
@@ -194,30 +198,6 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="event_description">Event Description <span style="color:red;">*</span></label>
-                                                <input type="text" id="event_description" class="form-control" placeholder="Event Description"
-                                                    name="event_description"    value="{{ old('event_description', $event_description) }}"  autocomplete="off" />
-                                                <h5><small class="text-danger" id="event_description_err"></small></h5>
-                                                @error('event_description')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6 col-12">
-                                            <div class="form-group">
-                                                <label for="event_keywords">Event Keywords <span style="color:red;">*</span></label>
-                                                <input type="text" id="event_keywords" class="form-control" placeholder="Event Keywords"
-                                                    name="event_keywords"    value="{{ old('event_keywords', $event_keywords) }}"  autocomplete="off" />
-                                                <h5><small class="text-danger" id="event_keywords_err"></small></h5>
-                                                @error('event_keywords')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6 col-12">
-                                            <div class="form-group">
                                                 <label for="time_zone">Timezone <span style="color:red;">*</span></label>
                                                 <select id="time_zone" name="time_zone" class="select2 form-control">
                                                     <option value="">-- Select Timezone --</option>
@@ -277,6 +257,33 @@
                                             </div>
                                         </div>
 
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="event_keywords">Event Keywords/Metatags<span style="color:red;">*</span></label>
+                                                {{-- <input type="text" id="event_keywords" class="form-control" placeholder="Event Keywords"
+                                                    name="event_keywords"    value="{{ old('event_keywords', $event_keywords) }}"  autocomplete="off" /> --}}
+                                                    <textarea name="event_keywords"   id="event_keywords" value="{{ old('event_keywords') }}" class="form-control" cols="1" rows="1">{{ $event_keywords }}</textarea>   
+                                                <h5><small class="text-danger" id="event_keywords_err"></small></h5>
+                                                @error('event_keywords')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-md-12 col-12">
+                                            <div class="form-group">
+                                                <label for="event_description">Event Description <span style="color:red;">*</span></label>
+                                                <textarea id="event_description" class="form-control" placeholder="Event Description"
+                                                name="event_description" autocomplete="off">{{ old('event_description', $event_description) }}</textarea>
+                                                <h5><small class="text-danger" id="event_description_err"></small></h5>
+                                                @error('event_description')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        
                                         <div class="col-12 text-center mt-1">
                                             <button type="submit" class="btn btn-primary mr-1"
                                                 onClick="return validation()">Submit</button>
@@ -293,7 +300,18 @@
         </div>
     </section>
 @endsection
-
+{{-- <script src="https://cdn.ckeditor.com/ckeditor5/38.1.1/classic/ckeditor.js"></script> --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src={{ asset('/app-assets/js/scripts/Ckeditor/ckeditor.js') }}></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        ClassicEditor
+            .create(document.querySelector('#event_description'))
+            .catch(error => {
+                console.error('Error initializing CKEditor:', error);
+            });
+    });
+</script>
 <script>
     $(document).ready(function() {
     $('#country').change(function() {

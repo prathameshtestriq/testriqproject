@@ -93,7 +93,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-md-3 col-12">
+                                        <div class="col-md-2 col-12">
                                             <div class="form-group mt-2">
                                                 <input type="checkbox" id="show_as_home" class="checkbox m-1" name="show_as_home" value="1"<?php if(old('show_as_home', $show_as_home)==1){ echo 'checked';};?> autocomplete="off" style="transform: scale(1.5);" />
                                                 <label for="show_as_home">Show as home</label>
@@ -114,7 +114,7 @@
                                                     placeholder="Logo Name" name="races_logo"
                                                     style="text-transform: capitalize; display: block; width: 100%;"
                                                     accept="image/jpeg, image/png"
-                                                    autocomplete="off" onchange="validateSize(this)"/>
+                                                    autocomplete="off"  onchange="previewImage(this); validateSize(this);" />
                                                     <span class="error" id="races_logo_err" style="color:red;"></span>
                                                 @error('races_logo')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -122,7 +122,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-1">
+                                        {{-- <div class="col-md-1">
                                             <span><br/></span>
                                             @if (!empty($logo))
                                                 <a href="{{ asset('uploads/type_images/' . $logo) }}" target="_blank">
@@ -132,6 +132,26 @@
                                                 <input type="hidden" name="hidden_logo" value="{{ old('logo', $logo) }}"
                                                     accept="image/jpeg, image/png">
                                             @endif
+                                        </div> --}}
+
+                                        <div class="col-sm-2 mt-2">
+                                            <span><br /></span>
+                                            <!-- Image preview section -->
+                                            <div id="imagePreview">
+
+                                                <?php 
+                                                    if(!empty($logo)){ ?>
+                                                    <a href="{{ asset('uploads/type_images/' . $logo) }}" target="_blank">
+                                                        <img id="preview" src="{{ asset('uploads/type_images/' . $logo) }}" alt="Current Image"
+                                                        style="width: 50px;">
+                                                    </a>
+                                                    <input type="hidden" name="hidden_logo" value="{{ old('logo', $logo) }}"
+                                                        accept="image/jpeg, image/png">
+                                                <?php } else { ?>
+                                                    <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
+                                                <?php } ?>
+                                            </div>    
+
                                         </div>
 
                                         
@@ -175,7 +195,20 @@
             }
         }
     });
-
+</script>
+<script type="text/javascript">
+    function previewImage(input) {
+        var file = input.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var preview = document.getElementById('preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
     function validateSize(input) {
         var isValid = true;
       const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB

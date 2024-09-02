@@ -77,7 +77,7 @@
                                     <div class="col-sm-8">
                                         <div class="row">
                                             <div class="col-sm-3">
-                                                <label for="form-control"> Race Category Name:</label>
+                                                <label for="form-control"> Race Category Name</label>
                                                 <input type="text" id="name" class="form-control"
                                                     placeholder="Races Category Name" name="name" value="{{ $search_name }}"
                                                     autocomplete="off" />
@@ -87,7 +87,7 @@
                                                 <?php 
                                                    $type_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?>
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="type_status" name="type_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -109,7 +109,7 @@
                                                 <?php 
                                                    $Show_as_home = array(0=>'No',1=>'Yes' );    
                                                 ?>
-                                                <label for="form-control"> Show As Home:</label>
+                                                <label for="form-control"> Show As Home</label>
                                                 <select id="Show_as_home" name="Show_as_home" class="form-control select2 form-control">
                                                     <option value="">Select Show As Home </option>
                                                     <?php 
@@ -152,11 +152,10 @@
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-center">Race Name</th>
+                                        <th class="text-left">Race Name</th>
                                         {{-- <th class="text-left">User Name</th> --}}
-                                       
-                                        <th class="text-center">Image</th>
                                         <th class="text-center">Show As Home</th>
+                                        <th class="text-center">Image</th>
                                         <th style="text-align: center;">Active</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -170,20 +169,19 @@
                                                 $i++;?>
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
-                                                <td><?php echo $val->name; ?></td>
-
+                                                <td class="text-left"><?php echo ucfirst($val->name); ?></td>
+                                                <td>{{ !empty($val->show_as_home == 1) ? 'Yes' : 'No'}}</td>
                                                 <td class="t-center text-center">
                                                     <?php if(!empty($val->logo)){ ?>
-                                                        <a target="_blank" href="{{ asset('uploads/type_images/' . $val->logo) }}">
+                                                        <a target="_blank" title="View Image" href="{{ asset('uploads/type_images/' . $val->logo) }}">
                                                             <img style="width:50px;"
                                                             src="{{ asset('uploads/type_images/' . $val->logo) }}">
                                                         </a>
                                                     <?php }else{
-                                                        echo '';
+                                                        echo '-';
                                                     }
                                                     ?>
                                                  </td>
-                                                 <td>{{ !empty($val->show_as_home == 1) ? 'Yes' : 'No'}}</td>
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success" >
                                                         <input type="checkbox" class="custom-control-input"  id="{{ $val->id }}" 

@@ -506,7 +506,7 @@ class PaymentGatwayController extends Controller
                 )
             );
 
-            //echo 'Request processed successfully.';
+            echo 'Request processed successfully.';
 
         } else {
             echo 'Transaction Id Not Found.';

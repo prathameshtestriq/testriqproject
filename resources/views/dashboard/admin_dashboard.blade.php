@@ -157,20 +157,20 @@
 
                                             <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-4 col-xxl-2">
                                                 <div class="form-group mb-0">
-                                                    <lable class="text-dark">Date From</label>
-                                                        <input type="datetime-local" id="from_date" class="form-control"
+                                                    <lable class="text-dark">From Date</label>
+                                                        <input type="date" id="from_date" class="form-control"
                                                             placeholder="From Date" name="from_date"
-                                                            value="{{ old('start_booking_date', $search_from_date ? \Carbon\Carbon::parse($search_from_date)->format('Y-m-d\TH:i') : '') }}"
+                                                            value="{{ old('start_booking_date', $search_from_date ? \Carbon\Carbon::parse($search_from_date)->format('Y-m-d') : '') }}"
                                                             autocomplete="off" />
                                                 </div>
                                             </div>
 
                                             <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-4 col-xxl-2">
                                                 <div class="form-group mb-0">
-                                                    <lable class="text-dark">To From</label>
-                                                        <input type="datetime-local" id="to_date" class="form-control"
+                                                    <lable class="text-dark">To Date</label>
+                                                        <input type="date" id="to_date" class="form-control"
                                                             placeholder="To Date" name="to_date"
-                                                            value="{{ old('end_booking_date', $search_to_date ? \Carbon\Carbon::parse($search_to_date)->format('Y-m-d\TH:i') : '') }}"
+                                                            value="{{ old('end_booking_date', $search_to_date ? \Carbon\Carbon::parse($search_to_date)->format('Y-m-d') : '') }}"
                                                             autocomplete="off" />
                                                 </div>
                                             </div>
@@ -209,7 +209,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
 
-                                <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                     {{ $TotalRegistrationUsersWithSuccess }}</h1>   
                                     <p class="text-primary canvas1 mt-2"
                                     style="font-weight:500; position: absolute; bottom: -45px;"><a
@@ -231,11 +231,11 @@
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Participants </h5>
+                        <h5 class="text-primary mb-0 text-dark">Total Participants </h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $NetSales }}</h1>
                                         <p class="text-primary canvas1 mt-2"
                                         style="font-weight:500; position: absolute; bottom: -45px;"><a
@@ -262,7 +262,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $NetSales }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -287,7 +287,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark"> <i
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"> <i
                                             class="fa fa-inr" aria-hidden="true"></i>{{ $TotalAmount }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -312,7 +312,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $SuccessPercentage }} %</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -337,7 +337,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalPageViews }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -362,7 +362,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalRegistrationCount }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -387,7 +387,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalNumberEvents }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -412,7 +412,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalNumberLiveEvents }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -437,7 +437,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalNumberDraftEvents }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -462,7 +462,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalNumberPrivateEvents }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -483,11 +483,11 @@
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Users</h5>
+                        <h5 class="text-primary mb-0 text-dark">Total Users</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalNumberUsers }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
@@ -512,7 +512,7 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark"><i
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"><i
                                             class="fa fa-inr" aria-hidden="true"></i>{{ $TotalRemittedAmount }}
                                     </h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
@@ -530,15 +530,18 @@
                 </div>
             </div>
 
+           
+
+
             <!-- Payment  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Payment</h5>
+                        <h5 class="text-primary mb-0 text-dark">Payment History</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 25px; font-weight:bold" class="mt-1 text-dark">
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $PaymentData }}</h1>
                                     <p class="text-primary canvas1 mt-2"
                                         style="font-weight:500; position: absolute; bottom: -45px;"><a
@@ -548,6 +551,78 @@
                             <div class="col-sm-6">
                                 <div class="d-flex align-items-center justify-content-center">
                                     <img src="{{ asset('uploads/dashboard/14-payment.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Total Payment Gateway</h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $TotalPaymentGateway }}</h1>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/15-payment-gateway.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Total Convenience Fee</h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $TotalConvenience }}</h1>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/16-convenience-fee.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark"> Receivable to Organiser</h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $OrganiserAmount }}</h1>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/17-receivabletoorg.png') }}" alt="avatar"
                                         height="80" width="80">
                                 </div>
                             </div>

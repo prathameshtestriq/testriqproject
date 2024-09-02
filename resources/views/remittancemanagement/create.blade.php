@@ -96,7 +96,7 @@
                                                 <label for="remittance_date">Remittance Date<span style="color:red;">*</span></label>
                                                 <input type="date" id="remittance_date" class="form-control"
                                                     placeholder="Remittance Date" name="remittance_date"
-                                                    value="{{ old('remittance_date', $remittance_date ? \Carbon\Carbon::parse($remittance_date)->format('Y-m-d\TH:i') : '') }}"  
+                                                    value="{{ old('remittance_date', $remittance_date ? \Carbon\Carbon::parse($remittance_date)->format('Y-m-d') : '') }}"  
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="remittance_date_err"></small></h5>
                                                 @error('remittance_date')

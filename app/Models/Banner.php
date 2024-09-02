@@ -173,11 +173,8 @@ class Banner extends Model
             $path = public_path('uploads/banner_image/');
             $banner_image = $request->file('banner_image');
             $imageExtension = $banner_image->getClientOriginalExtension();
-
-
             $banner_image_name = strtotime('now') . '_banner.' . $imageExtension;
             //dd($banner_image_name);
-
             $banner_image->move($path, $banner_image_name);
         }
 
@@ -193,14 +190,14 @@ class Banner extends Model
             'banner_url' => $request->banner_url,
             'start_time' => strtotime($request->start_date),
             'end_time' => strtotime($request->end_date),
-            'city' => $request->city,
-            'state' => $request->state,
-            'country' => $request->country,
+            'city' => !empty($request->city) ? $request->city : ' ',
+            'state' => !empty($request->state) ? $request->state : ' ',
+            'country' => !empty($request->country) ? $request->country : ' ',
             'created_datetime' => now() // Assuming `created_datetime` is a timestamp field
         );
 
         $Result = DB::insert($ssql, $bindings);
-
+// dd( $Result);
         return $banner_image_name;
     }
 

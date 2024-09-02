@@ -76,16 +76,22 @@
                                 <div class="col-sm-8">
                                     <div class="row">
                                         <div class="col-sm-3">
-                                            <label for="form-control"> Testimonial Name:</label>
+                                            <label for="form-control"> Testimonial Name</label>
                                             <input type="text" id="user_id" class="form-control" placeholder="Testimonial Name"
                                                 name="user_id" value="{{ $search_name }}" autocomplete="off" />
+                                        </div>
+
+                                        <div class="col-sm-3">
+                                            <label for="form-control"> Subtitle </label>
+                                            <input type="text" id="subtitle" class="form-control" placeholder="Subtitle "
+                                                name="subtitle" value="{{ $search_subtitle }}" autocomplete="off" />
                                         </div>
 
                                         <div class="col-sm-3 "> 
                                             <?php 
                                                $testimonial_status = array(0=>'Inactive',1=>'Active' );    
                                             ?>
-                                            <label for="form-control"> Status:</label>
+                                            <label for="form-control"> Status</label>
                                             <select id="testimonial_status" name="testimonial_status" class="form-control select2 form-control">
                                                 <option value="">Select  Status</option>
                                                 <?php 
@@ -103,9 +109,9 @@
                                             </select>
                                         </div>
 
-                                        <div class="col-sm-4 mt-2">
+                                        <div class="col-sm-3 mt-2">
                                             <button type="submit" class="btn btn-primary">Search</button>
-                                            @if (!empty($search_name) || ($search_testimonial_status != ''))
+                                            @if (!empty($search_name) || ($search_testimonial_status != '') || !empty($search_subtitle))
                                             <a title="Clear" href="{{ url('testimonial/clear_search') }}" type="button"
                                                 class="btn btn-outline-primary">
                                                 <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -127,8 +133,8 @@
                             <thead>
                                 <tr>
                                     <th class="text-center">Sr.No</th>
-                                    <th class="text-center">Testimonial Name</th>
-                                    <th class="text-center">Subtitle</th>
+                                    <th class="text-left">Testimonial Name</th>
+                                    <th class="text-left">Subtitle</th>
                                     <!-- <th class="text-center">Image</th> -->
                                     <th style="text-align: center;">Active</th>
                                     <th class="text-center">Actions</th>
@@ -143,10 +149,10 @@
                                                 $i++;?>
                                 <tr>
                                     <td class="text-center">{{ $i }}</td>
-                                    <td>
-                                        <?php echo $val->name; ?>
+                                    <td class="text-left">
+                                        <?php echo ucfirst($val->name); ?>
                                     </td>
-                                    <td>{{ ucfirst($val->subtitle) }}</td>
+                                    <td  class="text-left">{{ ucfirst($val->subtitle) }}</td>
                                   
                                     <!-- <td class="t-center text-center"><a target="_blank"
                                 href="{{ asset('uploads/testimonial_images/' . $val->testimonial_img) }}"><img

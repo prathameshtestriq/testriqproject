@@ -218,7 +218,7 @@ class EventController extends Controller
            // $active = $validatedData['active'];
             $address = $validatedData['address'];
             $event_url = $request->event_url;
-            $description = $request->event_description;
+            $description = !empty($request->event_description)?strip_tags($request->event_description):'';
             $event_keywords = $request->event_keywords;
             $timezones = $request->time_zone;
            // $active = $request->input('active', 1);

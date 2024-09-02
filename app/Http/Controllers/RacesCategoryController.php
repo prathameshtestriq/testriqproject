@@ -122,18 +122,20 @@ class RacesCategoryController extends Controller
             
         if (isset($request->form_type) && $request->form_type == 'add_edit_type') {
             // Validation rules
-        //    dd($request->all());
+             //dd($request->all());
             $Rules = [
                 'race_category_name' => 'required|unique:eTypes,name,' . $iId . 'id',
               
             ];
 
            if($request->input('show_as_home', '') == 1){
-              $Rules = [
-                'races_logo' =>  'required|mimes:jpeg,jpg,png,gif|max:2000' ,
-              ]; 
+            $Rules = array_merge($Rules, [
+                'races_logo' =>  'required|mimes:jpeg,jpg,png,gif|max:2000',
+            ]);
            }
             $message = [ 
+                'race_category_name.required' => 'The race category name field is required.',
+                'race_category_name.unique' => 'The race category name must be unique.',
                 'races_logo.required' => 'The logo field is required .',
                 'races_logo.mimes' => 'The logo must be a file of type: jpeg, jpg, png, gif.',
                 // 'logo.size' => 'The logo must be 2MB or below.', 
@@ -144,17 +146,16 @@ class RacesCategoryController extends Controller
             $show_as_home = !empty($request->input('show_as_home', ''))? $request->input('show_as_home', '') :'0';
      
             if($iId>0){
-              
+                $request->validate($Rules, $message);
                 // Determine if image update is required
                 if($request->input('show_as_home', '') == 1){
                    $updateImage = $request->hasFile('races_logo');
-                }
-        
-                // Handle image update if necessary
-                $image_name = '';
-                if ($updateImage) {
-                    $image_name = $request->file('races_logo')->getClientOriginalName();
-                    $request->file('races_logo')->move(public_path('uploads/type_images/'), $image_name);
+                   // Handle image update if necessary
+                    $image_name = '';
+                    if ($updateImage) {
+                        $image_name = $request->file('races_logo')->getClientOriginalName();
+                        $request->file('races_logo')->move(public_path('uploads/type_images/'), $image_name);
+                    }
                 }
         
                 // Update record
@@ -166,7 +167,7 @@ class RacesCategoryController extends Controller
                
                 $sSQL = 'UPDATE eTypes SET name = :name';
 
-                if ($updateImage) {
+                if (!empty($updateImage)) {
                     $sSQL .= ', logo = :logo';
                     $Bindings['logo'] = $image_name;
                 }
@@ -177,24 +178,27 @@ class RacesCategoryController extends Controller
                 return redirect('/type')->with('success', $successMessage);
                                
             } else {
-                
-                if ((!empty($request->logo))) {
-                    $image_name = $request->file('races_logo')->getClientOriginalName();
-                    //    dd($image_name);
-                    $file = $request->file('races_logo');
-                    $url = env('APP_URL');
-                    $final_url = $url . 'uploads/type_images';
-                    $file->move(public_path('uploads/type_images/'), $final_url . '/' . $image_name);
-                } else {
-                    $image_name = '';
-                }
-               
                 $request->validate($Rules, $message);
+                $image_name = '';
+               
+                if($request->input('show_as_home', '') == 1){
+                    if ((!empty($request->races_logo))) {
+                        $image_name = $request->file('races_logo')->getClientOriginalName();
+                        //    dd($image_name);
+                        $file = $request->file('races_logo');
+                        $url = env('APP_URL');
+                        $final_url = $url . 'uploads/type_images';
+                        $file->move(public_path('uploads/type_images/'), $final_url . '/' . $image_name);
+                    } else {
+                        $image_name = '';
+                    }
+                }
+            //   dd( $image_name);
                 // New event insert logic
                 $sql = 'INSERT INTO eTypes (name, logo, show_as_home) VALUES (:name, :logo, :show_as_home)';
                 $bindings = [
                     'name' => $name,
-                    'logo' => $image_name,
+                    'logo' => !empty($image_name) ? $image_name : '',
                     'show_as_home'=> $show_as_home
                 ];
                 $successMessage = 'Races Added Successfully';

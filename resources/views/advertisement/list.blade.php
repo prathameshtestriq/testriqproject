@@ -97,34 +97,34 @@
                             <input type="hidden" name="form_type" value="search_ad">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-2">
-                                                <label for="form-control">Advertisement Name:</label>
+                                            <div class="col-sm-3">
+                                                <label for="form-control">Advertisement Name</label>
                                                 <input type="text" id="name" class="form-control"
-                                                    placeholder="advertisement name" name="name" value="{{ $search_name }}"
+                                                    placeholder=" Search Advertisement Name" name="name" value="{{ $search_name }}"
                                                     autocomplete="off" />
                                             </div>
                                            
-                                            <div class="col-sm-2 ">
-                                                <label for="form-control">Start Date:</label>
+                                            <div class="col-sm-2">
+                                                <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_booking_date1" class="form-control"
                                                     placeholder="Start Date" name="start_date"   value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d') : '') }}"  
                                                     autocomplete="off" />
                                             </div>
                                            
                                             <div class="col-sm-2">
-                                                <label for="form-control">End Date:</label>
+                                                <label for="form-control">End Date</label>
                                                 <input type="date" id="end_booking_date1" class="form-control"
                                                     placeholder="End Date" name="end_date"  value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d') : '') }}" 
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2 col-12"> 
+                                            <div class="col-sm-2 "> 
                                                 <?php 
                                                    $advertisement_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?>
-                                                <label for="form-control"> Status:</label>
+                                                <label for="form-control"> Status</label>
                                                 <select id="advertisement_status" name="advertisement_status" class="form-control select2 form-control">
                                                     <option value="">Select  Status</option>
                                                     <?php 
@@ -143,7 +143,7 @@
                                             </div>
 
 
-                                            <div class="col-sm-3 mt-2">
+                                            <div class="col-sm-2 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_name) || !empty($search_start_booking_date) || !empty($search_end_booking_date) || ($search_advertisement_status != ''))
                                                     <a title="Clear" href="{{ url('advertisement/clear_search') }}" type="button"
@@ -152,12 +152,14 @@
                                                     </a>
                                                 @endif
                                             </div>
+                                            <div class="col-sm-1 mt-2">
+                                                <a href="{{ url('/advertisement/add_edit') }}" class="btn btn-outline-primary float-right pr-2">
+                                                    <i data-feather="plus"></i><span>Add</span></a>
+                                            </div>
+
                                         </div>
                                     </div>
-                                    <div class="col-sm-4 mt-2">
-                                        <a href="{{ url('/advertisement/add_edit') }}" class="btn btn-outline-primary float-right pr-2">
-                                            <i data-feather="plus"></i><span>Add</span></a>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </form>
@@ -166,22 +168,11 @@
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-left">Name</th>                                            
-                                            <div class="col-xs-12 col-md-12">
-                                            <div class="form-group mb-5">
-                                                {{-- <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Contact Number <span style="color:red;">*</span></label> --}}
-                                                {{-- <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
-                                                    placeholder="mobile" autocomplete="off" value="{{ old('mobile',$mobile) }}" /> --}}
-                                                    <h5><small class="text-danger" id="mobile_err"></small></h5>
-                                                    @error('mobile')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
+                                        <th class="text-left">Advertisement Name</th>                                            
                                         {{-- <th class="text-left">User Name</th> --}}
-                                        <th class="text-center">Position</th>
-                                        <th class="text-center">Start Date</th>
-                                        <th class="text-center">End Date</th>
+                                        <th class="text-left">Position</th>
+                                        <th class="text-left">Start Date</th>
+                                        <th class="text-left">End Date</th>
                                         <th class="text-center">IMAGE</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
@@ -196,13 +187,13 @@
                                                 $i++;?>
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
-                                                <td class="text-left">{{ $val->name }}</td>
-                                                <td class="text-left">{{ $val->position }}</td>
+                                                <td class="text-left">{{ ucfirst($val->name) }}</td>
+                                                <td class="text-left">{{ ucfirst($val->position) }}</td>
                                                 <td class="text-left">{{ date('d-m-Y ', $val->start_time)  }}</td>
                                                 <td class="text-left">{{ date('d-m-Y ', $val->end_time)  }}</td>
                                                 <td class="t-center text-center">
 
-                                                    <a target="_blank" href="{{ asset('uploads/images/' . $val->img) }}">
+                                                    <a target="_blank" title="View Image" href="{{ asset('uploads/images/' . $val->img) }}">
                                                         <img style="width:50px;" src="{{ asset('uploads/images/' . $val->img) }}" alt="Banner Image">
                                                     </a>
                                                 </td>

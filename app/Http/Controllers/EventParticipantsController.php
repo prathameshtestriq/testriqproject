@@ -43,7 +43,7 @@ class EventParticipantsController extends Controller
  
        
         if (isset($request->form_type) && $request->form_type == 'search_participant_event') {
-         
+        //  dd($request->category);
             session(['participant_name' => $request->participant_name]);
             session(['transaction_status' => $request->transaction_status]);
             session(['registration_id' => $request->registration_id]);
@@ -67,7 +67,6 @@ class EventParticipantsController extends Controller
         $Return['search_start_booking_date'] = (!empty(session('start_booking_date'))) ?  session('start_booking_date') : '';
         $Return['search_end_booking_date'] = (!empty(session('end_booking_date'))) ? session('end_booking_date'): '';
         $Return['search_transaction_order_id'] = (!empty(session('transaction_order_id'))) ? session('transaction_order_id'): '';
-        
         // dd(session('transaction_status'),  $Return['search_transaction_status'] );
         
 
@@ -188,6 +187,9 @@ class EventParticipantsController extends Controller
         // dd( $Return['event_name']);
         $Return['event_id']   = $event_id;
 
+        $sql = 'SELECT et.ticket_name FROM event_tickets et WHERE 1=1 GROUP BY et.ticket_name';
+        $Return['Categories'] = DB::select($sql,array());
+        // dd($Return['Categories']);
         // dd($Return['event_id']);
         $Return['Paginator'] = new LengthAwarePaginator( $Return['event_participants'], $CountRows, $Limit, $PageNo);
         $Return['Paginator']->setPath(request()->url());
