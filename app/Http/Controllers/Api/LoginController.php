@@ -170,6 +170,16 @@ class LoginController extends Controller
                                         // $aModules = $this->admin_user_rights->get_user_modules($aResult[0]->id, $aResult[0]->type);
                                         // $ResponseData['modules'] = $aModules;
 
+                                         //------------- organiser user to exsting user to update in user id
+                                        $SQL1 = 'SELECT id FROM organiser_users WHERE email=:email';
+                                        $aUserExist = DB::select($SQL1, array('email' => $aPost['email']));
+
+                                        if(!empty($aUserExist)){
+                                            $sSQL = "UPDATE organiser_users SET user_id =:user_id Where email=:email";
+                                            $userData = DB::update($sSQL, array('user_id' => $lastInsertedId, "email"=> $aPost['email']));
+                                        }
+                                        //----------------- End ----------------------------------
+
                                         $ResposneCode = 200;
                                         $message = 'Registered Successfully';
                                     } else {

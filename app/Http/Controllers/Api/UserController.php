@@ -1315,6 +1315,16 @@ class UserController extends Controller
                                 $SQL3 = 'INSERT INTO user_rights (role_id,user_id,updated_date) VALUES(:role_id,:user_id,:updated_date)';
                                 DB::select($SQL3, array('role_id' => $Role, 'user_id' => $UserId, 'updated_date' => strtotime('now')));
 
+                                //------------- organiser user to exsting user to update in user id
+                                $SQL1 = 'SELECT id FROM organiser_users WHERE email=:email';
+                                $aUserExist = DB::select($SQL1, array('email' => $aPost['email']));
+
+                                if(!empty($aUserExist)){
+                                    $sSQL = "UPDATE organiser_users SET user_id =:user_id Where email=:email";
+                                    $userData = DB::update($sSQL, array('user_id' => $UserId, "email"=> $aPost['email']));
+                                }
+                                //----------------- End ----------------------------------
+                                
                                 $ResposneCode = 200;
                                 $message = 'New user insert Successfully';
                             } else {
@@ -1803,8 +1813,10 @@ class UserController extends Controller
                     $IsExist = DB::select($SQL, array('email' => strtolower($email), "user_id" => $UserId));
                     // dd($IsExist);
 
-                    // $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND id = :user_id";
-                    // $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $UserId));
+                    $SQL1 = "SELECT id FROM users WHERE LOWER(email) = :email ";
+                    $aUserResult = DB::select($SQL1, array('email' => strtolower($email)));
+                    
+                    $user_id = !empty($aUserResult) ? $aUserResult[0]->id : 0;
                     //dd($IsCouponExist);
 
                     if (!empty($IsExist)) {
@@ -1832,10 +1844,11 @@ class UserController extends Controller
                             "event_selected_type" => $EventSelectedType,
                             "event_ids" => $event_ids,
                             "created_by" => $UserId,
-                            "created_date" => time()
+                            "created_date" => time(),
+                            "user_id" => $user_id
                         );
 
-                        $insert_SQL = "INSERT INTO organiser_users (user_role,firstname,lastname,email,mobile,dob,gender,event_selected_type,event_ids,created_by,created_date) VALUES(:user_role,:firstname,:lastname,:email,:mobile,:dob,:gender,:event_selected_type,:event_ids,:created_by,:created_date)";
+                        $insert_SQL = "INSERT INTO organiser_users (user_role,firstname,lastname,email,mobile,dob,gender,event_selected_type,event_ids,created_by,created_date,user_id) VALUES(:user_role,:firstname,:lastname,:email,:mobile,:dob,:gender,:event_selected_type,:event_ids,:created_by,:created_date,:user_id)";
                         DB::insert($insert_SQL, $Bindings);
                         $last_inserted_id = DB::getPdo()->lastInsertId();
                         //dd($last_inserted_id);

@@ -72,9 +72,8 @@ Route::group(['middleware' => ['checkLogin']], function () {
      Route::match (['get'], 'user/delete/{id}', [UserController::class, 'delete_user'])->name('delete_user');
      Route::get('user/clear_search', [UserController::class, 'clear_search'])->name('clear_search_user');
      Route::match(['get','post'],'user/export_download',[UserController::class,'export_excel'])->name('export_user');
-     Route::match (['get', 'post'], '/get_states/{country_id}', [UserController::class, 'get_states'])->name('get_states_user');
-     Route::match (['get', 'post'], '/get_cities/{state_id}', [UserController::class, 'get_cities'])->name('get_cities_user');
-     
+     Route::match (['get', 'post'], '/get_states', [UserController::class, 'get_states'])->name('get_states_user');
+     Route::match (['get', 'post'], '/get_cities', [UserController::class, 'get_cities'])->name('get_cities_user');
 
      // CategoryController
      Route::match (['get', 'post'], '/category', [CategoryTypeController::class, 'index_category'])->name('index_category');

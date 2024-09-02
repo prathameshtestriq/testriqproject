@@ -8,11 +8,11 @@
             <th style="text-align: center; font-weight: bold;">Email</th>
             <th style="text-align: center; font-weight: bold;">Mobile</th>
             <th style="text-align: center; font-weight: bold;">Event Category</th>
-            <th style="text-align: center; font-weight: bold;">Category Type</th>
+            <th style="text-align: center; font-weight: bold;">Type or Registration</th>
             <th style="text-align: center; font-weight: bold;">Transaction/Order ID</th>
             <th style="text-align: center; font-weight: bold;">Registration ID</th>
             <th style="text-align: center; font-weight: bold;">Payu ID</th>
-            <th style="text-align: center; font-weight: bold;">Booking Date</th>
+            <th style="text-align: center; font-weight: bold;">Registration Date</th>
             <th style="text-align: center; font-weight: bold;">Payment Status</th>
             <th style="text-align: center; font-weight: bold;">GST - Inclusive/Exclusive</th>
             
@@ -41,7 +41,7 @@
             <th style="text-align: center; font-weight: bold;">Payment Gateway GST (18%)</th>
 
             <th style="text-align: center; font-weight: bold;">Organiser Amount</th>
-            <th style="text-align: center; font-weight: bold;">Final Amount</th>
+            <th style="text-align: center; font-weight: bold;">Final Registration Amount</th>
 
 
         </tr>

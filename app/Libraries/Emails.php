@@ -260,40 +260,6 @@ Welcome aboard!
         $send_mail_to = $user_email;
         $subject = "RACES invitation - You've been added as a team member";
         $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
-
-//         $message = "Dear Prashant,
-//  <br/><br/>
-// Thank you for registering with RACES! We are excited to have you join our community.
-//  <br/><br/>
-// If you have any questions or need assistance, feel free to reach out to our support team.
-//  <br/><br/>
-//  Email: support@youtoocanrun.com<br/>
-// Phone Number:+91 9920142195
-//  <br/><br/>
-// Welcome aboard!
-//  <br/><br/>
-// <p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
-//         $email = new \SendGrid\Mail\Mail();
-//         $email->setFrom("support@youtoocanrun.com", "RACES Registrations"); //YouTooCanRun
-//         $email->setSubject("Test to RACES!");
-//         $email->addTo($user_email, "Registration");
-//         $email->addContent("text/plain", "Dear Customer, ");
-//         $email->addContent(
-//             "text/html",
-//             $message
-//         );
-//         $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
-//         try {
-//             $response = $sendgrid->send($email);
-//             // send mail
-//             $type = "registration";
-//             $send_mail_to = $user_email;
-//             $subject = "Registration";
-//             $this->save_email_log($type, $send_mail_to, $subject, $message, $response);
-
-//         } catch (Exception $e) {
-//             echo 'Caught exception: ' . $e->getMessage() . "\n";
-//         }
     }
 
 

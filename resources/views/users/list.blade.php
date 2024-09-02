@@ -241,12 +241,11 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table class="table table-striped table-bordered mt-1" style="border-bottom: 1px solid #ebe9f1;">
+                            <table class="table table-striped table-bordered mt-1">
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-left">User Name</th>                                                
-                                        <div class="col-xs-12 col-md-12">
+                                        <th class="text-left">User Name</th>                                                <div class="col-xs-12 col-md-12">
                                             <div class="form-group mb-5">
                                                 {{-- <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Contact Number <span style="color:red;">*</span></label> --}}
                                                 {{-- <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
@@ -316,25 +315,21 @@
                                                 <?php echo !empty($val->profile_completion_percentage) ? number_format($val->profile_completion_percentage,2).'%' : ''  ?>
                                                 </td> 
                                                
+
                                                 <td style="display: flex;width: 100%; gap: 5px; border-bottom: none;">
-                                                        
                                                     <a href="<?php echo  $url1.''.$val->email; ?>/<?php echo $val->password; ?>" target="_blank" style="background-color: #7367f0 !important;
-                                                            border-radius: 0.358rem;
-                                                            display: flex;
-                                                            justify-content: center;
-                                                            align-items: center;
-                                                            padding: 0.486rem 1rem;" title="Login As Organiser">
+                                                        border-radius: 0.358rem;
+                                                        display: flex;
+                                                        justify-content: center;
+                                                        align-items: center;
+                                                        padding: 0.486rem 1rem;" title="Login As Organiser">
                                                         <img class="" src="{{ asset('uploads/dashboard/login_as_organiser.png') }}" style="height: 16px;">
                                                     </a>
-
-                                                    <a href="{{ url('/user/add_edit', $val->id) }}">
-                                                        <i class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i>
-                                                    </a>
-
-                                                    <a onclick="delUser({{ $val->id }})">
+                                                    
+                                                    <a href="{{ url('/user/add_edit', $val->id) }}"><i
+                                                            class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                                     <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                         title="Delete"></i>
-                                                    </a>
+                                                        onclick="delUser({{ $val->id }})" title="Delete"></i>
                                                 </td>
                                             </tr>
                                       <?php }
