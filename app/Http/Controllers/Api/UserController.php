@@ -1799,12 +1799,12 @@ class UserController extends Controller
 
                 if (empty($EditOrgUserId)) {     // data insert
 
-                    $SQL = "SELECT email FROM organiser_users WHERE LOWER(email) = :email";
-                    $IsExist = DB::select($SQL, array('email' => strtolower($email)));
+                    $SQL = "SELECT email FROM organiser_users WHERE LOWER(email) = :email AND id = :user_id";
+                    $IsExist = DB::select($SQL, array('email' => strtolower($email), "user_id" => $UserId));
                     // dd($IsExist);
 
-                    $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND id = :user_id";
-                    $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $UserId));
+                    // $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND id = :user_id";
+                    // $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $UserId));
                     //dd($IsCouponExist);
 
                     if (!empty($IsExist)) {
@@ -1812,12 +1812,14 @@ class UserController extends Controller
                         $message = "Email id is already exists, please use another email.";
                         $flag = 1;
                         $ResponseData = $flag;
-                    } else if (!empty($IsExist1)) {
-                        $ResposneCode = 200;
-                        $message = "Email id is already exists, please use another email.";
-                        $flag = 2;
-                        $ResponseData = $flag;
-                    } else {
+                    }
+                    //  else if (!empty($IsExist1)) {
+                    //     $ResposneCode = 200;
+                    //     $message = "Email id is already exists, please use another email.";
+                    //     $flag = 2;
+                    //     $ResponseData = $flag;
+                    // } 
+                    else {
 
                         $Bindings = array(
                             "user_role" => $UserRole,
@@ -1856,24 +1858,26 @@ class UserController extends Controller
 
                 } else {                       // data update
                    
-                    $SQL = "SELECT email FROM organiser_users WHERE LOWER(email) = :email AND id != :edit_id ";
-                    $IsExist = DB::select($SQL, array('email' => strtolower($email), "edit_id" => $EditOrgUserId));
+                    $SQL = "SELECT email FROM organiser_users WHERE LOWER(email) = :email AND id != :edit_id AND created_by =:user_id ";
+                    $IsExist = DB::select($SQL, array('email' => strtolower($email), "edit_id" => $EditOrgUserId, "user_id" => $UserId));
                     // dd($IsExist);
 
-                    $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND organizer_user != :user_id";
-                    $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $EditOrgUserId));
+                    // $SQL1 = "SELECT email FROM users WHERE LOWER(email) = :email AND organizer_user != :user_id";
+                    // $IsExist1 = DB::select($SQL1, array('email' => strtolower($email), "user_id" => $EditOrgUserId));
 
                     if (!empty($IsExist)) {
                         $ResposneCode = 200;
                         $message = "Email id is already exists, please use another email.";
                         $flag = 1;
                         $ResponseData = $flag;
-                    } else if (!empty($IsExist1)) {
-                        $ResposneCode = 200;
-                        $message = "Email id is already exists, please use another email1.";
-                        $flag = 2;
-                        $ResponseData = $flag;
-                    } else {
+                    } 
+                    // else if (!empty($IsExist1)) {
+                    //     $ResposneCode = 200;
+                    //     $message = "Email id is already exists, please use another email1.";
+                    //     $flag = 2;
+                    //     $ResponseData = $flag;
+                    // } 
+                    else {
 
                         $Bindings = array(
                             "user_role" => $UserRole,
