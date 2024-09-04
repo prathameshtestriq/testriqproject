@@ -1205,11 +1205,26 @@ class EventController extends Controller
             $ResponseData['EventTickets'] = $EventTickets;
 
             //------ setting tab get info
-            $sql = "SELECT es.*,(select ytcr_base_price from events where id = " . $EventId . ") as ytcr_base_price FROM event_settings as es WHERE event_id =:event_id";
-            $SettingInfoDetails = DB::select($sql, array('event_id' => $EventId));
+            // $sql = "SELECT es.*,(select ytcr_base_price from events where id = " . $EventId . ") as ytcr_base_price FROM event_settings as es WHERE event_id =:event_id";
+            // $SettingInfoDetails = DB::select($sql, array('event_id' => $EventId));
+            // //dd($SettingInfoDetails);
+            // if (!empty($SettingInfoDetails)) {
+            //     $ResponseData['event_setting_details'] = $SettingInfoDetails;
+            // } else {
+            //     $ResponseData['event_setting_details'] = [];
+            // }
+
+            $sql = "SELECT overall_limit,allow_unique_registration,event_registration_status FROM events WHERE id =:id";
+            $SettingInfoDetails = DB::select($sql, array('id' => $EventId));
             //dd($SettingInfoDetails);
             if (!empty($SettingInfoDetails)) {
-                $ResponseData['event_setting_details'] = $SettingInfoDetails;
+
+                if(!empty($SettingInfoDetails[0]->overall_limit) || !empty($SettingInfoDetails[0]->allow_unique_registration) || $SettingInfoDetails[0]->event_registration_status == 1){
+                    $ResponseData['event_setting_details'] = $SettingInfoDetails;
+                }else{
+                    $ResponseData['event_setting_details'] = [];
+                }
+                
             } else {
                 $ResponseData['event_setting_details'] = [];
             }
