@@ -174,9 +174,9 @@
                                         $i = $Offset;?>
                                     <?php foreach ($payment_array as $val){
 
-                                        $data = json_decode( $val->post_data , true); // Decode JSON into an associative array
+                                        $data = isset($val->post_data) ? json_decode( $val->post_data , true) :  []; // Decode JSON into an associative array
 
-                                        if (isset($data['mihpayid'])) {
+                                        if (!empty($data) && isset($data['mihpayid'])) {
                                             $mihpayid = $data['mihpayid'];
                                         } else {
                                             $mihpayid = '-'; // Handle cases where JSON is invalid or mihpayid is missing

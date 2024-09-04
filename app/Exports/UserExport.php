@@ -30,7 +30,7 @@ class UserExport implements FromArray, WithHeadings, ShouldAutoSize, WithEvents
         $email = Session::has('email') ? Session::get('email') : '';
     
        // Build the SQL query with search criteria
-       $s_sql = 'SELECT u.id, u.firstname,u.lastname,u.is_active,u.email,u.mobile,u.gender,u.dob,(SELECT name FROM  states s WHERE u.state = s.id) as state_name,(SELECT name FROM  cities s WHERE u.city = s.id) as city_name
+       $s_sql = 'SELECT u.id,u.profile_completion_percentage, u.firstname,u.lastname,u.is_active,u.email,u.mobile,u.gender,u.dob,(SELECT name FROM  states s WHERE u.state = s.id) as state_name,(SELECT name FROM  cities s WHERE u.city = s.id) as city_name
        FROM users u WHERE 1=1';
         // Add conditions based on session data
     
@@ -70,7 +70,7 @@ class UserExport implements FromArray, WithHeadings, ShouldAutoSize, WithEvents
                     'DOB'    => date('d-m-Y',strtotime($val->dob)),
                     'State' =>$val->state_name,
                     'City' => $val->city_name,
-                    'Percentage'=> '%',
+                    'Percentage'=> !empty($val->profile_completion_percentage) ? $val->profile_completion_percentage.'%' : '-',
                 );
             }
 

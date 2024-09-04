@@ -218,7 +218,7 @@ if (!empty($edit_data)) {
                                                 @enderror
                                         </div>
                                         <div class="col-sm-6 col-12">
-                                            <label for="state">States: <span style="color:red;">*</span></label>
+                                            <label for="state">State: <span style="color:red;">*</span></label>
                                             <select id="state" name="state" class="select2 form-control">
                                                 <option value="" class="placeholder">All state</option>
                                             </select>  
@@ -229,7 +229,7 @@ if (!empty($edit_data)) {
                                         </div>
 
                                         <div class="col-sm-6 col-12">
-                                            <label for="city">Cities: <span style="color:red;">*</span></label>
+                                            <label for="city">City: <span style="color:red;">*</span></label>
                                             <select id="city" name="city" class="select2 form-control">
                                                 <option value="">All City</option>
                                             </select>  

@@ -55,7 +55,7 @@ class PaymentLogController extends Controller
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
 
         $aReturn["payment_array"] = PaymentLogModel::get_all($Limit, $aReturn);  
-        // dd(  $aReturn["payment_array"]); 
+        // dd($aReturn["payment_array"]); 
     
         $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['payment_array'], $CountRows, $Limit, $PageNo);
         $aReturn['Paginator']->setPath(request()->url());

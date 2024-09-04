@@ -104,7 +104,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-
+ 
                                         <div class="col-sm-6 col-12">
                                             <label for="form-control"> Events<span style="color:red;">*</span></label>
                                             <select id="event" name="event" class="form-control select2 form-control">

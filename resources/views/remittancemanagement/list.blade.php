@@ -177,6 +177,9 @@
                                 </div>
 
                                 <div class="col-sm-5 float-right ">
+                                    <div class="float-right">
+                                        <a href="{{ url('remittance_management/sample_excel_export') }}" class="btn btn-danger text-white float-right mr-1 " title="Download">Sample Excel Download </a>
+                                    </div>
                                     @if (!empty($Remittance)) 
                                         <div class="float-right">
                                             <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right mr-1 ml-2 " title="Download">Download </a>

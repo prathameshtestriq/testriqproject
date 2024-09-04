@@ -301,10 +301,21 @@
         </div>
     </section>
     <script src={{ asset('/app-assets/js/scripts/Ckeditor/ckeditor.js') }}></script>
-    <script>
+    {{-- <script>
         ClassicEditor
         .create(document.querySelector('#message'))
 
+    </script> --}}
+    <script>
+        ClassicEditor
+        .create(document.querySelector('#message'), {
+            ckfinder: {
+                uploadUrl: '{{ route('ckeditor.upload').'?_token='.csrf_token() }}'
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
     </script>
     <script>
         

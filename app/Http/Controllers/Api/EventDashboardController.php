@@ -889,8 +889,6 @@ class EventDashboardController extends Controller
                     $aTemp->taxes_status = '';
                 }
 
-               
-
                 $WhoPayYtcrFee = isset($card_details_array[0]->player_of_fee) && !empty($card_details_array[0]->player_of_fee) ? $card_details_array[0]->player_of_fee : 0;
                 $WhoPayPaymentGatewayFee = isset($card_details_array[0]->player_of_gateway_fee) && !empty($card_details_array[0]->player_of_gateway_fee) ? $card_details_array[0]->player_of_gateway_fee : 0;
 
@@ -923,7 +921,8 @@ class EventDashboardController extends Controller
                     $aTemp->Single_ticket_price = isset($card_details_array[0]->Main_Price) && !empty($card_details_array[0]->Main_Price) ? 
                     ($card_details_array[0]->Main_Price * $card_details_array[0]->count) : '0.00';
                     
-                    $aTemp->Ticket_price = isset($card_details_array[0]->Main_Price) && !empty($card_details_array[0]->Main_Price) ? $card_details_array[0]->Main_Price : '0.00';
+                    $aTemp->Ticket_price = isset($card_details_array[0]->ticket_price) && !empty($card_details_array[0]->ticket_price) ? $card_details_array[0]->ticket_price : '0.00';
+                    // $aTemp->Ticket_price = isset($res->ticket_price) && !empty($res->ticket_price) ? $res->ticket_price : '0.00'; 
                    
                     $aTemp->Convenience_fee = isset($card_details_array[0]->Convenience_Fee) && !empty($card_details_array[0]->Convenience_Fee) ? 
                     ($card_details_array[0]->Convenience_Fee * $card_details_array[0]->count)  : '0.00';

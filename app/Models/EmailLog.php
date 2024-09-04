@@ -17,7 +17,8 @@ class EmailLog extends Model
         'subject',
         'message',
         'response',
-        'datetime'
+        'datetime',
+        'email_send_status'
     ];
 
     public $timestamps = false;

@@ -79,6 +79,29 @@
                                     {{ csrf_field() }}
                                   
                                     <div class="row">
+                                        <div class="col-sm-6 col-12">
+                                            <label for="form-control"> Events<span style="color:red;">*</span></label>
+                                            <select id="event" name="event" class="form-control select2 form-control">
+                                                <option value="">Select  Event</option>
+                                                <?php 
+                                                    foreach ($EventsData as $value)
+                                                    {
+                                                        $selected = '';
+                                                        if(old('event',$event_id) == $value->id){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
+                                                        <?php 
+                                                    }
+                                                ?>
+                                            </select>
+                                            <h5><small class="text-danger" id="event_err"></small></h5>
+                                                @error('event')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                        </div>
+
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="campaign_name">Campaign Name<span style="color:red;">*</span></label>
@@ -91,17 +114,35 @@
                                             </div>
                                         </div>
 
-                                        {{-- <div class="col-md-6 col-12">
+                                        <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="campaign_name">Campaign Type<span style="color:red;">*</span></label>
-                                                <input type="text" id="campaign_name" class="form-control"
-                                                    placeholder="Campaign Name" name="campaign_name"  value="{{ old('campaign_name', $campaign_name) }}" autocomplete="off" />
-                                                <h5><small class="text-danger" id="campaign_name_err"></small></h5>
-                                                @error('campaign_name')
+                                                <label for="campaign_type">Campaign Type<span style="color:red;">*</span></label>
+                                                <?php 
+                                                $Campaign_Types  = array('Email', 'Whatsapp', 'SMS', 'Social Media(Text)', 'Ad Campaign (Text)' );
+                                                ?>
+                                                <select id="campaign_type" name="campaign_type" class="select2 form-control">
+                                                    <option value="">Select Campaign Type</option>
+                                                    <?php 
+                                                    foreach ($Campaign_Types as $key => $value)
+                                                    {
+                                                        // old('position',$position)
+                                                        $selected = '';
+                                                        if(old('position',$campaign_type ) == $value){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $value; ?>" <?php echo $selected; ?>><?php echo ucfirst($value); ?></option>
+                                                        <?php 
+                                                    }
+                                                    ?>
+                                                </select>
+                                                    <h5><small class="text-danger" id="campaign_type_err"></small></h5>
+                                                @error('campaign_type')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
-                                        </div> --}}
+                                        </div>
+
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
@@ -117,7 +158,7 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="start_date">Start Date<span style="color:red;">*</span></label>
+                                                <label for="start_date">Campaign Start Date<span style="color:red;">*</span></label>
                                                 <input type="date" id="start_date" class="form-control"
                                                     placeholder="Start Date" name="start_date"
                                                     value="{{ old('start_date', $start_date ? \Carbon\Carbon::parse($start_date)->format('Y-m-d') : '') }}" 
@@ -131,7 +172,7 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="end_date">End Date<span style="color:red;">*</span></label>
+                                                <label for="end_date">Campaign End Date<span style="color:red;">*</span></label>
                                                 <input type="date" id="end_date" class="form-control"
                                                     placeholder="End Date" name="end_date"
                                                     value="{{ old('end_date', $end_date ? \Carbon\Carbon::parse($end_date)->format('Y-m-d') : '') }}"  

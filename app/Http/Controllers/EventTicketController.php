@@ -69,7 +69,7 @@ class EventTicketController extends Controller
                 $ResponseData['PriceTaxesStatus'] = $PriceTaxesStatus;
                 //-------------------------------------------------
                 
-                $Sql = "SELECT name,start_time,city,event_registration_status,overall_limit FROM events WHERE id=:event_id";
+                $Sql = "SELECT name,start_time,city,event_registration_status,overall_limit,prices_taxes_status FROM events WHERE id=:event_id";
                 $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
 
                 $overall_limit = !empty($EventData) ? (int)$EventData[0]->overall_limit : 0;
@@ -86,6 +86,12 @@ class EventTicketController extends Controller
                     $event->city_name = !empty($event->city) ? $master->getCityName($event->city) : "";
                     $event->total_booking_registration = $total_booking_registration;
                     $event->overall_limit = !empty($event->overall_limit) ? (int)$event->overall_limit : 0;
+
+                    if($event->prices_taxes_status == 2){
+                        $event->prices_taxes_status = 'Exclusive of Taxes';
+                    }else{
+                        $event->prices_taxes_status = 'Inclusive of Taxes';
+                    }
                 }
                 $ResponseData['EventData'] = $EventData;
 
@@ -1240,7 +1246,7 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_array)
+    function sendBookingMail($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_array, $send_email_status=0)
     {
         // $Email1 = new Emails();
         // $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $UserEmail, $flag);
@@ -1370,7 +1376,7 @@ class EventTicketController extends Controller
         // Output the filled message
         //dd($MessageContent);
         $Email = new Emails();
-        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status);
 
         // $msg = $UserId.'---'.$tAttendeeResult.'---'.$MessageContent.'---'.$Subject.'---'.$flag.'---'.$UserEmail;
         // $Email2 = new Emails();
@@ -1443,7 +1449,7 @@ class EventTicketController extends Controller
                 // echo $MessageContent.'<br><br>';
                 if (!empty($attendee_email) && strtolower($UserEmail) != strtolower($attendee_email)) {
                     $Email = new Emails();
-                    $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag);
+                    $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag, $send_email_status);
                 }
 
                 // $Email2 = new Emails();
@@ -2312,7 +2318,7 @@ class EventTicketController extends Controller
 
                 if (!empty($user_email)) {
 
-                    $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag = 1, $attendee_array);
+                    $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag = 1, $attendee_array, $send_email_status = 1);
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
                     $up_sSQL = 'UPDATE booking_payment_details SET `send_email_flag` = 1 WHERE `id`=:booking_pay_id ';
                     DB::update(

@@ -73,64 +73,77 @@ class MasterOrganiser extends Model
         return $a_return;
     }
 
-    // public static function update_role_master($iId, $request)
-	// {
-       
-    //     $ssql = 'UPDATE role_master SET 
-    //     name = : name,
-    //     WHERE id=:id';
+    
+    public static function add_organiser($request)
+	{
+    
+        $ssql = 'INSERT INTO organizer(name,email,mobile,about,contact_person,contact_no,gst,gst_number,gst_percentage,created_at)
+        VALUES ( :name,:email,:mobile,:about,:contact_person,:contact_no,:gst,:gst_number,:gst_percentage,:created_at)';
 
-    //     $bindings = array(
-    //         'name' => $request->role_name,
-    //         'id' => $iId
-    //     );
-    //     // dd($bindings);
-    //     $Result = DB::update($ssql, $bindings);
-	// }
-
-    // public static function add_role_master($request)
-	// {
-       
-    //     $ssql = 'INSERT INTO role_master(name)
-    //             VALUES ( :name )';
+        $bindings = array(
+            'name' => !empty($request->organiser_name) ? $request->organiser_name : '',
+            'email' => !empty($request->email) ? $request->email : '',
+            'mobile' => !empty($request->contact_number) ? $request->contact_number : '',
+            'about' => !empty($request->about) ? $request->about : '',
+            'contact_person' => !empty($request->contact_person_name) ? $request->contact_person_name : '',
+            'contact_no' => !empty($request->contact_person_contact) ? $request->contact_person_contact : '',
+            'gst' => !empty($request->gst) ? $request->gst : '',
+            'gst_number' => !empty($request->gst_number) ? $request->gst_number : '',
+            'gst_percentage' =>!empty(($request->contact_gst_percentage)) ? ($request->contact_gst_percentage).".00" : '',
+            'created_at'  => strtotime('now'),
+        );
         
-    //     $bindings = array(
-    //         'name' => $request->role_name,
-    //     );
-     
-    //     $Result = DB::insert($ssql,$bindings);
+        $Result = DB::insert($ssql,$bindings);
         
-	// }
+	}
 
-    // public static function delete_role_master($iId)
-    // {
-       
-    //     if (!empty($iId)) {
-    //         $sSQL = 'UPDATE role_master SET is_deleted = 1 WHERE id=:id';
-    //         $Result = DB::delete(
-    //             $sSQL,
-    //             array(
-    //                 'id' => $iId
-    //             )
-    //         );
-    //         // dd($Result);
-    //     }
-    //     return $Result;
-        
-    // }
+    public static function update_organiser($iId, $request)
+	{
 
-    // public static function change_status_Role($request)
-    // {
-    //     $sSQL = 'UPDATE role_master SET status=:active WHERE id=:id';
-    //     $aReturn = DB::update(
-    //         $sSQL,
-    //         array(
-    //             'active' => $request->status,
-    //             'id' => $request->id
-    //         )
-    //     );
-    //     return $aReturn;
-    // }
+        $ssql = 'UPDATE organizer SET 
+        name = :name,
+        email = :email,
+        mobile = :mobile,
+        about = :about,
+        contact_person = :contact_person,
+        contact_no = :contact_no,
+        gst = :gst,
+        gst_number = :gst_number,
+        gst_percentage = :gst_percentage,
+        created_at = :created_at
+        WHERE id=:id';
+
+        $bindings = array(
+            'name' => !empty($request->organiser_name) ? $request->organiser_name : '',
+            'email' => !empty($request->email) ? $request->email : '',
+            'mobile' => !empty($request->contact_number) ? $request->contact_number : '',
+            'about' => !empty($request->about) ? $request->about : '',
+            'contact_person' =>  !empty($request->contact_person_name) ? $request->contact_person_name : '',
+            'contact_no' =>  !empty($request->contact_person_contact) ? $request->contact_person_contact : '',
+            'gst' => !empty($request->gst) ? $request->gst : '',
+            'gst_number' =>!empty($request->gst_number) ? $request->gst_number : '',
+            'gst_percentage' => !empty(($request->contact_gst_percentage)) ? ($request->contact_gst_percentage).".00" : '',
+            'created_at'  => strtotime('now'),  
+            'id' => $iId
+        );
+        // dd($bindings);
+        $Result = DB::update($ssql, $bindings);
+	}
+
+
+    public static function delete_organiser($iId)
+    {
+        $Result = null; 
+        if (!empty($iId)) {
+            $sSQL = 'DELETE FROM `organizer` WHERE id=:id';
+            $Result = DB::update( $sSQL,array( 'id' => $iId )
+            );
+        }
+        return $Result;
+    }
+
+ 
+    
 
    
 }

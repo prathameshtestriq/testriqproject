@@ -64,18 +64,21 @@ class MarketingController extends Controller
         $a_return['count'] = '';
         $a_return['start_date'] = '';
         $a_return['end_date'] = '';
+        $a_return['event_id'] = '';
+        $a_return['campaign_type'] = '';
       
 
         if (isset($request->form_type) && $request->form_type == 'add_edit_marketing') {
             $rules = [
+                'event' => 'required',
                 'campaign_name' => 'required|unique:marketing,campaign_name,' . $iId . 'id',
+                'campaign_type' => 'required',
                 'count' => 'required',
                 'start_date' => 'required',
                 'end_date' => 'required'
             ];
 
             $request->validate($rules);
-
 
             if ($iId > 0) {
                 MarketingModel::update_marketing($iId, $request);
@@ -90,13 +93,15 @@ class MarketingController extends Controller
         }else{
             if($iId > 0){
             //   #SHOW EXISTING DETAILS ON EDIT
-              $sSQL = 'SELECT id,campaign_name,count,start_date,end_date FROM marketing WHERE id=:id';
+              $sSQL = 'SELECT id,event_id,campaign_name,campaign_type,count,start_date,end_date FROM marketing WHERE id=:id';
               $marketingdetails = DB::select($sSQL, array( 'id' => $iId));
               $a_return = (array)$marketingdetails[0];
              //dd($a_return );
             }
           }      
         
+        $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
+        $a_return['EventsData'] = DB::select($SQL, array());
           
         return view('marketing.create',$a_return);
     }

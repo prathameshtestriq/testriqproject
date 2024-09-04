@@ -128,12 +128,12 @@ class UserController extends Controller
                     'date',
                     function ($attribute, $value, $fail) {
                         $minAge = 18;
-                        $maxAge = 60;
+                        $maxAge = 99;
                         $birthDate = \Carbon\Carbon::parse($value);
                         $age = $birthDate->age;
             
                         if ($age < $minAge || $age > $maxAge) {
-                            $fail('You must be between 18 and 60 years old.');
+                            $fail('You must be between 18 and 99 years old.');
                         }
                     }
                 ],
@@ -143,32 +143,17 @@ class UserController extends Controller
 
             if ($iId > 0) {
                 $rules['firstname'] = 'required|regex:/^[a-zA-Z\s]+$/';
-                $rules['lastname'] = 'required';
-                // $rules['lastname'][] = Rule::unique('users')->ignore($iId, 'id')->where(function ($query) {
-                //     return $query->where('firstname', request()->input('firstname'));
-                // });
+                $rules['lastname'] = 'required';           
                 $rules['email'] = 'required|email:rfc,dns|unique:users,email,'.$iId.',Id';
                 $rules['password'] = 'nullable|confirmed|min:5';
-            } else {
-                // dd( $request->all());
-                
+            } else { 
                 $rules['firstname'] = 'required';
                 $rules['lastname'] = 'required';
-                // $rules['lastname'] = [
-                //     'required',
-                //     Rule::unique('users')->where(function ($query) {
-                //         return $query->where('firstname', request()->input('firstname'));
-                //     }),
-                // ];
                 $rules['email'] = 'required|email:rfc,dns|unique:users';
                 $rules['password'] = 'required|confirmed|min:5';
             }
 
-            // $messages = [
-            //     'firstname.required' => 'The first name field is required.',
-            //     'firstname.regex' => 'The first name can only contain alphabetic characters.',
-            //     'lastname.required' => 'The last name field is required.', 
-            // ];
+          
 
             $request->validate($rules);
 
@@ -238,4 +223,5 @@ class UserController extends Controller
         $filename = "user_report_" . time();
         return Excel::download(new UserExport(),  $filename.'.xlsx');
     }
+    
 }

@@ -116,6 +116,11 @@
                                                     </a>
                                                 @endif
                                             </div>
+
+                                            <div class="col-sm-4 mt-2 float-right">
+                                                <a href="{{ url('organiser_master/add') }}" class="btn btn-outline-primary float-right pr-2">
+                                                    <i data-feather="plus"></i><span>Add</span></a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -153,15 +158,13 @@
                                                 <td class="text-left">{{ ucfirst($val->email) }}</td>
                                                 <td class="text-left">{{ $val->mobile }}</td>
                                                 <td class="text-left">{{ $val->gst_number }}</td>
-                                                {{-- <td class="text-center">
+                                                <td class="text-center">
                                                     <a href="{{ url('organiser_master/edit', $val->id) }}"><i
                                                         class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
-                                                </td> --}}
-                                                <td>
-                                                    <!-- <a href="http://localhost:3000/in/Nashik/<?php //echo $val->id; ?>/<?php //echo $val->user_email; ?>/<?php //echo $val->user_password; ?>" target="_blank">
-                                                        <i class="fa fa-eye btn btn-primary btn-sm" title="Login As Organiser"></i>
-                                                    </a> -->
+                                                        <i class="fa fa-trash-o btn btn-danger btn-sm"
+                                                        onclick="delorganiser({{ $val->id }})" title="delete"></i>
                                                 </td>
+                                               
                                             </tr>
                                       <?php }
                                     }else{?>
@@ -187,3 +190,17 @@
 @endsection
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+     function delorganiser(id) {
+        // alert(id);
+        var url = '<?php echo url('organiser_master/delete'); ?>';
+        url = url + '/' + id;
+        //    alert(url);
+        bConfirm = confirm('Are you sure you want to remove organiser ?');
+        if (bConfirm) {
+            window.location.href = url;
+        } else {
+            return false;
+        }
+     }
+</script>

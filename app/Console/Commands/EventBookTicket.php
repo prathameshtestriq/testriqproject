@@ -31,11 +31,14 @@ class EventBookTicket extends Command
     {
         // \Log::info("is log working");
 
-        $Sql = 'SELECT id,created_by,payment_status,event_id FROM booking_payment_details WHERE id NOT IN(select booking_pay_id from event_booking where booking_pay_id = booking_payment_details.id)';
+        $today = date('Y-m-d');
+        $startTime = strtotime(date('Y-m-d 00:00:00', strtotime($today)));
+        $endTime = strtotime(date('Y-m-d 23:59:59', strtotime($today)));
+
+        $Sql = 'SELECT id,created_by,payment_status,event_id,created_datetime FROM booking_payment_details WHERE id NOT IN(select booking_pay_id from event_booking where booking_pay_id = booking_payment_details.id) AND created_datetime BETWEEN '.$startTime.' AND '.$endTime.' ';
         $aResult = DB::select($Sql);
        
-        // $ss = array_column($aResult,'id');
-        //  dd(implode(",",$ss));
+        // dd($aResult);
         if (!empty($aResult)) {
 
             foreach($aResult as $res){
@@ -47,14 +50,14 @@ class EventBookTicket extends Command
 
                 $Sql1 = 'SELECT id FROM event_booking WHERE booking_pay_id = ' . $booking_pay_id . ' ';
                 $eventBookingResult = DB::select($Sql1);
-                // dd($eventBookingResult);
+                //dd($eventBookingResult);
                 $new_registration_id_array = []; 
                 if (empty($eventBookingResult)) {
                     // $BookingProcess = PaymentGatwayController::book_tickets_third_party($booking_pay_id, $UserId);
                     $BookingPaymentId = !empty($booking_pay_id) ? $booking_pay_id : 0;
                     $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                     $BookingPayment = DB::select($sql, array('booking_pay_id' => $BookingPaymentId));
-                    
+                    // dd($BookingPayment);
                     if (!empty($BookingPayment) && count($BookingPayment) > 0) {
                         $EventId = $BookingPayment[0]->event_id;
                         $TotalAttendee = $BookingPayment[0]->total_attendees;
@@ -71,13 +74,13 @@ class EventBookTicket extends Command
                         //     $TransactionStatus = 3; // Free Transaction
                         // }
 
-                        if($payment_status == 'Initiate'){
+                        if($payment_status == 'initiate'){
                             $TransactionStatus = 0; 
-                        }else if($payment_status == 'Success'){
+                        }else if($payment_status == 'success'){
                             $TransactionStatus = 1; 
-                        }else if($payment_status == 'Fail'){
+                        }else if($payment_status == 'failure'){
                             $TransactionStatus = 2; 
-                        }else if($payment_status == 'Free'){
+                        }else if($payment_status == 'free'){
                             $TransactionStatus = 3; 
                         }else{
                            $TransactionStatus = 0;   
@@ -363,7 +366,7 @@ class EventBookTicket extends Command
 
                         //-------------------------- send email
                         if($TransactionStatus == 1){
-                            $SendEmail = app('App\Http\Controllers\Api\PaymentGatwayController')->send_email_payment_success($booking_pay_id,$BookEventId,$UserId);
+                            $SendEmail = app('App\Http\Controllers\Api\PaymentGatwayController')->send_email_payment_success($booking_pay_id, $BookEventId, $UserId, $send_email_status=3);
                         }
                        
                     }

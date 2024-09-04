@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\RemittanceManagementExport;
+use App\Exports\RemittanceSampleExport;
 use App\Imports\RemittanceDetailsImport;
 use App\Models\RemittanceManagement;
 use Illuminate\Http\Request;
@@ -146,6 +147,10 @@ class RemittanceManagementController extends Controller
     public function export_remittance_management(){
         $filename = "remittance_report_" . time();
         return Excel::download(new RemittanceManagementExport(),  $filename.'.xlsx');
+    }
+    public function sample_excel_export(){
+        $filename = "remittance_sample_report_" . time();
+        return Excel::download(new RemittanceSampleExport(),  $filename.'.xlsx');
     }
 
       //-------------- remittance import ---------------------

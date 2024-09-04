@@ -41,8 +41,12 @@ class ParticipantsEventExport implements FromArray, WithHeadings, ShouldAutoSize
         FROM attendee_booking_details a
         LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
         Inner JOIN event_booking AS e ON b.booking_id = e.id
-        WHERE b.event_id = '.$eventId;
-
+        WHERE 1=1';
+       
+        if(!empty($eventId)){
+            $sSQL .= ' AND b.event_id = '.$eventId;
+        }
+         
         // Add conditions based on session data
         if (!empty($participant_name)) {
             $sSQL .= ' AND (LOWER((CONCAT(a.firstname, " ", a.lastname))) LIKE \'%' . strtolower($participant_name) . '%\')';
@@ -108,8 +112,13 @@ class ParticipantsEventExport implements FromArray, WithHeadings, ShouldAutoSize
     public function headings(): array
     {
         $eventId = $this->eventId;
-        $sSQL = 'SELECT name FROM events where id = '.$eventId;
-        $event_name = DB::select($sSQL ,array()); 
+        if(isset($eventId) && !empty($eventId)){
+            $sSQL = 'SELECT name FROM events where id = '.$eventId;
+            $aEventResult = DB::select($sSQL ,array()); 
+            $event_name = !empty($aEventResult) ? $aEventResult[0]->name : ''; 
+        }else{
+            $event_name = 'All Events';
+        }
 
             // Collect session data for filtering
             $participant_name = Session::has('participant_name') ? Session::get('participant_name') : '';
@@ -125,7 +134,11 @@ class ParticipantsEventExport implements FromArray, WithHeadings, ShouldAutoSize
             $sSQL = 'SELECT count(a.id) as count FROM attendee_booking_details a
             LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
             Inner JOIN event_booking AS e ON b.booking_id = e.id
-            WHERE b.event_id = '.$eventId;
+            WHERE 1=1 ';
+
+            if(!empty($eventId)){
+                $sSQL .= ' AND b.event_id = '.$eventId;
+            }
     
             // Add conditions based on session data
             if (!empty($participant_name)) {
@@ -160,7 +173,7 @@ class ParticipantsEventExport implements FromArray, WithHeadings, ShouldAutoSize
           
       
         return [
-            ['Event Name : ' . $event_name[0]->name],
+            ['Event Name : ' . $event_name],
             ['Participant Count : ' .$event_participants[0]->count],
             [],
             [

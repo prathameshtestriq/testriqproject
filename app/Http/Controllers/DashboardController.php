@@ -71,7 +71,7 @@ class DashboardController extends Controller
             // dd($StartDate, $EndDate);
         }
 
-        //Net Sales && Total Participants
+        //------------------------------- Net Sales && Total Participants
         $SQL1 = "SELECT IFNULL(SUM(b.quantity), 0) AS NetSales 
         FROM booking_details AS b
         LEFT JOIN event_booking AS e ON b.booking_id = e.id
@@ -96,10 +96,29 @@ class DashboardController extends Controller
         $aReturn['NetSales'] = $NetSales;
 
 
-        #Registration && Net Earnings
-        $SQL2 = "SELECT COUNT(e.id) AS TotalRegistration,SUM(e.total_amount) AS TotalAmount FROM event_booking AS e 
-        LEFT JOIN booking_details AS b ON b.booking_id = e.id
-        WHERE e.transaction_status IN (1,3)";
+        #-------------------------------- Registration && Net Earnings
+        // $SQL2 = "SELECT COUNT(e.id) AS TotalRegistration,SUM(e.total_amount) AS TotalAmount FROM event_booking AS e 
+        // LEFT JOIN booking_details AS b ON b.booking_id = e.id
+        // WHERE e.transaction_status IN (1,3)";
+        
+        // if ($aReturn['search_filter'] !== "") {
+        //     if (isset($StartDate) && isset($EndDate)) {
+        //         $SQL2 .= ' AND e.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+        //     }
+        // }
+        // if (!empty($aReturn['search_category'])) {
+        //     $SQL2 .= ' AND b.ticket_id =' . $aReturn['search_category'];
+        // }
+       
+        // if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+        //     $SQL2 .= ' AND e.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+        // }
+        // if (!empty($aReturn['search_event_name'])) {
+        //     $SQL2 .= ' AND e.event_id =' . $aReturn['search_event_name'];
+        // }
+        
+        $SQL2 = "SELECT DISTINCT(e.id) AS TotalRegistration ,e.total_amount AS TotalAmount,e.transaction_status FROM booking_details AS b LEFT JOIN event_booking AS e ON b.booking_id = e.id WHERE e.transaction_status IN (1,3)";
+              
         if ($aReturn['search_filter'] !== "") {
             if (isset($StartDate) && isset($EndDate)) {
                 $SQL2 .= ' AND b.booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
@@ -108,24 +127,48 @@ class DashboardController extends Controller
         if (!empty($aReturn['search_category'])) {
             $SQL2 .= ' AND b.ticket_id =' . $aReturn['search_category'];
         }
-       
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
-            $SQL2 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+            $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
         }
         if (!empty($aReturn['search_event_name'])) {
-            $SQL2 .= ' AND e.event_id =' . $aReturn['search_event_name'];
+            $SQL2 .= ' AND b.event_id =' . $aReturn['search_event_name'];
         }
+        
         $TotalRegistration = DB::select($SQL2, array());
-        $aReturn['TotalRegistration'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistration : 0;
+        
+        $total_net_earning_amount = 0;
+        if(!empty($TotalRegistration)){
+            foreach($TotalRegistration as $res){
+                $total_net_earning_amount += !empty($res->TotalAmount) ? $res->TotalAmount : 0;
+            }
+        }
+
+        // echo $SQL2; die;
+        $TotalRegistration = DB::select($SQL2, array());
+        $aReturn['TotalSuccessRegistration'] = !empty($TotalRegistration) ? count($TotalRegistration) : 0;
         $aReturn['TotalAmount1'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalAmount : 0;
-        $aReturn['TotalAmount'] = number_format($aReturn['TotalAmount1'], 2);
+        $aReturn['TotalAmount'] = number_format($total_net_earning_amount, 2);
         // dd($aReturn['TotalAmount']);
 
-        // Total Registration Users
+        //---------------------------------- Total Registration Users
         $SQL5 = "SELECT COUNT(id) AS TotalRegistrationUsers FROM event_booking WHERE 1=1";
+       
         if (!empty($aReturn['search_event_name'])) {
             $SQL5 .= ' AND event_id =' . $aReturn['search_event_name'];
         }
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL5 .= ' AND booking_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            }
+        }
+        // if (!empty($aReturn['search_category'])) {
+        //     $SQL5 .= ' AND id = IFNULL((select booking_id from booking_details where booking_id = event_booking.id and ticket_id = '.$aReturn['search_category'].'),0)';
+        // }
+       
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $SQL5 .= ' AND booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+        }
+         //dd($SQL5);
         $TotalRegistration = DB::select($SQL5, array());
         $TotalRegistrationCount = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalRegistrationUsers : 0;
 
@@ -147,7 +190,9 @@ class DashboardController extends Controller
         if (!empty($aReturn['search_event_name'])) {
             $SQL6 .= ' AND e.event_id =' . $aReturn['search_event_name'];
         }
+        // dd($SQL6);
         $TotalRegistrationUsersWithSuccess = DB::select($SQL6, array());
+        // dd($TotalRegistrationUsersWithSuccess);
         $TotalRegistrationUsersWithSuccessCount = (count($TotalRegistrationUsersWithSuccess) > 0) ? $TotalRegistrationUsersWithSuccess[0]->TotalRegistrationUsersWithSuccess : 0;
 
         // Calculate percentage
@@ -159,7 +204,7 @@ class DashboardController extends Controller
         $aReturn['SuccessPercentage'] = $percentage;
         // dd($aReturn['SuccessPercentage']);
 
-        // PAGE VIEWS
+        //------------------------------- PAGE VIEWS
         $SQL8 = "SELECT COUNT(id) AS TotalPageViews FROM page_views WHERE 1=1";
         if ($aReturn['search_filter'] !== "") {
             if (isset($StartDate) && isset($EndDate)) {
@@ -177,102 +222,231 @@ class DashboardController extends Controller
         $aReturn['TotalPageViews'] = (count($TotalPageViews) > 0) ? $TotalPageViews[0]->TotalPageViews : 0;
 
 
-        #Total Number Of Events
+        #-------------------------- Total Number Of Events
         $SQL9 = 'SELECT Count(id) as TotalEventCount FROM events WHERE active = 1 AND deleted = 0';
         if (!empty($aReturn['search_event_name'])) {
             $SQL9 .= ' AND id =' . $aReturn['search_event_name'];
         }
+
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL9 .= ' AND start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            // $SQL9 .= ' AND start_time BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+            $SQL9 .= ' AND start_time >= ' . $aReturn['search_from_date'] . ' AND end_time < ' . $aReturn['search_to_date'];
+        }
+        if (!empty($aReturn['search_category'])) {
+            $SQL9 .= ' AND id = (select event_id from event_tickets where event_id = events.id and id = '.$aReturn['search_category'].')';
+        }
+        // dd($SQL9);
         $TotalNumberEvents = DB::select($SQL9, array());
         $aReturn['TotalNumberEvents'] = (count($TotalNumberEvents) > 0) ? $TotalNumberEvents[0]->TotalEventCount : 0;
         // dd(   $aReturn['TotalNumberEvents'] );
 
-        #Live Events
+        #------------------------ Live Events
         $SQL10 = 'SELECT Count(id) as TotalLiveEventCount FROM events WHERE active = 1 AND event_info_status = 1';
         if (!empty($aReturn['search_event_name'])) {
             $SQL10 .= ' AND id =' . $aReturn['search_event_name'];
         }
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL10 .= ' AND start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $SQL10 .= ' AND start_time >= ' . $aReturn['search_from_date'] . ' AND end_time < ' . $aReturn['search_to_date'];
+        }
+        if (!empty($aReturn['search_category'])) {
+            $SQL10 .= ' AND id = (select event_id from event_tickets where event_id = events.id and id = '.$aReturn['search_category'].')';
+        }
+
         $TotalNumberLiveEvents = DB::select($SQL10, array());
         $aReturn['TotalNumberLiveEvents'] = (count($TotalNumberLiveEvents) > 0) ? $TotalNumberLiveEvents[0]->TotalLiveEventCount : 0;
         // dd(    $aReturn['TotalNumberLiveEvents']  );
 
-        #Draft Events
-        $SQL10 = 'SELECT Count(id) as TotalDraftEventCount FROM events WHERE active = 1 AND event_info_status = 3';
+        #---------------------------- Draft Events
+        $SQL101 = 'SELECT Count(id) as TotalDraftEventCount FROM events WHERE active = 1 AND event_info_status = 3';
         if (!empty($aReturn['search_event_name'])) {
-            $SQL10 .= ' AND id =' . $aReturn['search_event_name'];
+            $SQL101 .= ' AND id =' . $aReturn['search_event_name'];
         }
-        $TotalNumberDraftEvents = DB::select($SQL10, array());
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL101 .= ' AND start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $SQL101 .= ' AND start_time >= ' . $aReturn['search_from_date'] . ' AND end_time < ' . $aReturn['search_to_date'];
+        }
+        if (!empty($aReturn['search_category'])) {
+            $SQL101 .= ' AND id = (select event_id from event_tickets where event_id = events.id and id = '.$aReturn['search_category'].')';
+        }
+
+        $TotalNumberDraftEvents = DB::select($SQL101, array());
         $aReturn['TotalNumberDraftEvents'] = (count($TotalNumberDraftEvents) > 0) ? $TotalNumberDraftEvents[0]->TotalDraftEventCount : 0;
         // dd(    $aReturn['TotalNumberDraftEvents']  );
 
-        #Private Events
-        $SQL10 = 'SELECT Count(id) as TotalPrivateEventCount FROM events WHERE active = 1 AND event_info_status = 2';
+        #------------------------------ Private Events
+        $SQL102 = 'SELECT Count(id) as TotalPrivateEventCount FROM events WHERE active = 1 AND event_info_status = 2';
         if (!empty($aReturn['search_event_name'])) {
-            $SQL10 .= ' AND id =' . $aReturn['search_event_name'];
+            $SQL102 .= ' AND id =' . $aReturn['search_event_name'];
         }
-        $TotalNumberPrivateEvents = DB::select($SQL10, array());
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL102 .= ' AND start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $SQL102 .= ' AND start_time >= ' . $aReturn['search_from_date'] . ' AND end_time < ' . $aReturn['search_to_date'];
+        }
+        if (!empty($aReturn['search_category'])) {
+            $SQL102 .= ' AND id = (select event_id from event_tickets where event_id = events.id and id = '.$aReturn['search_category'].')';
+        }
+
+        $TotalNumberPrivateEvents = DB::select($SQL102, array());
         $aReturn['TotalNumberPrivateEvents'] = (count($TotalNumberPrivateEvents) > 0) ? $TotalNumberPrivateEvents[0]->TotalPrivateEventCount : 0;
         // dd(    $aReturn['TotalNumberPrivateEvents']  );
 
-        #Total Number Users
+        #-------------------------------------- Total Number Users
         $SQL11 = 'SELECT Count(id) as TotalUserCount FROM users WHERE is_active = 1 AND is_deleted = 0';
+        
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL11 .= ' AND created_at BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $SQL11 .= ' AND created_at BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+        }
+
+        if (!empty($aReturn['search_event_name'])) {
+            $SQL11 .= ' AND id = (select created_by from events where id = '.$aReturn['search_event_name'].') ';
+        }
+
+        // if (!empty($aReturn['search_category'])) {
+        //     $SQL11 .= ' AND id = IFNULL((select user_id from booking_details where user_id = users.id and ticket_id = '.$aReturn['search_category'].'),0)';
+        // }
+
         $TotalNumberUsers = DB::select($SQL11, array());
+       // dd($TotalNumberUsers);
         $aReturn['TotalNumberUsers'] = (count($TotalNumberUsers) > 0) ? $TotalNumberUsers[0]->TotalUserCount : 0;
         // dd(   $aReturn['TotalNumberUsers'] );
 
-        #Remitted Amount
-        $SQL12 = 'SELECT sum(amount_remitted) as amount_remitted FROM remittance_management WHERE active = 1';
+        #------------------------------------------- Remitted Amount
+        $SQL12 = 'SELECT sum(gross_amount) as amount_remitted FROM remittance_management WHERE active = 1';
+
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL12 .= ' AND remittance_date BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $SQL12 .= ' AND remittance_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+        }
+        if (!empty($aReturn['search_event_name'])) {
+            $SQL12 .= ' AND event_id =' . $aReturn['search_event_name'];
+        }
+
         $TotalRemittedAmount1 = DB::select($SQL12, array());
+       
         $TotalRemittedAmount2 = (count($TotalRemittedAmount1) > 0) ? $TotalRemittedAmount1[0]->amount_remitted : 0;
         ;
         $aReturn['TotalRemittedAmount'] = number_format($TotalRemittedAmount2, 2);
         //dd($aReturn['TotalRemittedAmount']);
 
-        // payment count
+        //----------------------------------- Payment Count
         $sql17 = "SELECT count(p.id) AS paymentId FROM booking_payment_details AS p 
         LEFT JOIN users AS u ON u.id=p.created_by
         WHERE 1=1";
+      
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $sql17 .= ' AND p.created_datetime BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $sql17 .= ' AND p.created_datetime BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+        }
         if (!empty($aReturn['search_event_name'])) {
             $sql17 .= ' AND p.event_id =' . $aReturn['search_event_name'];
         }
+        // if (!empty($aReturn['search_category'])) {
+        //     $sql17 .= ' AND p.id = IFNULL((select booking_pay_id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id where eb.booking_pay_id = p.id and bd.ticket_id = '.$aReturn['search_category'].'),0)';
+        // }
+
         $sql17 .= ' ORDER BY p.id DESC';
+
         $PaymentData = DB::select($sql17, array());
-    
         $aReturn['PaymentData'] = (count($PaymentData) > 0) ? $PaymentData[0]->paymentId : [];
         // dd( $aReturn['PaymentData']);
 
 
         #Category Booking Data bar chart table details and barchart details
-        $SQL13 = "SELECT b.ticket_id,b.event_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice
-        FROM booking_details AS b
-        LEFT JOIN event_booking AS e ON b.booking_id = e.id
-        WHERE e.transaction_status IN (1,3)";
+        // $SQL13 = "SELECT b.ticket_id,b.event_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice
+        // FROM booking_details AS b
+        // LEFT JOIN event_booking AS e ON b.booking_id = e.id
+        // WHERE e.transaction_status IN (1,3)";
+        // if ($aReturn['search_filter'] !== "") {
+        //     if (isset($StartDate) && isset($EndDate)) {
+        //         $SQL13 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+        //     }
+        // }
+        // if (!empty($aReturn['search_category'])) {
+        //     $SQL13 .= ' AND b.ticket_id =' . $aReturn['search_category'];
+        // }
+        // if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+        //     $SQL13 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+        // }
+
+        // if (!empty($aReturn['search_event_name'])) {
+        //     $SQL13 .= ' AND b.event_id =' . $aReturn['search_event_name'];
+        // } else {
+        //     $SQL13 .= ' AND 1=2';
+        // }
+        // $SQL13 .= " GROUP BY b.ticket_id";
+
+        $SQL13 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,SUM(bd.quantity) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id) AS TicketPrice
+                FROM event_booking AS e LEFT JOIN booking_details AS bd ON bd.booking_id = e.id
+                WHERE e.transaction_status IN (1,3) AND bd.ticket_amount != '0.00' AND bd.quantity != 0 ";
+
         if ($aReturn['search_filter'] !== "") {
             if (isset($StartDate) && isset($EndDate)) {
-                $SQL13 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                $SQL13 .= " AND e.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
             }
         }
         if (!empty($aReturn['search_category'])) {
-            $SQL13 .= ' AND b.ticket_id =' . $aReturn['search_category'];
+            $SQL13 .= ' AND bd.ticket_id =' . $aReturn['search_category'];
         }
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
-            $SQL13 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+            $SQL13 .= ' AND e.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
 
         if (!empty($aReturn['search_event_name'])) {
-            $SQL13 .= ' AND b.event_id =' . $aReturn['search_event_name'];
+            $SQL13 .= ' AND e.event_id =' . $aReturn['search_event_name'];
         } else {
             $SQL13 .= ' AND 1=2';
         }
-        $SQL13 .= " GROUP BY b.ticket_id";
+
+        $SQL13 .= " GROUP BY bd.ticket_id"; // e.id,
+
         $BookingData = DB::select($SQL13, array());
 
-        foreach ($BookingData as $key => $value) {
-            $value->TicketCount = (int) $value->TicketCount;
-            $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
-            $value->PendingCount = ((int)$value->total_quantity-(int)$value->TicketCount);
-            $value->SingleTicketPrice = $value->TicketPrice;
+        // dd($BookingData);
+        $net_earning_amt = 0;
+        if(!empty($BookingData)) {
+            foreach ($BookingData as $key => $value) {
+                $value->TicketCount = (int) $value->TicketCount;
+                $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
+                $value->PendingCount = ((int)$value->total_quantity-(int)$value->TicketCount);
+                $value->SingleTicketPrice = $value->TicketPrice;
+                $net_earning_amt += $value->TotalAmount;
+            }
         }
+        
         $aReturn['BookingData'] = (count($BookingData) > 0) ? $BookingData : [];
+
+        $aReturn['NetEarningAmt'] = !empty($net_earning_amt) ? number_format($net_earning_amt,2) : 0;
         // dd( $aReturn['BookingData']);
 
         #Total active Event
@@ -477,7 +651,7 @@ class DashboardController extends Controller
         $total_convenience_fee = ($Platform_fee + $Platform_Fee_GST + $Convenience_fee + $Convenience_Fee_GST);
            
         // dd($Organiser_amount);
-        $aReturn['OrganiserAmount'] = !empty($Organiser_amount) ? $Organiser_amount : 0;
+        $aReturn['OrganiserAmount'] = !empty($Organiser_amount) ? number_format($Organiser_amount,2) : 0;
         $aReturn['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $total_payment_gateway : 0;
         $aReturn['TotalConvenience'] = !empty($total_convenience_fee) ? number_format($total_convenience_fee,2) : 0;
        

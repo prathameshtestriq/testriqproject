@@ -52,7 +52,7 @@ class PaymentLogModel extends Model
 
     public static function get_all($limit, $a_search = array()){
         $a_return = [];
-        $s_sql = "SELECT p.id AS paymentId,p.txnid,p.amount,p.payment_status,p.created_datetime,u.id AS userId,u.firstname,u.lastname,u.email,u.mobile 
+        $s_sql = "SELECT p.id AS paymentId,p.txnid,p.amount,p.post_data,p.payment_status,p.created_datetime,u.id AS userId,u.firstname,u.lastname,u.email,u.mobile
         FROM booking_payment_details AS p 
         LEFT JOIN users AS u ON u.id=p.created_by
         WHERE 1=1";

@@ -196,16 +196,25 @@ class EventController extends Controller
             'state' => 'required|string',
             'country' => 'required|string',
             'address' => 'required|string',
-            'event_url' => 'required|string',
+            // 'event_url' => 'required|string',
+            'event_url' => [
+                'required',
+                'regex:/^(www\.|http:\/\/|https:\/\/).*/i', 
+            ],
             'event_description' => 'required|string',
             'event_keywords' => 'required|string',
             'time_zone' => 'required|string',
 
         ];
 
+        $message = [ 
+            'event_url.required' => 'The Event URL field is required.',
+            'event_url.regex' => 'The Event URL must start with "www.", "http://", or "https://".',
+        ]; 
+
         // Form handling
         if ($request->form_type == 'add_edit_event') {
-            $validatedData = $request->validate($rules);
+            $validatedData = $request->validate($rules,$message);
            // $Category = isset($request->category_id) ? $request->category_id : [];
             
             // Extracting values from request
@@ -218,7 +227,7 @@ class EventController extends Controller
            // $active = $validatedData['active'];
             $address = $validatedData['address'];
             $event_url = $request->event_url;
-            $description = !empty($request->event_description)?strip_tags($request->event_description):'';
+            $description = !empty($request->event_description)? $request->event_description:'';
             $event_keywords = $request->event_keywords;
             $timezones = $request->time_zone;
            // $active = $request->input('active', 1);
@@ -329,17 +338,30 @@ class EventController extends Controller
         }
    
         $aReturn['timezones_array'] = DB::table('master_timezones')->where('active', 1)->get();
-        $cSql = 'select id,name FROM countries where flag = 1 and id = 101';
-        $aReturn['countries_array'] = DB::select($cSql);
-        $sSql = 'select id,name FROM states where flag = 1 and country_id = 101';
-        $aReturn['states_array'] = DB::select($sSql);
-        $ccSql = 'select id,name FROM cities where show_flag = 1 and country_id = 101';
-        $aReturn['cities_array'] = DB::select($ccSql);
+        $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
+        $aReturn["countries"] = DB::select($sSQL, array());
         $aReturn['Category'] = $Category;
      //      
    //     dd($aReturn['Category']);
         return view('master_data.event.create', $aReturn);
 
+    }
+
+    public function get_states(Request $request){
+        $countryId = $request->get('country_id');
+        // dd($countryId);
+        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $countryId;
+        $states = DB::select($sSQL, array());
+        return response()->json($states);
+        //dd($Return["states"]);
+        // return $Return;
+    }
+    public function get_cities(Request $request){
+        $stateId = $request->get('state_id');
+        $sSQL = 'SELECT id,name,state_id FROM cities WHERE state_id =' .$stateId;
+        $cities = DB::select($sSQL, array());
+        return response()->json($cities);
+        // return $Return;
     }
     public function change_active_status(Request $request)
     {

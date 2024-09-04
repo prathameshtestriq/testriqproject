@@ -163,6 +163,7 @@
                                         <th>Event Name</th>
                                         <th>Event Start Date</th>
                                         <th>Event End Date</th>
+                                        <th>State</th>
                                         <th>City</th>
                                         <th style="text-align: center;">View</th>
                                         <th style="text-align: center;">Status</th>
@@ -177,6 +178,7 @@
                                                 <td>{{ ucfirst($event->name) }}</td>
                                                 <td>{{ date('d-m-Y', $event->start_time) }}</td>
                                                 <td>{{ date('d-m-Y', $event->end_time) }}</td>
+                                                <td>{{ ucfirst($event->state) }}</td>
                                                 <td>{{ ucfirst($event->city) }}</td>
                                                 <td style="text-align: center;">
                                                     <a href={{ url('participants_event', $event->id) }}> 

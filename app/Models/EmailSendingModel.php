@@ -69,9 +69,9 @@ class EmailSendingModel extends Model
 
         $bindings = [
             'event_id' => $eventIds,
-            'subject' => !empty($request->subject)?$request->subject:'',
-            'message' => !empty($request->message)?strip_tags($request->message):'',
-            'recipient_type' => !empty($recipientType)? $recipientType :'0',
+            'subject' => !empty($request->subject) ? $request->subject : '',
+            'message' => !empty($request->message) ? $request->message  :'',
+            'recipient_type' => !empty($recipientType) ? $recipientType : '0',
             'recipient_count' =>  !empty($counts[$recipientType])?$counts[$recipientType]:'0',
             'send_date_type' => !empty($sendEmailDateType)?$sendEmailDateType:'0',
             'sent_date_time' => !empty($sentDateTime)?$sentDateTime:'0',

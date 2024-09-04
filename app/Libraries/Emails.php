@@ -133,7 +133,7 @@ Thank you for your attention to this matter.<br/>";
     }
 
 
-    public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0)
+    public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0, $send_email_status=0)
     {
         $email = new \SendGrid\Mail\Mail();
         $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
@@ -158,7 +158,7 @@ Thank you for your attention to this matter.<br/>";
             }
 
             $send_mail_to = $UserEmail;
-            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response);
+            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response, $send_email_status);
 
         } catch (Exception $e) {
             echo 'Caught exception: ' . $e->getMessage() . "\n";
@@ -263,7 +263,7 @@ Welcome aboard!
     }
 
 
-    public function save_email_log($type, $send_mail_to, $subject, $message, $response)
+    public function save_email_log($type, $send_mail_to, $subject, $message, $response, $send_email_status=0)
     {
         $responseData = [
             'statusCode' => $response->statusCode(),
@@ -279,6 +279,7 @@ Welcome aboard!
         $email_log->message = $message;
         $email_log->datetime = strtotime("now");
         $email_log->response = json_encode($responseData);
+        $email_log->email_send_status = $send_email_status;
         $email_log->save();
     }
 

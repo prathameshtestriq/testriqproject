@@ -201,185 +201,12 @@
 
 
         <div class="row">
-            <!-- Registrations Successful  -->
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
-                <div class="card m-0 custom-highlight-bg">
-                    <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Registrations Successful</h5>
-                        <div class="row align-items-center mb-0">
-                            <div class="col-sm-6">
+           
+           <!--  <div class="col-12 ">
+                <h3>Event Overview:</h3>
+            </div> -->
 
-                                <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                    {{ $TotalRegistrationUsersWithSuccess }}</h1>   
-                                    <p class="text-primary canvas1 mt-2"
-                                    style="font-weight:500; position: absolute; bottom: -45px;"><a
-                                        href="{{ url('/registration_successful/'.$search_event_name) }}">View Details</a></p>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/1-registration-successful.png') }}" alt="avatar"
-                                        height="80" width="80">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Participants  -->
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
-                <div class="card m-0 custom-highlight-bg">
-                    <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Total Participants </h5>
-                        <div class="row align-items-center mb-0">
-                            <div class="col-sm-6">
-                                <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $NetSales }}</h1>
-                                        <p class="text-primary canvas1 mt-2"
-                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
-                                            href="{{ url('/participants_event/'.$search_event_name) }}">View Details</a></p>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/2-participants.png') }}" alt="avatar"
-                                        height="80" width="80">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Net Sales -->
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
-                <div class="card m-0 custom-highlight-bg">
-                    <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Net Sales </h5>
-                        <div class="row align-items-center mb-0">
-                            <div class="col-sm-6">
-                                <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $NetSales }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/3-net-sales.png') }}" alt="avatar"
-                                        height="80" width="80">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Net Earnings  -->
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
-                <div class="card m-0 custom-highlight-bg">
-                    <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Net Earnings</h5>
-                        <div class="row align-items-center mb-0">
-                            <div class="col-sm-6">
-                                <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"> <i
-                                            class="fa fa-inr" aria-hidden="true"></i>{{ $TotalAmount }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/4-net-earnings.png') }}" alt="avatar"
-                                        height="80" width="80">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Coversion Rate -->
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
-                <div class="card m-0 custom-highlight-bg">
-                    <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Coversion Rate </h5>
-                        <div class="row align-items-center mb-0">
-                            <div class="col-sm-6">
-                                <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $SuccessPercentage }} %</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/5-converstion-rate.png') }}" alt="avatar"
-                                        height="80" width="80">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page Views  -->
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
-                <div class="card m-0 custom-highlight-bg">
-                    <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Page Views </h5>
-                        <div class="row align-items-center mb-0">
-                            <div class="col-sm-6">
-                                <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $TotalPageViews }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/6-pages-views.png') }}" alt="avatar"
-                                        height="80" width="80">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Registrations -->
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
-                <div class="card m-0 custom-highlight-bg">
-                    <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Total Registrations </h5>
-                        <div class="row align-items-center mb-0">
-                            <div class="col-sm-6">
-                                <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $TotalRegistrationCount }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/7-total-registrations (2).png') }}" alt="avatar"
-                                        height="80" width="80">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Events  -->
+             <!-- Total Events  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
@@ -479,23 +306,23 @@
                 </div>
             </div>
 
-            <!-- Users  -->
+            <!-- Total Registrations -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Total Users</h5>
+                        <h5 class="text-primary mb-0 text-dark">Total Registrations </h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $TotalNumberUsers }}</h1>
+                                        {{ $TotalRegistrationCount }}</h1>
                                     {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/12-users.png') }}" alt="avatar" height="80"
-                                        width="80">
+                                    <img src="{{ asset('uploads/dashboard/7-total-registrations (2).png') }}" alt="avatar"
+                                        height="80" width="80">
                                 </div>
                             </div>
                         </div>
@@ -504,7 +331,192 @@
                 </div>
             </div>
 
-            <!-- Remitted Amount -->
+            <!-- Registrations Successful  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Registrations Successful</h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+
+                                <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                    {{ $TotalSuccessRegistration }}</h1>   
+                                    <p class="text-primary canvas1 mt-2"
+                                    style="font-weight:500; position: absolute; bottom: -45px;"><a
+                                        href="{{ url('/registration_successful/'.$search_event_name) }}">View Details</a></p>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/1-registration-successful.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Total Participants </h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $NetSales }}</h1>
+                                        <p class="text-primary canvas1 mt-2"
+                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
+                                            href="{{ url('/participants_event/'.$search_event_name) }}">View Details</a></p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/2-participants.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+             <!-- Page Views  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Page Views </h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $TotalPageViews }}</h1>
+                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/6-pages-views.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+             <!-- Coversion Rate -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Coversion Rate </h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $SuccessPercentage }} %</h1>
+                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/5-converstion-rate.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+       <!--  </div>
+        
+        <div class="row">
+           
+            <div class="col-12 ">
+                <h3>Financial Summary:</h3>
+            </div> -->
+
+
+            <!-- Net Sales -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Net Sales </h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $NetSales }}</h1>
+                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/3-net-sales.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Net Earnings  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Net Earnings</h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"> <i class="fa fa-inr" aria-hidden="true"></i><?php echo !empty($NetEarningAmt) ? $NetEarningAmt : $TotalAmount; ?> 
+                                    </h1>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/4-net-earnings.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark"> Receivable to Organiser</h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $OrganiserAmount }}</h1>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/17-receivabletoorg.png') }}" alt="avatar"
+                                        height="80" width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+
+             <!-- Remitted Amount -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
@@ -530,41 +542,11 @@
                 </div>
             </div>
 
-           
-
-
             <!-- Payment  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Payment History</h5>
-                        <div class="row align-items-center mb-0">
-                            <div class="col-sm-6">
-                                <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $PaymentData }}</h1>
-                                    <p class="text-primary canvas1 mt-2"
-                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
-                                            href="{{ url('/payment_log') }}">View Details</a></p>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/14-payment.png') }}" alt="avatar"
-                                        height="80" width="80">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Payment  -->
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
-                <div class="card m-0 custom-highlight-bg">
-                    <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Total Payment Gateway</h5>
+                        <h5 class="text-primary mb-0 text-dark">Total Payment Gateway Charges</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
@@ -607,22 +589,64 @@
                     </div>
                 </div>
             </div>
+       
+       <!-- </div>
+       <div class="row">
+           
+            <div class="col-12 ">
+                <h3>User Summary:</h3>
+            </div>  -->
+
+            <!-- Users  -->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
+                <div class="card m-0 custom-highlight-bg">
+                    <div class="card-body ">
+                        <h5 class="text-primary mb-0 text-dark">Total Users</h5>
+                        <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">
+                                <div>
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $TotalNumberUsers }}</h1>
+                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('uploads/dashboard/12-users.png') }}" alt="avatar" height="80"
+                                        width="80">
+                                </div>
+                            </div>
+                        </div>
+                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
+                    </div>
+                </div>
+            </div>
+       
+       <!--  </div>
+        <div class="row">
+           
+            <div class="col-12 ">
+                <h3>Payment Details:</h3>
+            </div> -->
 
             <!-- Payment  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark"> Receivable to Organiser</h5>
+                        <h5 class="text-primary mb-0 text-dark">Payment History</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $OrganiserAmount }}</h1>
+                                        {{ $PaymentData }}</h1>
+                                    <p class="text-primary canvas1 mt-2"
+                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
+                                            href="{{ url('/payment_log') }}">View Details</a></p>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <img src="{{ asset('uploads/dashboard/17-receivabletoorg.png') }}" alt="avatar"
+                                    <img src="{{ asset('uploads/dashboard/14-payment.png') }}" alt="avatar"
                                         height="80" width="80">
                                 </div>
                             </div>
@@ -635,33 +659,11 @@
         </div>
 
        <?php if(!empty($search_event_name)){ ?>
-        <div class="row">
-            <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
-               <div class="card">
-                   <div class="card-body">
-                       
-                       <div class="row">
-                           <div class="col-md-12">
-                               <h4 class="text-dark m-0">Category Wise</h4>
-                           </div>
-                       </div>
-                       
-                       <?php if(!empty($search_event_name) && !empty($BookingData)){ ?>
-                       <div class="card-min-height d-flex align-items-center justify-content-center py-2">
-                           {{-- Enter your data --}}
-                           <div id="container"></div>
-                       </div>
-                       <?php }else{ ?>
-                       <div class="card-min-height d-flex align-items-center justify-content-center py-2">
-                        {{-- Enter your data --}}
-                           <img src="{{ asset('uploads/event_images/no-events.png') }}" width="auto" height="130px"
-                           alt="">
-                       </div>
-                       <?php } ?>
-                   </div>
-               </div>
-           </div>
+       
 
+        <!-- ----------------------------------------------------- -->
+        <div class="row">
+           
             <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
                 <div class="card">
                     <div class="card-body">
@@ -678,11 +680,11 @@
                                   <thead>
                                     <tr>
                                        <th>Category</th>
-                                       <th>Total</th>
-                                       <th>Used</th>
-                                       <th>Pending</th>
-                                       <th>Price</th>
-                                       <th>Total Collection</th>
+                                       <th style="text-align:center;">Total</th>
+                                       <th style="text-align:center;">Used</th>
+                                       <th style="text-align:center;">Pending</th>
+                                       <!-- <th>Price</th> -->
+                                       <th style="text-align:right;">Total Collection</th>
                                    </tr>
                                  </thead>
                                  <tbody class="text-center">
@@ -700,28 +702,28 @@
                                        $TicketCountSum += $val->TicketCount;
                                        $PendingCountSum += $val->PendingCount;
                                        // $SingleTicketPriceSum += $val->SingleTicketPrice;
-                                       $TotalTicketPriceSum += $val->TotalTicketPrice;
+                                       $TotalTicketPriceSum += $val->TotalAmount;
                                              
                                     ?>
                                     <tr>
-                                        <td>{{ $val->TicketName }}</td>
+                                        <td align="left">{{ $val->TicketName }}</td>
                                         <td>{{ $val->total_quantity }}</td>
                                         <td>{{ $val->TicketCount }}</td>
                                         <td>{{ $val->PendingCount }}</td>
-                                        <td> <i class="fa fa-inr" aria-hidden="true"></i>
-                                            {{ $val->SingleTicketPrice }}</td>
-                                        <td> <i class="fa fa-inr" aria-hidden="true"></i>
-                                            {{ $val->TotalTicketPrice }}</td>
+                                        <!-- <td> <i class="fa fa-inr" aria-hidden="true"></i>
+                                            {{ $val->SingleTicketPrice }}</td> -->
+                                        <td align="right"> <i class="fa fa-inr" aria-hidden="true"></i>
+                                           <?php echo !empty($val->TotalAmount) ? number_format($val->TotalAmount,2) : '0.00' ?></td>
                                     </tr>
                                     <?php } ?>
                                     <tr>
-                                        <td><strong>Total</strong></td>
+                                        <td align="left"><strong>Total</strong></td>
                                         <td><strong>{{ $total_quantitySum }}</strong></td>
                                         <td><strong>{{ $TicketCountSum }}</strong></td>
                                         <td><strong>{{ $PendingCountSum }}</strong></td>
-                                        <td><strong> </strong></td>
-                                        <td><strong><i class="fa fa-inr" aria-hidden="true"></i>
-                                          {{ $TotalTicketPriceSum }}</strong></td>
+                                        <!-- <td><strong> </strong></td> -->
+                                        <td align="right"><strong><i class="fa fa-inr" aria-hidden="true"></i>
+                                           <?php echo !empty($TotalTicketPriceSum) ? number_format($TotalTicketPriceSum,2) : '0.00' ?> </strong></td>
    
    
                                     </tr>
@@ -744,6 +746,34 @@
                     </div>
                 </div>
             </div>
+
+            <!------------------------------------ Category Pi chart -------------------------------------------------------->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+               <div class="card">
+                   <div class="card-body">
+                       
+                       <div class="row">
+                           <div class="col-md-12">
+                               <h4 class="text-dark m-0">Number of Categories Sold</h4>
+                           </div>
+                       </div>
+                       
+                       <?php if(!empty($search_event_name) && !empty($BookingData)){ ?>
+                       <div class="card-min-height d-flex align-items-center justify-content-center py-2">
+                           {{-- Enter your data --}}
+                           <div id="container"></div>
+                       </div>
+                       <?php }else{ ?>
+                       <div class="card-min-height d-flex align-items-center justify-content-center py-2">
+                        {{-- Enter your data --}}
+                           <img src="{{ asset('uploads/event_images/no-events.png') }}" width="auto" height="130px"
+                           alt="">
+                       </div>
+                       <?php } ?>
+                   </div>
+               </div>
+           </div>
+
         </div>
        <?php } ?>
 
@@ -790,10 +820,10 @@
                             <table class="table table-striped table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Code</th>
-                                        <th>Total</th>
-                                        <th>Used</th>
-                                        <th>Available</th>
+                                        <th style="text-align: left;">Code</th>
+                                        <th style="text-align: center;">Total</th>
+                                        <th style="text-align: center;">Used</th>
+                                        <th style="text-align: center;">Available</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-center">
@@ -812,17 +842,17 @@
                                     $i++;
                                 ?>
                                 <tr>
-                                    <td>{{ $val->DiscountCode }}</td>
-                                    <td>{{ $val->TotalDiscountCode }}</td>
-                                    <td>{{ $val->CouponCount }}</td>
-                                    <td>{{ $available }}</td>
+                                    <td style="text-align: left;">{{ $val->DiscountCode }}</td>
+                                    <td style="text-align: center;">{{ $val->TotalDiscountCode }}</td>
+                                    <td style="text-align: center;">{{ $val->CouponCount }}</td>
+                                    <td style="text-align: center;">{{ $available }}</td>
                                 </tr>
                                 <?php } ?>
                                 <tr>
-                                    <td><strong>Total</strong></td>
-                                    <td><strong>{{ $totalDiscountCodeSum }}</strong></td>
-                                    <td><strong>{{ $couponCountSum }}</strong></td>
-                                    <td><strong>{{ $availableSum }}</strong></td>
+                                    <td style="text-align: left;"><strong>Total</strong></td>
+                                    <td style="text-align: center;"><strong>{{ $totalDiscountCodeSum }}</strong></td>
+                                    <td style="text-align: center;"><strong>{{ $couponCountSum }}</strong></td>
+                                    <td style="text-align: center;"><strong>{{ $availableSum }}</strong></td>
                                 </tr>
                                 <?php }else{ ?>
                                 <tr>
@@ -841,18 +871,45 @@
         </div>
        <?php } ?>
 
-
-
-
     </section>
+ 
 
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {packages: ['corechart', 'bar']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Category', 'Value'],
+          ['January', 100],
+          ['February', 150],
+          ['March', 200]
+        ]);
+
+        var options = {
+          title: 'Monthly Values',
+          chartArea: {width: '50%'},
+          hAxis: {
+            title: 'Value',
+            minValue: 0
+          },
+          vAxis: {
+            title: 'Category'
+          }
+        };
+
+        var chart = new google.visualization.BarChart(document.getElementById('top_x_div'));
+        chart.draw(data, options);
+      }
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const bookingData = <?php echo json_encode($BookingData); ?>;
             const chartData = bookingData.map(item => ({
                 name: item.TicketName,
-                y: parseFloat(item.total_quantity)
+                y: parseFloat(item.TicketCount)
             }));
 
             Highcharts.chart('container', {
@@ -918,7 +975,7 @@
             //    })
             // });
             Highcharts.setOptions({
-                colors: Highcharts.map(['#FF00FF', '#00FFFF', '#00FF00', '#0000FF', '#FFFF00', '#FF0000'],
+                colors: Highcharts.map(['#2caffe', '#544fc5', '#00FF00', '#0000FF', '#FFFF00', '#FF0000'],
                     function(color) {
                         return {
                             radialGradient: {
@@ -954,11 +1011,12 @@
                         allowPointSelect: true,
                         cursor: 'pointer',
                         dataLabels: {
-                            enabled: false,
-                        }
+                            enabled: true,
+                        },
+                        showInLegend: true
                     }
                 },
-
+              
                 series: [{
                     name: 'Count',
                     data: [{

@@ -379,7 +379,7 @@ class PaymentGatwayController extends Controller
 
     public function payment_verify_transaction_status($tranid)
     {
-        // dd($tranid);
+        //dd($tranid);
 
         //--------------------------------
 
@@ -475,6 +475,16 @@ class PaymentGatwayController extends Controller
                         'Txnid' => $Transaction_id
                     )
                 );
+            }else if ($verify_payment_status == 'failure') {
+                $up_sSQL = 'UPDATE booking_payment_details SET `payment_status` =:verify_payment_status, `payment_mode` =:payment_mode WHERE `txnid`=:Txnid ';
+                DB::update(
+                    $up_sSQL,
+                    array(
+                        'verify_payment_status' => $verify_payment_status,
+                        'payment_mode' => $payment_mode,
+                        'Txnid' => $Transaction_id
+                    )
+                );
             }
 
             //-------- update status for booking_payment_log
@@ -492,11 +502,12 @@ class PaymentGatwayController extends Controller
 
             //-------- event booking table update payment status
             $transaction_status = 0;
-            if ($verify_payment_status == "success") {
+            if ($verify_payment_status == 'success') {
                 $transaction_status = 1;
             } else {
                 $transaction_status = 2;
             }
+
             $up_sSQL = 'UPDATE event_booking SET `transaction_status` =:transaction_status WHERE `booking_pay_id`=:booking_pay_id ';
             DB::update(
                 $up_sSQL,
@@ -575,11 +586,11 @@ class PaymentGatwayController extends Controller
                         "booking_date" => strtotime("now"),
                     );
                     $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
-                    DB::insert($Sql2, $Binding2);
+                    $aResult = DB::insert($Sql2, $Binding2);
                     #Get the last inserted id of booking_details
                     $BookingDetailsId = DB::getPdo()->lastInsertId();
-
                     $BookingDetailsIds[$ticket->id] = $BookingDetailsId;
+                    $new_ticket_id = !empty($aResult[0]->ticket_id) ? $aResult[0]->ticket_id : $ticket->id;
 
                     // ADD IF COUPONS APPLY ON TICKET
                     $appliedCouponId = $appliedCouponAmount = 0;
@@ -747,8 +758,8 @@ class PaymentGatwayController extends Controller
                 $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
                 $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,created_at) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:created_at)";
                 $Bind1 = array(
-                    "booking_details_id" => $IdBookingDetails,
-                    "ticket_id" => $TicketId,
+                    "booking_details_id" => !empty($IdBookingDetails) ? $IdBookingDetails : $BookingDetailsId,
+                    "ticket_id" => !empty($TicketId) ? $TicketId : $new_ticket_id,
                     "attendee_details" => json_encode($value),
                     "email" => $email,
                     "firstname" => $first_name,
@@ -771,7 +782,21 @@ class PaymentGatwayController extends Controller
                 $u_sql = "UPDATE attendee_booking_details SET registration_id=:registration_id WHERE id=:id";
                 $u_bind = DB::update($u_sql, array("registration_id" => $uniqueId, 'id' => $attendeeId));
 
+                //------------ new added
+                $sql1 = "SELECT ticket_name FROM event_tickets WHERE id = :ticket_id";
+                $aResult1 = DB::select($sql1, array("ticket_id" => !empty($TicketId) ? $TicketId : $new_ticket_id));
+                $new_ticket_name_array = !empty($aResult1) ? array_column($aResult1,"ticket_name") : [];
+                $new_registration_id_array[] = $uniqueId;
+
             }
+
+            //------- new added for update ticket_names, registration_ids on 25-06-24 (because send email to reg no, tick name issue so will update this field)
+            $loc_ticket_names = !empty($new_ticket_name_array) ? implode(", ", array_unique($new_ticket_name_array)) : '';
+            $loc_registration_id = !empty($new_registration_id_array) ? implode(", ", $new_registration_id_array) : '';
+             // dd($loc_ticket_names,$loc_registration_id);
+            $up_sql = "UPDATE booking_payment_details SET ticket_names =:ticket_names, registration_ids =:registration_ids  WHERE id=:id";
+            DB::update($up_sql, array("ticket_names" => $loc_ticket_names, "registration_ids" => $loc_registration_id, 'id' => $BookingPaymentId));
+
             // -------------------------------------------END ATTENDEE DETAIL
             foreach ($FormQuestions as $Form) {
                 $TotTickets = count($Form);
@@ -797,14 +822,14 @@ class PaymentGatwayController extends Controller
             }
             
             //------------- send email
-            $sendEmail =  PaymentGatwayController::send_email_payment_success($booking_pay_id,$EventId,$UserId);
+            $sendEmail =  PaymentGatwayController::send_email_payment_success($booking_pay_id,$EventId,$UserId, $send_email_status=2);
            
             if($sendEmail)
                 return 'Request processed successfully';
         }
     }
 
-    public function send_email_payment_success($booking_pay_id, $EventId, $UserId)
+    public function send_email_payment_success($booking_pay_id, $EventId, $UserId, $send_email_status)
     {
         $EventId = !empty($EventId) ? $EventId : 0;
         $EventUrl = config('custom.send_email_url');;
@@ -835,7 +860,7 @@ class PaymentGatwayController extends Controller
                 if (!empty($user_email)) {
 
                     // $this->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag = 1, $attendee_array);
-                    $SendEmail = app('App\Http\Controllers\EventTicketController')->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag = 1, $attendee_array);
+                    $SendEmail = app('App\Http\Controllers\EventTicketController')->sendBookingMail($UserId, $user_email, $EventId, $event_url, $no_of_tickets, $total_price, $BookingPayId, $flag = 1, $attendee_array, $send_email_status);
 
                     //$this->sendBookingMail($UserId, $user_email, $EventId, $EventUrl, 1); 
                     $up_sSQL = 'UPDATE booking_payment_details SET `send_email_flag` = 1 WHERE `id`=:booking_pay_id ';

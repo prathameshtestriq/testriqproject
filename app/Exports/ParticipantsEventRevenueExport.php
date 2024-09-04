@@ -42,7 +42,12 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
         FROM attendee_booking_details a
         LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
         Inner JOIN event_booking AS e ON b.booking_id = e.id
-        WHERE b.event_id = '.$eventId;
+        WHERE 1=1';
+
+        if(!empty($eventId)){
+            $sSQL .= ' AND b.event_id = '.$eventId;
+        }
+
 
         // Add conditions based on session data
         if (!empty($participant_name)) {
@@ -133,7 +138,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
                     $aTemp->Single_ticket_price = isset($card_details_array[0]->Main_Price) && !empty($card_details_array[0]->Main_Price) ? 
                     ($card_details_array[0]->Main_Price * $card_details_array[0]->count) : '0.00';
                     
-                    $aTemp->Ticket_price = isset($card_details_array[0]->Main_Price) && !empty($card_details_array[0]->Main_Price) ? $card_details_array[0]->Main_Price : '0.00';
+                    $aTemp->Ticket_price = isset($card_details_array[0]->ticket_price) && !empty($card_details_array[0]->ticket_price) ? $card_details_array[0]->ticket_price : '0.00';
                    
                     $aTemp->Convenience_fee = isset($card_details_array[0]->Convenience_Fee) && !empty($card_details_array[0]->Convenience_Fee) ? 
                     ($card_details_array[0]->Convenience_Fee * $card_details_array[0]->count)  : '0.00';
@@ -220,7 +225,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
                 'Booking Date' => date('d-m-Y H:i:s',$val->booking_date),
                 'Payment Status' => $val->payment_status,
                 'Inclusive/Exclusive' => $val->taxes_status,  
-                'Registration Price' => $val->Single_ticket_price,
+                // 'Registration Price' => $val->Single_ticket_price,
                 'Count' => $val->Ticket_count,
                 'Registration Amount' => $val->Ticket_price,
                 'Registration Fee GST' => $val->Registration_Fee_GST,
@@ -239,7 +244,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
                 'Final Amount' => $val->Final_total_amount
             );
 
-            $totalSingleTicketPrice += $val->Single_ticket_price;
+            // $totalSingleTicketPrice += $val->Single_ticket_price;
             $totalTicketCount += $val->Ticket_count;
             $totalTicketPrice += $val->Ticket_price;
             $totalRegistrationFeeGST += $val->Registration_Fee_GST;
@@ -272,7 +277,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
             '',
             '',
             'Inclusive/Exclusive' =>'Total' ,
-            'Registration Price' => !empty( $totalSingleTicketPrice)? $totalSingleTicketPrice :'0.00',
+            // 'Registration Price' => !empty( $totalSingleTicketPrice)? $totalSingleTicketPrice :'0.00',
             'Count' => !empty($totalTicketCount)? $totalTicketCount :'0.00',
             'Registration Amount' => !empty($totalTicketPrice)? $totalTicketPrice :'0.00',
             'Registration Fee GST' =>!empty($totalRegistrationFeeGST)? $totalRegistrationFeeGST :'0.00',
@@ -299,8 +304,13 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
     {
 
         $eventId = $this->eventId;
-        $sSQL = 'SELECT name FROM events where id = '.$eventId;
-        $event_name = DB::select($sSQL ,array());
+        if(isset($eventId) && !empty($eventId)){
+            $sSQL = 'SELECT name FROM events where id = '.$eventId;
+            $aEventResult = DB::select($sSQL ,array()); 
+            $event_name = !empty($aEventResult) ? $aEventResult[0]->name : ''; 
+        }else{
+            $event_name = 'All Events';
+        }
             // Collect session data for filtering
             $participant_name = Session::has('participant_name') ? Session::get('participant_name') : '';
             $transaction_status = Session::has('transaction_status') ? Session::get('transaction_status') : '';
@@ -315,7 +325,12 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
             $sSQL = 'SELECT count(a.id) as count FROM attendee_booking_details a
             LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
             Inner JOIN event_booking AS e ON b.booking_id = e.id
-            WHERE b.event_id = '.$eventId;
+            WHERE 1=1';
+
+            if(!empty($eventId)){
+                $sSQL .= ' AND b.event_id = '.$eventId;
+            }
+
     
             // Add conditions based on session data
             if (!empty($participant_name)) {
@@ -349,7 +364,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
             $event_participants = DB::select($sSQL, array());
 
         return [
-            ['Event Name : ' . $event_name[0]->name],
+            ['Event Name : ' . $event_name],
             ['Total Count : ' .$event_participants[0]->count],
             [],
             [
@@ -362,12 +377,12 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
                 'Transaction/Order ID',
                 'Registration ID',
                 'Payu ID',
-                'Booking Date',
+                'Registration Date/Time',
                 'Payment Status',
                 'Inclusive/Exclusive',
-                'Registration Price',
+                // 'Registration Price',
                 'Count',
-                'Registration Amount',
+                'Registration Amount Paid',
                 'Registration Fee GST',
                 'Applied Coupon Amount',
                 'Additional Amount',
@@ -381,7 +396,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
                 'Payment Gateway Charges (1.85%)',
                 'Payment Gateway GST (18%)',
                 'Organiser Amount',
-                'Final Amount'
+                'Final Registration Amount'
             ]
         ];
     }
@@ -393,10 +408,13 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
                 $sheet = $event->sheet->getDelegate();
 
                 // Set horizontal alignment for all cells
-                $sheet->getStyle('A1:AC1')->getAlignment()->setHorizontal('left');
+                $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal('left');
+                $sheet->getStyle('M4:S4')->getAlignment()->setHorizontal('right');
+                $sheet->getStyle('U4:AB4')->getAlignment()->setHorizontal('right');
+
 
                 // Merge cells in the header
-                $headerMergeRanges = ['A1:AC1', 'A2:AC2', 'A3:AC3'];
+                $headerMergeRanges = ['A1:AB1', 'A2:AB2', 'A3:AB3'];
                 foreach ($headerMergeRanges as $range) {
                     $sheet->mergeCells($range);
                 }
@@ -407,7 +425,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
                 }
 
                 // Apply font styling to header
-                $sheet->getStyle('A1:AC4')->applyFromArray([
+                $sheet->getStyle('A1:AB4')->applyFromArray([
                     'font' => [
                         'bold' => true,
                     ]
@@ -420,7 +438,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
     {
         // Apply bold styling to the second array (assumed to be the last row)
         $lastRowIndex = count($this->array()) + 4;
-        $sheet->getStyle('A' . $lastRowIndex . ':AC' . $lastRowIndex)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $lastRowIndex . ':AB' . $lastRowIndex)->getFont()->setBold(true);
 
         return [
             // Style the header row as bold text

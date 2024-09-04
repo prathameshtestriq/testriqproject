@@ -91,14 +91,18 @@ class MarketingModel extends Model
 	{
        
         $ssql = 'UPDATE marketing SET 
+        event_id = :event_id,
         campaign_name = :campaign_name,
+        campaign_type = :campaign_type,
         count =:count,
         start_date = :start_date, 
         end_date = :end_date
         WHERE id=:id';
 
         $bindings = array(
+            'event_id' => $request->event,
             'campaign_name' => $request->campaign_name,
+            'campaign_type'=> $request->campaign_type,
             'count' => $request->count,
             'start_date' => strtotime($request->start_date),
             'end_date' => strtotime($request->end_date),
@@ -112,13 +116,15 @@ class MarketingModel extends Model
 	{
        
         $ssql = 'INSERT INTO marketing(
-            campaign_name,count,start_date,end_date)
+            event_id,campaign_name,campaign_type,count,start_date,end_date)
                 VALUES (
-            :campaign_name,:count,:start_date,:end_date
+            :event_id,:campaign_name,:campaign_type,:count,:start_date,:end_date
             )';
         
         $bindings = array(
+            'event_id' => $request->event,
             'campaign_name' => $request->campaign_name,
+            'campaign_type' => $request->campaign_type,
             'count' => $request->count,
             'start_date' => strtotime($request->start_date),
             'end_date' => strtotime($request->end_date) 
