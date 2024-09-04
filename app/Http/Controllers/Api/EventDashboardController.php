@@ -1117,7 +1117,7 @@ class EventDashboardController extends Controller
 
                 $SQL1 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,SUM(bd.quantity) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id) AS TicketPrice
                 FROM event_booking AS e LEFT JOIN booking_details AS bd ON bd.booking_id = e.id
-                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) AND bd.ticket_amount != '0.00' AND bd.quantity != 0 ";
+                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) AND bd.quantity != 0 "; //AND bd.ticket_amount != '0.00'
 
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
