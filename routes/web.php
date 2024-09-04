@@ -169,6 +169,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'], '/email_sending', [EmailSendingController::class, 'index'])->name('email_sending_index');
     Route::match(['get', 'post'],'email_sending/add', [EmailSendingController::class,'add_edit'])->name('add_email_sending');
     Route::match(['get', 'post'], 'email_sending/change_status', [EmailSendingController::class, 'change_active_status'])->name('change_status_email_sending');
+    Route::match(['get', 'post'],'/ckeditor/upload', [EmailSendingController::class, 'upload'])->name('ckeditor.upload');
     
     // Marketing
     Route::match(['get', 'post'], '/marketing', [MarketingController::class, 'index'])->name('marketing_index');
