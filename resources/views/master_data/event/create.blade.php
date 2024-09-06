@@ -284,8 +284,8 @@
                                             <!-- Image preview section -->
                                             <div id="imagePreview">
                                                 <?php if(!empty($banner_image)){ ?>
-                                                    <a href="{{ asset('uploads/banner_images/' . $banner_image) }}" target="_blank">
-                                                        <img id="preview" src="{{ asset('uploads/banner_images/' . $banner_image) }}" alt="Current Image" style="width: 50px;">
+                                                    <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
+                                                        <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;">
                                                     </a>
                                                     <input type="hidden" name="hidden_image" value="{{ old('event_banner_image/', $banner_image) }}" accept="image/jpeg, image/png">
                                                 <?php } else { ?>
@@ -327,7 +327,7 @@
                                                         <input type="hidden" name="hidden_image[]" value="{{ old('event_communication_creatives', $image->image) }}" accept="image/jpeg, image/png">
                                         
                                                         <!-- Cross icon for removing image -->
-                                                        <span class="remove-image" style="position: absolute; top: -10px; right: -20px; background: rgb(252, 251, 251); color: rgb(221, 19, 19); cursor: pointer; padding: 4px; border-radius: 20%;" onclick="remove_event_image({{ $image->id }} ,{{ $id }})" >
+                                                        <span title="Delete Image" class="remove-image" style="position: absolute; top: -10px; right: -20px; background: rgb(252, 251, 251); color: rgb(221, 19, 19); cursor: pointer; padding: 4px; border-radius: 20%;" onclick="remove_event_image({{ $image->id }} ,{{ $id }})" >
                                                             &#10006;
                                                         </span>
                                                     </div>

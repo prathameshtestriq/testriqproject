@@ -132,7 +132,7 @@
                                                 </select>  
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-2 col-12 mt-2">
                                                 <?php 
                                                    $banner_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
@@ -154,7 +154,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-2 mt-2">
+                                            <div class="col-sm-2 mt-3">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_banner) || !empty($search_start_booking_date) || !empty($search_end_booking_date) || ($search_banner_status != '')|| (!empty($search_country)) || !empty($search_state) ||!empty($search_city) )
                                                     <a title="Clear" href="{{ url('banner/clear_search') }}" type="button"
@@ -163,7 +163,7 @@
                                                     </a>
                                                 @endif
                                             </div>
-                                            <div class="col-sm-8 mt-2 float-right">
+                                            <div class="col-sm-8 mt-3 float-right">
                                                 <a href="{{ url('banner/add_edit') }}" class="btn btn-outline-primary float-right pr-2">
                                                     <i data-feather="plus"></i><span>Add</span></a>
                                             </div>

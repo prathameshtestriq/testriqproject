@@ -146,7 +146,7 @@ class EventController extends Controller
         //  WHERE vm.deleted = 0 ' . $FiltersSql . ' 
         //  ORDER BY vm.id DESC';
 
-        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,
+        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,vm.banner_image,
                 (SELECT name FROM cities WHERE 
                 Id = vm.city) AS city,(SELECT name FROM states WHERE Id = vm.state) AS state, 
                 (SELECT name FROM countries WHERE Id = vm.country) AS country, 
@@ -276,7 +276,7 @@ class EventController extends Controller
             // Update or insert based on $id
           
             if(!empty($request->file('event_banner_image'))){
-                $banner_image = $this->uploadFile($request->file('event_banner_image'), public_path('uploads/banner_images'));
+                $banner_image = $this->uploadFile($request->file('event_banner_image'), public_path('uploads/banner_image'));
                 $sSQL = 'UPDATE events SET banner_image = :banner_image WHERE id=:id';
                 $Result = DB::update( $sSQL, array(
                         'banner_image' => $banner_image,

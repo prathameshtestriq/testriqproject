@@ -354,7 +354,8 @@
     </section>
 @endsection
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script src={{ asset('/app-assets/js/scripts/jquerycdn.js') }}></script>
 
 <script>
   function delUser(id) {

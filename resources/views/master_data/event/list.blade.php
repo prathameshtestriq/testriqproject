@@ -127,7 +127,7 @@
                                                 </select>  
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-2 col-12 mt-2">
                                                 <?php 
                                                    $event_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
@@ -149,7 +149,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-2 col-12 mt-2">
                                                 <label for="form-control"> Organizer</label>
                                                 <select id="organizer" name="organizer" class="form-control select2 form-control">
                                                     <option value="">Select  Organizer</option>
@@ -169,7 +169,7 @@
                                                 </select>
                                             </div>
  
-                                            <div class="col-sm-2 mt-2">
+                                            <div class="col-sm-2 mt-3">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != '')|| !empty($search_organizer)|| !empty($search_event_country)|| !empty($search_event_state)|| !empty($search_event_city))
                                                     <a title="Clear" href="{{ url('event/clear_search') }}" type="button"
@@ -200,6 +200,7 @@
                                         <th>Country</th>
                                         <th>State</th>
                                         <th>City</th>
+                                        <th>Event Image</th>
                                         <th style="text-align: center;">View</th>
                                         <th style="text-align: center;">Status</th>
                                         <th style="text-align: center;">Action</th>
@@ -216,6 +217,19 @@
                                                 <td>{{ ucfirst($event->country) }}</td>
                                                 <td>{{ ucfirst($event->state) }}</td>
                                                 <td>{{ ucfirst($event->city) }}</td>
+                                                <td style="text-align:center;">
+                                                    @php
+                                                        $imagePath = public_path('uploads/banner_image/' . $event->banner_image);
+                                                    @endphp
+                                                    @if (file_exists($imagePath) && !empty($event->banner_image))
+                                                        <a target="_blank" title="View Image"
+                                                            href="{{ asset('uploads/banner_image/' . $event->banner_image) }}">
+                                                            <img style="width:50px;" src="{{ asset('uploads/banner_image/' . $event->banner_image) }}" alt="Logo Image">
+                                                        </a>
+                                                    @else
+                                                    <?php   echo '-'; ?>
+                                                    @endif
+                                                </td>
                                                 <td style="text-align: center;">
                                                     <a href={{ url('participants_event', $event->id) }}> 
                                                         <i class="fa fa-eye btn btn-success btn-sm "  title="Participants event"></i>
