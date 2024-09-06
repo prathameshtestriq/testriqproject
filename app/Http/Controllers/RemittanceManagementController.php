@@ -148,10 +148,7 @@ class RemittanceManagementController extends Controller
         $filename = "remittance_report_" . time();
         return Excel::download(new RemittanceManagementExport(),  $filename.'.xlsx');
     }
-    public function sample_excel_export(){
-        $filename = "remittance_sample_report_" . time();
-        return Excel::download(new RemittanceSampleExport(),  $filename.'.xlsx');
-    }
+  
 
       //-------------- remittance import ---------------------
       public function import_remittance_management(Request $request)

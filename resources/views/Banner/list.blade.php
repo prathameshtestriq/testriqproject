@@ -99,6 +99,40 @@
                                             </div>
 
                                             <div class="col-sm-2 col-12">
+                                                <label for="form-control">Country</label>
+                                                <select id="country" name="country" class="select2 form-control">
+                                                    <option value="">All country</option>
+                                                    <?php  
+                                                    foreach ($countries as $value)
+                                                    {  
+                                                        $selected = '';
+                                                        if(old('country', $search_country) == $value->id){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
+                                                        <?php 
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control">State</label>
+                                                <select id="state" name="state" class="select2 form-control">
+                                                    <option value="">All state</option>
+                                                </select>  
+                                            
+                                            </div>
+    
+                                            <div class="col-sm-2 col-12">
+                                                <label for="form-control">City</label>
+                                                <select id="city" name="city" class="select2 form-control">
+                                                    <option value="">All City</option>
+                                                </select>  
+                                            </div>
+
+                                            <div class="col-sm-2 col-12">
                                                 <?php 
                                                    $banner_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
@@ -122,14 +156,14 @@
 
                                             <div class="col-sm-2 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_banner) || !empty($search_start_booking_date) || !empty($search_end_booking_date) || ($search_banner_status != ''))
+                                                @if (!empty($search_banner) || !empty($search_start_booking_date) || !empty($search_end_booking_date) || ($search_banner_status != '')|| (!empty($search_country)) || !empty($search_state) ||!empty($search_city) )
                                                     <a title="Clear" href="{{ url('banner/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
                                                     </a>
                                                 @endif
                                             </div>
-                                            <div class="col-sm-2 mt-2">
+                                            <div class="col-sm-8 mt-2 float-right">
                                                 <a href="{{ url('banner/add_edit') }}" class="btn btn-outline-primary float-right pr-2">
                                                     <i data-feather="plus"></i><span>Add</span></a>
                                             </div>
@@ -170,13 +204,20 @@
                                         <td class="text-left">{{ ucfirst($val->country) }}</td>
                                         <td class="text-left">{{ ucfirst($val->state) }}</td>
                                         <td class="text-left">{{ ucfirst($val->city) }}</td>
-                                        <td class="t-center text-center">
+                                        <td class="t-center text-center">     
+                                            @php
+                                                $imagePath = public_path('uploads/banner_image/' . $val->banner_image);
+                                            @endphp
+                                            @if (file_exists($imagePath) && !empty($val->banner_image))
                                             <a target="_blank" title="View Image"
                                                 href="{{ asset('uploads/banner_image/' . $val->banner_image) }}">
                                                 <img style="width:50px;"
                                                     src="{{ asset('uploads/banner_image/' . $val->banner_image) }}"
                                                     alt="Banner Image">
                                             </a>
+                                            @else
+                                            <?php   echo ' '; ?>
+                                            @endif
                                         </td>
                                         <td class="text-center">
                                             <div class="custom-control custom-switch custom-switch-success">
@@ -224,6 +265,7 @@
     </section>
 
 @endsection
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     
 
@@ -290,4 +332,76 @@
             return false;
         }
     }
+
+    $(document).ready(function() {
+        var CountryId = '<?php echo old('country', $search_country); ?>';
+        var StateId = '<?php echo old('state', $search_state); ?>';
+        var CityId = '<?php echo old('city', $search_city); ?>';
+
+        // Fetch states based on the selected country
+        if (CountryId !== '') {
+            $.ajax({
+                url: '/get_states', // Replace with your URL to fetch states
+                type: 'GET',
+                data: { country_id: CountryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'" '+ (StateId == value.id ? 'selected' : '') +'>'
+                            + value.name +'</option>');
+                    });
+
+                    // Fetch cities based on the selected state
+                    if (StateId !== '') {
+                        $.ajax({
+                            url: '/get_cities', // Replace with your URL to fetch cities
+                            type: 'GET',
+                            data: { state_id: StateId },
+                            success: function(cities) {
+                                $('#city').empty().append('<option value="">Select City</option>');
+                                $.each(cities, function(key, value) {
+                                    $('#city').append('<option value="'+ value.id +'" '+ (CityId == value.id ? 'selected' : '') +'>'
+                                        + value.name +'</option>');
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Handle country change
+        $('#country').change(function() {
+            var countryId = $(this).val();
+            $.ajax({
+                url: '/get_states',
+                type: 'GET',
+                data: { country_id: countryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    });
+                    $('#city').empty().append('<option value="">Select City</option>'); // Clear cities
+                }
+            });
+        });
+
+        // Handle state change
+        $('#state').change(function() {
+            var stateId = $(this).val();
+            $.ajax({
+                url: '/get_cities',
+                type: 'GET',
+                data: { state_id: stateId },
+                success: function(cities) {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                    $.each(cities, function(key, value) {
+                        $('#city').append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    });
+                }
+            });
+        });
+    });
+
 </script>

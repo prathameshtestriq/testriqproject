@@ -16,12 +16,12 @@ class MasterOrganiser extends Model
         'name'
     ];
     public $timestamps = false;
-
+ 
     public static function get_count($a_search = array()){
         $count = 0;
         // dd($a_search);
         $s_sql = 'SELECT count(o.id) as count FROM organizer o';
-        $s_sql .= ' LEFT JOIN users u ON u.id = o.user_id WHERE 1=1';
+        $s_sql .= ' LEFT JOIN users u ON u.id = o.user_id WHERE o.is_deleted = 0';
 
         if (!empty($a_search['search_organiser_name'])) {
             $s_sql .= ' AND LOWER(o.name) LIKE \'%' . strtolower($a_search['search_organiser_name']) . '%\'';
@@ -49,7 +49,7 @@ class MasterOrganiser extends Model
     public static function get_all($limit, $a_search = array()){
         $a_return = [];
 
-        $s_sql = 'SELECT id,name,email,mobile,gst_number,(select CONCAT(`firstname`, " ", `lastname`) AS user_name from users where id = organizer.user_id) as user_name,(select id from users u where u.id = organizer.user_id) as user_id,(select email from users where id = organizer.user_id) as user_email,(select password from users where id = organizer.user_id) as user_password FROM organizer where 1=1';
+        $s_sql = 'SELECT id,name,email,mobile,gst_number,logo_image,(select CONCAT(`firstname`, " ", `lastname`) AS user_name from users where id = organizer.user_id) as user_name,(select id from users u where u.id = organizer.user_id) as user_id,(select email from users where id = organizer.user_id) as user_email,(select password from users where id = organizer.user_id) as user_password FROM organizer where is_deleted = 0';
         
         // ,(select CONCAT(`firstname`, ' ', `lastname`) AS user_name from users where id = organizer.user_id ) as user_name
         if (!empty($a_search['search_organiser_name'])) {
@@ -76,12 +76,13 @@ class MasterOrganiser extends Model
     
     public static function add_organiser($request)
 	{
-    
-        $ssql = 'INSERT INTO organizer(name,email,mobile,about,contact_person,contact_no,gst,gst_number,gst_percentage,created_at)
-        VALUES ( :name,:email,:mobile,:about,:contact_person,:contact_no,:gst,:gst_number,:gst_percentage,:created_at)';
+        $user_id = Session::get('logged_in');
+        $ssql = 'INSERT INTO organizer(name,user_id,email,mobile,about,contact_person,contact_no,gst,gst_number,gst_percentage,created_at)
+        VALUES ( :name,:user_id,:email,:mobile,:about,:contact_person,:contact_no,:gst,:gst_number,:gst_percentage,:created_at)';
 
         $bindings = array(
             'name' => !empty($request->organiser_name) ? $request->organiser_name : '',
+            'user_id'=> $user_id['id'],
             'email' => !empty($request->email) ? $request->email : '',
             'mobile' => !empty($request->contact_number) ? $request->contact_number : '',
             'about' => !empty($request->about) ? $request->about : '',
@@ -89,7 +90,7 @@ class MasterOrganiser extends Model
             'contact_no' => !empty($request->contact_person_contact) ? $request->contact_person_contact : '',
             'gst' => !empty($request->gst) ? $request->gst : '',
             'gst_number' => !empty($request->gst_number) ? $request->gst_number : '',
-            'gst_percentage' =>!empty(($request->contact_gst_percentage)) ? ($request->contact_gst_percentage).".00" : '',
+            'gst_percentage' =>!empty(($request->contact_gst_percentage)) ? ($request->contact_gst_percentage): '',
             'created_at'  => strtotime('now'),
         );
         
@@ -99,9 +100,10 @@ class MasterOrganiser extends Model
 
     public static function update_organiser($iId, $request)
 	{
-
+        $user_id = Session::get('logged_in');
         $ssql = 'UPDATE organizer SET 
         name = :name,
+        user_id = :user_id,
         email = :email,
         mobile = :mobile,
         about = :about,
@@ -115,6 +117,7 @@ class MasterOrganiser extends Model
 
         $bindings = array(
             'name' => !empty($request->organiser_name) ? $request->organiser_name : '',
+            'user_id' => $user_id['id'],
             'email' => !empty($request->email) ? $request->email : '',
             'mobile' => !empty($request->contact_number) ? $request->contact_number : '',
             'about' => !empty($request->about) ? $request->about : '',
@@ -122,7 +125,7 @@ class MasterOrganiser extends Model
             'contact_no' =>  !empty($request->contact_person_contact) ? $request->contact_person_contact : '',
             'gst' => !empty($request->gst) ? $request->gst : '',
             'gst_number' =>!empty($request->gst_number) ? $request->gst_number : '',
-            'gst_percentage' => !empty(($request->contact_gst_percentage)) ? ($request->contact_gst_percentage).".00" : '',
+            'gst_percentage' => !empty(($request->contact_gst_percentage)) ? ($request->contact_gst_percentage): '',
             'created_at'  => strtotime('now'),  
             'id' => $iId
         );
@@ -133,13 +136,14 @@ class MasterOrganiser extends Model
 
     public static function delete_organiser($iId)
     {
-        $Result = null; 
-        if (!empty($iId)) {
-            $sSQL = 'DELETE FROM `organizer` WHERE id=:id';
-            $Result = DB::update( $sSQL,array( 'id' => $iId )
+        if(!empty($iId)){
+            $sSQL = 'UPDATE organizer SET is_deleted = 1 WHERE id=:id';
+            $Result = DB::update( $sSQL, array(
+                    'id' => $iId
+                )
             );
-        }
-        return $Result;
+            return $Result;
+          }
     }
 
  

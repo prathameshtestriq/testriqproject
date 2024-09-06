@@ -192,10 +192,22 @@
                                                 <td class="text-left">{{ date('d-m-Y ', $val->start_time)  }}</td>
                                                 <td class="text-left">{{ date('d-m-Y ', $val->end_time)  }}</td>
                                                 <td class="t-center text-center">
-
-                                                    <a target="_blank" title="View Image" href="{{ asset('uploads/images/' . $val->img) }}">
+                                                    {{-- <a target="_blank" title="View Image" href="{{ asset('uploads/images/' . $val->img) }}">
                                                         <img style="width:50px;" src="{{ asset('uploads/images/' . $val->img) }}" alt="Banner Image">
+                                                    </a> --}}
+                                                    @php
+                                                        $imagePath = public_path('uploads/images/' . $val->img);
+                                                    @endphp
+                                                    @if (file_exists($imagePath) && !empty($val->img))
+                                                    <a target="_blank" title="View Image"
+                                                        href="{{ asset('uploads/images/' . $val->img) }}">
+                                                        <img style="width:50px;"
+                                                            src="{{ asset('uploads/images/' . $val->img) }}"
+                                                            alt="advertisement Image">
                                                     </a>
+                                                    @else
+                                                    <?php   echo ' '; ?>
+                                                    @endif
                                                 </td>
 
 

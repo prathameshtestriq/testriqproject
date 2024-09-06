@@ -100,7 +100,7 @@ if (!empty($edit_data)) {
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="name">Name<span
+                                                <label for="name">Name <span
                                                         style="color:red;">*</span></label>
                                                 <input type="text" id="name" class="form-control"
                                                     placeholder=" Name" name="name"
@@ -128,7 +128,7 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="position">Position<span style="color:red;">*</span></label>
+                                                <label for="position">Position <span style="color:red;">*</span></label>
                                                 <?php 
                                                 $Positions = array('top', 'bottom', 'middle' );
                                                 ?>
@@ -190,7 +190,7 @@ if (!empty($edit_data)) {
  
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="start_date">Start Date<span style="color:red;">*</span></label>
+                                                <label for="start_date">Start Date <span style="color:red;">*</span></label>
                                                 <input type="date" id="start_date" class="form-control"
                                                     placeholder="Start Date" name="start_date"
                                                     value="{{ old('start_date', $start_date ? \Carbon\Carbon::parse($start_date)->format('Y-m-d') : '') }}" 
@@ -204,7 +204,7 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="end_date">End Date<span style="color:red;">*</span></label>
+                                                <label for="end_date">End Date <span style="color:red;">*</span></label>
                                                 <input type="date" id="end_date" class="form-control"
                                                     placeholder="End Date" name="end_date"
                                                     value="{{ old('end_date', $end_date ? \Carbon\Carbon::parse($end_date)->format('Y-m-d') : '') }}"  

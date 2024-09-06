@@ -81,7 +81,7 @@
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="remittance_name">Remittance Name<span style="color:red;">*</span></label>
+                                                <label for="remittance_name">Remittance Name <span style="color:red;">*</span></label>
                                                 <input type="text" id="remittance_name" class="form-control"
                                                     placeholder="Remittance Name" name="remittance_name"  value="{{ old('remittance_name', $remittance_name) }}" autocomplete="off" />
                                                 <h5><small class="text-danger" id="remittance_name_err"></small></h5>
@@ -93,7 +93,7 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="remittance_date">Remittance Date<span style="color:red;">*</span></label>
+                                                <label for="remittance_date">Remittance Date <span style="color:red;">*</span></label>
                                                 <input type="date" id="remittance_date" class="form-control"
                                                     placeholder="Remittance Date" name="remittance_date"
                                                     value="{{ old('remittance_date', $remittance_date ? \Carbon\Carbon::parse($remittance_date)->format('Y-m-d') : '') }}"  
@@ -106,7 +106,7 @@
                                         </div>
  
                                         <div class="col-sm-6 col-12">
-                                            <label for="form-control"> Events<span style="color:red;">*</span></label>
+                                            <label for="form-control"> Events <span style="color:red;">*</span></label>
                                             <select id="event" name="event" class="form-control select2 form-control">
                                                 <option value="">Select  Event</option>
                                                 <?php 
@@ -178,7 +178,7 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="Igst">IGST<span style="color:red;">*</span></label>
+                                                <label for="Igst">IGST <span style="color:red;">*</span></label>
                                                 <input type="text" id="Igst" class="form-control"
                                                     placeholder="Igst" name="Igst"  value="{{ old('Igst', $Igst) }}"  oninput="validateNumberInput(this)"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="Igst_err"></small></h5>
@@ -202,7 +202,7 @@
  
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="Tds">Tds<span style="color:red;">*</span></label>
+                                                <label for="Tds">Tds <span style="color:red;">*</span></label>
                                                 <input type="text" id="Tds" class="form-control"
                                                     placeholder="Tds" name="Tds"  value="{{ old('Tds', $Tds) }}"   oninput="validateNumberInput(this)"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="Tds_err"></small></h5>
@@ -226,7 +226,7 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="bank_reference">Bank Reference<span style="color:red;">*</span></label>
+                                                <label for="bank_reference">Bank Reference <span style="color:red;">*</span></label>
                                                 <input type="text" id="bank_reference" class="form-control"
                                                     placeholder="Bank Reference" name="bank_reference"  value="{{ old('bank_reference', $bank_reference) }}" autocomplete="off" />
                                                 <h5><small class="text-danger" id="bank_reference_err"></small></h5>

@@ -316,10 +316,15 @@ class EventDashboardController extends Controller
                      LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
                      LEFT JOIN users AS u ON u.id = eb.user_id
                      WHERE eb.event_id=:event_id ";
+               
                 if (!empty($TransactionStatus)) {
                     if ($TransactionStatus == 101)
                         $TransactionStatus = 0;
                     if ($TransactionStatus == 1)
+                        $TransactionStatus = 1;
+                    if ($TransactionStatus == 3)
+                        $TransactionStatus = 3;
+                    if ($TransactionStatus == 102)
                         $TransactionStatus = "1,3";
 
                     $sql .= " AND eb.transaction_status IN (" . $TransactionStatus . ")";
@@ -418,6 +423,10 @@ class EventDashboardController extends Controller
                     if ($TransactionStatus == 101)
                         $TransactionStatus = 0;
                     if ($TransactionStatus == 1)
+                        $TransactionStatus = 1;
+                    if ($TransactionStatus == 3)
+                        $TransactionStatus = 3;
+                    if ($TransactionStatus == 102)
                         $TransactionStatus = "1,3";
 
                     $sql .= " AND e.transaction_status IN (" . $TransactionStatus . ")";

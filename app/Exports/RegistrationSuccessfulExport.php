@@ -35,7 +35,11 @@ class RegistrationSuccessfulExport implements FromArray, WithHeadings, ShouldAut
         FROM event_booking AS eb 
         LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
         LEFT JOIN users AS u ON u.id = eb.user_id
-        WHERE eb.event_id= ".$eventId ;
+        WHERE 1=1 ";
+
+        if(isset($eventId) && !empty($eventId)){
+            $s_sql .= ' AND eb.event_id= '.$eventId;
+        }
 
         // // Add conditions based on session data
         if (!empty($registration_user_name)) {
@@ -105,13 +109,16 @@ class RegistrationSuccessfulExport implements FromArray, WithHeadings, ShouldAut
         FROM event_booking AS eb 
         LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
         LEFT JOIN users AS u ON u.id = eb.user_id
-        WHERE eb.event_id= ".$eventId ;
+        WHERE 1=1" ;
+
+        if(isset($eventId) && !empty($eventId)){
+            $s_sql .= ' AND eb.event_id= '.$eventId;
+        }
         // // Add conditions based on session data
         if (!empty($registration_user_name)) {
             $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($registration_user_name) . '%\')';
         }
 
-       
         if(isset( $registration_transaction_status)){
             $s_sql .= ' AND (LOWER( eb.transaction_status) LIKE \'%' . strtolower($registration_transaction_status) . '%\')';
         } 
@@ -134,10 +141,12 @@ class RegistrationSuccessfulExport implements FromArray, WithHeadings, ShouldAut
 
         
         $registration_successful = DB::select($s_sql, array());
+        // dd($registration_successful);
         $registration_successful_count = count($registration_successful);
         // dd($registration_successful_count);
+        $loc_event_name = !empty($event_name) ? $event_name[0]->name : 'All Events';
         return [
-            ['Event Id :' . $event_name[0]->name],
+            ['Event Id :' .$loc_event_name ],
             ['Registration Count : ' .$registration_successful_count],
             [],
             [

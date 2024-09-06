@@ -73,7 +73,7 @@
                             <input type="hidden" name="form_type" value="search_marketing">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-3">
                                                 <label for="form-control">Campaign Name</label>
@@ -82,21 +82,66 @@
                                                     value="{{old('campaign_name',$search_campaign_name)}}" autocomplete="off" />
                                             </div>
                                          
-                                            <div class="col-sm-2 ">
+                                            <div class="col-sm-3 ">
                                                 <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_marketing_date" class="form-control"
                                                     placeholder="Start Date" name="start_marketing_date" value="{{ old('start_marketing_date', $search_start_marketing_date ? \Carbon\Carbon::parse($search_start_marketing_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">End Date</label>
                                                 <input type="date" id="end_marketing_date" class="form-control"
                                                     placeholder="End Date" name="end_marketing_date" value="{{ old('end_marketing_date', $search_end_marketing_date ? \Carbon\Carbon::parse($search_end_marketing_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
+                                                <label for="form-control"> Event</label>
+                                                <select id="search_event" name="search_event" class="form-control select2 form-control">
+                                                    <option value="">Select  Event</option>
+                                                    <?php 
+                                                        foreach ($EventsData as $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('search_event', $search_event) == $value->id){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-3 p-1 col-12">
+                                                <div class="form-group">
+                                                    <label for="search_campaign_type">Campaign Type</label>
+                                                    <?php 
+                                                    $Campaign_Types  = array('Email', 'Whatsapp', 'SMS', 'Social Media(Text)', 'Ad Campaign (Text)' );
+                                                    ?>
+                                                    <select id="search_campaign_type" name="search_campaign_type" class="select2 form-control">
+                                                        <option value="">Select Campaign Type</option>
+                                                        <?php 
+                                                        foreach ($Campaign_Types as $key => $value)
+                                                        {
+                                                            // old('position',$position)
+                                                            $selected = '';
+                                                            if(old('search_campaign_type', $search_campaign_type ) == $value){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value; ?>" <?php echo $selected; ?>><?php echo ucfirst($value); ?></option>
+                                                            <?php 
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </div>
+                                            </div>
+    
+
+                                            <div class="col-sm-3 p-1 col-12">
                                                 <?php 
                                                    $marketing_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
@@ -118,23 +163,22 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-3 mt-2">
+                                            <div class="col-sm-3 p-1 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_campaign_name) || !empty($search_start_marketing_date) || !empty($search_end_marketing_date) || ($search_marketing_status != ''))
+                                                @if (!empty($search_campaign_name) || !empty($search_start_marketing_date) || !empty($search_end_marketing_date) || ($search_marketing_status != '') || !empty($search_event) || !empty($search_campaign_type))
                                                     <a title="Clear" href="{{ url('/marketing/clear_search') }}"
                                                         type="button" class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
                                                     </a>
                                                 @endif
                                             </div>
+                                            <div class="col-sm-3 mt-2 float-right">
+                                                <a href="{{ url('marketing/add') }}"
+                                                    class="btn btn-outline-primary float-right pr-2">
+                                                    <i data-feather="plus"></i><span>Add </span></a>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-sm-3 mt-2">
-                                        <a href="{{ url('marketing/add') }}"
-                                            class="btn btn-outline-primary float-right pr-2">
-                                            <i data-feather="plus"></i><span>Add </span></a>
-                                    </div>
-                                        
+                                    </div>   
                                 </div>
                             </div>
                         </form>
@@ -144,6 +188,8 @@
                                     <tr>
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Campaign Name</th>
+                                        <th class="text-left">Event Name</th>
+                                        <th class="text-left">Campaign Type</th>
                                         <th class="text-center">Count</th>
                                         <th class="text-left">Start Date</th>
                                         <th class="text-left">End Date</th>
@@ -156,12 +202,13 @@
                                     if (!empty($Marketing)){
                                         $i = $Offset;?>
                                     <?php foreach ($Marketing as $val){
-                                      
-                                                $i++;
+                                            $i++;
                                     ?>
                                         <tr>
                                             <td class="text-center">{{ $i }}</td>
                                             <td class="text-left">{{ ucfirst($val->campaign_name) }}</td>
+                                            <td class="text-center">{{ $val->event_name }}</td>
+                                            <td class="text-center">{{ $val->campaign_type }}</td>
                                             <td class="text-center">{{ $val->count }}</td>
                                             <td class="text-left">{{  date('d-m-Y ',$val->start_date) }}</td>
                                             <td class="text-left">{{  date('d-m-Y ',$val->end_date) }}</td>

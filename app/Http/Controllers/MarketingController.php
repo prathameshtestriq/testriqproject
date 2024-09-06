@@ -16,6 +16,8 @@ class MarketingController extends Controller
         session::forget('start_marketing_date');
         session::forget('end_marketing_date');
         session::forget('marketing_status');
+        session::forget('search_event');
+        session::forget('search_campaign_type');
         return redirect('/marketing');
     }
 
@@ -23,6 +25,8 @@ class MarketingController extends Controller
     {
         $a_return = array();
         $a_return['search_campaign_name'] = '';
+        $a_return['search_event'] = '';
+        $a_return['search_campaign_type'] = '';
         $a_return['search_start_marketing_date'] = '';
         $a_return['search_end_marketing_date'] = '';
         $a_return['search_marketing_status'] = '';
@@ -30,6 +34,8 @@ class MarketingController extends Controller
         if (isset($request->form_type) && $request->form_type == 'search_marketing') {
            
             session(['campaign_name' => $request->campaign_name]);
+            session(['search_event' => $request->search_event]);
+            session(['search_campaign_type' => $request->search_campaign_type]);
             session(['start_marketing_date' => $request->start_marketing_date]);
             session(['end_marketing_date' => $request->end_marketing_date]);
             session(['marketing_status' => $request->marketing_status]);
@@ -37,6 +43,8 @@ class MarketingController extends Controller
             return redirect('/marketing');
         }
         $a_return['search_campaign_name'] = (!empty(session('campaign_name'))) ? session('campaign_name') : '';
+        $a_return['search_event'] = (!empty(session('search_event'))) ? session('search_event') : '';
+        $a_return['search_campaign_type'] = (!empty(session('search_campaign_type'))) ? session('search_campaign_type') : '';
         $a_return['search_start_marketing_date'] = (!empty(session('start_marketing_date'))) ?  session('start_marketing_date') : '';
         $a_return['search_end_marketing_date'] = (!empty(session('end_marketing_date'))) ? session('end_marketing_date'): '';
         $marketing_status = session('marketing_status');
@@ -52,9 +60,13 @@ class MarketingController extends Controller
         
        
         $a_return["Marketing"] = MarketingModel::get_all($Limit,$a_return);
+
+        $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
+        $a_return['EventsData'] = DB::select($SQL, array());
     //  dd($a_return["Remittance"][0]);
         $a_return['Paginator'] = new LengthAwarePaginator( $a_return["Marketing"], $CountRows, $Limit, $PageNo);
         $a_return['Paginator']->setPath(request()->url());
+
 
         return view('marketing.list',$a_return);
     }

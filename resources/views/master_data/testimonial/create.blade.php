@@ -86,7 +86,7 @@
                                     <div class="row">
                                         <div class="col-md-3 col-12">
                                             <div class="form-group">
-                                                <label for="testimonial_name">Testimonial Name<span
+                                                <label for="testimonial_name">Testimonial Name <span
                                                         style="color:red;">*</span></label>
                                                 <input type="text" id="testimonial_name" class="form-control"
                                                     placeholder=" Testimonial Name" name="testimonial_name"

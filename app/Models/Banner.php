@@ -111,6 +111,18 @@ class Banner extends Model
             $s_sql .= ' AND (LOWER(b.active) LIKE \'%' . strtolower($a_search['search_banner_status']) . '%\')';
         } 
 
+        if(!empty( $a_search['search_country'])){
+            $s_sql .= ' AND b.country = '. $a_search['search_country']. ' ';
+        } 
+
+        if(!empty( $a_search['search_state'])){
+            $s_sql .= ' AND b.state = '. $a_search['search_state']. ' ';
+        } 
+
+        if(!empty( $a_search['search_city'])){
+            $s_sql .= ' AND b.city = '. $a_search['search_city']. ' ';
+        } 
+
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
         }
@@ -154,6 +166,18 @@ class Banner extends Model
 
         if(isset( $a_search['search_banner_status'])){
             $s_sql .= ' AND (LOWER(b.active) LIKE \'%' . strtolower($a_search['search_banner_status']) . '%\')';
+        } 
+        
+        if(!empty( $a_search['search_country'])){
+            $s_sql .= ' AND b.country = '. $a_search['search_country']. ' ';
+        } 
+
+        if(!empty( $a_search['search_state'])){
+            $s_sql .= ' AND b.state = '. $a_search['search_state']. ' ';
+        } 
+
+        if(!empty( $a_search['search_city'])){
+            $s_sql .= ' AND b.city = '. $a_search['search_city']. ' ';
         } 
 
 

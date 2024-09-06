@@ -7,7 +7,7 @@
                 if(!empty($EventQuestionData)){
                    foreach($EventQuestionData as $res){
             ?>
-                <th style="text-align: center; font-weight: bold;"><?php echo $res->question_label; ?></th>
+                <th style="text-align: left; font-weight: bold;"><?php echo $res->question_label; ?></th>
             <?php        
                 }
             } ?>
@@ -37,9 +37,9 @@
                         ?>
                         <?php 
                         if(isset($file_name) && !empty($file_name)){?>  
-                            <td><a href="{{asset('uploads/attendee_documents/'.$file_name) }}" target="_blank"> <?php echo $file_name; ?> </a></td>
+                            <td style="text-align: center;"><a href="{{asset('uploads/attendee_documents/'.$file_name) }}" target="_blank"> <?php echo $file_name; ?> </a></td>
                         <?php }else{ ?>
-                            <td><?= $answerValue ?></td>
+                            <td style="text-align: left;"><?= $answerValue ?></td>
                     <?php } endforeach; ?>
                 </tr>
             <?php $i++; endforeach; } ?>

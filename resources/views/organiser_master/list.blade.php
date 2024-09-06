@@ -137,7 +137,7 @@
                                         <th class="text-left">Email ID</th>
                                         <th class="text-left">Contact Number</th>
                                         <th class="text-left">Gst Number</th>
-                                       
+                                        <th class="text-left">Logo Image</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -153,11 +153,24 @@
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
                                                
-                                                <td class="text-left">{{ $val->name }}</td>
+                                                <td class="text-left">{{ ucfirst($val->name) }}</td>
                                                 <td class="text-left">{{ ucfirst($val->user_name) }}</td>
                                                 <td class="text-left">{{ ucfirst($val->email) }}</td>
                                                 <td class="text-left">{{ $val->mobile }}</td>
                                                 <td class="text-left">{{ $val->gst_number }}</td>
+                                                <td class="t-center text-center">
+                                                    @php
+                                                        $imagePath = public_path('uploads/organiser/logo_image/' . $val->logo_image);
+                                                    @endphp
+                                                    @if (file_exists($imagePath) && !empty($val->logo_image))
+                                                        <a target="_blank" title="View Image"
+                                                            href="{{ asset('uploads/organiser/logo_image/' . $val->logo_image) }}">
+                                                            <img style="width:50px;" src="{{ asset('uploads/organiser/logo_image/' . $val->logo_image) }}" alt="Logo Image">
+                                                        </a>
+                                                    @else
+                                                      <?php   echo ' '; ?>
+                                                    @endif
+                                                </td>
                                                 <td class="text-center">
                                                     <a href="{{ url('organiser_master/edit', $val->id) }}"><i
                                                         class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>

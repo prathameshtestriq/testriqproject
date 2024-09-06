@@ -30,6 +30,9 @@ class BannerController extends Controller
         session::forget('start_booking_date');
         session::forget('end_booking_date');
         session::forget('banner_status');
+        session::forget('banner_country'); 
+        session::forget('banner_state'); 
+        session::forget('banner_city'); 
         return redirect('/banner');
     }
 
@@ -40,6 +43,9 @@ class BannerController extends Controller
         $aReturn['search_start_booking_date'] = '';
         $aReturn['search_end_booking_date'] = '';
         $aReturn['banner_status'] = '';
+        $aReturn['search_country'] = '';
+        $aReturn['search_state'] = '';
+        $aReturn['search_city'] = '';
 
         if(isset($request->form_type) && $request->form_type ==  'search_banner') {
             //  dd($request->name);
@@ -48,6 +54,9 @@ class BannerController extends Controller
             session(['end_booking_date' => $request->end_booking_date]);
             session(['banner_status' => $request->banner_status]);
             //  session(['mobile' => $request->mobile]);
+            session(['banner_country' => $request->country]);
+            session(['banner_state' => $request->state]);
+            session(['banner_city' => $request->city]);
 
             return redirect('/banner');
         }
@@ -56,7 +65,9 @@ class BannerController extends Controller
         $aReturn['search_end_booking_date'] = (!empty(session('end_booking_date'))) ? session('end_booking_date'): '';
         $banner_status = session('banner_status');
         $aReturn['search_banner_status'] = (isset($banner_status) && $banner_status != '') ? $banner_status : '';
-
+        $aReturn['search_country'] =  (!empty(session('banner_country'))) ? session('banner_country') :'';
+        $aReturn['search_state'] =  (!empty(session('banner_state'))) ? session('banner_state') : '';
+        $aReturn['search_city'] =  (!empty(session('banner_city'))) ? session('banner_city') : '';
         // $aReturn['mobile'] =  (!empty(session('mobile'))) ? session('mobile') : '';
 
         // dd($aReturn);
@@ -65,7 +76,6 @@ class BannerController extends Controller
         $Limit = config('custom.per_page');
         // $Limit = 3;
         $aReturn['Offset'] = ($PageNo - 1) * $Limit;
-
         $aReturn["banner_array"] = Banner::get_all($Limit, $aReturn);
         //dd( $aReturn["banner_array"]);
 
@@ -74,6 +84,9 @@ class BannerController extends Controller
         //     // Construct the image URL
         //     $banner->banner_image = asset('uploads/banner_image/' . $banner->banner_image);
         // }
+
+        $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
+        $aReturn["countries"] = DB::select($sSQL, array());
 
 
         $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['banner_array'], $CountRows, $Limit, $PageNo);
@@ -135,7 +148,7 @@ class BannerController extends Controller
                 'state' => 'required',
                 'country' => 'required'
             ];
-
+ 
             
             $message = [ 
                 'banner_url.required' => 'The Banner URL field is required.',

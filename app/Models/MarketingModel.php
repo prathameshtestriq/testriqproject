@@ -57,11 +57,21 @@ class MarketingModel extends Model
     public static function get_all($limit, $a_search = array()){
         $a_return = [];
 
-        $s_sql = 'SELECT * FROM marketing m where 1=1';
+        $s_sql = 'SELECT *,(SELECT name FROM events e WHERE m.event_id = e.id) As event_name FROM marketing m where 1=1';
 
         if (!empty($a_search['search_campaign_name'])) {
             $s_sql .= ' AND LOWER(m.campaign_name) LIKE \'%' . strtolower($a_search['search_campaign_name']) . '%\'';
         }
+
+        if(!empty( $a_search['search_event'])){
+            $s_sql .= ' AND m.event_id = '. $a_search['search_event']. ' ';
+        } 
+        // dd($a_search['search_campaign_type']);
+        if(!empty( $a_search['search_campaign_type'])){
+            // $s_sql .= ' AND m.campaign_type = '. $a_search['search_campaign_type']. ' ';
+            $s_sql .= ' AND LOWER(m.campaign_type) LIKE \'%' . strtolower($a_search['search_campaign_type']) . '%\'';
+        } 
+        
 
         if(!empty($a_search['search_start_marketing_date'])){
             $startdate = strtotime($a_search['search_start_marketing_date']);    

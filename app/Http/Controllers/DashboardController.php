@@ -40,7 +40,7 @@ class DashboardController extends Controller
         }
 
 
-        $aReturn['search_filter'] = (!empty(session('filter'))) ? session('filter') : '';
+        $aReturn['search_filter'] = (!empty(session('filter'))) ? session('filter') : 'week';
         $aReturn['search_category'] = (!empty(session('category'))) ? session('category') : '';
         $aReturn['search_event_name'] = (!empty(session('event_name'))) ? session('event_name') : '';
         $aReturn['search_from_date'] = (!empty(session('from_date'))) ? strtotime(session('from_date')) : '';
@@ -128,7 +128,7 @@ class DashboardController extends Controller
             $SQL2 .= ' AND b.ticket_id =' . $aReturn['search_category'];
         }
         if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
-            $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+            $SQL2 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
         }
         if (!empty($aReturn['search_event_name'])) {
             $SQL2 .= ' AND b.event_id =' . $aReturn['search_event_name'];
@@ -381,31 +381,6 @@ class DashboardController extends Controller
         $aReturn['PaymentData'] = (count($PaymentData) > 0) ? $PaymentData[0]->paymentId : [];
         // dd( $aReturn['PaymentData']);
 
-
-        #Category Booking Data bar chart table details and barchart details
-        // $SQL13 = "SELECT b.ticket_id,b.event_id,e.booking_date,SUM(b.quantity) AS TicketCount,(SELECT ticket_name FROM event_tickets WHERE id=b.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id=b.ticket_id) AS total_quantity,(SELECT ticket_price FROM event_tickets WHERE id=b.ticket_id) AS TicketPrice
-        // FROM booking_details AS b
-        // LEFT JOIN event_booking AS e ON b.booking_id = e.id
-        // WHERE e.transaction_status IN (1,3)";
-        // if ($aReturn['search_filter'] !== "") {
-        //     if (isset($StartDate) && isset($EndDate)) {
-        //         $SQL13 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
-        //     }
-        // }
-        // if (!empty($aReturn['search_category'])) {
-        //     $SQL13 .= ' AND b.ticket_id =' . $aReturn['search_category'];
-        // }
-        // if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
-        //     $SQL13 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
-        // }
-
-        // if (!empty($aReturn['search_event_name'])) {
-        //     $SQL13 .= ' AND b.event_id =' . $aReturn['search_event_name'];
-        // } else {
-        //     $SQL13 .= ' AND 1=2';
-        // }
-        // $SQL13 .= " GROUP BY b.ticket_id";
-
         $SQL13 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,SUM(bd.quantity) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id) AS TicketPrice
                 FROM event_booking AS e LEFT JOIN booking_details AS bd ON bd.booking_id = e.id
                 WHERE e.transaction_status IN (1,3) AND bd.ticket_amount != '0.00' AND bd.quantity != 0 ";
@@ -580,9 +555,8 @@ class DashboardController extends Controller
         $aReturn['femaleCount'] = $femaleCount;
         $aReturn['otherCount'] = $otherCount;
         // $aReturn['ageCategoryCount'] = $ageCategoryCount;
-        // $aReturn['ageCategory'] = $result;
-        // dd($aReturn['maleCount'], $aReturn['femaleCount'],   $aReturn['otherCount'] ,$aReturn['ageCategoryCount'], $aReturn['ageCategory'] );
-
+        $aReturn['ageCategory'] = $result;
+        // dd($aReturn);
 
         $sql17 = "SELECT e.event_id,e.cart_details FROM attendee_booking_details AS a 
         LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
@@ -655,8 +629,198 @@ class DashboardController extends Controller
         $aReturn['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $total_payment_gateway : 0;
         $aReturn['TotalConvenience'] = !empty($total_convenience_fee) ? number_format($total_convenience_fee,2) : 0;
        
-     
+        //-------------- Daily Category Count 
 
+            $FinalBarChartData = [];
+            $start_date_time = $end_date_time = "";
+            if ($aReturn['search_filter'] != "") {
+                $start_date_time = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
+                $end_date_time = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
+            }
+            if ($aReturn['search_filter'] != "") {
+
+                $currentDate = isset($StartDate) ? $StartDate : $start_date_time;
+                $end = isset($EndDate) ? $EndDate : $end_date_time;
+
+                while ($currentDate <= $end) {
+                    $AllDates[] = date('Y-m-d', $currentDate);
+                    $currentDate = strtotime('+1 day', $currentDate);
+                }
+
+                foreach ($AllDates as $key => $dates) {
+                    $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
+                    $BarChartData = [];
+                    $start_date = date('Y-m-d 00:00:00', strtotime($dates));
+                    $strtotime_start_today = strtotime($start_date);
+
+                    $end_date = date('Y-m-d 23:59:59', strtotime($dates));
+                    $strtotime_end_today = strtotime($end_date);
+
+                    $sSQL = "SELECT SUM(b.quantity) AS TicketCount
+                    FROM booking_details AS b
+                    LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                    WHERE e.transaction_status IN (1,3) AND b.booking_date BETWEEN :strtotime_start_today AND :strtotime_end_today ";
+                    
+                    if (!empty($aReturn['search_event_name'])) {
+                        $sSQL .= ' AND b.event_id =' . $aReturn['search_event_name'];
+                    }
+
+                    $params = array('strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
+                    $BarChartData = DB::select($sSQL, $params);
+
+                    // dd($BarChartData);
+                    $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
+                }
+            }
+            // dd($FinalBarChartData);
+           
+            $aReturn['FinalBarChartDateData'] = [];
+            $aReturn['FinalBarChartCountData'] = [];
+            if(!empty($FinalBarChartData)){
+                $DateArray = array_column($FinalBarChartData,'date');
+                $CountArray = array_column($FinalBarChartData,'count');
+
+                $quotedDates = array_map(function($date) {
+                    return '"' . $date . '"';
+                }, $DateArray);
+
+                $aReturn['FinalBarChartDateData'] = implode(', ', $quotedDates);
+                $aReturn['FinalBarChartCountData'] = implode(', ', $CountArray);
+                // dd($aReturn['FinalBarChartCountData']);
+            }
+
+        // -------------------------------- Utm code
+            $SQL3 = "SELECT e.utm_campaign, SUM(b.quantity) AS total_quantity
+                    FROM booking_details AS b 
+                    LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                    WHERE e.transaction_status IN (1, 3) 
+                    AND e.utm_campaign IS NOT NULL
+                    AND e.utm_campaign <> ''";
+           
+            if ($aReturn['search_filter'] !== "") {
+                if (isset($StartDate) && isset($EndDate)) {
+                    $SQL3 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                }
+            }
+           
+            if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+                $SQL16 .= ' AND b.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+            }
+
+            if (!empty($aReturn['search_category'])) {
+                $SQL3 .= ' AND b.ticket_id =' . $aReturn['search_category'];
+            }
+
+            if (!empty($FromDate) && !empty($ToDate)) {
+                $SQL3 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+            }
+
+            if (!empty($aReturn['search_event_name'])) {
+                $SQL3 .= ' AND b.event_id =' . $aReturn['search_event_name'];
+            }
+
+            $SQL3 .= " GROUP BY e.utm_campaign";
+
+            $utmCode = DB::select($SQL3, array());
+            $aReturn['utmCode'] = $utmCode;
+            // dd($aReturn['utmCode']);
+
+        // -------------------------------- Dyanamic question table
+
+            $SQL5 = "SELECT GROUP_CONCAT(id SEPARATOR ', ') AS Ids,GROUP_CONCAT(general_form_id SEPARATOR ', ') AS GIds FROM event_form_question WHERE is_custom_form=:is_custom_form ";
+            $EventFormQuestions = DB::select($SQL5, array('is_custom_form' => 0));
+
+            if (!empty($aReturn['search_event_name'])) {
+                $SQL5 .= ' AND event_id =' . $aReturn['search_event_name'];
+            }else{
+                $SQL5 .= ' AND 1=2';
+            }
+
+            $QuestionIds = (count($EventFormQuestions) > 0) ? $EventFormQuestions[0]->Ids : "";
+            // dd($QuestionIds);
+            $SQL6 = "SELECT a.ticket_id,a.attendee_details,b.event_id
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE e.transaction_status IN (1,3)";
+
+                if (!empty($aReturn['search_event_name'])) {
+                    $SQL6 .= ' AND b.event_id =' . $aReturn['search_event_name'];
+                }else{
+                    $SQL6 .= ' AND 1=2';
+                }
+                
+                if ($aReturn['search_filter'] !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL6 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                if (!empty($aReturn['search_category'])) {
+                    $SQL6 .= ' AND b.ticket_id =' . $aReturn['search_category'];
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL6 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                }
+             
+                $CustomQue = DB::select($SQL6, array());
+                // dd($CustomQue);
+                $CustomQuestions = [];
+                $questionIdsArray = explode(',', $QuestionIds);
+ 
+                if(!empty($CustomQue)){
+                    foreach ($CustomQue as $key => $value) {
+                        $attendee_details = json_decode(json_decode($value->attendee_details));
+                        if(!empty($attendee_details)){
+                            foreach ($attendee_details as $key => $attendee) {
+                                if (in_array($attendee->id, $questionIdsArray)) {
+                                    if ($attendee->ActualValue != "" && $attendee->question_form_option != "") {
+                                        $question_form_option = json_decode($attendee->question_form_option);
+                                        $CustomQuestions[$attendee->id][] = $attendee;
+                                    }
+                                }
+                            }   
+                        }
+                       
+                    }
+                }
+                $CountArray = array(); $result = [];
+
+                if(!empty($CustomQuestions)){
+                    foreach ($CustomQuestions as $key => $items) {
+                        foreach ($items as $item) {
+
+                            $actualValue = $item->ActualValue;
+                            $question_label = $item->question_label;
+                            $options = json_decode($item->question_form_option, true);
+                          
+                            $label = ""; $limit = ""; $limit_flag = false; $labels = [];
+                            foreach ($options as $option) {
+                                
+                                if (in_array($option['id'], explode(',', $actualValue))) {
+                                    $labels[] = $option['label'];
+                                    $limit_flag = true;
+                                }
+                                $label = implode(', ', $labels);
+                            }
+
+                            if (!isset($CountArray[$key])) {
+                                $CountArray[$key] = [
+                                    "question_label" => $question_label
+                                ];
+                            }
+                    
+                            if (!isset($CountArray[$key][$actualValue])) {
+                                $CountArray[$key][$actualValue] = ["label" => $label, "count" => 0, "limit" => $limit];
+                            }
+                          
+                            $CountArray[$key][$actualValue]["count"]++;
+                        }//die;
+                   }
+                }
+
+                $aReturn['CountArray'] = $CountArray;
+               // dd($aReturn['CountArray']);
+ 
         return view('dashboard.admin_dashboard', $aReturn);
     }
 }

@@ -170,7 +170,7 @@
                                                 <label for="gst_number">GST Number <span style="color:red;">*</span></label>
                                                 <input type="text" id="gst_number" class="form-control" name="gst_number"
                                                     placeholder="Enter GST Number" autocomplete="off" value="{{ old('gst_number',$gst_number) }}"
-                                                    inputmode="numeric" />
+                                                    inputmode="numeric" oninput="this.value = this.value.toUpperCase()"/>
                                                 <h5><small class="text-danger" id="gst_number_err"></small></h5>
                                                 @error('gst_number')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -183,7 +183,7 @@
                                             <div class="form-group">
                                                 <label for="contact_gst_percentage">GST Percentage <span style="color:red;">*</span></label>
                                                 <input type="text" id="contact_gst_percentage" class="form-control" name="contact_gst_percentage"
-                                                    placeholder="Enter GST Percentage" autocomplete="off" value="{{ old('contact_gst_percentage',$gst_percentage) }}"
+                                                    placeholder="Enter GST Percentage" autocomplete="off" oninput="validateNumberInput(this)" value="{{ old('contact_gst_percentage',$gst_percentage) }}"
                                                     inputmode="numeric" pattern="\d*"  value="{{ old('contact_gst_percentage',$gst_number) }}" />
                                                 <h5><small class="text-danger" id="contact_gst_percentage_err"></small></h5>
                                                 @error('contact_gst_percentage')
@@ -225,7 +225,7 @@
                                                     <?php } ?>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> 
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="banner_image">Banner Image 
@@ -366,16 +366,15 @@
 </script>
 <script src={{ asset('/app-assets/js/scripts/Ckeditor/ckeditor.js') }}></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        ClassicEditor
-            .create(document.querySelector('#about'))
-            .catch(error => {
-                console.error('Error initializing CKEditor:', error);
-            });
-    });
+    function validateNumberInput(input) {
+        input.value = input.value.replace(/[^0-9.]/g, ''); // Remove non-digit and non-decimal point characters
+        if ((input.value.match(/\./g) || []).length > 1) {
+            input.value = input.value.slice(0, -1); // Remove additional decimal points if there are more than one
+        }
+    }
 </script>
 <script>
-    // logo image
+   
     function previewLogoImage(input) {
         var file = input.files[0];
         if (file) {
@@ -529,5 +528,23 @@
       }
     }
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        ClassicEditor
+        .create(document.querySelector('#about'), {
+            ckfinder: {
+                uploadUrl: '{{ route('ckeditor_organiser.upload').'?_token='.csrf_token() }}'
+            }
+        })
+        .catch(error => {
+            console.error('Error initializing CKEditor:', error);
+        });
+      
+    });
+</script>
+
+
+
  
 

@@ -660,9 +660,99 @@
 
        <?php if(!empty($search_event_name)){ ?>
        
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+               <div class="card">
+                   <div class="card-body">
+                       
+                        <div class="row">
+                           <div class="col-md-12">
+                               <h4 class="text-dark m-0">Registration Per Day</h4>
+                           </div>
+                        </div>
+                       
+                        <?php if(!empty($search_event_name) && !empty($BookingData)){ ?>
+                           <div class="card-min-height d-flex align-items-center justify-content-center py-2">
+                                <div id="top_x_div" style="width: 700px; height: 500px;"></div>
+                           </div>
+                        <?php }else{ ?>
+                           <div class="card-min-height d-flex align-items-center justify-content-center py-2">
+                               <img src="{{ asset('uploads/event_images/no-events.png') }}" width="auto" height="130px"
+                               alt="">
+                           </div>
+                        <?php } ?>
+                   </div>
+               </div>
+            </div>
+
 
         <!-- ----------------------------------------------------- -->
-        <div class="row">
+
+         <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+                <div class="card">
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                            <h4 class="text-dark m-0">Coupons</h4>
+                            </div>
+                        </div>
+                    
+                        <div class="card-min-height d-flex justify-content-center py-2">
+                            <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left;">Code</th>
+                                        <th style="text-align: center;">Total</th>
+                                        <th style="text-align: center;">Used</th>
+                                        <th style="text-align: center;">Available</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                <?php 
+                                    if (!empty($CouponCodes)){
+                                    $totalDiscountCodeSum = 0;
+                                    $couponCountSum = 0;
+                                    $availableSum = 0;
+                                    $i = 0;
+                                ?>
+                                    <?php foreach ($CouponCodes as $val){
+                                    $available = $val->TotalDiscountCode - $val->CouponCount;
+                                    $totalDiscountCodeSum += $val->TotalDiscountCode;
+                                    $couponCountSum += $val->CouponCount;
+                                    $availableSum += $available;
+                                    $i++;
+                                ?>
+                                <tr>
+                                    <td style="text-align: left;">{{ $val->DiscountCode }}</td>
+                                    <td style="text-align: center;">{{ $val->TotalDiscountCode }}</td>
+                                    <td style="text-align: center;">{{ $val->CouponCount }}</td>
+                                    <td style="text-align: center;">{{ $available }}</td>
+                                </tr>
+                                <?php } ?>
+                                <tr>
+                                    <td style="text-align: left;"><strong>Total</strong></td>
+                                    <td style="text-align: center;"><strong>{{ $totalDiscountCodeSum }}</strong></td>
+                                    <td style="text-align: center;"><strong>{{ $couponCountSum }}</strong></td>
+                                    <td style="text-align: center;"><strong>{{ $availableSum }}</strong></td>
+                                </tr>
+                                <?php }else{ ?>
+                                <tr>
+                                    <td colspan="8" style="text-align:center; color:red;">No Record Found
+                                    </td>
+                                </tr>
+                                <?php }?>
+                                </tbody>
+                            </table>
+                            
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+     
+     
            
             <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
                 <div class="card">
@@ -774,11 +864,9 @@
                </div>
            </div>
 
-        </div>
        <?php } ?>
 
        <?php if(!empty($search_event_name)){ ?>
-        <div class="row"> 
             <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
                 <div class="card">
                     <div class="card-body">
@@ -805,103 +893,213 @@
                 </div>
             </div>
 
+           
+
+        <!------------------------------------ UTM Campaigns / Age Category -------------------------------------------------------->
             <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
                 <div class="card">
                     <div class="card-body">
 
                         <div class="row">
                             <div class="col-md-12">
-                            <h4 class="text-dark m-0">Coupons</h4>
+                            <h4 class="text-dark m-0">UTM Campaigns Data</h4>
                             </div>
                         </div>
-                    
+                
                         <div class="card-min-height d-flex justify-content-center py-2">
                             <div class="table-responsive">
                             <table class="table table-striped table-bordered">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: left;">Code</th>
-                                        <th style="text-align: center;">Total</th>
-                                        <th style="text-align: center;">Used</th>
-                                        <th style="text-align: center;">Available</th>
+                                        <th style="text-align: left;">UTM Code</th>
+                                        <th style="text-align: center;">Total Count</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-center">
                                 <?php 
-                                    if (!empty($CouponCodes)){
-                                    $totalDiscountCodeSum = 0;
-                                    $couponCountSum = 0;
-                                    $availableSum = 0;
-                                    $i = 0;
+                                    if (!empty($utmCode)){
+                                       foreach ($utmCode as $val){
                                 ?>
-                                    <?php foreach ($CouponCodes as $val){
-                                    $available = $val->TotalDiscountCode - $val->CouponCount;
-                                    $totalDiscountCodeSum += $val->TotalDiscountCode;
-                                    $couponCountSum += $val->CouponCount;
-                                    $availableSum += $available;
-                                    $i++;
+                                    <tr>
+                                        <td style="text-align: left;">{{ $val->utm_campaign }}</td>
+                                        <td style="text-align: center;">{{ $val->total_quantity }}</td>
+                                    </tr>
+                                <?php 
+                                       } 
+                                    }else{ 
                                 ?>
                                 <tr>
-                                    <td style="text-align: left;">{{ $val->DiscountCode }}</td>
-                                    <td style="text-align: center;">{{ $val->TotalDiscountCode }}</td>
-                                    <td style="text-align: center;">{{ $val->CouponCount }}</td>
-                                    <td style="text-align: center;">{{ $available }}</td>
-                                </tr>
-                                <?php } ?>
-                                <tr>
-                                    <td style="text-align: left;"><strong>Total</strong></td>
-                                    <td style="text-align: center;"><strong>{{ $totalDiscountCodeSum }}</strong></td>
-                                    <td style="text-align: center;"><strong>{{ $couponCountSum }}</strong></td>
-                                    <td style="text-align: center;"><strong>{{ $availableSum }}</strong></td>
-                                </tr>
-                                <?php }else{ ?>
-                                <tr>
-                                    <td colspan="8" style="text-align:center; color:red;">No Record Found
+                                    <td colspan="2" style="text-align:center; color:red;">No Record Found
                                     </td>
                                 </tr>
                                 <?php }?>
                                 </tbody>
                             </table>
                             
+                           </div>
                         </div>
+                  </div>
+                </div>
+            </div>
+            
+
+            <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+                <div class="card">
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                            <h4 class="text-dark m-0">Age Category</h4>
+                            </div>
+                        </div>
+                
+                        <div class="card-min-height d-flex justify-content-center py-2">
+                            <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left;">Age Category</th>
+                                        <th style="text-align: center;">Total Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                <?php 
+                                    if (!empty($ageCategory)){
+                                       foreach ($ageCategory as $val){
+                                ?>
+                                    <tr>
+                                        <td style="text-align: left;">{{ $val->age_category }}</td>
+                                        <td style="text-align: center;">{{ $val->count }}</td>
+                                    </tr>
+                                <?php 
+                                       } 
+                                    }else{ 
+                                ?>
+                                    <tr>
+                                        <td colspan="2" style="text-align:center; color:red;">No Record Found
+                                        </td>
+                                    </tr>
+                                <?php }?>
+                                </tbody>
+                            </table>
+                            
+                           </div>
+                        </div>
+                  </div>
+                </div>
+            </div>
+
+        
+        <!------------------------------------ Dnyanamic Quetion wise table data -------------------------------------------------->
+        
+     
+
+            <?php 
+                if(!empty($CountArray)){
+                   foreach($CountArray as $key=>$label){
+            ?>
+                <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+                    <div class="card">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                <h4 class="text-dark m-0"><?php echo $label['question_label']; ?></h4>
+                                </div>
+                            </div>
+                            
+                            <div class="card-min-height d-flex justify-content-center py-2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align: letf;">Label</th>
+                                                <th style="text-align: center;">Count</th>
+                                                <th style="text-align: center;">Limit</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody class="text-center">
+                                            <?php 
+                                                if (!empty($CountArray[$key])){
+                                                    $total_count = $total_limit = 0;
+                                                    foreach ($CountArray[$key] as $key1=>$val){
+                                                        if($key1 != 'question_label'){
+                                                           $limit = !empty($val['limit']) && isset($val['limit']) ? $val['limit'] : 0; 
+                                                           $total_count += $val['count'];
+                                                           $total_limit += $limit;
+                                            ?>
+                                                <tr>
+                                                    <td style="text-align: left;"><?php echo $val['label']; ?></td>
+                                                    <td style="text-align: center;"><?php echo $val['count']; ?></td>
+                                                    <td style="text-align: center;"><?php echo $limit; ?></td>
+                                                </tr>
+                                            <?php 
+                                                      }
+                                                    }
+                                            ?> 
+                                                <tr>
+                                                    <td style="text-align: left;"><strong>Total</strong></td>
+                                                    <td style="text-align: center;"><strong><?php echo $total_count; ?></strong></td>
+                                                    <td style="text-align: center;"><strong><?php echo $total_limit; ?></strong></td>
+                                                </tr>  
+
+                                            <?php }else{ 
+                                            ?>
+                                                <tr>
+                                                    <td colspan="3" style="text-align:center; color:red;">No Record Found
+                                                    </td>
+                                                </tr>
+                                        <?php }?>
+                                        </tbody>
+                                       
+                                    </table>
+                               </div>
+                            </div>
+                           
                         </div>
                     </div>
                 </div>
-            </div>
+
+            <?php 
+                   }
+                } 
+            ?>
         </div>
+
+
+
        <?php } ?>
 
     </section>
  
 
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-      google.charts.load('current', {packages: ['corechart', 'bar']});
-      google.charts.setOnLoadCallback(drawChart);
-
-      function drawChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Category', 'Value'],
-          ['January', 100],
-          ['February', 150],
-          ['March', 200]
-        ]);
-
-        var options = {
-          title: 'Monthly Values',
-          chartArea: {width: '50%'},
-          hAxis: {
-            title: 'Value',
-            minValue: 0
-          },
-          vAxis: {
-            title: 'Category'
-          }
-        };
-
-        var chart = new google.visualization.BarChart(document.getElementById('top_x_div'));
-        chart.draw(data, options);
-      }
+    <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            Highcharts.chart('top_x_div', {
+              chart: {
+                type: 'column' // This creates a horizontal bar chart
+              },
+              title: {
+                text: 'Daily Category Count'
+              },
+              xAxis: {
+                title: {
+                  text: 'Categories'
+                },
+                categories: [<?php echo $FinalBarChartDateData; ?>],
+              },
+              yAxis: {
+                title: {
+                  text: 'Category'
+                }
+              },
+              series: [{
+                name: 'Categories',
+                data: [<?php echo $FinalBarChartCountData; ?>] // Data points for each category
+              }]
+            });
+          });
     </script>
 
     <script>

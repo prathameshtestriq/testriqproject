@@ -111,6 +111,8 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'], 'event/change_status', [EventController::class, 'change_active_status'])->name('change_status_event');
     Route::get('/event/remove_event/{id}', [EventController::class, 'remove_event'])->name('remove_event');
     Route::get('/event/clear_search', [EventController::class, 'clear_search'])->name('clear_search_event');
+    Route::match (['get'], ' /event/remove_event_image/{event_id}/{id}', [EventController::class, 'delete_event_image'])->name('delete_event_image');
+    Route::match(['get', 'post'],'/ckeditor_event_description/upload', [EventController::class, 'upload'])->name('ckeditor_event_description.upload');
   
     // EVENT Participants 
     Route::match(['get', 'post'],'/participants_event/{event_id?}', [EventParticipantsController::class, 'index'])->name('participants_event_index');
@@ -197,5 +199,11 @@ Route::group(['middleware' => ['checkLogin']], function () {
 
     // Organiser
     Route::match(['get', 'post'], '/organiser_master', [OrganiserController::class, 'index'])->name('organiser_index');
+    Route::match(['get', 'post'],'organiser_master/add', [OrganiserController::class,'add_edit'])->name('add_organiser');
+    Route::match(['get', 'post'],'organiser_master/edit/{Id}', [OrganiserController::class,'add_edit'])->name('edit_organiser');
+    Route::get('/organiser_master/clear_search', [OrganiserController::class, 'clear_search'])->name('clear_search_organiser_master');
+    Route::match(['get'], 'organiser_master/delete/{id}', [OrganiserController::class, 'delete_organiser'])->name('delete_organiser');
+    Route::match(['get', 'post'],'/ckeditor_organiser/upload', [OrganiserController::class, 'upload'])->name('ckeditor_organiser.upload');
+
 
 });

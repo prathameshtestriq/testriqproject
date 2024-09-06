@@ -18,9 +18,9 @@ class EventController extends Controller
     public function clear_search()
     {
         session()->forget('name');
-        session()->forget('city');
-        session()->forget('state');
-        session()->forget('country');
+        session()->forget('event_city');
+        session()->forget('event_state');
+        session()->forget('event_country');
         session()->forget('event_start_date');
         session()->forget('event_end_date');
         session()->forget('event_status');
@@ -36,7 +36,9 @@ class EventController extends Controller
 
         $aReturn = array();
         $aReturn['search_name'] = '';
-        $aReturn['search_city'] = '';
+        $aReturn['search_event_city'] = '';
+        $aReturn['search_event_state'] = '';
+        $aReturn['search_event_country'] = '';
         $aReturn['search_event_start_date'] = '';
         $aReturn['search_event_end_date'] = '';
         $aReturn['search_event_status'] = '';
@@ -45,9 +47,9 @@ class EventController extends Controller
 
         if (isset($request->form_type) && $request->form_type == 'search_event') {
             session(['name' => $request->name]);
-            session(['city' => $request->city]);
-            session(['state' => $request->state]);
-            session(['country' => $request->country]);
+            session(['event_city' => $request->event_city]);
+            session(['event_state' => $request->event_state]);
+            session(['event_country' => $request->event_country]);
             session(['event_start_date' => $request->event_start_date]);
             session(['event_end_date' => $request->event_end_date]);
             session(['event_status' => $request->event_status]);
@@ -56,9 +58,9 @@ class EventController extends Controller
         }
 
         $aReturn['search_event_name'] = (!empty(session('name'))) ? session('name') : '';
-        $aReturn['search_city'] = (!empty(session('city'))) ? session('city') : '';
-        $aReturn['search_state'] = (!empty(session('state'))) ? session('state') : '';
-        $aReturn['search_country'] = (!empty(session('country'))) ? session('country') : '';
+        $aReturn['search_event_city'] = (!empty(session('event_city'))) ? session('event_city') : '';
+        $aReturn['search_event_state'] = (!empty(session('event_state'))) ? session('event_state') : '';
+        $aReturn['search_event_country'] = (!empty(session('event_country'))) ? session('event_country') : '';
         $aReturn['search_event_start_date'] = (!empty(session('event_start_date'))) ?  session('event_start_date') : '';
         $aReturn['search_event_end_date'] = (!empty(session('event_end_date'))) ? session('event_end_date'): '';
         $event_status = session('event_status');
@@ -89,17 +91,35 @@ class EventController extends Controller
             // dd($sSQL);
         }
 
+        if(!empty( $aReturn['search_event_country'])){
+            $FiltersSql .= ' AND vm.country = '. $aReturn['search_event_country']. ' ';
+        } 
+
+        if(!empty( $aReturn['search_event_state'])){
+            $FiltersSql .= ' AND vm.state = '. $aReturn['search_event_state']. ' ';
+        } 
+
+        if(!empty( $aReturn['search_event_city'])){
+            $FiltersSql .= ' AND vm.city = '. $aReturn['search_event_city']. ' ';
+        } 
+
         if(isset(  $aReturn['search_event_status'] )){
             $FiltersSql .= ' AND (LOWER(vm.active) LIKE \'%' . strtolower( $aReturn['search_event_status'] ) . '%\')';
         } 
 
-        if (isset($aReturn['search_organizer'])) {
-            $FiltersSql .= ' AND LOWER(o.name) LIKE \'%' . strtolower($aReturn['search_organizer']) . '%\'';
+        // if (isset($aReturn['search_organizer'])) {
+        //     $FiltersSql .= ' AND LOWER(o.name) LIKE \'%' . strtolower($aReturn['search_organizer']) . '%\'';
+        // } 
+
+        // dd($aReturn['search_organizer']);
+        if (!empty($aReturn['search_organizer'])) {
+            $FiltersSql .= ' AND vm.created_by = (select id from organizer where id = vm.created_by AND id = '.$aReturn['search_organizer'].')';
         } 
        
-
+       
         #PAGINATION
-        $sSQL = 'SELECT count(vm.id) as count FROM events as vm  LEFT JOIN organizer AS o ON o.user_id = vm.created_by WHERE 1=1 AND vm.deleted=0 ' . $FiltersSql;
+        // $sSQL = 'SELECT count(vm.id) as count FROM events as vm  LEFT JOIN organizer AS o ON o.user_id = vm.created_by WHERE 1=1 AND vm.deleted=0 ' . $FiltersSql;
+        $sSQL = 'SELECT count(vm.id) as count FROM events as vm WHERE 1=1 AND vm.deleted=0 ' . $FiltersSql;
         $CountsResult = DB::select($sSQL);
         // dd($CountsResult);
         $CountRows = 0;
@@ -115,18 +135,25 @@ class EventController extends Controller
         
         // $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by (SELECT name FROM cities WHERE Id = vm.city) AS city, (SELECT name FROM states WHERE Id = vm.state) As state,(SELECT name FROM countries WHERE Id = vm.country) As country, vm.active FROM events AS vm WHERE vm.deleted = 0' . $FiltersSql. ' order by vm.id desc';
 
+        // $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,
+        //         o.user_id,(o.name) As organizer_name,(SELECT name FROM cities WHERE 
+        //         Id = vm.city) AS city,(SELECT name FROM states WHERE Id = vm.state) AS state, 
+        //         (SELECT name FROM countries WHERE Id = vm.country) AS country, 
+        //         vm.active, 
+        //         o.user_id
+        //  FROM events AS vm
+        //  LEFT JOIN organizer AS o ON o.user_id = vm.created_by
+        //  WHERE vm.deleted = 0 ' . $FiltersSql . ' 
+        //  ORDER BY vm.id DESC';
+
         $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,
-                o.user_id,(o.name) As organizer_name,(SELECT name FROM cities WHERE 
+                (SELECT name FROM cities WHERE 
                 Id = vm.city) AS city,(SELECT name FROM states WHERE Id = vm.state) AS state, 
                 (SELECT name FROM countries WHERE Id = vm.country) AS country, 
-                vm.active, 
-                o.user_id
+                vm.active
          FROM events AS vm
-         LEFT JOIN organizer AS o ON o.user_id = vm.created_by
          WHERE vm.deleted = 0 ' . $FiltersSql . ' 
-         ORDER BY vm.id DESC';
-
-
+         ORDER BY vm.id ASC';
 
         if ($Limit > 0) {
             $sSQL .= ' LIMIT ' . $aReturn['Offset'] . ',' . $Limit;
@@ -141,11 +168,13 @@ class EventController extends Controller
         $aReturn['Paginator']->setPath(request()->url());
         //dd($aReturn);
 
+        $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
+        $aReturn["countries"] = DB::select($sSQL, array());
         //return view('master_data.event.list', $aReturn);
         return view('master_data.event.list', $aReturn);
     }
 
-    public function add_edit(Request $request, $id = 0)
+     public function add_edit(Request $request, $id = 0)
     {
         $aReturn = [
             'name' => '',
@@ -164,7 +193,9 @@ class EventController extends Controller
             'event_keywords' => '',
             'address' => '',
             'Category' => '',
-            'SuccessMessage' => ''
+            'SuccessMessage' => '',
+            'banner_image' => '',
+            'imagePath'=> '',
         ];
         $Category = DB::select('SELECT *, (SELECT name FROM category WHERE category_id = id) AS category_name  FROM event_category WHERE  1=1');
       //  $allTypes = DB::select('SELECT *, (SELECT name FROM eTypes WHERE type_id = id) AS type_name FROM event_type WHERE 1=1');
@@ -204,6 +235,7 @@ class EventController extends Controller
             'event_description' => 'required|string',
             'event_keywords' => 'required|string',
             'time_zone' => 'required|string',
+            'event_banner_image' => !empty($id) ? '' : 'required|mimes:jpeg,jpg,png',
 
         ];
 
@@ -212,12 +244,21 @@ class EventController extends Controller
             'event_url.regex' => 'The Event URL must start with "www.", "http://", or "https://".',
         ]; 
 
+        // if(!empty($request->event_communication_creatives)){
+        //     $event_communication_Rules = [
+        //         'event_communication_creatives' => 'mimes:jpeg,jpg,png',       
+        //     ];
+        //      // Merge base rules with GST rules
+        //      $rules = array_merge($rules, $event_communication_Rules);
+        // }
+
         // Form handling
-        if ($request->form_type == 'add_edit_event') {
+        if (isset($request->form_type) && $request->form_type  == 'add_edit_event') {
             $validatedData = $request->validate($rules,$message);
+          
            // $Category = isset($request->category_id) ? $request->category_id : [];
-            
-            // Extracting values from request
+           // dd($request->event_communication_creatives);
+           // Extracting values from request
             $name = $validatedData['name'];
             $start_time = strtotime($validatedData['start_time']);
             $end_time = strtotime($validatedData['end_time']);
@@ -233,6 +274,39 @@ class EventController extends Controller
            // $active = $request->input('active', 1);
             $Category = $request->input('category_id', []);
             // Update or insert based on $id
+          
+            if(!empty($request->file('event_banner_image'))){
+                $banner_image = $this->uploadFile($request->file('event_banner_image'), public_path('uploads/banner_images'));
+                $sSQL = 'UPDATE events SET banner_image = :banner_image WHERE id=:id';
+                $Result = DB::update( $sSQL, array(
+                        'banner_image' => $banner_image,
+                        'id' => $id
+                    )
+                );
+            } 
+
+            if (!empty($request->file('event_communication_creatives'))) {
+                // Get event_id (assuming you are updating images for a specific event)
+                $event_id = $id;
+                // Loop through each uploaded file
+                foreach ($request->file('event_communication_creatives') as $file) {
+                    // Upload the file and get the filename/path
+                    $imagePath = $this->eventimageuploadFile($file, public_path('uploads/event_images'));    
+                    
+                    if (!empty($imagePath)) {
+                        $user_id = Session::get('logged_in');
+                        // Insert each uploaded image into the database
+                        $sSQL = 'INSERT INTO event_images (event_id, image, created_by) VALUES (:event_id, :image, :created_by)';
+                        $Result = DB::insert($sSQL, [
+                            'event_id' => $event_id,
+                            'image' => $imagePath,
+                            'created_by' => $user_id['id']
+                        ]); 
+                    } 
+                }  
+            }
+            
+          
             if ($id > 0) {
                 // if ($request->active == 'active') {
                 //     $active = 1;
@@ -259,7 +333,7 @@ class EventController extends Controller
 
                 // Execute the update query
                 $result = DB::update($usql, $bindings);
-
+               
                 if ($result) {
                     $successMessage = 'Event updated successfully';
                     DB::delete('DELETE FROM event_category WHERE event_id = ?', [$id]); // Clear existing type entries
@@ -297,12 +371,12 @@ class EventController extends Controller
                     'timezones' => $timezones
                 ];
                 $successMessage = 'Event added successfully';
-
+                 
                 // Execute query
                 DB::insert($sql, $bindings);
                 //   dd('here');
-
-
+                
+              
                 $EventId = DB::getPdo()->lastInsertId();
                if (!empty($Category) && !empty($EventId)) {
                     foreach ($Category as $category) {
@@ -324,6 +398,8 @@ class EventController extends Controller
                 return redirect('/event')->with('success', $successMessage);
                 // }
             }
+          
+           
         } else {
             // Edit event
 
@@ -334,6 +410,16 @@ class EventController extends Controller
                 $Materials = DB::select($sSQL, array('id' => $id));
                 //     dd($Materials);
                 $aReturn = (array) $Materials[0];
+
+                $sSQL = 'SELECT id,image FROM event_images WHERE event_id=:event_id';
+                //    $sSQL .= 'SELECT * FROM  event_category WHERE id =:id';
+                $aReturn['event_images'] = DB::select($sSQL, array('event_id' => $id));
+                //     dd($Materials);
+               
+                // $event_images = !empty($event_image[0]) ? $event_image[0] : '';
+                // $aReturn['event_images'] = (array) $event_images;
+                
+
             }
         }
    
@@ -341,10 +427,28 @@ class EventController extends Controller
         $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
         $aReturn["countries"] = DB::select($sSQL, array());
         $aReturn['Category'] = $Category;
-     //      
-   //     dd($aReturn['Category']);
+         
+        // dd($aReturn['Category']);
         return view('master_data.event.create', $aReturn);
 
+    }
+
+
+    public function uploadFile($File, $Path){
+        $ImageExtention =  $File->getClientOriginalExtension(); #get proper by code;
+        $a_return['event_banner_image'] = strtotime('now').'.'.$ImageExtention;
+        $File->move($Path, $a_return['event_banner_image']);
+        return $a_return['event_banner_image'];
+    }
+
+    public function eventimageuploadFile($file, $destinationPath)
+    {
+        // Create a unique file name for the image
+        $filename = time() . '-' . $file->getClientOriginalName();
+        // Move the file to the specified path
+        $file->move($destinationPath, $filename);
+        // Return the relative path of the uploaded image
+        return $filename;
     }
 
     public function get_states(Request $request){
@@ -406,5 +510,47 @@ class EventController extends Controller
             ->where('state_id', $request->state_id)
             ->pluck('name', 'id');
         return $cities;
+    }
+
+    public function delete_event_image($event_id ,$iId){
+        if (!empty($iId)) {
+            $sSQL1 = 'SELECT id,image FROM event_images Where id = '.$iId;
+            $Result = DB::select($sSQL1,array());
+
+            if (!empty($Result)) {
+                // Construct the full path to the image file
+                $imagePath = public_path('uploads/event_images/' . $Result[0]->image); 
+                // Delete the image file from the directory if it exists
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+    
+                // Now delete the image record from the database
+                $sSQL2 = 'DELETE FROM `event_images` WHERE id=:id';
+                $Result = DB::delete($sSQL2,array( 'id' => $iId));
+            }
+        }        
+        return redirect(url('/event/edit/'.$event_id));
+    }
+    public function upload(Request $request)
+    {
+        if ($request->hasFile('upload')) {
+            $originName = $request->file('upload')->getClientOriginalName();
+            $fileName = pathinfo($originName, PATHINFO_FILENAME);
+            $file = $request->file('upload');
+            $extension = $file->getClientOriginalExtension();
+            $fileName = $fileName . '_' . time() . '.' . $extension;
+    
+            $request->file('upload')->move(public_path('uploads/ckeditor_event_image/'), $fileName);     
+            $url = asset('uploads/ckeditor_event_image/' . $fileName);
+            $filePath = 'uploads/ckeditor_event_image/' ;
+     
+            return response()->json([
+                'fileName' => $fileName, 
+                'uploaded' => 1, 
+                'url' => $url, 
+                'filePath' => $filePath
+            ]);
+        }
     }
 } 

@@ -101,6 +101,16 @@ class OrganiserController extends Controller
             ];
 
 
+            if(!empty($request->banner_image) || !empty($request->registered_pancard) || !empty($request->registered_gst_certificate)){
+                $Rules = [
+                    'banner_image' => 'mimes:jpeg,jpg,png',
+                    'registered_pancard' => 'mimes:jpeg,jpg,png',
+                    'registered_gst_certificate' => 'mimes:jpeg,jpg,png'
+                     
+                ];
+                 // Merge base rules with GST rules
+                 $rules = array_merge($rules, $Rules);
+            }
          
             if(($request->gst) == 1){
                 $gstRules = [
@@ -213,6 +223,29 @@ class OrganiserController extends Controller
         MasterOrganiser::delete_organiser($iId);
         return redirect(url('/organiser_master'))->with('success', 'Organiser Deleted Successfully');
     }
+
+    public function upload(Request $request)
+    {
+        if ($request->hasFile('upload')) {
+            $originName = $request->file('upload')->getClientOriginalName();
+            $fileName = pathinfo($originName, PATHINFO_FILENAME);
+            $file = $request->file('upload');
+            $extension = $file->getClientOriginalExtension();
+            $fileName = $fileName . '_' . time() . '.' . $extension;
+    
+            $request->file('upload')->move(public_path('uploads/organiser/organizer_ckeditor_image/'), $fileName);     
+            $url = asset('uploads/organiser/organizer_ckeditor_image/' . $fileName);
+            $filePath = 'uploads/organiser/organizer_ckeditor_image/' ;
+     
+            return response()->json([
+                'fileName' => $fileName, 
+                'uploaded' => 1, 
+                'url' => $url, 
+                'filePath' => $filePath
+            ]);
+        }
+    }
+
 
    
     

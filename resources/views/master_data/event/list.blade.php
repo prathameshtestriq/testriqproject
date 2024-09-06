@@ -93,6 +93,40 @@
                                                     autocomplete="off" />
                                             </div>
 
+                                            <div class="col-sm-2">
+                                                <label for="form-control">Country</label>
+                                                <select id="country" name="event_country" class="select2 form-control">
+                                                    <option value="">All country</option>
+                                                    <?php  
+                                                    foreach ($countries as $value)
+                                                    {  
+                                                        $selected = '';
+                                                        if(old('event_country', $search_event_country) == $value->id){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
+                                                        <?php 
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-sm-2 ">
+                                                <label for="form-control">State</label>
+                                                <select id="state" name="event_state" class="select2 form-control">
+                                                    <option value="">All state</option>
+                                                </select>  
+                                            
+                                            </div>
+    
+                                            <div class="col-sm-2">
+                                                <label for="form-control">City</label>
+                                                <select id="city" name="event_city" class="select2 form-control">
+                                                    <option value="">All City</option>
+                                                </select>  
+                                            </div>
+
                                             <div class="col-sm-2 col-12">
                                                 <?php 
                                                    $event_status = array(0=>'Inactive',1=>'Active' );    
@@ -124,11 +158,11 @@
                                                         {
                                                             
                                                             $selected = '';
-                                                            if(old('organizer',$search_organizer) == $value->name){
+                                                            if(old('organizer',$search_organizer) == $value->id){
                                                                 $selected = 'selected';
                                                             }
                                                             ?>
-                                                            <option value="<?php echo $value->name; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
+                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
                                                             <?php 
                                                         }
                                                     ?>
@@ -137,7 +171,7 @@
  
                                             <div class="col-sm-2 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != '')|| !empty($search_organizer))
+                                                @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != '')|| !empty($search_organizer)|| !empty($search_event_country)|| !empty($search_event_state)|| !empty($search_event_city))
                                                     <a title="Clear" href="{{ url('event/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -158,11 +192,12 @@
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered">
                                 <thead>
-                                    <tr>
+                                    <tr> 
                                         <th style="text-align: center;">Sr No.</th>
                                         <th>Event Name</th>
                                         <th>Event Start Date</th>
                                         <th>Event End Date</th>
+                                        <th>Country</th>
                                         <th>State</th>
                                         <th>City</th>
                                         <th style="text-align: center;">View</th>
@@ -176,8 +211,9 @@
                                             <tr>
                                                 <td style="text-align: center;">{{ $key + 1 }}</td>
                                                 <td>{{ ucfirst($event->name) }}</td>
-                                                <td>{{ date('d-m-Y', $event->start_time) }}</td>
-                                                <td>{{ date('d-m-Y', $event->end_time) }}</td>
+                                                <td><?php echo !empty($event->start_time) ? date('d-m-Y', $event->start_time) : ''; ?></td>
+                                                <td><?php echo !empty($event->end_time) ? date('d-m-Y', $event->end_time) : ''; ?></td>
+                                                <td>{{ ucfirst($event->country) }}</td>
                                                 <td>{{ ucfirst($event->state) }}</td>
                                                 <td>{{ ucfirst($event->city) }}</td>
                                                 <td style="text-align: center;">
@@ -286,5 +322,78 @@
                 $(_this).prop("checked", !active);
             }
         }
+
+
+
+        $(document).ready(function() {
+        var CountryId = '<?php echo old('event_country', $search_event_country); ?>';
+        var StateId = '<?php echo old('event_state', $search_event_state); ?>';
+        var CityId = '<?php echo old('event_city', $search_event_city); ?>';
+
+        // Fetch states based on the selected country
+        if (CountryId !== '') {
+            $.ajax({
+                url: '/get_states', // Replace with your URL to fetch states
+                type: 'GET',
+                data: { country_id: CountryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'" '+ (StateId == value.id ? 'selected' : '') +'>'
+                            + value.name +'</option>');
+                    });
+
+                    // Fetch cities based on the selected state
+                    if (StateId !== '') {
+                        $.ajax({
+                            url: '/get_cities', // Replace with your URL to fetch cities
+                            type: 'GET',
+                            data: { state_id: StateId },
+                            success: function(cities) {
+                                $('#city').empty().append('<option value="">Select City</option>');
+                                $.each(cities, function(key, value) {
+                                    $('#city').append('<option value="'+ value.id +'" '+ (CityId == value.id ? 'selected' : '') +'>'
+                                        + value.name +'</option>');
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Handle country change
+        $('#country').change(function() {
+            var countryId = $(this).val();
+            $.ajax({
+                url: '/get_states',
+                type: 'GET',
+                data: { country_id: countryId },
+                success: function(states) {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $.each(states, function(key, value) {
+                        $('#state').append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    });
+                    $('#city').empty().append('<option value="">Select City</option>'); // Clear cities
+                }
+            });
+        });
+
+        // Handle state change
+        $('#state').change(function() {
+            var stateId = $(this).val();
+            $.ajax({
+                url: '/get_cities',
+                type: 'GET',
+                data: { state_id: stateId },
+                success: function(cities) {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                    $.each(cities, function(key, value) {
+                        $('#city').append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    });
+                }
+            });
+        });
+    });
     </script>
 @endsection
