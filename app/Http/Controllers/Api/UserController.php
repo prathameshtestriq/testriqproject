@@ -1807,16 +1807,18 @@ class UserController extends Controller
                 $aUserResult = DB::select($SQL1, array("user_id" => $UserId));
                 $username = !empty($aUserResult) ? $aUserResult[0]->username : '';
 
+                $SQL1 = "SELECT id FROM users WHERE LOWER(email) = :email ";
+                $aUserResult = DB::select($SQL1, array('email' => strtolower($email)));
+                    
+                $user_id = !empty($aUserResult) ? $aUserResult[0]->id : 0;
+
                 if (empty($EditOrgUserId)) {     // data insert
 
                     $SQL = "SELECT email FROM organiser_users WHERE LOWER(email) = :email AND id = :user_id";
                     $IsExist = DB::select($SQL, array('email' => strtolower($email), "user_id" => $UserId));
                     // dd($IsExist);
 
-                    $SQL1 = "SELECT id FROM users WHERE LOWER(email) = :email ";
-                    $aUserResult = DB::select($SQL1, array('email' => strtolower($email)));
-                    
-                    $user_id = !empty($aUserResult) ? $aUserResult[0]->id : 0;
+                   
                     //dd($IsCouponExist);
 
                     if (!empty($IsExist)) {
