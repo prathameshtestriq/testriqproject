@@ -1908,7 +1908,7 @@ class UserController extends Controller
                             'edit_id' => $EditOrgUserId
                         );
 
-                        $edit_sql = 'UPDATE organiser_users SET user_role =:user_role, firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, dob =:dob, gender =:gender, event_selected_type =:event_selected_type, event_ids =:event_ids, user_id: user_id WHERE id = :edit_id';
+                        $edit_sql = 'UPDATE organiser_users SET user_role =:user_role, firstname =:firstname, lastname =:lastname, email =:email, mobile =:mobile, dob =:dob, gender =:gender, event_selected_type =:event_selected_type, event_ids =:event_ids, user_id =:user_id WHERE id = :edit_id';
                         DB::update($edit_sql, $Bindings);
 
                         //------------ user table update role
