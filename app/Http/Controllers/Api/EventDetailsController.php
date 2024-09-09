@@ -179,5 +179,67 @@ class EventDetailsController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function check_participant_duplicate_email_mobile(Request $request) 
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $UserId = 0;
+            if (!empty($aToken)) {
+                $UserId = $aToken['data']->ID;
+            }
+
+            $EventId     = !empty($request->event_id) ? $request->event_id : 0;
+            $EmailID     = !empty($request->email_id) ? $request->email_id : 0;
+            $MobileNo    = !empty($request->mobile_no) ? $request->mobile_no : '';
+            // dd($EmailID);
+            $email_validation_flag  = 0;
+            $mobile_validation_flag = 0;
+               
+                //---------- email id check duplication
+                if(!empty($EmailID)){
+                    $sSQL = 'SELECT distinct(ad.email) as email_ids FROM event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as ad on ad.booking_details_id = bd.id  WHERE eb.event_id =:event_id AND lower(ad.email) =:email AND eb.transaction_status IN(1,3)';
+                    $aEmailResult = DB::select($sSQL, array('event_id' => $EventId, 'email' => strtolower($EmailID)));
+                    // dd($aEmailResult);
+
+                    if(!empty($aEmailResult)){
+                        $email_validation_flag = 1;
+                    }else{
+                        $email_validation_flag = 0;
+                    }
+                }
+               
+                //---------- mobile no check duplication
+                if(!empty($MobileNo)){
+                    $sSQL1 = 'SELECT distinct(ad.mobile) as mobile_no FROM event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as ad on ad.booking_details_id = bd.id  WHERE eb.event_id =:event_id AND ad.mobile =:mobile AND eb.transaction_status IN(1,3)';
+                    $aMobileResult = DB::select($sSQL1, array('event_id' => $EventId, 'mobile' => $MobileNo));
+
+                    if(!empty($aMobileResult)){
+                        $mobile_validation_flag = 1;
+                    }else{
+                        $mobile_validation_flag = 0;
+                    }
+                }
+               //dd($aMobileResult);
+                $response['data'] = array("email_validate_flag" => $email_validation_flag, "mobile_validate_flag" => $mobile_validation_flag);
+    
+                     
+            $response['message'] = 'Request processed successfully';
+            $ResposneCode = 200;
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
+
 
 }

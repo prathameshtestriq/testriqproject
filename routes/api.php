@@ -236,7 +236,8 @@ Route::controller(EventDetailsController::class)->group(function () {
     Route::post('/pageViewDetails', 'page_view_details');
     Route::post('/checkOrganizerUserDetails', 'check_organizer_user_details');
     Route::post('/checkUserLastLoginDetails', 'check_user_last_login_details');
-
+    Route::post('/checkParticipantDuplicateEmailMobile', 'check_participant_duplicate_email_mobile');
+   
 });
 
 
