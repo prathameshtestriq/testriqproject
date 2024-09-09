@@ -120,4 +120,6 @@ return [
 
     'url_link' => $url1, // set url
     'send_email_url' => $new_url, // set url
+
+    'last_login_days' => '+10 days', // last login days (use for logout purpose only)
 ];

@@ -129,4 +129,55 @@ class EventDetailsController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
+    public function check_user_last_login_details(Request $request) 
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $UserId = 0;
+            if (!empty($aToken)) {
+                $UserId = $aToken['data']->ID;
+            }
+
+            $UserLoginId     = !empty($request->user_id) ? $request->user_id : $UserId;
+            $currentDateTime = time();
+            $LastLoginFlag = 0;
+           // dd($TenDaysAgo);
+            if(!empty($UserLoginId)){
+                $Sql = 'SELECT id,login_time FROM users WHERE is_active = 1 AND id = '.$UserLoginId.' ';
+                $aResult = DB::select($Sql);
+               
+                $lastLoginDays = config('custom.last_login_days');
+                if(!empty($aResult)){
+                    $futureDate = strtotime($lastLoginDays, $aResult[0]->login_time);
+                    $formattedFutureDate = date('Y-m-d H:i:s', $futureDate);
+                    $lastTenDayDate = strtotime($formattedFutureDate);
+                    //dd($aResult[0]->login_time, $lastTenDayDate);
+                    if($currentDateTime > $lastTenDayDate){
+                        $LastLoginFlag = 1;
+                    }else{
+                        $LastLoginFlag = 0;
+                    }
+                }
+                $response['data'] = !empty($aResult) ? $LastLoginFlag : 0;
+            }
+                     
+            $response['message'] = 'Request processed successfully';
+            $ResposneCode = 200;
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
+
+
 }

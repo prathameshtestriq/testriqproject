@@ -235,6 +235,8 @@ Route::controller(EventDetailsController::class)->group(function () {
     Route::get('/CommunicationMasterDetails', 'communication_master_details');
     Route::post('/pageViewDetails', 'page_view_details');
     Route::post('/checkOrganizerUserDetails', 'check_organizer_user_details');
+    Route::post('/checkUserLastLoginDetails', 'check_user_last_login_details');
+
 });
 
 
