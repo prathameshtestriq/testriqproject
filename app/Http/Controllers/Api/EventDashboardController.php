@@ -69,7 +69,7 @@ class EventDashboardController extends Controller
                 }
 
                 // -------------------------------------Net Sales && Total Participants
-                $SQL1 = "SELECT IFNULL(SUM(b.quantity), 0) AS NetSales 
+                $SQL1 = "SELECT IFNULL(SUM(b.quantity), 0) AS NetSales
                     FROM booking_details AS b
                     LEFT JOIN event_booking AS e ON b.booking_id = e.id
                     WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
@@ -87,7 +87,29 @@ class EventDashboardController extends Controller
                 // dd($SQL1);
                 $TotalBooking = DB::select($SQL1, array('event_id' => $EventId));
                 $NetSales = (count($TotalBooking) > 0) ? $TotalBooking[0]->NetSales : 0;
+               
                 $ResponseData['NetSales'] = $NetSales;
+               
+                //---------------- Total Participant -----------
+
+                $SQL6 = "SELECT IFNULL(COUNT(e.id), 0) AS TotalParticipant  
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL6 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                if (!empty($Ticket)) {
+                    $SQL6 .= ' AND b.ticket_id =' . $Ticket;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL6 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                }
+                $TotalParticipantData = DB::select($SQL6, array('event_id' => $EventId));
+                $ResponseData['TotalParticipant'] = !empty($TotalParticipantData) ? $TotalParticipantData[0]->TotalParticipant : 0;
 
                 // 79,105,110 DISTINCT(user_id) replace it with id
                 // -------------------------------------Registration && Net Earnings
@@ -407,6 +429,9 @@ class EventDashboardController extends Controller
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
                 $couponUsedFlag = isset($aPost['coupon_used_flag']) ? $aPost['coupon_used_flag'] : 0;
 
+                $Page = (isset($aPost['page'])) ? $aPost['page'] : 1;
+                $Limit = (isset($aPost['limit'])) ? $aPost['limit'] : 10;
+
                 $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name, (SELECT ticket_status FROM event_tickets WHERE id=a.ticket_id) AS ticket_status FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id";
@@ -437,17 +462,7 @@ class EventDashboardController extends Controller
                 if (!empty($ParticipantName)) {
                     $sql .= " AND (a.firstname LIKE '%" . $ParticipantName . "%' OR a.lastname LIKE '%" . $ParticipantName . "%')";
                 }
-                // if (!empty($ParticipantName)) {
-                //     $nameParts = explode(' ', $ParticipantName);
-                //     $sql .= " AND (";
-                //     foreach ($nameParts as $index => $namePart) {
-                //         if ($index > 0) {
-                //             $sql .= " OR ";
-                //         }
-                //         $sql .= "(a.firstname LIKE '%" . $ParticipantName . "%'"." OR a.lastname LIKE '%" . $ParticipantName . "%'".")";
-                //     }
-                //     $sql .= ")";
-                // }
+            
                 if (!empty($RegistrationID)) {
                     $sql .= " AND a.registration_id LIKE '%" . $RegistrationID . "%'";
                 }
@@ -464,15 +479,15 @@ class EventDashboardController extends Controller
                 if ($user_id != 0) {
                     $sql .= " AND b.user_id =" . $user_id;
                 }
-                if (!empty($FromDate) && empty($ToDate)) {
+                if (!empty($FromDate)) {
                     $sql .= " AND b.booking_date >= " . $FromDate;
                 }
-                if (empty($FromDate) && !empty($ToDate)) {
+                if (!empty($ToDate)) {
                     $sql .= " AND b.booking_date <= " . $ToDate;
                 }
-                if (!empty($FromDate) && !empty($ToDate)) {
-                    $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
-                }
+                // if (!empty($FromDate) && !empty($ToDate)) {
+                //     $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
+                // }
                 
                 //------- applied coupon code handle condition
                 if (isset($couponUsedFlag) && !empty($couponUsedFlag)) {
@@ -481,6 +496,13 @@ class EventDashboardController extends Controller
 
                 $sql .= " ORDER BY a.id DESC";
                 // dd($sql);
+                $TotalCount = DB::select($sql, array('event_id' => $EventId));
+
+                $Offset = ($Page * $Limit) - $Limit;
+                if($Limit > 0) {
+                   $sql .= " limit ".$Offset.",".$Limit." ";
+                }
+
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
                  // dd($AttendeeData);
                 foreach ($AttendeeData as $key => $value) {
@@ -502,6 +524,7 @@ class EventDashboardController extends Controller
                 // dd($AttendeeData);
 
                 $ResponseData['AttendeeData'] = (count($AttendeeData) > 0) ? $AttendeeData : [];
+                $ResponseData['TotalRecord'] = !empty($TotalCount) ? count($TotalCount) : 0;
 
                 // ALL TICKETS
                 $sql = "SELECT * FROM event_tickets WHERE event_id = :event_id AND active=1";
@@ -512,12 +535,12 @@ class EventDashboardController extends Controller
                
                 //------------- Attendee details excel generate
                 if (!empty($AttendeeData)) {
-                   $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
-                   $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
+                   // $ResponseData['attendee_details_excel'] = EventDashboardController::attendeeNetsalesExcellData($AttendeeData, $EventId);
+                   // $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
 
                 } else {
                     $ResponseData['attendee_details_excel'] = '';
-                   // $ResponseData['remittance_details_excel'] = '';
+                    $ResponseData['remittance_details_excel'] = '';
                 }
 
                 $ResposneCode = 200;
@@ -636,224 +659,351 @@ class EventDashboardController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function attendeeNetsalesExcellData($AttendeeData, $EventId)
+    public function attendeeNetsalesExcellData(Request $request)
     {
-        // dd($AttendeeData);
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
         $master = new Master();
         $excel_url = '';
-        if (!empty($AttendeeData)) {
+       
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
 
-            $ExcellDataArray = [];
-            $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1 order by sort_order asc";
-            $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
-            // dd($EventQuestionData);
+            if (!$empty) {
+                $Auth = new Authenticate();
+                $Auth->apiLog($request);
 
-            $card_array = array(
-                array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
-                // 
-                // array("id" => 101193, "question_label" => "Payment Mode", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101193, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101194, "question_label" => "Free/Paid", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101187, "question_label" => "Coupon Code", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101195, "question_label" => "Total Amount", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101196, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101197, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101198, "question_label" => "Race Category", "question_form_type" => "text", "ActualValue" => "")
-            );
+                $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
+                $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
+                $user_id = isset($aPost['user_id']) ? $aPost['user_id'] : 0;
 
-            // $couponCode_array  = array( array("id" => 101187, "question_label" => "Coupon Code", "question_form_type" => "text", "ActualValue" => ""));
+                // EventBookingId
+                $TransactionStatus = isset($aPost['TransactionStatus']) ? $aPost['TransactionStatus'] : "";
+                $EventBookingId = isset($aPost['EventBookingId']) ? $aPost['EventBookingId'] : 0;
+                $ParticipantName = isset($aPost['participant_name']) ? $aPost['participant_name'] : 0;
+                $RegistrationID = isset($aPost['reg_id']) ? $aPost['reg_id'] : 0;
+                $MobileNumber = isset($aPost['mobile_number']) ? $aPost['mobile_number'] : 0;
+                $Email = isset($aPost['email']) ? $aPost['email'] : 0;
+                $TicketId = isset($aPost['ticket_id']) ? $aPost['ticket_id'] : 0;
+                $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
+                $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
+                $couponUsedFlag = isset($aPost['coupon_used_flag']) ? $aPost['coupon_used_flag'] : 0;
+                
+                $Command = isset($aPost['command']) ? $aPost['command'] : '';
 
+                $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name, (SELECT ticket_status FROM event_tickets WHERE id=a.ticket_id) AS ticket_status FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id";
+                
+                //------- applied coupon code handle condition
+                if (isset($couponUsedFlag) && !empty($couponUsedFlag)) {
+                    $sql .= " LEFT JOIN applied_coupons AS ac ON ac.event_id = b.event_id AND ac.booking_detail_id = a.booking_details_id";
+                }
 
-            //dd(json_encode($new_array));
-            $ageCategory_array  = array( array("id" => 101199, "question_label" => "Age Category", "question_form_type" => "age_category", "ActualValue" => ""));
-            $utmCapning_array  = array( array("id" => 101186, "question_label" => "UTM Campaign", "question_form_type" => "text", "ActualValue" => ""));
-           
-            $main_array = array_merge($card_array, $EventQuestionData);
-            // $header_data_array = json_decode($main_array);
-            // dd($header_data_array);
-            //-------------------------
+                $sql .= " WHERE b.event_id = :event_id ";
+                // ORDER BY a.id DESC";
 
-            $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
-            // dd($AttendeeData);
-            $label = '';
-            $show_age_category = $show_coupon_code = $show_utm = 0;
+                if (!empty($TransactionStatus)) {
+                    if ($TransactionStatus == 101)
+                        $TransactionStatus = 0;
+                    if ($TransactionStatus == 1)
+                        $TransactionStatus = 1;
+                    if ($TransactionStatus == 3)
+                        $TransactionStatus = 3;
+                    if ($TransactionStatus == 102)
+                        $TransactionStatus = "1,3";
 
-            foreach ($AttendeeData as $key => $res1) {
+                    $sql .= " AND e.transaction_status IN (" . $TransactionStatus . ")";
+                }
+                if (!empty($EventBookingId)) {
+                    $sql .= " AND b.booking_id =" . $EventBookingId;
+                }
+                if (!empty($ParticipantName)) {
+                    $sql .= " AND (a.firstname LIKE '%" . $ParticipantName . "%' OR a.lastname LIKE '%" . $ParticipantName . "%')";
+                }
+            
+                if (!empty($RegistrationID)) {
+                    $sql .= " AND a.registration_id LIKE '%" . $RegistrationID . "%'";
+                }
 
-                //----------- get coupon code
-                $sql = "SELECT id,(select ed.discount_code from event_coupon as ec left join event_coupon_details as ed on ed.event_coupon_id = ec.id where ec.id = applied_coupons.coupon_id) as coupon_name FROM applied_coupons WHERE event_id = :event_id AND booking_detail_id=:booking_detail_id ";
-                $aCouponResult = DB::select($sql, array('event_id' => $res1->event_id, 'booking_detail_id' => $res1->booking_details_id));
-                // dd($aCouponResult); 
+                if (!empty($MobileNumber)) {
+                    $sql .= " AND a.mobile = " . $MobileNumber;
+                }
+                if (!empty($Email)) {
+                    $sql .= " AND a.email LIKE '%" . $Email . "%'";
+                }
+                if (!empty($TicketId)) {
+                    $sql .= " AND a.ticket_id =" . $TicketId;
+                }
+                if ($user_id != 0) {
+                    $sql .= " AND b.user_id =" . $user_id;
+                }
+                if (!empty($FromDate) && empty($ToDate)) {
+                    $sql .= " AND b.booking_date >= " . $FromDate;
+                }
+                if (empty($FromDate) && !empty($ToDate)) {
+                    $sql .= " AND b.booking_date <= " . $ToDate;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
+                }
+                
+                //------- applied coupon code handle condition
+                if (isset($couponUsedFlag) && !empty($couponUsedFlag)) {
+                    $sql .= " AND ac.coupon_id = ".$couponUsedFlag;
+                }
 
-               
-                $attendee_details_array = json_decode(json_decode($res1->attendee_details), true);
-                // $attendee_details_array = $res1->attendee_details;
-                $final_attendee_details_array = json_encode(array_merge($attendee_details_array, $card_array, $ageCategory_array, $utmCapning_array));
+                $sql .= " ORDER BY a.id DESC";
+                // dd($sql);
+                $AttendeeData = DB::select($sql, array('event_id' => $EventId));
+                 // dd($AttendeeData);
+                foreach ($AttendeeData as $key => $value) {
+                    $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
 
-                //-----------------------------
-                $sql = "SELECT txnid,payment_mode,payment_status,created_datetime,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
-                $paymentDetails = DB::select($sql, array('booking_pay_id' => $res1->booking_pay_id));
-                //dd($paymentDetails);
-                $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
-                $payment_mode = !empty($paymentDetails) ? $paymentDetails[0]->payment_mode : '';
-                $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
-                $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
-                $booking_datetime = !empty($paymentDetails) ? date('d-m-Y h:i:s A', $paymentDetails[0]->created_datetime) : '';
+                    if(!empty($value->attendee_details)){
+                        // dd(json_decode(json_decode($value->attendee_details)));
+                        $new_mobile_no = '';
+                        foreach(json_decode(json_decode($value->attendee_details)) as $res){
+                            if($res->question_form_type == 'mobile' && $res->question_label == 'Mobile Number'){
+                                $new_mobile_no = $res->ActualValue;
+                                break;
+                            }
+                        }
+                        $value->mobile = $new_mobile_no;
+                    }
+                }
 
-                // dd(json_decode($final_attendee_details_array));
-                //-----------------------------
-                foreach (json_decode($final_attendee_details_array) as $val) {
-                    if (isset($val->question_label)) {
+                // dd($AttendeeData);
+                // $ResponseData['AttendeeData'] = (count($AttendeeData) > 0) ? $AttendeeData : [];
 
-                        $aTemp = new stdClass;
-                        $aTemp->question_form_type = $val->question_form_type;
-                        $aTemp->question_label = $val->question_label;
-                        $labels = [];
+                //------------- Attendee details excel generate
+                if (!empty($AttendeeData)) {
 
-                        if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
-                            if (!empty($val->question_form_option)) {
-                                $question_form_option = json_decode($val->question_form_option, true);
-                               
-                                if($val->question_form_type == "radio" || $val->question_form_type == "select"){
-                                    if(isset($val->ActualValue) && !empty($val->ActualValue)){
-                                        foreach ($question_form_option as $option) {
-                                            if ($option['id'] === (int) $val->ActualValue) {
-                                                $label = $option['label'];
-                                                break;
+                    if($Command == 'revenue'){
+                        $ResponseData['remittance_details_excel'] = EventDashboardController::remittanceDetailsExcellData($AttendeeData, $EventId);
+                    }else if($Command == 'attendee'){
+
+                        $ExcellDataArray = [];
+                        $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1 order by sort_order asc";
+                        $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
+                        // dd($EventQuestionData);
+
+                        $card_array = array(
+                            array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),
+                            array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
+                            array("id" => 101193, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue" => ""),
+                            array("id" => 101194, "question_label" => "Free/Paid", "question_form_type" => "text", "ActualValue"=> ""),
+                            array("id" => 101187, "question_label" => "Coupon Code", "question_form_type" => "text", "ActualValue" => ""),
+                            array("id" => 101195, "question_label" => "Total Amount", "question_form_type" => "text", "ActualValue"=> ""),
+                            array("id" => 101196, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> ""),
+                            array("id" => 101197, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
+                            array("id" => 101198, "question_label" => "Race Category", "question_form_type" => "text", "ActualValue" => "")
+                        );
+
+                        //dd(json_encode($new_array));
+                        $ageCategory_array  = array( array("id" => 101199, "question_label" => "Age Category", "question_form_type" => "age_category", "ActualValue" => ""));
+                        $utmCapning_array  = array( array("id" => 101186, "question_label" => "UTM Campaign", "question_form_type" => "text", "ActualValue" => ""));
+                       
+                        $main_array = array_merge($card_array, $EventQuestionData);
+                       
+                        $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
+                        // dd($AttendeeData);
+                        $label = '';
+                        $show_age_category = $show_coupon_code = $show_utm = 0;
+
+                        foreach ($AttendeeData as $key => $res1) {
+
+                            //----------- get coupon code
+                            $sql = "SELECT id,(select ed.discount_code from event_coupon as ec left join event_coupon_details as ed on ed.event_coupon_id = ec.id where ec.id = applied_coupons.coupon_id) as coupon_name FROM applied_coupons WHERE event_id = :event_id AND booking_detail_id=:booking_detail_id ";
+                            $aCouponResult = DB::select($sql, array('event_id' => $res1->event_id, 'booking_detail_id' => $res1->booking_details_id));
+                            // dd($aCouponResult); 
+                           
+                            $attendee_details_array = json_decode(json_decode($res1->attendee_details), true);
+                            // $attendee_details_array = $res1->attendee_details;
+                            $final_attendee_details_array = json_encode(array_merge($attendee_details_array, $card_array, $ageCategory_array, $utmCapning_array));
+
+                            //-----------------------------
+                            $sql = "SELECT txnid,payment_mode,payment_status,created_datetime,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
+                            $paymentDetails = DB::select($sql, array('booking_pay_id' => $res1->booking_pay_id));
+                            //dd($paymentDetails);
+                            $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
+                            $payment_mode = !empty($paymentDetails) ? $paymentDetails[0]->payment_mode : '';
+                            $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
+                            $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
+                            $booking_datetime = !empty($paymentDetails) ? date('d-m-Y h:i:s A', $paymentDetails[0]->created_datetime) : '';
+
+                            // dd(json_decode($final_attendee_details_array));
+                            //-----------------------------
+                            foreach (json_decode($final_attendee_details_array) as $val) {
+                                if (isset($val->question_label)) {
+
+                                    $aTemp = new stdClass;
+                                    $aTemp->question_form_type = $val->question_form_type;
+                                    $aTemp->question_label = $val->question_label;
+                                    $labels = [];
+
+                                    if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
+                                        if (!empty($val->question_form_option)) {
+                                            $question_form_option = json_decode($val->question_form_option, true);
+                                           
+                                            if($val->question_form_type == "radio" || $val->question_form_type == "select"){
+                                                if(isset($val->ActualValue) && !empty($val->ActualValue)){
+                                                    foreach ($question_form_option as $option) {
+                                                        if ($option['id'] === (int) $val->ActualValue) {
+                                                            $label = $option['label'];
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                
+                                            }else if($val->question_form_type == "checkbox"){
+                                                if(isset($val->ActualValue) && !empty($val->ActualValue)){
+                                                    foreach ($question_form_option as $option) {
+                                                        if (in_array($option['id'], explode(',', $val->ActualValue))) {
+                                                             $labels[] = $option['label'];
+                                                        }
+                                                    }
+                                                    $label = implode(', ', $labels);
+                                                }
+                                              
+                                            }
+                                            
+                                            $aTemp->answer_value = $label;
+                                        } else {
+                                            if ($val->question_form_type == "countries") {
+                                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCountryName($val->ActualValue) : "";
+                                            } else if ($val->question_form_type == "states") {
+                                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getStateName($val->ActualValue) : "";
+                                            } else if ($val->question_form_type == "cities") {
+                                                $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
+                                            } else {
+                                                
+                                                if($val->question_form_type == "age_category"){
+                                                   
+                                                    $aTemp->question_label = 'Age Category';
+                                                    if(!empty($val->data)){
+                                                        $show_age_category = 1;
+                                                        $aTemp->answer_value = htmlspecialchars($val->data[0]->age_category);
+                                                    }else{ $aTemp->answer_value = ''; }
+                                                }else if($val->question_form_type == "date"){
+                                                    $aTemp->answer_value = date('d-m-Y',strtotime($val->ActualValue));
+                                                }else{
+                                                    $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                                }
+                                               
                                             }
                                         }
                                     }
-                                    
-                                }else if($val->question_form_type == "checkbox"){
-                                    if(isset($val->ActualValue) && !empty($val->ActualValue)){
-                                        foreach ($question_form_option as $option) {
-                                            if (in_array($option['id'], explode(',', $val->ActualValue))) {
-                                                 $labels[] = $option['label'];
-                                            }
-                                        }
-                                        $label = implode(', ', $labels);
-                                    }
-                                  
-                                }
-                                
-                                $aTemp->answer_value = $label;
-                            } else {
-                                if ($val->question_form_type == "countries") {
-                                    $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCountryName($val->ActualValue) : "";
-                                } else if ($val->question_form_type == "states") {
-                                    $aTemp->answer_value = !empty($val->ActualValue) ? $master->getStateName($val->ActualValue) : "";
-                                } else if ($val->question_form_type == "cities") {
-                                    $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCityName($val->ActualValue) : "";
-                                } else {
-                                    
-                                    if($val->question_form_type == "age_category"){
-                                       
-                                        $aTemp->question_label = 'Age Category';
-                                        if(!empty($val->data)){
-                                            $show_age_category = 1;
-                                            $aTemp->answer_value = htmlspecialchars($val->data[0]->age_category);
-                                        }else{ $aTemp->answer_value = ''; }
-                                    }else if($val->question_form_type == "date"){
-                                        $aTemp->answer_value = date('d-m-Y',strtotime($val->ActualValue));
-                                    }else{
-                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue);
-                                    }
+                                    //-------------------------------------
                                    
+                                    if ($val->question_label == 'Transaction/Order ID') {
+                                        $aTemp->answer_value = $tran_id;
+                                    }
+
+                                    if ($val->question_label == 'Registration ID') {
+                                        $aTemp->answer_value = !empty($res1->registration_id) ? $res1->registration_id : '';
+                                    }
+
+                                    if ($val->question_label == 'Payu ID') {
+                                        $aTemp->answer_value = $mihpayid;
+                                    }
+
+                                    if($val->question_label == 'Payment Status'){
+                                        $aTemp->answer_value = ucfirst($payment_status);
+                                    }
+
+                                    if ($val->question_label == 'Booking Date/Time') {
+                                        $aTemp->answer_value = $booking_datetime;
+                                    }
+
+                                    if($val->question_label == 'Total Amount'){
+                                        $aTemp->answer_value = !empty($res1->total_amount) ? number_format($res1->total_amount,2) : '0.00';
+                                    }
+
+                                    if($val->question_label == 'Free/Paid'){
+                                        $aTemp->answer_value = !empty($res1->ticket_amount) && $res1->ticket_amount > 0 ? 'PAID' : 'FREE';
+                                    }
+
+                                    if($val->question_label == 'Race Category'){
+                                        $aTemp->answer_value = !empty($res1->TicketName) ? $res1->TicketName : '';
+                                    }
+
+                                    if($val->question_label == 'UTM Campaign'){
+                                       
+                                        if(!empty($res1->utm_campaign)){
+                                            $show_utm = 1;
+                                            $aTemp->answer_value = $res1->utm_campaign;
+                                        }else{ $aTemp->answer_value = ''; }
+                                      
+                                    }
+
+                                    if($val->question_label == 'Coupon Code'){
+                                        
+                                        if(!empty($aCouponResult)){
+                                            $show_coupon_code = 1;
+                                            $aTemp->answer_value = $aCouponResult[0]->coupon_name;
+                                        }else{ $aTemp->answer_value = ''; }
+                                    }
+
+                                    //-------------------------------------
+                                    $ExcellDataArray[$key][] = $aTemp;
                                 }
                             }
                         }
-                        //-------------------------------------
-                       
-                        if ($val->question_label == 'Transaction/Order ID') {
-                            $aTemp->answer_value = $tran_id;
+                        // dd($show_utm);
+
+                        $url = env('APP_URL') . '/public/';
+                        //dd($url);
+                        
+                        if($show_age_category == 1){
+                            $main_array = array_merge($main_array, $ageCategory_array);
+                        } else{
+                            $main_array = array_merge($main_array);
                         }
 
-                        if ($val->question_label == 'Registration ID') {
-                            $aTemp->answer_value = !empty($res1->registration_id) ? $res1->registration_id : '';
+                        if($show_utm == 1){
+                            $main_array = array_merge($main_array, $utmCapning_array);
+                        } else{
+                            $main_array = array_merge($main_array);
                         }
+                   
+                        $header_data_array = json_decode(json_encode($main_array));
 
-                        if ($val->question_label == 'Payu ID') {
-                            $aTemp->answer_value = $mihpayid;
-                        }
-
-                        if($val->question_label == 'Payment Status'){
-                            $aTemp->answer_value = ucfirst($payment_status);
-                        }
-
-                        if ($val->question_label == 'Booking Date/Time') {
-                            $aTemp->answer_value = $booking_datetime;
-                        }
-
-                        if($val->question_label == 'Total Amount'){
-                            $aTemp->answer_value = !empty($res1->total_amount) ? number_format($res1->total_amount,2) : '0.00';
-                        }
-
-                        if($val->question_label == 'Free/Paid'){
-                            $aTemp->answer_value = !empty($res1->ticket_amount) && $res1->ticket_amount > 0 ? 'PAID' : 'FREE';
-                        }
-
-                        if($val->question_label == 'Race Category'){
-                            $aTemp->answer_value = !empty($res1->TicketName) ? $res1->TicketName : '';
-                        }
-
-                        if($val->question_label == 'UTM Campaign'){
-                           
-                            if(!empty($res1->utm_campaign)){
-                                $show_utm = 1;
-                                $aTemp->answer_value = $res1->utm_campaign;
-                            }else{ $aTemp->answer_value = ''; }
-                          
-                        }
-
-                        if($val->question_label == 'Coupon Code'){
-                            
-                            if(!empty($aCouponResult)){
-                                $show_coupon_code = 1;
-                                $aTemp->answer_value = $aCouponResult[0]->coupon_name;
-                            }else{ $aTemp->answer_value = ''; }
-                        }
-
-                        //-------------------------------------
-                        $ExcellDataArray[$key][] = $aTemp;
+                        $filename = "attendee_" . $event_name . '_' . time();
+                        $path = 'attendee_details_excell/' . date('Ymd') . '/';
+                        $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $header_data_array), $path . '/' . $filename . '.xlsx', 'excel_uploads');
+                        $ResponseData['attendee_details_excel'] = url($path) . "/" . $filename . ".xlsx";
                     }
+                } else {
+                    $ResponseData['attendee_details_excel'] = '';
+                    $ResponseData['remittance_details_excel'] = '';
                 }
+
+                $ResposneCode = 200;
+                $message = 'Request processed successfully';
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
             }
-            // dd($show_utm);
-
-            $url = env('APP_URL') . '/public/';
-            //dd($url);
-            
-            if($show_age_category == 1){
-                $main_array = array_merge($main_array, $ageCategory_array);
-            } else{
-                $main_array = array_merge($main_array);
-            }
-
-            if($show_utm == 1){
-                $main_array = array_merge($main_array, $utmCapning_array);
-            } else{
-                $main_array = array_merge($main_array);
-            }
-       
-            // if($show_coupon_code == 1){
-            //     $main_array = array_merge($main_array, $couponCode_array);
-            // }else{
-            //     $main_array = array_merge($main_array);
-            // }
-
-            $header_data_array = json_decode(json_encode($main_array));
-
-            // dd($header_data_array);
-
-            // $filename = "attendee_sheet_".time();
-            $filename = "attendee_" . $event_name . '_' . time();
-            $path = 'attendee_details_excell/' . date('Ymd') . '/';
-            $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $header_data_array), $path . '/' . $filename . '.xlsx', 'excel_uploads');
-            $excel_url = url($path) . "/" . $filename . ".xlsx";
-
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
         }
-        return $excel_url;
+
+        $response = [
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
     }
 
     function remittanceDetailsExcellData($AttendeeData, $EventId)
@@ -993,7 +1143,7 @@ class EventDashboardController extends Controller
            // dd($AttendeeDataArray);
 
             $url = env('APP_URL') . '/public/';
-            $filename = "revenue_report_" . time();
+            $filename = "Revenue_report_" . time();
             $path = 'attendee_details_excell/' . date('Ymd') . '/';
             $data = Excel::store(new RemittanceDetailsDataExport($AttendeeDataArray), $path . '/' . $filename . '.xlsx', 'excel_uploads');
             $excel_url = url($path) . "/" . $filename . ".xlsx";
