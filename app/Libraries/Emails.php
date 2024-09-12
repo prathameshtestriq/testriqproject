@@ -285,9 +285,9 @@ Welcome aboard!
 
     public function send_admin_side_mail($EmailIds, $MessageContent, $Subject, $type)
     {
-        
+        // dd($EmailIds,$MessageContent, $Subject, $type);
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
+        $email->setFrom("support@youtoocanrun.com", "Email");
         $email->setSubject($Subject);
         $email->addTo($EmailIds, $Subject);
         $email->addContent("text/plain", "Dear, ");
@@ -297,8 +297,10 @@ Welcome aboard!
         );
 
         $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+        // dd($sendgrid);
         try {
             $response = $sendgrid->send($email);
+            // dd($response);
             // send mail
             $responseData = [
                 'statusCode' => $response->statusCode(),
@@ -313,6 +315,7 @@ Welcome aboard!
                 "response" => json_encode($responseData),
                 "send_mail_to" => $send_mail_to,
             );
+            // dd($Binding8);
             $Sql8 = "UPDATE admin_send_email_log SET send_email_flag =:send_email_flag, response=:response WHERE send_mail_to=:send_mail_to";
             DB::update($Sql8, $Binding8);
            

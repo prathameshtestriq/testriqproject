@@ -12,17 +12,68 @@ use Illuminate\Validation\Rule;
 use League\Csv\Reader;
 use Storage;
 use App\Libraries\Emails;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EmailSendingController extends Controller
 {
+    public function clear_search()
+    {
+        session::forget('search_email_type');
+        session::forget('search_receiver');
+        session::forget('search_event');
+        session::forget('send_email_start_date');
+        session::forget('send_email_end_date');
+      
+        return redirect('/email_sending');
+    }
     public function index(Request $request)
     {
-        $s_sql = 'SELECT el.*, GROUP_CONCAT(e.name) AS event_names
-          FROM send_email_log el
-          LEFT JOIN events e ON FIND_IN_SET(e.id, el.event_id)
-          GROUP BY el.id';
+        $a_return = array();
+        $a_return['search_email_type'] = '';
+        $a_return['search_receiver'] = '';
+        $a_return['search_event'] = '';
+        $a_return['search_send_email_start_date'] = '';
+        $a_return['search_send_email_end_date'] = '';
+        $a_return['search_send_email_end_date'] = '';
 
-        $a_return['Email_details'] = DB::select($s_sql, array());
+        if (isset($request->form_type) && $request->form_type == 'search_email_send') {
+           
+            session(['search_email_type' => $request->search_email_type]);
+            session(['search_receiver' => $request->search_receiver]);
+            session(['search_event' => $request->search_event]);
+            session(['send_email_start_date' => $request->send_email_start_date]);
+            session(['send_email_end_date' => $request->send_email_end_date]);
+        
+            return redirect('/email_sending');
+        }
+       
+        $a_return['search_email_type'] = (!empty(session('search_email_type'))) ? session('search_email_type') : '';
+        $a_return['search_receiver'] = (!empty(session('search_receiver'))) ? session('search_receiver') : '';
+        $search_event = session('search_event');
+        $a_return['search_event'] =  (isset($search_event) && $search_event != "") ? $search_event : '';
+        $a_return['search_send_email_start_date'] = (!empty(session('send_email_start_date'))) ?  session('send_email_start_date') : '';
+        $a_return['search_send_email_end_date'] = (!empty(session('send_email_end_date'))) ? session('send_email_end_date'): '';
+        $search_email_type = session('search_email_type');
+        $a_return['search_email_type'] = (isset($search_email_type) && $search_email_type != '') ? $search_email_type : '';
+   
+
+
+        $CountRows = EmailSendingModel::get_count($a_return);
+        // dd($CountRows);
+        $PageNo = request()->input('page', 1);
+        $Limit = config('custom.per_page');
+        // $Limit = 3;
+        $a_return['Offset'] = ($PageNo - 1) * $Limit;
+        
+       
+        $a_return["Email_details"] = EmailSendingModel::get_all($Limit,$a_return);
+
+        $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
+        $a_return['EventsData'] = DB::select($SQL, array());
+
+        //  dd($a_return["Remittance"][0]);
+        $a_return['Paginator'] = new LengthAwarePaginator( $a_return["Email_details"], $CountRows, $Limit, $PageNo);
+        $a_return['Paginator']->setPath(request()->url());
 
         return view('email.list', $a_return);
     }
@@ -184,7 +235,7 @@ class EmailSendingController extends Controller
 
     function send_email_for_all($request)
     {
-        // dd($request);
+        //dd($request);
         
           $email_type = !empty($request->email_type) ? $request->email_type : ""; // => All
           $event_ids = !empty($request->event) ? implode(',', $request->event) : [];  
@@ -192,8 +243,29 @@ class EmailSendingController extends Controller
           $subject = !empty($request->subject) ? $request->subject : "";
           $date = !empty($request->date) ? $request->date : "";
           $message = !empty($request->message) ? $request->message : "";
+          $manual_email_address = !empty($request->email) ? $request->email : "";
           
+            // dd($email_type);
             $email_ids = [];
+            //------------------- send email manual
+            if(!empty($email_type) && $email_type == 2){
+
+                //---------- log entry
+                $Binding1 = array(
+                    "type" => 'Manual Email',
+                    "send_mail_to" => $manual_email_address,
+                    "subject"  => $subject,
+                    "message"  => $message,
+                    "datetime" => strtotime("now"),
+                );
+                $Sql1 = "INSERT INTO admin_send_email_log (type,send_mail_to,subject,message,datetime) VALUES (:type,:send_mail_to,:subject,:message,:datetime)";
+                DB::insert($Sql1, $Binding1);
+             
+                $Email = new Emails();
+                $Email->send_admin_side_mail($manual_email_address, $message, $subject, 'Manual Email'); 
+            }
+
+            //------------------------------------------------------
             if(!empty($email_type) && $email_type == 1){
                 
                 //---------------- send email for All Registration
