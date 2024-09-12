@@ -15,6 +15,94 @@ class EmailSendingModel extends Model
     protected $fillable = [];
     public $timestamps = false;
  
+    public static function get_count($a_search = array()){
+        $count = 0;
+        // dd($a_search);
+        $s_sql = 'SELECT count(el.id) as count FROM send_email_log el WHERE 1=1';
+
+        if (!empty($a_search['search_email_type'])) {
+            $s_sql .= ' AND el.email_type = ' .$a_search['search_email_type'];
+        }
+
+        if(!empty($a_search['search_send_email_start_date'])){
+            $startdate = strtotime($a_search['search_send_email_start_date']);    
+            $s_sql .= " AND el.sent_date_time >= "." $startdate";
+            // dd($sSQL);
+        }
+
+        if(!empty($a_search['search_end_marketing_date'])){
+            $endDate = strtotime($a_search['search_end_marketing_date']);
+            $s_sql .= " AND  el.sent_date_time <="." $endDate";
+            // dd($sSQL);
+        } 
+
+        if(!empty( $a_search['search_receiver'])){
+            $s_sql .= ' AND LOWER(el.recipient_type) LIKE \'%' . strtolower($a_search['search_receiver']) . '%\'';
+        } 
+
+        if (!empty($a_search['search_event'])) {
+            // Ensure the search_event is properly formatted
+            $searchEventIds = explode(',', $a_search['search_event']);
+            $searchEventIds = array_map('intval', $searchEventIds); // Convert to integers for safety
+            $searchEventIds = implode(',', $searchEventIds);
+            $s_sql .= ' AND FIND_IN_SET(' . $searchEventIds . ', el.event_id) > 0';
+        }
+        
+        $CountsResult = DB::select($s_sql);
+        if (!empty($CountsResult)) {
+            $count = $CountsResult[0]->count;
+        }
+        // dd($count);
+        return $count;
+    }
+
+    public static function get_all($limit, $a_search = array()){
+        $a_return = [];
+
+        $s_sql = 'SELECT el.*, GROUP_CONCAT(e.name) AS event_names
+        FROM send_email_log el
+        LEFT JOIN events e ON FIND_IN_SET(e.id, el.event_id)
+        where 1=1';
+
+        if (!empty($a_search['search_email_type'])) {
+            $s_sql .= ' AND el.email_type = ' .$a_search['search_email_type'];
+        }
+
+        if(!empty($a_search['search_send_email_start_date'])){
+            $startdate = strtotime($a_search['search_send_email_start_date']);    
+            $s_sql .= " AND el.sent_date_time >= "." $startdate";
+            // dd($sSQL);
+        }
+
+        if(!empty($a_search['search_send_email_end_date'])){
+            $endDate = strtotime($a_search['search_send_email_end_date']);
+            $s_sql .= " AND  el.sent_date_time <="." $endDate";
+            // dd($sSQL);
+        } 
+
+        if(!empty( $a_search['search_receiver'])){
+            $s_sql .= ' AND LOWER(el.recipient_type) LIKE \'%' . strtolower($a_search['search_receiver']) . '%\'';
+        } 
+
+        if (!empty($a_search['search_event'])) {
+            // Ensure the search_event is properly formatted
+            $searchEventIds = explode(',', $a_search['search_event']);
+            $searchEventIds = array_map('intval', $searchEventIds); // Convert to integers for safety
+            $searchEventIds = implode(',', $searchEventIds);
+            $s_sql .= ' AND FIND_IN_SET(' . $searchEventIds . ', el.event_id) > 0';
+        }
+        $s_sql .= " GROUP BY el.id";
+        
+        if ($limit > 0) {
+            $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
+        }
+    
+      
+       
+        $a_return = DB::select($s_sql);
+        return $a_return;
+    }
+
 
     public static function add_email($request,$email)
     {
@@ -65,7 +153,7 @@ class EmailSendingModel extends Model
             $eventIds = !empty($request->event) ? implode(',', $request->event) : '0';
         }else{
             $eventIds = '0';
-        }
+        } 
 
         $bindings = [
             'event_id' => $eventIds,
