@@ -177,7 +177,7 @@ class EventParticipantsController extends Controller
         $sql = 'SELECT name FROM events where id ='.$event_id;
         $Return['event_name'] = DB::select($sql,array());
         // dd( $Return['event_name']);
-        $Return['event_id']   = $event_id;
+        $Return['event_id']   = !empty($event_id) ? $event_id : 0;
 
         $sql = 'SELECT et.ticket_name FROM event_tickets et WHERE 1=1 GROUP BY et.ticket_name';
         $Return['Categories'] = DB::select($sql,array());

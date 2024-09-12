@@ -46,10 +46,17 @@
             <span class="menu-title text-truncate" data-i18n="Invoice">{{ $user['firstname'] }} {{ $user['lastname'] }}</span>
             </a>
             <ul class="menu-content">
-               <li>
+              <!--  <li>
                   <a class="d-flex align-items-center" href="{{ url('/user_profile') }}">
                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg>
                   <span class="menu-item text-truncate" data-i18n="List">Profile</span>
+                  </a>
+               </li> -->
+
+               <li>
+                  <a class="d-flex align-items-center" href="{{ url('/db_backup') }}">
+                      <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" ><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h200v80H160v480h640v-480H600v-80h200q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-184L280-544l56-56 104 104v-304h80v304l104-104 56 56-200 200Z"/></svg>
+                  <span class="menu-item text-truncate" data-i18n="List">Download Database Backup</span>
                   </a>
                </li>
        

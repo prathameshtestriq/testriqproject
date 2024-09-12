@@ -61,8 +61,9 @@ Route::get('/admin', function () {
 Route::post('/login', [LoginController::class,'index']);
 
 Route::group(['middleware' => ['checkLogin']], function () {
-    Route::match (['get', 'post'],'/dashboard', [DashboardController::class,'dashboard_details'])->name('dashboard');
-    Route::get('dashboard/clear_search', [DashboardController::class, 'clear_search'])->name('clear_search_dashboard');
+     Route::match (['get', 'post'],'/dashboard', [DashboardController::class,'dashboard_details'])->name('dashboard');
+     Route::get('dashboard/clear_search', [DashboardController::class, 'clear_search'])->name('clear_search_dashboard');
+     Route::get('/db_backup', [DashboardController::class, 'db_backup']);
     
      /* USER ROUTE */
      Route::match (['get', 'post'], '/users', [UserController::class, 'index'])->name('user_index')->name('users.index');
@@ -168,6 +169,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get','post'],' payment_log/export_payment_log',[PaymentLogController::class,'export_payment_log'])->name('export_payment_log');
 
     // Sending Email
+    Route::get('/email_sending/clear_search', [EmailSendingController::class, 'clear_search'])->name('clear_search_email');
     Route::match(['get', 'post'], '/email_sending', [EmailSendingController::class, 'index'])->name('email_sending_index');
     Route::match(['get', 'post'],'email_sending/add', [EmailSendingController::class,'add_edit'])->name('add_email_sending');
     Route::match(['get', 'post'], 'email_sending/change_status', [EmailSendingController::class, 'change_active_status'])->name('change_status_email_sending');
@@ -204,6 +206,8 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::get('/organiser_master/clear_search', [OrganiserController::class, 'clear_search'])->name('clear_search_organiser_master');
     Route::match(['get'], 'organiser_master/delete/{id}', [OrganiserController::class, 'delete_organiser'])->name('delete_organiser');
     Route::match(['get', 'post'],'/ckeditor_organiser/upload', [OrganiserController::class, 'upload'])->name('ckeditor_organiser.upload');
+    Route::match(['get', 'post'],'/ckeditor_testimonial_description/upload', [TestimonialController::class, 'upload'])->name('ckeditor_testimonial_description.upload');
+
 
 
 });

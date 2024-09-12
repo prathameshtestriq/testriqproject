@@ -72,8 +72,12 @@ class RegistrationSuccessfulModel extends Model
         }
  
        
-        if(isset( $a_search['search_registration_transaction_status'])){
-            $s_sql .= ' AND (LOWER( eb.transaction_status) LIKE \'%' . strtolower($a_search['search_registration_transaction_status']) . '%\')';
+        // if(isset( $a_search['search_registration_transaction_status'])){
+        //     $s_sql .= ' AND (LOWER( eb.transaction_status) LIKE \'%' . strtolower($a_search['search_registration_transaction_status']) . '%\')';
+        // } 
+
+        if(isset( $a_search['search_registration_transaction_status']) &&  $a_search['search_registration_transaction_status'] != ''){
+            $s_sql .= ' AND eb.transaction_status = '.$a_search['search_registration_transaction_status'];
         } 
 
         if(!empty( $a_search['search_registration_email'])){
@@ -121,8 +125,8 @@ class RegistrationSuccessfulModel extends Model
         }
 
 
-        if(isset( $a_search['search_registration_transaction_status'])){
-            $s_sql .= ' AND (LOWER( eb.transaction_status) LIKE \'%' . strtolower($a_search['search_registration_transaction_status']) . '%\')';
+        if(isset( $a_search['search_registration_transaction_status']) &&  $a_search['search_registration_transaction_status'] != ''){
+            $s_sql .= ' AND eb.transaction_status = '.$a_search['search_registration_transaction_status'];
         } 
 
 

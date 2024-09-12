@@ -750,7 +750,7 @@ class EventTicketController extends Controller
                             }
 
                             // nationality and country array
-                            if ($value->question_form_type == 'countries') {
+                            if ($value->question_form_type == 'countries') { 
                                 $sql = "SELECT id,name AS label FROM countries WHERE flag=1";
                                 $countries = DB::select($sql);
 

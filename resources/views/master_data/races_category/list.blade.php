@@ -74,7 +74,7 @@
                             <input type="hidden" name="form_type" value="search_type">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-3">
                                                 <label for="form-control"> Race Category Name</label>
@@ -128,7 +128,7 @@
                                             </div>
                                            
 
-                                            <div class="col-sm-3 mt-2">
+                                            <div class="col-sm-2 mt-2">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_name) || ($search_type_status != '') || ($search_show_as_home != '') )
                                                     <a title="Clear" href="{{ url('type/clear_search') }}" type="button"
@@ -138,12 +138,13 @@
                                                 @endif
                                                 
                                             </div>
+                                            <div class="col-sm-1 mt-2">
+                                                <a href="{{ url('/type/add') }}" class="btn btn-outline-primary float-right pr-2">
+                                                    <i data-feather="plus"></i><span>Add </span></a>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-4 mt-2">
-                                        <a href="{{ url('/type/add') }}" class="btn btn-outline-primary float-right pr-2">
-                                            <i data-feather="plus"></i><span>Add </span></a>
-                                    </div>
+
                                 </div>
                             </div>
                         </form>

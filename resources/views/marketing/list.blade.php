@@ -172,7 +172,7 @@
                                                     </a>
                                                 @endif
                                             </div>
-                                            <div class="col-sm-3 mt-2 float-right">
+                                            <div class="col-sm-3 mt-2 p-1 ">
                                                 <a href="{{ url('marketing/add') }}"
                                                     class="btn btn-outline-primary float-right pr-2">
                                                     <i data-feather="plus"></i><span>Add </span></a>

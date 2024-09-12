@@ -106,21 +106,21 @@
                                                     autocomplete="off" />
                                             </div>
                                            
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_booking_date1" class="form-control"
                                                     placeholder="Start Date" name="start_date"   value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d') : '') }}"  
                                                     autocomplete="off" />
                                             </div>
                                            
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">End Date</label>
                                                 <input type="date" id="end_booking_date1" class="form-control"
                                                     placeholder="End Date" name="end_date"  value="{{ old('end_booking_date', $search_end_booking_date ? \Carbon\Carbon::parse($search_end_booking_date)->format('Y-m-d') : '') }}" 
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2 "> 
+                                            <div class="col-sm-3 "> 
                                                 <?php 
                                                    $advertisement_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?>
@@ -152,7 +152,7 @@
                                                     </a>
                                                 @endif
                                             </div>
-                                            <div class="col-sm-1 mt-2">
+                                            <div class="col-sm-10 mt-2 float-right">
                                                 <a href="{{ url('/advertisement/add_edit') }}" class="btn btn-outline-primary float-right pr-2">
                                                     <i data-feather="plus"></i><span>Add</span></a>
                                             </div>

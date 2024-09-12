@@ -301,11 +301,7 @@
         </div>
     </section>
     <script src={{ asset('/app-assets/js/scripts/Ckeditor/ckeditor.js') }}></script>
-    {{-- <script>
-        ClassicEditor
-        .create(document.querySelector('#message'))
-
-    </script> --}}
+    
     <script>
         ClassicEditor
         .create(document.querySelector('#message'), {

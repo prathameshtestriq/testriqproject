@@ -117,8 +117,8 @@ class User extends Authenticatable
             $s_sql .= ' AND (LOWER(u.gender) LIKE \'%' . strtolower($a_search['search_gender']) . '%\')';
         }
         
-        if(isset( $a_search['search_status'])){
-            $s_sql .= ' AND (LOWER(u.is_active) LIKE \'%' . strtolower($a_search['search_status']) . '%\')';
+        if(isset( $a_search['search_status']) &&  $a_search['search_status'] != ''){
+            $s_sql .= ' AND u.is_active = '.$a_search['search_status'];
         } 
         
         // dd($a_search['search_country']);
@@ -176,8 +176,8 @@ class User extends Authenticatable
             $s_sql .= ' AND (LOWER(u.gender) LIKE \'%' . strtolower($a_search['search_gender']) . '%\')';
         }
 
-        if(isset( $a_search['search_status'])){
-            $s_sql .= ' AND (LOWER(u.is_active) LIKE \'%' . strtolower($a_search['search_status']) . '%\')';
+        if(isset( $a_search['search_status']) &&  $a_search['search_status'] != ''){
+            $s_sql .= ' AND u.is_active = '.$a_search['search_status'];
         } 
 
         if(!empty($a_search['search_role'])){

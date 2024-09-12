@@ -174,15 +174,28 @@
         </div>
     </section>
 @endsection
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> --}}
+<script src={{ asset('/app-assets/js/scripts/jquerycdn.js') }}></script>
 <script src={{ asset('/app-assets/js/scripts/Ckeditor/ckeditor.js') }}></script>
 <script>
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     ClassicEditor
+    //         .create(document.querySelector('#description'))
+    //         .catch(error => {
+    //             console.error('Error initializing CKEditor:', error);
+    //         });
+    // });
     document.addEventListener('DOMContentLoaded', function () {
         ClassicEditor
-            .create(document.querySelector('#description'))
-            .catch(error => {
-                console.error('Error initializing CKEditor:', error);
-            });
+        .create(document.querySelector('#description'), {
+            ckfinder: {
+                uploadUrl: '{{ route('ckeditor_testimonial_description.upload').'?_token='.csrf_token() }}'
+            }
+        })
+        .catch(error => {
+            console.error('Error initializing CKEditor:', error);
+        });
+      
     });
 </script>
 <script type="text/javascript">

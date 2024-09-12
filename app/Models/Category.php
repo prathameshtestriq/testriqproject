@@ -81,10 +81,9 @@ class Category extends Model
             $s_sql .= ' AND LOWER(name) LIKE \'%' . strtolower($a_search['search_category']) . '%\'';
         }
      
-        if(isset( $a_search['search_category_status'])){
-            $s_sql .= ' AND (LOWER(active) LIKE \'%' . strtolower($a_search['search_category_status']) . '%\')';
+        if(isset( $a_search['search_category_status']) &&  $a_search['search_category_status'] != ''){
+            $s_sql .= ' AND active = '.$a_search['search_category_status'];
         } 
-
         
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
@@ -105,12 +104,11 @@ class Category extends Model
 
         if (!empty($a_search['search_name'])) {
             $s_sql .= ' AND (LOWER(c.name) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-         //   $s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-           // $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
         }
 
-        if(isset( $a_search['search_category_status'])){
-            $s_sql .= ' AND (LOWER(active) LIKE \'%' . strtolower($a_search['search_category_status']) . '%\')';
+
+        if(isset( $a_search['search_category_status']) &&  $a_search['search_category_status'] != ''){
+            $s_sql .= ' AND active = '.$a_search['search_category_status'];
         } 
 
         $CountsResult = DB::select($s_sql);
@@ -123,11 +121,7 @@ class Category extends Model
 
     public static function add_category($request)
     {
-        // dd($request);
-        // $name = $request->category_name; // Corrected field name
-        // $logo = $request->category_logo; // Corrected field name
-        // $active = $request->status == 'active' ? 1 : 0; // Corrected field name
-
+        
         $name = $request['category_type_name'];
         $logo = $request['category_logo_name'];
         //dd($logo);

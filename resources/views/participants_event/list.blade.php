@@ -208,8 +208,11 @@
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
                                                     </a>
                                                 @endif
+
                                                 <div class="float-right">
-                                                    <a href="{{ url('participants_event/'.$event_id.'/export_revenue') }}" class="btn btn-danger text-white " title = "Revenue">Revenue </a>
+                                                    <?php if(!empty($search_event) || !empty($event_id)){ ?>
+                                                        <a href="{{ url('participants_event/'.$event_id.'/export_revenue') }}" class="btn btn-danger text-white " title = "Revenue">Revenue </a>
+                                                    <?php } ?>
                                                   <!--   @if (!empty($event_participants))
                                                       <a href="{{ url('participants_event/'.$event_id.'/export_download') }}" class="btn btn-danger text-white " title = "Download">Download </a>
                                                     @endif -->

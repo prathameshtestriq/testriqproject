@@ -42,8 +42,8 @@ class MarketingModel extends Model
             // dd($sSQL);
         } 
 
-        if(isset( $a_search['search_marketing_status'])){
-            $s_sql .= ' AND (LOWER(m.status) LIKE \'%' . strtolower($a_search['search_marketing_status']) . '%\')';
+        if(isset( $a_search['search_marketing_status']) &&  $a_search['search_marketing_status'] != ''){
+            $s_sql .= ' AND m.status = '.$a_search['search_marketing_status'];
         } 
 
         $CountsResult = DB::select($s_sql);
@@ -85,8 +85,11 @@ class MarketingModel extends Model
             // dd($sSQL);
         } 
 
-        if(isset( $a_search['search_marketing_status'])){
-            $s_sql .= ' AND (LOWER(m.status) LIKE \'%' . strtolower($a_search['search_marketing_status']) . '%\')';
+        // if(isset( $a_search['search_marketing_status'])){
+        //     $s_sql .= ' AND (LOWER(m.status) LIKE \'%' . strtolower($a_search['search_marketing_status']) . '%\')';
+        // } 
+        if(isset( $a_search['search_marketing_status']) &&  $a_search['search_marketing_status'] != ''){
+            $s_sql .= ' AND m.status = '.$a_search['search_marketing_status'];
         } 
      
         if ($limit > 0) {

@@ -26,8 +26,8 @@ class MasterRole extends Model
             $s_sql .= ' AND LOWER(rm.name) LIKE \'%' . strtolower($a_search['search_role_name']) . '%\'';
         }
 
-        if(isset( $a_search['search_role_status'])){
-            $s_sql .= ' AND (LOWER(rm.status) LIKE \'%' . strtolower($a_search['search_role_status']) . '%\')';
+        if(isset( $a_search['search_role_status']) &&  $a_search['search_role_status'] != ''){
+            $s_sql .= ' AND rm.status = '.$a_search['search_role_status'];
         } 
 
         $CountsResult = DB::select($s_sql);
@@ -47,8 +47,11 @@ class MasterRole extends Model
             $s_sql .= ' AND LOWER(rm.name) LIKE \'%' . strtolower($a_search['search_role_name']) . '%\'';
         }
 
-        if(isset( $a_search['search_role_status'])){
-            $s_sql .= ' AND (LOWER(rm.status) LIKE \'%' . strtolower($a_search['search_role_status']) . '%\')';
+        // if(isset( $a_search['search_role_status'])){
+        //     $s_sql .= ' AND (LOWER(rm.status) LIKE \'%' . strtolower($a_search['search_role_status']) . '%\')';
+        // } 
+        if(isset( $a_search['search_role_status']) &&  $a_search['search_role_status'] != ''){
+            $s_sql .= ' AND rm.status = '.$a_search['search_role_status'];
         } 
      
         if ($limit > 0) {

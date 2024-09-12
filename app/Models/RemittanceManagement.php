@@ -49,8 +49,9 @@ class RemittanceManagement extends Model
             // dd($sSQL);
         } 
 
-        if(isset( $a_search['search_remittance_status'])){
-            $s_sql .= ' AND (LOWER(rm.active) LIKE \'%' . strtolower($a_search['search_remittance_status']) . '%\')';
+       
+        if(isset( $a_search['search_remittance_status']) &&  $a_search['search_remittance_status'] != ''){
+            $s_sql .= ' AND rm.active = '.$a_search['search_remittance_status'];
         } 
 
         if(isset( $a_search['search_event_id'])){
@@ -86,8 +87,8 @@ class RemittanceManagement extends Model
             // dd($sSQL);
         } 
 
-        if(isset( $a_search['search_remittance_status'])){
-            $s_sql .= ' AND (LOWER(rm.active) LIKE \'%' . strtolower($a_search['search_remittance_status']) . '%\')';
+        if(isset( $a_search['search_remittance_status']) &&  $a_search['search_remittance_status'] != ''){
+            $s_sql .= ' AND rm.active = '.$a_search['search_remittance_status'];
         } 
 
         if(isset( $a_search['search_event_id'])){

@@ -80,8 +80,8 @@ class Advertisement extends Model
             // dd($sSQL);
         } 
 
-        if(isset( $a_search['search_advertisement_status'])){
-            $s_sql .= ' AND (LOWER(a.status) LIKE \'%' . strtolower($a_search['search_advertisement_status']) . '%\')';
+        if(isset( $a_search['search_advertisement_status']) &&  $a_search['search_advertisement_status'] != ''){
+            $s_sql .= ' AND a.status = '.$a_search['search_advertisement_status'].'';
         } 
        
        if ($limit > 0) {
@@ -114,10 +114,9 @@ class Advertisement extends Model
             $s_sql .= " AND  a.end_time <="." $endDate";
             // dd($sSQL);
         } 
-   
-
-        if(isset( $a_search['search_advertisement_status'])){
-            $s_sql .= ' AND (LOWER(a.status) LIKE \'%' . strtolower($a_search['search_advertisement_status']) . '%\')';
+       
+        if(isset( $a_search['search_advertisement_status']) &&  $a_search['search_advertisement_status'] != ''){
+            $s_sql .= ' AND a.status = '.$a_search['search_advertisement_status'];
         } 
    
        $CountsResult = DB::select($s_sql);

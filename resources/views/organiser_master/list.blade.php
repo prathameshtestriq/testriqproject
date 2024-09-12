@@ -74,14 +74,14 @@
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">Organiser Name</label>
                                                 <input type="text" id="organiser_name" class="form-control"
                                                     placeholder="Organiser Name" name="organiser_name" value="{{ $search_organiser_name }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
                                                 <label for="form-control"> User Name</label>
                                                 <select id="organiser_user_name" name="organiser_user_name" class="form-control select2 form-control">
                                                     <option value="">Select  user name</option>
@@ -100,7 +100,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">GST Number</label>
                                                 <input type="text" id="gst_number" class="form-control"
                                                     placeholder="GST Number" name="gst_number" value="{{ $search_gst_number }}"
@@ -117,7 +117,7 @@
                                                 @endif
                                             </div>
 
-                                            <div class="col-sm-4 mt-2 float-right">
+                                            <div class="col-sm-1 mt-2 float-right">
                                                 <a href="{{ url('organiser_master/add') }}" class="btn btn-outline-primary float-right pr-2">
                                                     <i data-feather="plus"></i><span>Add</span></a>
                                             </div>
@@ -202,7 +202,8 @@
     </section>
 @endsection
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> --}}
+<script src={{ asset('/app-assets/js/scripts/jquerycdn.js') }}></script>
 <script>
      function delorganiser(id) {
         // alert(id);

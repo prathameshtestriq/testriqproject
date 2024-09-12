@@ -77,35 +77,35 @@
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">Username</label>
                                                 <input type="text" id="name" class="form-control"
                                                     placeholder="User Name" name="name" value="{{$search_user_name }}"
                                                     autocomplete="off" />
                                             </div>
                                          
-                                            <div class="col-sm-2 ">
+                                            <div class="col-sm-3 ">
                                                 <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_payment_date" class="form-control"
                                                     placeholder="Start Date" name="start_payment_date" value="{{ old('start_payment_date', $search_start_payment_date ? \Carbon\Carbon::parse($search_start_payment_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
                                             
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">End Date</label>
                                                 <input type="date" id="end_payment_date" class="form-control"
                                                     placeholder="End Date" name="end_payment_date" value="{{ old('end_payment_date', $search_end_payment_date ? \Carbon\Carbon::parse($search_end_payment_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">Transaction Id</label>
                                                 <input type="text" id="transaction_id_payment" class="form-control"
                                                     placeholder="Transaction Id" name="transaction_id_payment" value=""
                                                     autocomplete="off" />
                                             </div>
                                             
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3 mt-2">
                                                 <?php 
                                                    $Transaction_Status = ['success','initiate','failure','Free'];    
                                                 ?>
@@ -127,7 +127,7 @@
                                                 </select>
                                             </div>
                                          
-                                            <div class="col-sm-2 mt-2">
+                                            <div class="col-sm-3 mt-3">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_user_name) || !empty($search_start_payment_date) || !empty($search_end_payment_date) || !empty($search_transaction_id_payment) || !empty($search_transaction_status_payment)  )
                                                     <a title="Clear" href="{{ url('/payment_log/clear_search') }}" type="button"
@@ -136,6 +136,12 @@
                                                     </a>
                                                 @endif     
                                             </div>
+                                            <div class="col-sm-6 mt-3   float-right">
+                                                <a href="{{ url('payment_log/export_payment_log') }}" class="btn btn-danger text-white float-right ml-2 ">Download </a>
+                                                <a href="{{ url('/dashboard') }}" class="btn  btn-primary  float-right">
+                                                    <span>Back</span></a>
+                                            </div>
+
                                         </div>
                                     </div>
                                     {{-- <div class="float-right">
@@ -143,11 +149,7 @@
                                         <a href="{{ url('/dashboard') }}"  class="btn btn-primary ">
                                             <span>Back</span></a>
                                     </div>   --}}
-                                    <div class="col-sm-12 mt-1   float-right">
-                                        <a href="{{ url('payment_log/export_payment_log') }}" class="btn btn-danger text-white float-right ml-2 ">Download </a>
-                                        <a href="{{ url('/dashboard') }}" class="btn  btn-primary  float-right">
-                                            <span>Back</span></a>
-                                    </div>
+                                   
                                 </div>
                             </div>
                         </form>
@@ -174,14 +176,15 @@
                                         $i = $Offset;?>
                                     <?php foreach ($payment_array as $val){
 
-                                        $data = isset($val->post_data) ? json_decode( $val->post_data , true) :  []; // Decode JSON into an associative array
+                                    $data = isset($val->post_data) ? json_decode( $val->post_data , true) :  []; // Decode JSON into an associative array
 
-                                        if (!empty($data) && isset($data['mihpayid'])) {
-                                            $mihpayid = $data['mihpayid'];
-                                        } else {
-                                            $mihpayid = '-'; // Handle cases where JSON is invalid or mihpayid is missing
-                                        }
-                                        $i++;?>
+                                    if (!empty($data) && isset($data['mihpayid'])) {
+                                        $mihpayid = $data['mihpayid'];
+                                    } else {
+                                        $mihpayid = '-'; // Handle cases where JSON is invalid or mihpayid is missing
+                                    }
+
+                                    $i++;?>
                                     <tr> 
                                         <td class="text-center">{{ $i }}</td>
                                         <td class="text-left">{{ ucfirst($val->firstname) }} {{ ucfirst($val->lastname) }}</td>

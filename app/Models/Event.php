@@ -51,20 +51,6 @@ class Event extends Model
         return $Follow;
     }
 
-
-    // public function getCategory($EventId)
-    // {
-    //     // dd($EventId,$UserId);
-    //     $Return = [];
-    //     if (!empty($EventId)) {
-    //         $sql = "SELECT category_id FROM event_category WHERE event_id=:event_id";
-    //         $Result = DB::select($sql, array('event_id' => $EventId));
-    //         foreach ($Result as $key => $value) {
-    //             $Return[$key] = $value->category_id;
-    //         }
-    //     }
-    //     return $Return;
-    // }
     function getCategory($EventId)
     {
         $sql = "SELECT c.* FROM category AS c WHERE active=1";
@@ -78,19 +64,6 @@ class Event extends Model
         return $Allcategory;
     }
 
-    // public function getTypes($EventId)
-    // {
-    //     // dd($EventId,$UserId);
-    //     $Return = [];
-    //     if (!empty($EventId)) {
-    //         $sql = "SELECT type_id FROM event_type WHERE event_id=:event_id";
-    //         $Result = DB::select($sql, array('event_id' => $EventId));
-    //         foreach ($Result as $key => $value) {
-    //             $Return[$key] = $value->type_id;
-    //         }
-    //     }
-    //     return $Return;
-    // }
 
     function getTypes($EventId)
     {

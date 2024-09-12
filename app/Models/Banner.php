@@ -107,8 +107,8 @@ class Banner extends Model
             // dd($sSQL);
         } 
 
-        if(isset( $a_search['search_banner_status'])){
-            $s_sql .= ' AND (LOWER(b.active) LIKE \'%' . strtolower($a_search['search_banner_status']) . '%\')';
+        if(isset( $a_search['search_banner_status']) &&  $a_search['search_banner_status'] != ''){
+            $s_sql .= ' AND b.active = '.$a_search['search_banner_status'];
         } 
 
         if(!empty( $a_search['search_country'])){
@@ -142,12 +142,6 @@ class Banner extends Model
         // dd($a_search);
         $s_sql = 'SELECT count(id) as count FROM banner b WHERE 1=1';
 
-        // if (!empty($a_search['search_banner'])) {
-        //     $s_sql .= ' AND (LOWER(b.banner_name) LIKE \'%' . strtolower($a_search['search_banner']) . '%\'';
-        //  //   $s_sql .= ' OR LOWER(u.lastname) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
-        //    // $s_sql .= ' OR LOWER(u.email) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
-        // }
-
         if (!empty($a_search['search_banner'])) {
             $s_sql .= ' AND (LOWER(b.banner_name) LIKE \'%' . strtolower($a_search['search_banner']) . '%\')';
         }
@@ -164,9 +158,11 @@ class Banner extends Model
             // dd($sSQL);
         } 
 
-        if(isset( $a_search['search_banner_status'])){
-            $s_sql .= ' AND (LOWER(b.active) LIKE \'%' . strtolower($a_search['search_banner_status']) . '%\')';
+      
+        if(isset( $a_search['search_banner_status']) &&  $a_search['search_banner_status'] != ''){
+            $s_sql .= ' AND b.active = '.$a_search['search_banner_status'];
         } 
+   
         
         if(!empty( $a_search['search_country'])){
             $s_sql .= ' AND b.country = '. $a_search['search_country']. ' ';

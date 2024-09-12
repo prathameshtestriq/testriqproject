@@ -287,7 +287,7 @@ Welcome aboard!
     {
         // dd($EmailIds,$MessageContent, $Subject, $type);
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("support@youtoocanrun.com", "Email");
+        $email->setFrom("support@youtoocanrun.com", "RACES");
         $email->setSubject($Subject);
         $email->addTo($EmailIds, $Subject);
         $email->addContent("text/plain", "Dear, ");

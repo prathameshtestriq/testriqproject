@@ -823,4 +823,27 @@ class DashboardController extends Controller
  
         return view('dashboard.admin_dashboard', $aReturn);
     }
+
+    public function db_backup(){
+        $databaseType = 'mysql';
+        $FileName = 'RacesBackup_' . date('Y_m_d_h_i_s') . '.sql';
+        
+         // Path where the backup will be saved
+        $backupPath = public_path("/database_backup/{$FileName}");
+        // dd($backupPath);
+        // $backupPath  = asset()
+        // Get the database credentials from the .env file
+        $DB_USERNAME = env('DB_USERNAME', 'root');
+        $DB_PASSWORD = env('DB_PASSWORD', 'your_db_password'); // Default to your password
+        $DB_DATABASE = env('DB_DATABASE', 'your_database_name');
+       
+        if ($databaseType === 'mysql') {
+            
+            exec("mysqldump -u {$DB_USERNAME} -p{$DB_PASSWORD} {$DB_DATABASE} > {$backupPath}");
+        } elseif ($databaseType === 'pgsql') {
+            exec("pg_dump -U your_db_user your_database > {$backupPath}");
+        }
+        // Return the backup file as a download and delete it afterward
+        return response()->download($backupPath, $FileName)->deleteFileAfterSend();
+    }
 }

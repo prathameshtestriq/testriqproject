@@ -75,28 +75,28 @@
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">Remittance Name</label>
                                                 <input type="text" id="remittance_name" class="form-control"
                                                     placeholder="Remittance Name" name="remittance_name"
                                                     value="{{old('remittance_name',$search_remittance_name)}}" autocomplete="off" />
                                             </div>
                                             
-                                            <div class="col-sm-2 ">
+                                            <div class="col-sm-3 ">
                                                 <label for="form-control">Start Remittance Date</label>
                                                 <input type="date" id="start_remittance_date" class="form-control"
                                                     placeholder="Start Date" name="start_remittance_date" value="{{ old('start_remittance_date', $search_start_remittance_date ? \Carbon\Carbon::parse($search_start_remittance_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" />
                                             </div>
                                             
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">End Remittance Date</label>
                                                 <input type="date" id="end_remittance_date" class="form-control"
                                                     placeholder="End Date" name="end_remittance_date" value="{{ old('end_remittance_date', $search_end_remittance_date ? \Carbon\Carbon::parse($search_end_remittance_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
                                                 <?php 
                                                    $remittance_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
@@ -118,7 +118,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
                                                 <label for="form-control"> Events</label>
                                                 <select id="event" name="event" class="form-control select2 form-control">
                                                     <option value="">Select  Event</option>

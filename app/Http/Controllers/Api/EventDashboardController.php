@@ -322,6 +322,9 @@ class EventDashboardController extends Controller
                 $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
 
+                $Page = (isset($aPost['page'])) ? $aPost['page'] : 1;
+                $Limit = (isset($aPost['limit'])) ? $aPost['limit'] : 10;
+
                 $sql = "SELECT 
                          eb.id AS EventBookingId,
                          eb.user_id,
@@ -354,24 +357,34 @@ class EventDashboardController extends Controller
                 if ($SearchUser) {
                     $sql .= " AND (u.firstname LIKE '%" . $SearchUser . "%' OR u.lastname LIKE '%" . $SearchUser . "%')";
                 }
-                if (!empty($FromDate) && empty($ToDate)) {
-                    $sql .= " AND eb.booking_date >= " . $FromDate;
+                if (!empty($FromDate)) {
+                    $sql .= " AND bd.booking_date >= " . $FromDate;
                 }
-                if (empty($FromDate) && !empty($ToDate)) {
-                    $sql .= " AND eb.booking_date <= " . $ToDate;
+                if (!empty($ToDate)) {
+                    $sql .= " AND bd.booking_date <= " . $ToDate;
                 }
-                if (!empty($FromDate) && !empty($ToDate)) {
-                    $sql .= " AND eb.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
-                }
+
+                // if (!empty($FromDate) && !empty($ToDate)) {
+                //     $sql .= " AND eb.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
+                // }
                 $sql .= " GROUP BY bd.booking_id";
                 $sql .= " ORDER BY eb.id DESC";
                 // dd($sql);
+
+                $TotalCount = DB::select($sql, array('event_id' => $EventId));
+
+                $Offset = ($Page * $Limit) - $Limit;
+                if($Limit > 0) {
+                   $sql .= " limit ".$Offset.",".$Limit." ";
+                }
+
                 $UserData = DB::select($sql, array('event_id' => $EventId));
 
                 foreach ($UserData as $key => $value) {
                     $value->booking_date = !empty($value->booking_date) ? date("d-m-Y H:i A", ($value->booking_date)) : '';
                 }
                 $ResponseData['UserData'] = (count($UserData) > 0) ? $UserData : [];
+                $ResponseData['TotalRecord'] = !empty($TotalCount) ? count($TotalCount) : 0;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -430,7 +443,7 @@ class EventDashboardController extends Controller
                 $couponUsedFlag = isset($aPost['coupon_used_flag']) ? $aPost['coupon_used_flag'] : 0;
 
                 $Page = (isset($aPost['page'])) ? $aPost['page'] : 1;
-                $Limit = (isset($aPost['limit'])) ? $aPost['limit'] : 10;
+                $Limit = (isset($aPost['limit'])) ? $aPost['limit'] : 30;
 
                 $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name, (SELECT ticket_status FROM event_tickets WHERE id=a.ticket_id) AS ticket_status FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
@@ -1177,19 +1190,32 @@ class EventDashboardController extends Controller
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
 
+                $Page = (isset($aPost['page'])) ? $aPost['page'] : 1;
+                $Limit = (isset($aPost['limit'])) ? $aPost['limit'] : 30;
+
                 $sql = "SELECT p.id AS paymentId,p.txnid,p.amount,p.payment_status,p.created_datetime,u.id AS userId,u.firstname,u.lastname,u.email,u.mobile 
                         FROM booking_payment_details AS p 
                         LEFT JOIN users AS u ON u.id=p.created_by
                         WHERE p.event_id=:event_id ORDER BY p.id DESC";
+
+                $TotalCount = DB::select($sql, array('event_id' => $EventId));
+
+                $Offset = ($Page * $Limit) - $Limit;
+                if($Limit > 0) {
+                   $sql .= " limit ".$Offset.",".$Limit." ";
+                }
+
                 $PaymentData = DB::select($sql, array('event_id' => $EventId));
 
                 foreach ($PaymentData as $key => $value) {
                     $value->created_datetime = !empty($value->created_datetime) ? date("d-m-Y H:i A", ($value->created_datetime)) : '';
                 }
                 $ResponseData['PaymentData'] = (count($PaymentData) > 0) ? $PaymentData : [];
+                $ResponseData['TotalRecord'] = !empty($TotalCount) ? count($TotalCount) : 0;
 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
+
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';

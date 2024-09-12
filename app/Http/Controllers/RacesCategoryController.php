@@ -53,12 +53,14 @@ class RacesCategoryController extends Controller
             $aReturn['search_name'] = '';
         }
 
-        // if(isset( $aReturn['search_type_status'])){
-        //     $FiltersSql .= ' AND (LOWER(active) LIKE \'%' . strtolower($aReturn['search_type_status']) . '%\')';
-        // } 
-        if(isset( $aReturn['search_show_as_home'])){
-            $FiltersSql .= ' AND (LOWER(show_as_home) LIKE \'%' . strtolower($aReturn['search_show_as_home']) . '%\')';
+        if(isset( $aReturn['search_type_status']) &&  $aReturn['search_type_status'] != ''){
+            $FiltersSql .= ' AND active = '.$aReturn['search_type_status'];
         } 
+
+        if(isset( $aReturn['search_show_as_home']) &&  $aReturn['search_show_as_home'] != ''){
+            $FiltersSql .= ' AND show_as_home = '.$aReturn['search_show_as_home'];
+        } 
+      
      
         //  dd($FiltersSql);
         #PAGINATION

@@ -235,7 +235,7 @@ class EventController extends Controller
             'event_description' => 'required|string',
             'event_keywords' => 'required|string',
             'time_zone' => 'required|string',
-            'event_banner_image' => !empty($id) ? '' : 'required|mimes:jpeg,jpg,png',
+            'event_banner_image' => empty($id) ? '' : 'required|mimes:jpeg,jpg,png',
 
         ];
 

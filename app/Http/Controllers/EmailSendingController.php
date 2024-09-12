@@ -144,6 +144,7 @@ class EmailSendingController extends Controller
                 if (($handle = fopen($file->getRealPath(), 'r')) !== FALSE) {
                     // Get the header row (assuming the first row contains column headers)
                     $header = fgetcsv($handle, 1000, ',');
+                   
                     // Find the index of the 'email' column
                     $emailIndex = array_search('Email', $header);
 
@@ -159,7 +160,6 @@ class EmailSendingController extends Controller
                             
                     $email = implode(',', $emails);
                     fclose($handle); 
-                   
                 }
 
                 $rules = [
@@ -183,8 +183,6 @@ class EmailSendingController extends Controller
 
             }
 
-            // dd($email);
-        //    dd($request->all());
             EmailSendingModel::add_email($request, $email);
 
             //------------- send email
@@ -192,7 +190,6 @@ class EmailSendingController extends Controller
             $successMessage = 'Email sending successfully';
 
             return redirect('/email_sending')->with('success', $successMessage);
-
         }
 
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
@@ -235,7 +232,7 @@ class EmailSendingController extends Controller
 
     function send_email_for_all($request)
     {
-        //dd($request);
+          // dd($request);
         
           $email_type = !empty($request->email_type) ? $request->email_type : ""; // => All
           $event_ids = !empty($request->event) ? implode(',', $request->event) : [];  
@@ -243,26 +240,67 @@ class EmailSendingController extends Controller
           $subject = !empty($request->subject) ? $request->subject : "";
           $date = !empty($request->date) ? $request->date : "";
           $message = !empty($request->message) ? $request->message : "";
-          $manual_email_address = !empty($request->email) ? $request->email : "";
+          $manual_email_address = !empty($request->email) ? $request->email : [];
           
             // dd($email_type);
             $email_ids = [];
-            //------------------- send email manual
+            //------------------- send email - (Manual Emails)
             if(!empty($email_type) && $email_type == 2){
 
-                //---------- log entry
-                $Binding1 = array(
-                    "type" => 'Manual Email',
-                    "send_mail_to" => $manual_email_address,
-                    "subject"  => $subject,
-                    "message"  => $message,
-                    "datetime" => strtotime("now"),
-                );
-                $Sql1 = "INSERT INTO admin_send_email_log (type,send_mail_to,subject,message,datetime) VALUES (:type,:send_mail_to,:subject,:message,:datetime)";
-                DB::insert($Sql1, $Binding1);
-             
-                $Email = new Emails();
-                $Email->send_admin_side_mail($manual_email_address, $message, $subject, 'Manual Email'); 
+                $manual_email_array = explode(",",$manual_email_address);
+                if(!empty($manual_email_array)){
+                    foreach($manual_email_array as $res){
+                        //---------- log entry
+                        $Binding1 = array(
+                            "type" => 'Manual Email',
+                            "send_mail_to" => $res,
+                            "subject"  => $subject,
+                            "message"  => $message,
+                            "datetime" => strtotime("now"),
+                        );
+                        $Sql1 = "INSERT INTO admin_send_email_log (type,send_mail_to,subject,message,datetime) VALUES (:type,:send_mail_to,:subject,:message,:datetime)";
+                        DB::insert($Sql1, $Binding1);
+                     
+                        $Email = new Emails();
+                        $Email->send_admin_side_mail($res, $message, $subject, 'Manual Email'); 
+                    }
+                }
+            }
+
+            //------------ send email (Upload CSV)
+             $emails = [];
+             if (!empty($email_type) && $request->email_type == 3 && $request->hasFile('email_file')) {
+                $file = $request->file('email_file');
+              
+                if (($handle = fopen($file->getRealPath(), 'r')) !== FALSE) {
+                    $header = fgetcsv($handle, 1000, ',');
+                    $emailIndex = array_search('Email', $header);
+
+                    while (($row = fgetcsv($handle, 1000, ',')) !== FALSE) {
+                        $emails[] = $row[$emailIndex];
+                    }
+                            
+                    fclose($handle); 
+                   
+                    if(!empty($emails)){
+                        foreach($emails as $res){
+                            //---------- log entry
+                            $Binding1 = array(
+                                "type" => 'Upload CSV',
+                                "send_mail_to" => $res,
+                                "subject"  => $subject,
+                                "message"  => $message,
+                                "datetime" => strtotime("now"),
+                            );
+                            $Sql1 = "INSERT INTO admin_send_email_log (type,send_mail_to,subject,message,datetime) VALUES (:type,:send_mail_to,:subject,:message,:datetime)";
+                            DB::insert($Sql1, $Binding1);
+                         
+                            $Email = new Emails();
+                            $Email->send_admin_side_mail($res, $message, $subject, 'Upload CSV'); 
+                        }
+                    }
+
+                }
             }
 
             //------------------------------------------------------

@@ -73,7 +73,7 @@
                             <input type="hidden" name="form_type" value="search_role_master">
                             <div class="card-header w-100 m-0">
                                 <div class="row w-100">
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-12">
                                         <div class="row">
                                             <div class="col-sm-3">
                                                 <label for="form-control">Role Name</label>
@@ -82,7 +82,7 @@
                                                     value="{{old('role_name',$search_role_name)}}" autocomplete="off" />
                                             </div>
                                             
-                                            <div class="col-sm-2 col-12">
+                                            <div class="col-sm-3 col-12">
                                                 <?php 
                                                    $Role_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
@@ -113,13 +113,14 @@
                                                     </a>
                                                 @endif
                                             </div>
+
+                                            <div class="col-sm-3 mt-2">
+                                                <a href="{{ url('role_master/add') }}"
+                                                    class="btn btn-outline-primary float-right pr-2">
+                                                    <i data-feather="plus"></i><span>Add </span></a>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-sm-3 mt-2">
-                                        <a href="{{ url('role_master/add') }}"
-                                            class="btn btn-outline-primary float-right pr-2">
-                                            <i data-feather="plus"></i><span>Add </span></a>
-                                    </div>
+                                    </div>    
                                 </div>
                             </div>
                         </form>

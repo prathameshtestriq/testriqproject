@@ -25,6 +25,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
     public function array(): array
     {
         $eventId = $this->eventId;
+        //dd($eventId);
         $participant_name = Session::has('participant_name') ? Session::get('participant_name') : '';
         $transaction_status = Session::has('transaction_status') ? Session::get('transaction_status') : '';
         $registration_id = Session::has('registration_id') ? Session::get('registration_id') : '';
@@ -33,6 +34,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
         $category = Session::has('category') ? Session::get('category') : '';
         $start_booking_date = Session::has('start_booking_date') ? Session::get('start_booking_date') : '';
         $end_booking_date = Session::has('end_booking_date') ? Session::get('end_booking_date') : '';
+        $event_name = Session::has('event_name') ? Session::get('event_name') : '';
 
         // Build the SQL query with search criteria
         $sSQL = 'SELECT a.*,e.booking_date, e.cart_details,e.booking_pay_id,e.total_amount, e.transaction_status, b.ticket_amount, b.event_id,a.id AS aId, CONCAT(a.firstname, " ", a.lastname) AS user_name,
@@ -44,7 +46,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
         Inner JOIN event_booking AS e ON b.booking_id = e.id
         WHERE 1=1';
 
-        if(!empty($eventId)){
+        if(isset($eventId) && !empty($eventId)){
             $sSQL .= ' AND b.event_id = '.$eventId;
         }
 
@@ -74,12 +76,16 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
         if (!empty($end_booking_date)) {
             $sSQL .= ' AND e.booking_date <= '. strtotime($end_booking_date);
         }
+        
+        if (!empty($event_name)) {
+            $sSQL .= ' AND b.event_id = '.$event_name;
+        }
 
         $sSQL .= ' ORDER BY a.id DESC';
-
+        // dd($sSQL);
         
         $event_participants = DB::select($sSQL, array());
-        // dd( $event_participants);
+        // dd($event_participants);
         if (!empty($event_participants)) {
             foreach ($event_participants as $key => $res) {
 
@@ -302,8 +308,10 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
 
     public function headings(): array
     {
+        // dd($event_name);
+        $event_name = Session::has('event_name') ? Session::get('event_name') : '';
 
-        $eventId = $this->eventId;
+        $eventId = !empty($this->eventId) ? $this->eventId : $event_name;
         if(isset($eventId) && !empty($eventId)){
             $sSQL = 'SELECT name FROM events where id = '.$eventId;
             $aEventResult = DB::select($sSQL ,array()); 
@@ -327,11 +335,10 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
             Inner JOIN event_booking AS e ON b.booking_id = e.id
             WHERE 1=1';
 
-            if(!empty($eventId)){
+            if(isset($eventId) && !empty($eventId)){
                 $sSQL .= ' AND b.event_id = '.$eventId;
             }
 
-    
             // Add conditions based on session data
             if (!empty($participant_name)) {
                 $sSQL .= ' AND (LOWER((CONCAT(a.firstname, " ", a.lastname))) LIKE \'%' . strtolower($participant_name) . '%\')';

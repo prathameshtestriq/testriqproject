@@ -233,6 +233,28 @@ class TestimonialController extends Controller
         $result = DB::update($sSQL, $Bindings);
         return $result;
     }
+
+    public function upload(Request $request)
+    {
+        if ($request->hasFile('upload')) {
+            $originName = $request->file('upload')->getClientOriginalName();
+            $fileName = pathinfo($originName, PATHINFO_FILENAME);
+            $file = $request->file('upload');
+            $extension = $file->getClientOriginalExtension();
+            $fileName = $fileName . '_' . time() . '.' . $extension;
+    
+            $request->file('upload')->move(public_path('uploads/ckeditor_testimonial_image/'), $fileName);     
+            $url = asset('uploads/ckeditor_testimonial_image/' . $fileName);
+            $filePath = 'uploads/ckeditor_testimonial_image/' ;
+     
+            return response()->json([
+                'fileName' => $fileName, 
+                'uploaded' => 1, 
+                'url' => $url, 
+                'filePath' => $filePath
+            ]);
+        }
+    }
 }
 
 
