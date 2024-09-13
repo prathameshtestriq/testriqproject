@@ -191,7 +191,7 @@ class UserController extends Controller
     public function get_states(Request $request){
         $countryId = $request->get('country_id');
         // dd($countryId);
-        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $countryId;
+        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $countryId.' Limit 5 ';
         $states = DB::select($sSQL, array());
         return response()->json($states);
         //dd($Return["states"]);
