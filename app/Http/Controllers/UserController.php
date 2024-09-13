@@ -191,11 +191,11 @@ class UserController extends Controller
     public function get_states(Request $request){
         $countryId = $request->get('country_id');
         // dd($countryId);
-        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $countryId.' Limit 5 ';
+        $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $countryId;
         $states = DB::select($sSQL, array());
-        // return response()->json($states);
+        return response()->json($states);
         //dd($Return["states"]);
-        return $countryId.'-- 122';
+        // return $Return;
     }
     public function get_cities(Request $request){
         $stateId = $request->get('state_id');
