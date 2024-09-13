@@ -195,7 +195,7 @@ class UserController extends Controller
         $states = DB::select($sSQL, array());
         // return response()->json($states);
         //dd($Return["states"]);
-        return $states;
+        return $countryId.'-- 122';
     }
     public function get_cities(Request $request){
         $stateId = $request->get('state_id');
