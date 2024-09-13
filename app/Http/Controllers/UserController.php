@@ -193,9 +193,9 @@ class UserController extends Controller
         // dd($countryId);
         $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $countryId.' Limit 5 ';
         $states = DB::select($sSQL, array());
-        return response()->json($states);
+        // return response()->json($states);
         //dd($Return["states"]);
-        // return $Return;
+        return $states;
     }
     public function get_cities(Request $request){
         $stateId = $request->get('state_id');
