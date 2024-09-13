@@ -1491,13 +1491,19 @@ class EventDashboardController extends Controller
                 $ResponseData['ageCategory'] = $result;
 
                 // Utm code Functionality Dashboard: Analysis of how registrants found the event (social media, direct link, email campaigns)
-                $SQL3 = "SELECT e.utm_campaign, SUM(b.quantity) AS total_quantity
-                        FROM booking_details AS b 
-                        LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                        WHERE b.event_id = :event_id 
-                        AND e.transaction_status IN (1, 3) 
-                        AND e.utm_campaign IS NOT NULL
-                        AND e.utm_campaign <> ''";
+                // $SQL3 = "SELECT e.utm_campaign, SUM(b.quantity) AS total_quantity
+                //         FROM booking_details AS b 
+                //         LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                //         WHERE b.event_id = :event_id 
+                //         AND e.transaction_status IN (1, 3) 
+                //         AND e.utm_campaign IS NOT NULL
+                //         AND e.utm_campaign <> ''";
+                $SQL3 = "SELECT e.utm_campaign,COUNT(a.id) AS total_quantity
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND e.utm_campaign IS NOT NULL AND e.utm_campaign <> '' ";
+
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
                         $SQL3 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
@@ -1512,9 +1518,50 @@ class EventDashboardController extends Controller
                 $SQL3 .= " GROUP BY e.utm_campaign";
 
                 $utmCode = DB::select($SQL3, array('event_id' => $EventId));
-                $ResponseData['utmCode'] = $utmCode;
+                 
+                // $SQL4 = "SELECT e.utm_campaign, SUM(b.quantity) AS total_quantity
+                //         FROM booking_details AS b 
+                //         LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                //         WHERE b.event_id = :event_id 
+                //         AND e.transaction_status IN (1, 3) AND e.utm_campaign = '' ";
+                $SQL4 = "SELECT e.utm_campaign,COUNT(a.id) AS total_quantity
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND e.utm_campaign = '' ";
 
-                // dd($utmCode);
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL4 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                if (!empty($Ticket)) {
+                    $SQL4 .= ' AND b.ticket_id =' . $Ticket;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL4 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate;
+                }
+                // dd($SQL4);
+                $utmWebCode = DB::select($SQL4, array('event_id' => $EventId));
+               
+                if(!empty($utmWebCode)){
+                    $UtmArray = array_merge($utmCode,$utmWebCode);
+                    foreach($UtmArray as $res){
+                        if($res->utm_campaign == ''){
+                            $res->utm_campaign = 'Races Website';
+                        }
+                        $res->total_quantity = (int)$res->total_quantity;
+                    }
+                    $ResponseData['utmCode'] = $UtmArray; 
+                }else{
+                    foreach($UtmArray as $res){
+                        if($res->utm_campaign == ''){
+                            $res->total_quantity = (int)$res->total_quantity;
+                        }
+                    }
+                    $ResponseData['utmCode'] = $utmCode;
+                }
+                // $new_array = array_merge($utmCode,$utmWebCode);
 
                 // Coupon Code Data
                 // $SQL4 = "SELECT COUNT(coupon_id) AS CouponCount,(SELECT id FROM event_coupon WHERE id=coupon_id) AS coupon_id, (SELECT discount_name FROM event_coupon WHERE id=coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
