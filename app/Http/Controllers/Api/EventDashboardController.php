@@ -1301,7 +1301,7 @@ class EventDashboardController extends Controller
 
                 $SQL1 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity, SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id) AS TicketPrice
                 FROM event_booking AS e LEFT JOIN booking_details AS bd ON bd.booking_id = e.id
-                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) ";
+                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) AND bd.quantity != 0";
                 
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
@@ -1324,26 +1324,33 @@ class EventDashboardController extends Controller
                 $TicketCount = 0;
                 foreach ($BookingData as $key => $value) {
                     
-                    $SQL2 = 'SELECT COUNT(a.id) AS TicketCount
-                    FROM attendee_booking_details AS a 
-                    LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
-                    LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                    WHERE b.event_id = '.$EventId.' AND b.ticket_id = '.$value->ticket_id.' AND e.transaction_status IN (1,3)';
+                    $TicketID = isset($value->ticket_id) && !empty($value->ticket_id) ? $value->ticket_id : 0;
+                    if($TicketID){
+                        $SQL2 = 'SELECT COUNT(a.id) AS TicketCount
+                        FROM attendee_booking_details AS a 
+                        LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                        LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                        WHERE b.event_id = '.$EventId.' AND b.ticket_id = '.$TicketID.' AND e.transaction_status IN (1,3)';
 
-                    if ($Filter !== "") {
-                        if (isset($StartDate) && isset($EndDate)) {
-                            $SQL2 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                        if ($Filter !== "") {
+                            if (isset($StartDate) && isset($EndDate)) {
+                                $SQL2 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                            }
                         }
+                        if (!empty($Ticket)) {
+                            $SQL2 .= ' AND b.ticket_id =' . $Ticket;
+                        }
+                        if (!empty($FromDate) && !empty($ToDate)) {
+                            $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate; 
+                        }
+                        $TotalCountData = DB::select($SQL2, array());
+                        $TicketCount = !empty($TotalCountData) ? $TotalCountData[0]->TicketCount : 0;
+                    }else{
+                        $TicketCount = 0;
                     }
-                    if (!empty($Ticket)) {
-                        $SQL2 .= ' AND b.ticket_id =' . $Ticket;
-                    }
-                    if (!empty($FromDate) && !empty($ToDate)) {
-                        $SQL2 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate; 
-                    }
-                    $TotalCountData = DB::select($SQL2, array());
+                    
                     // dd($TotalCountData);
-                    $TicketCount = !empty($TotalCountData) ? $TotalCountData[0]->TicketCount : 0;
+                  
                     $value->TicketCount = $TicketCount;  // (int) $value->TicketCount;
                    
                     $value->TotalTicketPrice = $value->TotalAmount;
