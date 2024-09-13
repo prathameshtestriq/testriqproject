@@ -35,8 +35,6 @@ class CommonFilesRemove extends Command
         $current_day = date('Ymd');
 
         $path = public_path('attendee_details_excell');
-        // dd($path);
-
         $directories = File::directories($path);
 
         foreach ($directories as $directory) { 
@@ -49,10 +47,20 @@ class CommonFilesRemove extends Command
 
                     File::deleteDirectory($directory);
                 }
-             }
-
+            }
         }
 
+        //----------- Ticket Pdf Remove
+        $directories1 = public_path('ticket_pdf');
+       
+        if (File::isDirectory($directories1)) {
+            
+            $files = File::files($directories1);
+            foreach ($files as $file) {
+                File::delete($file);
+            }
+            //echo "All files deleted successfully.";
+        } 
     }
 
   

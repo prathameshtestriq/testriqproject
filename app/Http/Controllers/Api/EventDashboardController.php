@@ -1291,18 +1291,33 @@ class EventDashboardController extends Controller
                 // FROM booking_details AS b
                 // LEFT JOIN event_booking AS e ON b.booking_id = e.id
                 // WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
-                
                 // AND bd.ticket_amount != '0.00' AND bd.quantity != 0
 
-                // $SQL1 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,SUM(bd.quantity) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id AND transaction_status IN (1,3)) AS TicketPrice
+                // $SQL1 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,SUM(bd.quantity) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id) AS TicketPrice
                 // FROM event_booking AS e LEFT JOIN booking_details AS bd ON bd.booking_id = e.id
-                // WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) ";
+                // WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) AND bd.quantity != 0 "; //AND bd.ticket_amount != '0.00'
 
-                // (select SUM(e.total_amount) as TotalAmount from event_booking as eb left join booking_details as bde on bde.booking_id = eb.id AND eb.transaction_status IN (1,3) AND bde.ticket_amount != '0.00' AND bde.quantity != 0) as TotalAmount
+                $SQL1 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,(SELECT COUNT(a.id) AS TicketCount
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                WHERE b.event_id = ".$EventId." AND e.transaction_status IN (1,3) ";
+                
+                if ($Filter !== "") {
+                    if (isset($StartDate) && isset($EndDate)) {
+                        $SQL1 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+                    }
+                }
+                if (!empty($Ticket)) {
+                    $SQL1 .= ' AND b.ticket_id =' . $Ticket;
+                }
+                if (!empty($FromDate) && !empty($ToDate)) {
+                    $SQL1 .= ' AND b.booking_date BETWEEN ' . $FromDate . ' AND ' . $ToDate; 
+                }
 
-                $SQL1 = "SELECT e.id,e.booking_date,bd.ticket_id,(SELECT ticket_name FROM event_tickets WHERE id = bd.ticket_id) AS TicketName,(SELECT total_quantity FROM event_tickets WHERE id = bd.ticket_id) AS total_quantity,SUM(bd.quantity) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id) AS TicketPrice
+                $SQL1 .= " ) AS TicketCount,SUM(e.total_amount) AS TotalAmount,(SELECT ticket_price FROM event_tickets WHERE id = bd.ticket_id) AS TicketPrice
                 FROM event_booking AS e LEFT JOIN booking_details AS bd ON bd.booking_id = e.id
-                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) AND bd.quantity != 0 "; //AND bd.ticket_amount != '0.00'
+                WHERE e.event_id =:event_id AND e.transaction_status IN (1,3) AND bd.quantity != 0 "; 
 
                 if ($Filter !== "") {
                     if (isset($StartDate) && isset($EndDate)) {
@@ -1344,39 +1359,38 @@ class EventDashboardController extends Controller
                     $end_date_time = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
                 }
                 if ($RegistrationFilter != "") {
-                    //if (isset($StartDate) && isset($EndDate)) {
-                        $currentDate = isset($StartDate) ? $StartDate : $start_date_time;
-                        $end = isset($EndDate) ? $EndDate : $end_date_time;
+                    
+                    $currentDate = isset($StartDate) ? $StartDate : $start_date_time;
+                    $end = isset($EndDate) ? $EndDate : $end_date_time;
 
-                        while ($currentDate <= $end) {
-                            $AllDates[] = date('Y-m-d', $currentDate);
-                            $currentDate = strtotime('+1 day', $currentDate);
-                        }
+                    while ($currentDate <= $end) {
+                        $AllDates[] = date('Y-m-d', $currentDate);
+                        $currentDate = strtotime('+1 day', $currentDate);
+                    }
 
-                        foreach ($AllDates as $key => $dates) {
-                            $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
-                            $BarChartData = [];
-                            $start_date = date('Y-m-d 00:00:00', strtotime($dates));
-                            $strtotime_start_today = strtotime($start_date);
+                    foreach ($AllDates as $key => $dates) {
+                        $sSQL = $start_date = $strtotime_start_today = $end_date = $strtotime_end_today = "";
+                        $BarChartData = [];
+                        $start_date = date('Y-m-d 00:00:00', strtotime($dates));
+                        $strtotime_start_today = strtotime($start_date);
 
-                            $end_date = date('Y-m-d 23:59:59', strtotime($dates));
-                            $strtotime_end_today = strtotime($end_date);
+                        $end_date = date('Y-m-d 23:59:59', strtotime($dates));
+                        $strtotime_end_today = strtotime($end_date);
 
-                            $sSQL = "SELECT SUM(b.quantity) AS TicketCount
-                            FROM booking_details AS b
-                            LEFT JOIN event_booking AS e ON b.booking_id = e.id
-                            WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND b.booking_date BETWEEN :strtotime_start_today AND :strtotime_end_today ";
-                            $params = array('event_id' => $EventId, 'strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
-                            $BarChartData = DB::select($sSQL, $params);
+                        $sSQL = "SELECT SUM(b.quantity) AS TicketCount
+                        FROM booking_details AS b
+                        LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                        WHERE b.event_id =:event_id AND e.transaction_status IN (1,3) AND b.booking_date BETWEEN :strtotime_start_today AND :strtotime_end_today ";
+                        $params = array('event_id' => $EventId, 'strtotime_start_today' => $strtotime_start_today, 'strtotime_end_today' => $strtotime_end_today);
+                        $BarChartData = DB::select($sSQL, $params);
 
-                            // dd($BarChartData);
-                            $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
-                        }
-                    //}
+                        // dd($BarChartData);
+                        $FinalBarChartData[$key] = ["date" => $dates, "count" => count($BarChartData) > 0 ? (int) $BarChartData[0]->TicketCount : 0];
+                    }
                 }
                 $ResponseData['FinalBarChartData'] = $FinalBarChartData;
 
-                // male female graph
+                // Male/Female Graph
                 $SQL2 = "SELECT a.ticket_id,a.attendee_details,b.event_id
                 FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
