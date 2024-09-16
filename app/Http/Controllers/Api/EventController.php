@@ -96,8 +96,14 @@ class EventController extends Controller
             if(!empty($event->overall_limit)){
                 // $sSQL = 'SELECT count(id) as total_bookings FROM event_booking WHERE event_id =:event_id AND transaction_status IN(1,3)';
            
-                $sSQL = "SELECT SUM(b.quantity) AS total_bookings
-                FROM booking_details AS b
+                // $sSQL = "SELECT SUM(b.quantity) AS total_bookings
+                // FROM booking_details AS b
+                // LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                // WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+
+                $sSQL = "SELECT IFNULL(COUNT(e.id), 0) AS total_bookings  
+                FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
                 WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
 
