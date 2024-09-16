@@ -69,7 +69,7 @@ class EventTicketController extends Controller
                 $ResponseData['PriceTaxesStatus'] = $PriceTaxesStatus;
                 //-------------------------------------------------
                 
-                $Sql = "SELECT name,start_time,city,event_registration_status,overall_limit,prices_taxes_status FROM events WHERE id=:event_id";
+                $Sql = "SELECT id,name,start_time,city,event_registration_status,overall_limit,prices_taxes_status FROM events WHERE id=:event_id";
                 $EventData = DB::select($Sql, array('event_id' => $aPost['event_id']));
 
                 $overall_limit = !empty($EventData) ? (int)$EventData[0]->overall_limit : 0;
@@ -92,6 +92,26 @@ class EventTicketController extends Controller
                     }else{
                         $event->prices_taxes_status = 'Inclusive of Taxes';
                     }
+
+                    //----------- event overall limit flag
+                    if(!empty($event->overall_limit)){
+                    
+                        $sSQL = "SELECT IFNULL(COUNT(e.id), 0) AS total_bookings  
+                        FROM attendee_booking_details AS a 
+                        LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                        LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                        WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+
+                        $aResult = DB::select($sSQL, array('event_id' => $event->id));
+                        
+                        if(!empty($aResult) && (int)$aResult[0]->total_bookings >= (int)$event->overall_limit){
+                            $event->event_overall_limit_flag = 1;
+                        }else{
+                            $event->event_overall_limit_flag = 0;
+                        }
+                    }else{
+                        $event->event_overall_limit_flag = 0;
+                    }
                 }
                 $ResponseData['EventData'] = $EventData;
 
@@ -110,9 +130,15 @@ class EventTicketController extends Controller
                     $value->display_ticket_name = !empty($value->ticket_name) ? (strlen($value->ticket_name) > 40 ? ucwords(substr($value->ticket_name, 0, 80)) . "..." : ucwords($value->ticket_name)) : "";
 
                     // $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details WHERE event_id=:event_id AND ticket_id=:ticket_id";
-                    $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details AS bd
-                            LEFT JOIN event_booking AS eb ON bd.booking_id = eb.id
-                            WHERE bd.event_id=:event_id AND bd.ticket_id=:ticket_id AND eb.transaction_status IN (1,3)";
+                    // $sql = "SELECT SUM(quantity) AS TotalBookedTickets FROM booking_details AS bd
+                    //         LEFT JOIN event_booking AS eb ON bd.booking_id = eb.id
+                    //         WHERE bd.event_id=:event_id AND bd.ticket_id=:ticket_id AND eb.transaction_status IN (1,3)";
+                    $sql = "SELECT COUNT(a.id) AS TotalBookedTickets
+                    FROM attendee_booking_details AS a 
+                    LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                    LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                    WHERE b.event_id =:event_id AND b.ticket_id=:ticket_id AND e.transaction_status IN (1,3)";
+
                     $TotalTickets = DB::select($sql, array("event_id" => $aPost['event_id'], "ticket_id" => $value->id));
 
                     $value->TotalBookedTickets = ((sizeof($TotalTickets) > 0) && (isset($TotalTickets[0]->TotalBookedTickets))) ? $TotalTickets[0]->TotalBookedTickets : 0;
