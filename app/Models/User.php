@@ -129,6 +129,10 @@ class User extends Authenticatable
         if(!empty($a_search['search_role'])){
             $s_sql .= ' AND u.role = '.$a_search['search_role'].' ';
         } 
+
+        if(!empty( $a_search['search_organizer_name'])){
+            $s_sql .= ' AND u.organizer_user = '. $a_search['search_organizer_name']. ' ';
+        } 
         // dd($s_sql);
         if ($limit > 0) {
             $s_sql .= ' LIMIT ' . $a_search['Offset'] . ',' . $limit;
@@ -182,6 +186,10 @@ class User extends Authenticatable
 
         if(!empty($a_search['search_role'])){
             $s_sql .= ' AND u.role = '.$a_search['search_role'].' ';
+        } 
+
+        if(!empty( $a_search['search_organizer_name'])){
+            $s_sql .= ' AND u.organizer_user = '. $a_search['search_organizer_name']. ' ';
         } 
         
         $CountsResult = DB::select($s_sql);

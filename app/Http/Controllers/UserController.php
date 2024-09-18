@@ -31,6 +31,7 @@ class UserController extends Controller
         session::forget('gender'); 
         session::forget('role'); 
         session::forget('rows'); 
+        session::forget('organizer_id');
         return redirect('/users');
     }
 
@@ -45,6 +46,7 @@ class UserController extends Controller
         $aReturn['search_gender'] = '';
         $aReturn['search_rows'] = '';
         $aReturn['search_role'] = '';
+        $aReturn['search_organizer_name'] = '';
 
         if(isset($request->form_type) && $request->form_type ==  'search_user'){
             // dd($request->gender);
@@ -58,6 +60,7 @@ class UserController extends Controller
            session(['gender' => $request->gender]);
            session(['role' => $request->role]);
            session(['rows' => $request->rows]);
+           session( ['organizer_id' => $request->organizer_id]);
 
             return redirect('/users');
         }
@@ -72,7 +75,7 @@ class UserController extends Controller
         $aReturn['search_gender'] =  (!empty(session('gender'))) ? session('gender') : '';
         $aReturn['search_role'] =  (!empty(session('role'))) ? session('role') : '';
         $aReturn['search_rows'] =  (!empty(session('rows'))) ? session('rows') : '';
-
+        $aReturn['search_organizer_name'] =  (!empty(session('organizer_id'))) ? session('organizer_id') : '';
         // dd($aReturn['search_country']);
         $CountRows=User::get_count($aReturn);
         $PageNo = request()->input('page', 1);
@@ -88,6 +91,17 @@ class UserController extends Controller
   
         $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
         $aReturn["countries"] = DB::select($sSQL, array());
+
+        $sSQL = 'SELECT o.id, o.name, 
+        GROUP_CONCAT(CONCAT(u.firstname, " ", u.lastname) SEPARATOR ", ") AS user_name
+        FROM organizer o
+        JOIN users u ON o.id = u.organizer_user
+        WHERE o.is_deleted = 0
+        GROUP BY o.id';
+
+        $organizer_name = DB::select($sSQL, array());
+        $aReturn["organizer_name"] = !empty($organizer_name) ? $organizer_name : [];
+       
 
         $sSQL = 'SELECT id,name FROM role_master WHERE status = 1 AND is_deleted = 0';
         $aReturn["role_details"] = DB::select($sSQL, array());
