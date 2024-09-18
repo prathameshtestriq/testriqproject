@@ -23,16 +23,12 @@ $url_flag = 2;  // 1 - Local / 2 - Prime / 3 - Live
 
 if($url_flag == 1){
     $base_url1 = 'http://127.0.0.1:8000';
-    $redirect_url = 'http://127.0.0.1:8000';
 }else if($url_flag == 2){
-    $base_url1 = 'https://swtprime.com/races/public/';
-    $redirect_url = 'https://swtprime.com/races/public/';
+    $base_url1 = 'https://swtprime.com/races/public';
 }else if($url_flag == 3){
-    $base_url1 = 'https://racesregistrations.com/races/public/';
-    $redirect_url = 'https://racesregistrations.com/races/public/';
+    $base_url1 = 'https://racesregistrations.com/races/public';
 }else{
     $base_url1 = '';
-    $redirect_url = '';
 }
 
 return [
