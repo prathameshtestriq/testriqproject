@@ -140,6 +140,12 @@ class RemittanceManagementController extends Controller
     {
         $aReturn = RemittanceManagement::change_status_remittance_management($request);
         // dd($aReturn);
+
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $aReturn = [];
+        $aReturn['message'] =  $successMessage ;
+        $aReturn['sucess'] = $sucess;
         return $aReturn;
     }
     

@@ -251,6 +251,12 @@ class RacesCategoryController extends Controller
             'id' => $request->id
         );
         $result = DB::update($sSQL, $Bindings);
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $result = [];
+        $result['message'] =  $successMessage ;
+        $result['sucess'] = $sucess;
+
         return $result;
     }
 }

@@ -158,6 +158,11 @@ class AdvertiseController extends Controller
     {
         $aReturn = Advertisement::change_status_advertisement($request);
         //  dd($aReturn);
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $aReturn = [];
+        $aReturn['message'] =  $successMessage ;
+        $aReturn['sucess'] = $sucess;
         return $aReturn;
     }
 
@@ -166,4 +171,4 @@ class AdvertiseController extends Controller
         Advertisement::remove_add($iId);
         return redirect(url('/advertisement'))->with('success', 'advertisement deleted successfully');
     }
-}
+} 

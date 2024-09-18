@@ -155,7 +155,7 @@
                                                 <label for="form-control">Start Booking Date</label>
                                                 <input type="date" id="start_booking_date" class="form-control"
                                                     placeholder="Start Date" name="start_booking_date" value="{{ old('start_booking_date', $search_start_booking_date ? \Carbon\Carbon::parse($search_start_booking_date)->format('Y-m-d') : '') }}"
-                                                    autocomplete="off" />
+                                                    autocomplete="off" onkeydown="return false;" onchange="setEndDateMin()"/>
                                             </div>
                                           
                                             <div class="col-sm-2 col-12 mt-2">
@@ -401,6 +401,20 @@
                 })
             }
 
+    </script>
+     <script>
+        function setEndDateMin() {
+            const startDateInput = document.getElementById('start_booking_date');
+            const endDateInput = document.getElementById('end_booking_date');
+            const startDate = startDateInput.value;
+    
+            if (startDate) {
+                endDateInput.setAttribute('min', startDate);
+                if (endDateInput.value && endDateInput.value < startDate) {
+                    endDateInput.value = '';
+                }
+            }
+        }
     </script>
     
 

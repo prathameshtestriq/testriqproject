@@ -88,7 +88,7 @@
                                                 <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_payment_date" class="form-control"
                                                     placeholder="Start Date" name="start_payment_date" value="{{ old('start_payment_date', $search_start_payment_date ? \Carbon\Carbon::parse($search_start_payment_date)->format('Y-m-d') : '') }}"
-                                                    autocomplete="off" />
+                                                    autocomplete="off" onkeydown="return false;" onchange="setEndDateMin()"/>
                                             </div>
                                             
                                             <div class="col-sm-3">
@@ -236,7 +236,19 @@
     //         return false;
     //     }
     // }
+</script>
 
+<script>
+    function setEndDateMin() {
+        const startDateInput = document.getElementById('start_payment_date');
+        const endDateInput = document.getElementById('end_payment_date');
+        const startDate = startDateInput.value;
 
-  
+        if (startDate) {
+            endDateInput.setAttribute('min', startDate);
+            if (endDateInput.value && endDateInput.value < startDate) {
+                endDateInput.value = '';
+            }
+        }
+    }
 </script>

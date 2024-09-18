@@ -64,6 +64,22 @@
             </div>
         @endif
 
+        <div class="alert alert-success p-1" id="success-alert" style="display: none;">
+            <i class="fa fa-check-circle" style="font-size:16px;" aria-hidden="true"></i>
+            <span id="success-message"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div class="alert alert-danger p-1" id="error-alert" style="display: none;">
+            <i class="fa fa-exclamation-triangle" style="font-size:16px;" aria-hidden="true"></i>
+            <span id="error-message"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
         <div class="content-body">
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
@@ -223,12 +239,24 @@
                     id: id,
                     active: active
                 },
-                success: function (result) {
-                    console.log(result);
-                    if (result == 1) {
-                        alert('Status changed successfully');
-                    } else {
-                        alert('Some error occurr ed');
+                success: function(result) {
+                    if (result.sucess == 'true') {
+                        // console.log(result);
+                        // alert(result.message); 
+                        $("#success-message").text(result.message); // Update success message
+                        $("#success-alert").show(); // Show the success alert
+                        // Optionally hide the alert after a few seconds
+                        setTimeout(function() {
+                            $("#success-alert").fadeOut();
+                        }, 2000); // Adjust time (2000 = 2 seconds)
+
+                    }else{
+                        alert('Some error occured');
+                        if(status)
+                            $(_this).prop("checked" , false)
+                        else
+                            $(_this).prop("checked" , true)
+                            return false;
                     }
                 },
                 error: function () {

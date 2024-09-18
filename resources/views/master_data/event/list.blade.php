@@ -60,6 +60,22 @@
             </div>
         @endif
 
+        <div class="alert alert-success p-1" id="success-alert" style="display: none;">
+            <i class="fa fa-check-circle" style="font-size:16px;" aria-hidden="true"></i>
+            <span id="success-message"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div class="alert alert-danger p-1" id="error-alert" style="display: none;">
+            <i class="fa fa-exclamation-triangle" style="font-size:16px;" aria-hidden="true"></i>
+            <span id="error-message"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
         <div class="content-body">
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
@@ -83,7 +99,7 @@
                                                 <label for="form-control">Start Booking Date</label>
                                                 <input type="date" id="event_start_date" class="form-control"
                                                     placeholder="Start Date" name="event_start_date"   value="{{ old('start_date', $search_event_start_date ? \Carbon\Carbon::parse($search_event_start_date)->format('Y-m-d') : '') }}"   
-                                                    autocomplete="off" />
+                                                    autocomplete="off" onkeydown="return false;" onchange="setEndDateMin()" />
                                             </div>
                                             
                                             <div class="col-sm-2">
@@ -277,7 +293,7 @@
                                         @endforeach
                                     @else
                                         <tr>
-                                            <td colspan="9" style="text-align: center; color:red;">No record found</td>
+                                            <td colspan="16" style="text-align: center; color:red;">No record found</td>
                                         </tr>
                                     @endif
                                 </tbody>
@@ -324,13 +340,25 @@
                         active: active
                     },
                     success: function(result) {
-                        console.log(result);
-                        if (result == 1) {
-                            alert('Status changed successfully');
-                        } else {
-                            alert('Some error occurr ed');
-                        }
-                    },
+                    if (result.sucess == 'true') {
+                        // console.log(result);
+                        // alert(result.message); 
+                        $("#success-message").text(result.message); // Update success message
+                        $("#success-alert").show(); // Show the success alert
+                        // Optionally hide the alert after a few seconds
+                        setTimeout(function() {
+                            $("#success-alert").fadeOut();
+                        }, 2000); // Adjust time (2000 = 2 seconds)
+
+                    }else{
+                        alert('Some error occured');
+                        if(status)
+                            $(_this).prop("checked" , false)
+                        else
+                            $(_this).prop("checked" , true)
+                            return false;
+                    }
+                },
                     error: function() {
                         alert('Some error occurred');
                     }
@@ -346,11 +374,11 @@
         var CountryId = '<?php echo old('event_country', $search_event_country); ?>';
         var StateId = '<?php echo old('event_state', $search_event_state); ?>';
         var CityId = '<?php echo old('event_city', $search_event_city); ?>';
-
+        var baseUrl = "{{ config('custom.app_url') }}";
         // Fetch states based on the selected country
         if (CountryId !== '') {
             $.ajax({
-                url: '/get_states', // Replace with your URL to fetch states
+                url: baseUrl +'/get_states', // Replace with your URL to fetch states
                 type: 'GET',
                 data: { country_id: CountryId },
                 success: function(states) {
@@ -363,7 +391,7 @@
                     // Fetch cities based on the selected state
                     if (StateId !== '') {
                         $.ajax({
-                            url: '/get_cities', // Replace with your URL to fetch cities
+                            url: baseUrl +'/get_cities', // Replace with your URL to fetch cities
                             type: 'GET',
                             data: { state_id: StateId },
                             success: function(cities) {
@@ -383,7 +411,7 @@
         $('#country').change(function() {
             var countryId = $(this).val();
             $.ajax({
-                url: '/get_states',
+                url: baseUrl +'/get_states',
                 type: 'GET',
                 data: { country_id: countryId },
                 success: function(states) {
@@ -400,7 +428,7 @@
         $('#state').change(function() {
             var stateId = $(this).val();
             $.ajax({
-                url: '/get_cities',
+                url: baseUrl +'/get_cities',
                 type: 'GET',
                 data: { state_id: stateId },
                 success: function(cities) {
@@ -412,5 +440,19 @@
             });
         });
     });
+    </script>
+    <script>
+        function setEndDateMin() {
+            const startDateInput = document.getElementById('event_start_date');
+            const endDateInput = document.getElementById('event_end_date');
+            const startDate = startDateInput.value;
+    
+            if (startDate) {
+                endDateInput.setAttribute('min', startDate);
+                if (endDateInput.value && endDateInput.value < startDate) {
+                    endDateInput.value = '';
+                }
+            }
+        }
     </script>
 @endsection

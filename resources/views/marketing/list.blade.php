@@ -63,6 +63,21 @@
             </div>
         @endif
 
+        <div class="alert alert-success p-1" id="success-alert" style="display: none;">
+            <i class="fa fa-check-circle" style="font-size:16px;" aria-hidden="true"></i>
+            <span id="success-message"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div class="alert alert-danger p-1" id="error-alert" style="display: none;">
+            <i class="fa fa-exclamation-triangle" style="font-size:16px;" aria-hidden="true"></i>
+            <span id="error-message"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
 
         <div class="content-body">
             <div class="row" id="table-bordered">
@@ -86,7 +101,7 @@
                                                 <label for="form-control">Start Date</label>
                                                 <input type="date" id="start_marketing_date" class="form-control"
                                                     placeholder="Start Date" name="start_marketing_date" value="{{ old('start_marketing_date', $search_start_marketing_date ? \Carbon\Carbon::parse($search_start_marketing_date)->format('Y-m-d') : '') }}"   
-                                                    autocomplete="off" />
+                                                    autocomplete="off" onkeydown="return false;" onchange="setEndDateMin()"/>
                                             </div>
                                             
                                             <div class="col-sm-3">
@@ -286,17 +301,23 @@
                     status: status
                 },
                 success: function(result) {
-                    if (result == 1) {
-                        console.log(result);
-                        alert('Status changed successfully')
-                        //location.reload(); 
-                    } else {
+                    if (result.sucess == 'true') {
+                        // console.log(result);
+                        // alert(result.message); 
+                        $("#success-message").text(result.message); // Update success message
+                        $("#success-alert").show(); // Show the success alert
+                        // Optionally hide the alert after a few seconds
+                        setTimeout(function() {
+                            $("#success-alert").fadeOut();
+                        }, 2000); // Adjust time (2000 = 2 seconds)
+
+                    }else{
                         alert('Some error occured');
-                        if (status)
-                            $(_this).prop("checked", false)
+                        if(status)
+                            $(_this).prop("checked" , false)
                         else
-                            $(_this).prop("checked", true)
-                        return false;
+                            $(_this).prop("checked" , true)
+                            return false;
                     }
                 },
                 error: function() {
@@ -314,6 +335,21 @@
             else
                 $(_this).prop("checked", true)
             return false;
+        }
+    }
+</script>
+
+<script>
+    function setEndDateMin() {
+        const startDateInput = document.getElementById('start_marketing_date');
+        const endDateInput = document.getElementById('end_marketing_date');
+        const startDate = startDateInput.value;
+
+        if (startDate) {
+            endDateInput.setAttribute('min', startDate);
+            if (endDateInput.value && endDateInput.value < startDate) {
+                endDateInput.value = '';
+            }
         }
     }
 </script>

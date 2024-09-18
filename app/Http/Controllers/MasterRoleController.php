@@ -95,6 +95,11 @@ class MasterRoleController extends Controller
     {
         $aReturn = MasterRole::change_status_Role($request);
         // dd($aReturn);
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $aReturn = [];
+        $aReturn['message'] =  $successMessage ;
+        $aReturn['sucess'] = $sucess;
         return $aReturn;
     }
     

@@ -166,15 +166,17 @@
 <script>
 
     $(document).ready(function() {
-        var country_id = <?php echo $country_sel_id; ?> 
-        var state_id = <?php echo $state_sel_id; ?> 
+        var country_id = <?php echo $country_sel_id; ?>; 
+        var state_id = <?php echo $state_sel_id; ?> ;
+        var baseUrl = "{{ config('custom.app_url') }}";
+       
         //console.log(country_id);
         $('#countries').change(function() {
         
             var countryId = $(this).val();
             if (countryId) {
                 $.ajax({
-                    url: '/get_states/' + countryId,
+                    url:  baseUrl +'/get_states/' + countryId,
                     type: 'GET',
                     success: function(data) {
                         console.log(data);
@@ -193,7 +195,7 @@
         });
         if (country_id) {
             $.ajax({
-                url: '/get_states/' + country_id,
+                url:  baseUrl +'/get_states/' + country_id,
                 type: 'GET',
                 success: function(data) {
                     // console.log(data);
@@ -224,7 +226,7 @@
             // alert("herrete");
             if (stateId) {
                 $.ajax({
-                    url: '/get_cities/' + stateId,
+                    url:  baseUrl +'/get_cities/' + stateId,
                     type: 'GET',
                     success: function(data) {
                         console.log(data);
@@ -243,7 +245,7 @@
         });        
         if (state_id) {
             $.ajax({
-                url: '/get_cities/' + state_id,
+                url:  baseUrl +'/get_cities/' + state_id,
                 type: 'GET',
                 success: function(data) {
                     var cityDropdown = $('#cities');

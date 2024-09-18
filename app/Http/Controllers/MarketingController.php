@@ -126,6 +126,11 @@ class MarketingController extends Controller
     public function change_active_status(Request $request)
     {
         $aReturn = MarketingModel::change_status_marketing($request);
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $aReturn = [];
+        $aReturn['message'] =  $successMessage ;
+        $aReturn['sucess'] = $sucess;
         // dd($aReturn);
         return $aReturn;
     }

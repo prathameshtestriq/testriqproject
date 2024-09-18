@@ -202,9 +202,13 @@ class EmailSendingController extends Controller
     {
 
         $aReturn = EmailSendingModel::change_status_email($request);
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $aReturn = [];
+        $aReturn['message'] =  $successMessage ;
+        $aReturn['sucess'] = $sucess;
         return $aReturn;
     }
-
     public function upload(Request $request)
     {
         if ($request->hasFile('upload')) {

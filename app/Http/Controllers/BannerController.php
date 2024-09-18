@@ -185,10 +185,15 @@ class BannerController extends Controller
         return view('Banner.create', $a_return);
     }
 
-
     public function change_status(Request $request)
     {
         $aReturn = Banner::change_status_banner($request);
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $aReturn = [];
+        $aReturn['message'] =  $successMessage ;
+        $aReturn['sucess'] = $sucess;
+        
         // dd($aReturn);
         return $aReturn;
     }

@@ -62,6 +62,22 @@
            </div>
         @endif
 
+        <div class="alert alert-success p-1" id="success-alert" style="display: none;">
+            <i class="fa fa-check-circle" style="font-size:16px;" aria-hidden="true"></i>
+            <span id="success-message"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div class="alert alert-danger p-1" id="error-alert" style="display: none;">
+            <i class="fa fa-exclamation-triangle" style="font-size:16px;" aria-hidden="true"></i>
+            <span id="error-message"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
         <div class="content-body">
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
@@ -190,8 +206,27 @@
                                                     ?>
                                                 </select>
                                             </div>
+
+                                            <div class="col-sm-3 col-12 mt-1">
+                                                <label for="form-control">Organizer</label>
+                                                <select id="organizer_id" name="organizer_id" class="select2 form-control">
+                                                    <option value="">Select Organizer</option>
+                                                    <?php  
+                                                    foreach ($organizer_name as $value)
+                                                    {  
+                                                        $selected = '';
+                                                        if(old('organizer_id',$search_organizer_name) == $value->id){
+                                                            $selected = 'selected';
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
+                                                        <?php 
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
                                             
-                                            <div class="col-sm-3 mt-1">
+                                            <div class="col-sm-2 mt-1">
                                                 <?php 
                                                    $Rows = ['10','25','50','100'];    
                                                 ?>
@@ -213,10 +248,10 @@
                                                 </select>
                                             </div>
                                          
-                                            <div class="col-sm-3 mt-1">
+                                            <div class="col-sm-2 mt-1">
                                                 <label for="form-control">&nbsp;</label><br>
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_name) || !empty($search_email_id) || !empty($search_mobile) || !empty($search_state) ||!empty($search_city) || !empty($search_gender) || ($search_status != '') || (!empty($search_rows)) || (!empty($search_country)) || (!empty($search_role)) )
+                                                @if (!empty($search_name) || !empty($search_email_id) || !empty($search_mobile) || !empty($search_state) ||!empty($search_city) || !empty($search_gender) || ($search_status != '') || (!empty($search_rows)) || (!empty($search_country)) || (!empty($search_role)) ||(!empty($search_organizer_name)) )
                                                     <a title="Clear" href="{{ url('user/clear_search') }}"
                                                         type="button" class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
@@ -225,7 +260,7 @@
                                             </div>
                                            
                                         
-                                            <div class="col-sm-3 float-right mt-1">
+                                            <div class="col-sm-2 float-right mt-1">
                                                 <label for="form-control">&nbsp;</label><br>
                                                 @if (!empty($user_array))
                                                     <a href="{{ url('/user/export_download') }}" class="btn btn-danger text-white float-right ml-1">Download </a>
@@ -245,18 +280,11 @@
                                 <thead>
                                     <tr>
                                         <th class="text-center">Sr. No</th>
-                                        <th class="text-left">User Name</th>                                                <div class="col-xs-12 col-md-12">
-                                            <div class="form-group mb-5">
-                                                {{-- <label class="col-sm-4 float-left" style="margin-top:20px"  for="mobile" >Contact Number <span style="color:red;">*</span></label> --}}
-                                                {{-- <input type="text" id="mobile" class="form-control col-sm-8 float-right" name="mobile"
-                                                    placeholder="mobile" autocomplete="off" value="{{ old('mobile',$mobile) }}" /> --}}
-                                                    <h5><small class="text-danger" id="mobile_err"></small></h5>
-                                                    @error('mobile')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                      
+                                        <th class="text-left">User Name  <br/> 
+                                            <?php if (!empty($search_organizer_name)) { 
+                                                echo '(Created By Organizer)'; 
+                                            } ?>
+                                        </th>
                                         <th class="text-left">Email ID/Contact Number</th>
                                         <th class="text-left">Gender</th>
                                         <th class="text-left">Date of Birth</th>
@@ -389,10 +417,14 @@
                     status: status
                 },
                 success: function(result) {
-                    if(result == 1){
-                        console.log(result);
-                        alert('Status changed successfully')
-                        //location.reload(); 
+                    if (result.sucess == 'true') {
+                        $("#success-message").text(result.message); // Update success message
+                        $("#success-alert").show(); // Show the success alert
+                        // Optionally hide the alert after a few seconds
+                        setTimeout(function() {
+                            $("#success-alert").fadeOut();
+                        }, 2000); // Adjust time (2000 = 2 seconds)
+
                     }else{
                         alert('Some error occured');
                         if(status)
@@ -426,15 +458,17 @@
         var CountryId = '<?php echo old('country', $search_country); ?>';
         var StateId = '<?php echo old('state', $search_state); ?>';
         var CityId = '<?php echo old('city', $search_city); ?>';
-
+        var baseUrl = "{{ config('custom.app_url') }}";
+    
         // Fetch states based on the selected country
         if (CountryId !== '') {
-            let _token = $('meta[name="csrf-token"]').attr('content');
+            // let _token = $('meta[name="csrf-token"]').attr('content');
+           
             $.ajax({
-                url: '/get_states', // Replace with your URL to fetch states
+                url: baseUrl + '/get_states', // Replace with your URL to fetch states
                 type: 'GET',
                 data: {
-                        _token: "{{ csrf_token() }}",
+                        // _token: "{{ csrf_token() }}",
                         country_id: CountryId 
                     },
                 success: function(states) {
@@ -447,7 +481,7 @@
                     // Fetch cities based on the selected state
                     if (StateId !== '') {
                         $.ajax({
-                            url: '/get_cities', // Replace with your URL to fetch cities
+                            url: baseUrl +'/get_cities', // Replace with your URL to fetch cities
                             type: 'GET',
                             data: { state_id: StateId },
                             success: function(cities) {
@@ -467,7 +501,7 @@
         $('#country').change(function() {
             var countryId = $(this).val();
             $.ajax({
-                url: '/get_states',
+                url: baseUrl +'/get_states',
                 type: 'GET',
                 data: { country_id: countryId },
                 success: function(states) {
@@ -484,7 +518,7 @@
         $('#state').change(function() {
             var stateId = $(this).val();
             $.ajax({
-                url: '/get_cities',
+                url: baseUrl +'/get_cities',
                 type: 'GET',
                 data: { state_id: stateId },
                 success: function(cities) {
@@ -498,71 +532,6 @@
     });
 
 
-    // document.addEventListener('DOMContentLoaded', function() {
-    //     var CountryId = '<?php echo old("country", $search_country); ?>';
-    //     var StateId = '<?php echo old("state", $search_state); ?>';
-    //     var CityId = '<?php echo old("city", $search_city); ?>';
-    //     // Function to populate a dropdown
-    //     function populateDropdown(dropdown, items, selectedId, defaultOption) {
-    //         dropdown.innerHTML = '<option value="">' + defaultOption + '</option>';
-    //         items.forEach(function(item) {
-    //             var option = document.createElement('option');
-    //             option.value = item.id;
-    //             option.textContent = item.name;
-    //             if (selectedId == item.id) {
-    //                 option.selected = true;
-    //             }
-    //             dropdown.appendChild(option);
-    //         });
-    //     }
-    //     // Fetch and populate states and cities when country and state are pre-selected
-    //     if (CountryId !== '') {
-    //         fetch('/get_states?country_id=' + CountryId)
-    //             .then(response => response.json())
-    //             .then(states => {
-    //                 var stateDropdown = document.getElementById('state');
-    //                 populateDropdown(stateDropdown, states, StateId, 'Select State');
-    //                 if (StateId !== '') {
-    //                     fetch('/get_cities?state_id=' + StateId)
-    //                         .then(response => response.json())
-    //                         .then(cities => {
-    //                             var cityDropdown = document.getElementById('city');
-    //                             populateDropdown(cityDropdown, cities, CityId, 'Select City');
-    //                         });
-    //                 }
-    //         });
-    //     }
-    //     // Handle country change immediately
-    //     $('#country').change(function() {
-    //         var countryId = this.value;
-    //         if (countryId !== '') {
-    //             fetch('/get_states?country_id=' + countryId)
-    //                 .then(response => response.json())
-    //                 .then(states => {
-    //                     var stateDropdown = document.getElementById('state');
-    //                     populateDropdown(stateDropdown, states, '', 'Select State');
-    //                     document.getElementById('city').innerHTML = '<option value="">Select City</option>'; // Clear city dropdown
-    //                 });
-    //         } else {
-    //             document.getElementById('state').innerHTML = '<option value="">Select State</option>'; // Clear state dropdown
-    //             document.getElementById('city').innerHTML = '<option value="">Select City</option>'; // Clear city dropdown
-    //         }
-    //     });
-    //     // Handle state change immediately
-    //     $('#state').change(function() {
-    //         var stateId = this.value;
-    //         if (stateId !== '') {
-    //             fetch('/get_cities?state_id=' + stateId)
-    //                 .then(response => response.json())
-    //                 .then(cities => {
-    //                     var cityDropdown = document.getElementById('city');
-    //                     populateDropdown(cityDropdown, cities, '', 'Select City');
-    //                 });
-    //         } else {
-    //             document.getElementById('city').innerHTML = '<option value="">Select City</option>'; // Clear city dropdown
-    //         }
-    //     });
-    // });
     
   
 </script>

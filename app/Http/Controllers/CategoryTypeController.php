@@ -162,6 +162,11 @@ class CategoryTypeController extends Controller
     public function change_active_status_category(Request $request)
     {
         $aReturn = Category::change_active_status_category($request);
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $aReturn = [];
+        $aReturn['message'] =  $successMessage ;
+        $aReturn['sucess'] = $sucess;
         return $aReturn;
     }
 

@@ -117,7 +117,7 @@
                                                 <input type="date" id="start_time" class="form-control"
                                                     placeholder="Start Date" name="start_time"
                                                     value="{{ old('start_time', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d') : '') }}"
-                                                    autocomplete="off" />
+                                                    autocomplete="off" onkeydown="return false;" onchange="setEndDateMin()"/>
                                                 <h5><small class="text-danger" id="start_time_err"></small></h5>
                                                 @error('start_time')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -377,14 +377,14 @@
        var CountryId = '<?php echo old('country', $country); ?>';
        var StateId = '<?php echo old('state', $state); ?>';
        var CityId = '<?php echo old('city', $city); ?>';
-     
+       var baseUrl = "{{ config('custom.app_url') }}";
        // alert(CountryId);
         //console.log("CountryId "+CountryId);
        // Fetch states based on the selected country
        if (CountryId !== '') {
            // alert("here");
            $.ajax({
-               url: '/get_states', // Replace with your URL to fetch states
+               url: baseUrl +'/get_states', // Replace with your URL to fetch states
                type: 'GET',
                data: { country_id: CountryId },
                success: function(states) {
@@ -397,7 +397,7 @@
                    // Fetch cities based on the selected state
                    if (StateId !== '') {
                        $.ajax({
-                           url: '/get_cities', // Replace with your URL to fetch cities
+                           url: baseUrl +'/get_cities', // Replace with your URL to fetch cities
                            type: 'GET',
                            data: { state_id: StateId },
                            success: function(cities) {
@@ -417,7 +417,7 @@
        $('#country').change(function() {
            var countryId = $(this).val();
            $.ajax({
-               url: '/get_states',
+               url: baseUrl +'/get_states',
                type: 'GET',
                data: { country_id: countryId },
                success: function(states) {
@@ -434,7 +434,7 @@
        $('#state').change(function() {
            var stateId = $(this).val();
            $.ajax({
-               url: '/get_cities',
+               url: baseUrl +'/get_cities',
                type: 'GET',
                data: { state_id: stateId },
                success: function(cities) {
@@ -556,7 +556,18 @@
     } 
 
 
-    
+</script>
+<script>
+    function setEndDateMin() {
+        const startDateInput = document.getElementById('start_time');
+        const endDateInput = document.getElementById('end_time');
+        const startDate = startDateInput.value;
 
-
+        if (startDate) {
+            endDateInput.setAttribute('min', startDate);
+            if (endDateInput.value && endDateInput.value < startDate) {
+                endDateInput.value = '';
+            }
+        }
+    }
 </script>
