@@ -676,10 +676,10 @@ class EventController extends Controller
             $EventSql .= " AND e.registration_end_time <=" . $EndDateTime;
         }
         if ((!empty($StartDateTime)) && (!empty($EndDateTime))) {
-            // $EventSql .= ' AND e.registration_start_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
-            $EventSql .= ' AND e.registration_start_time >=' . $StartDateTime . ' AND e.registration_end_time <= ' . $EndDateTime;
-
+            $EventSql .= ' AND e.registration_end_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
+            // $EventSql .= ' AND e.registration_start_time >=' . $StartDateTime . ' AND e.registration_end_time <= ' . $EndDateTime;
         }
+
         if (!empty($Distance)) {
             $EventSql .= " AND e.distance =" . $Distance;
         }
@@ -693,9 +693,7 @@ class EventController extends Controller
             $EventSql .= " AND e.city=" . $CityId;
         }
 
-       
-
-        // dd($EventSql);
+        // return $EventSql;
         if (!empty($Filter)) {
             switch ($Filter) {
                 case 'today':
