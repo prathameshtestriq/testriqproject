@@ -1953,7 +1953,7 @@ class UserController extends Controller
         $empty = false;
         $field = '';
         $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-        $user_id = $aToken['data']->ID;
+        $user_id = isset($aToken['data']) && !empty($aToken['data']) ? $aToken['data']->ID : 0;
         // dd($aToken['data']->ID);
         if ($aToken['code'] == 200) {
             $aPost = $request->all();

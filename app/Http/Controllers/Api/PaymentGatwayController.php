@@ -875,6 +875,76 @@ class PaymentGatwayController extends Controller
             }
         return true;    
     }
+    
+    public function ticket_booking_log(Request $request)
+    {
+        // dd($request);
+        $response['data'] = [];
+        $response['data']['user_details'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
 
+        // $Auth = new Authenticate();
+        // $aToken = $Auth->decode_token($request->header('Authorization'));
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $UserId = 0;
+            if (!empty($aToken)) {
+                $UserId = $aToken['data']->ID;
+            }
+            
+            $EventId    = !empty($request->event_id) ? $request->event_id : 0;
+            $Amount     = !empty($request->amount) ? $request->amount : '';
+            $BookTicketArray = !empty($request->booking_tickets_array) ? json_decode($request->booking_tickets_array) : [];
+            $FormQuestions = !empty($BookTicketArray) && isset($BookTicketArray->FormQuestions) ? $BookTicketArray->FormQuestions : "";
+    
+            $Datetime = time();
+
+            // return $PaymentPayload;
+           
+            $Sql = 'SELECT id,firstname,lastname,email,mobile FROM users WHERE is_active = 1 and id = ' . $UserId . ' ';
+            $aResult = DB::select($Sql);
+
+            $FirstName = !empty($aResult[0]->firstname) ? $aResult[0]->firstname : '';
+            $LastName = !empty($aResult[0]->lastname) ? $aResult[0]->lastname : '';
+            $Email = !empty($aResult[0]->email) ? $aResult[0]->email : '';
+            $MobNo = !empty($aResult[0]->mobile) ? $aResult[0]->mobile : '';
+
+            // dd($aResult);
+            if (!empty($aResult)) {
+
+                $Bindings = array(
+                    "event_id" => $EventId,
+                    "booking_pay_id" => 0,
+                    "amount" => $Amount,
+                    "firstname" => $FirstName,
+                    "lastname" => $LastName,
+                    "email" => $Email,
+                    "mobile_no" => $MobNo,
+                    "FormQuestions" => !empty($FormQuestions) ? json_encode($FormQuestions) : '',
+                    "payment_payload" => !empty($request->booking_tickets_array) ? $request->booking_tickets_array : '',
+                    "payment_type" => !empty($Amount) && $Amount != '0.00' ? 'Paid' : 'Free',
+                    "created_date" => $Datetime
+                );
+                //dd($Bindings);
+                //-----------------
+                $insert_SQL = "INSERT INTO ticket_booking_log (event_id,booking_pay_id,amount,firstname,lastname,email,mobile_no,FormQuestions, payment_payload,payment_type,created_date) VALUES(:event_id,:booking_pay_id,:amount,:firstname,:lastname,:email,:mobile_no,:FormQuestions,:payment_payload,:payment_type,:created_date)";
+                DB::insert($insert_SQL, $Bindings);
+
+                $response['message'] = 'Request processed successfully';
+                $ResposneCode = 200;
+            } 
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
 
 }

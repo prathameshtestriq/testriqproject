@@ -225,10 +225,12 @@ Route::controller(FormQuestionsController::class)->group(function () {
 });
 
 Route::controller(PaymentGatwayController::class)->group(function () {
+    Route::get('/paymentVerifyTransactionStatus/{trnid}', 'payment_verify_transaction_status');
     Route::post('/paymentByUserDetails', 'payment_by_user_details');
     Route::post('/bookingPaymentProcess', 'booking_payment_process');
     Route::post('/paymentVerifyStatus', 'payment_verify_status');
-    Route::get('/paymentVerifyTransactionStatus/{trnid}', 'payment_verify_transaction_status');
+    Route::post('/ticketBookingLog', 'ticket_booking_log');
+
 });
 
 Route::controller(EventDetailsController::class)->group(function () {
