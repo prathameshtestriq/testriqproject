@@ -188,7 +188,7 @@ Thank you for your attention to this matter.<br/>";
          <br/><br/>
            How to Get Started:
          <br/><br/>
-            - View upcoming events on the RACES platform: [<a href='https://racesregistrations.com/'>]
+            - View upcoming events on the RACES platform: <a href='https://racesregistrations.com/' target='_blank'>https://racesregistrations.com/</a>
             - If you are already logged in, simply select your event and proceed with registration.
             - If you haven't logged in yet, please do so, then choose your event and register.
          <br/><br/>
