@@ -190,7 +190,7 @@ Thank you for your attention to this matter.<br/>";
          <br/><br/>
             - View upcoming events on the RACES platform: <a href='https://racesregistrations.com/' target='_blank'>https://racesregistrations.com/</a><br/>
             - If you are already logged in, simply select your event and proceed with registration.<br/>
-            - If you haven't logged in yet, please do so, then choose your event and register.<br/>
+            - If you haven't logged in yet, please do so, then choose your event and register.
          <br/><br/>
          For any assistance, feel free to reach out to our support team at support@youtoocanrun.com or call us at +91 9920142195.
           <br/><br/>
