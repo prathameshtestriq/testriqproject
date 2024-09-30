@@ -5,8 +5,8 @@ if (!empty($edit_data)) {
     $banner_name = $edit_data['banner_name'];
     $banner_url = $edit_data['banner_url'];
     $banner_image = $edit_data['banner_image'];
-    $start_time = $edit_data['start_time'];
-    $end_time = $edit_data['end_time'];
+    $start_time = date( 'd-m-Y',$edit_data['start_time']);
+    $end_time = date( 'd-m-Y',$edit_data['end_time']);
     $country = $edit_data['country'];
     $state = $edit_data['state'];
     $city = $edit_data['city'];
@@ -124,7 +124,7 @@ if (!empty($edit_data)) {
                                             <div class="form-group">
                                                 <label for="banner_url">Banner URL <span style="color:red;">*</span></label>
                                                 <input type="text" id="banner_url" class="form-control"
-                                                    placeholder="Enter Banner Url" name="banner_url"
+                                                    placeholder="Enter Banner URL" name="banner_url"
                                                     value="{{ old('banner_url', $banner_url) }}"
                                                     autocomplete="off" />
                                                 <h5><small class="text-danger" id="banner_url_err"></small></h5>

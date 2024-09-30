@@ -40,12 +40,12 @@ class DashboardController extends Controller
         }
 
 
-        $aReturn['search_filter'] = (!empty(session('filter'))) ? session('filter') : 'week';
+        $aReturn['search_filter'] = (!empty(session('filter'))) ? session('filter') : [];
         $aReturn['search_category'] = (!empty(session('category'))) ? session('category') : '';
         $aReturn['search_event_name'] = (!empty(session('event_name'))) ? session('event_name') : '';
         $aReturn['search_from_date'] = (!empty(session('from_date'))) ? strtotime(session('from_date')) : '';
         $aReturn['search_to_date'] = (!empty(session('to_date'))) ? strtotime(session('to_date')) : '';
-
+        // dd($aReturn['search_event_name']);
         // dd( $aReturn['search_event_name'] );
 
         if (!empty($aReturn['search_filter'])) {
@@ -116,7 +116,7 @@ class DashboardController extends Controller
         // if (!empty($aReturn['search_event_name'])) {
         //     $SQL2 .= ' AND e.event_id =' . $aReturn['search_event_name'];
         // }
-        
+         
         $SQL2 = "SELECT DISTINCT(e.id) AS TotalRegistration ,e.total_amount AS TotalAmount,e.transaction_status FROM booking_details AS b LEFT JOIN event_booking AS e ON b.booking_id = e.id WHERE e.transaction_status IN (1,3)";
               
         if ($aReturn['search_filter'] !== "") {
@@ -334,7 +334,7 @@ class DashboardController extends Controller
         // dd(   $aReturn['TotalNumberUsers'] );
 
         #------------------------------------------- Remitted Amount
-        $SQL12 = 'SELECT sum(gross_amount) as amount_remitted FROM remittance_management WHERE active = 1';
+        $SQL12 = 'SELECT sum(amount_remitted) as amount_remitted FROM remittance_management WHERE active = 1';
 
         if ($aReturn['search_filter'] !== "") {
             if (isset($StartDate) && isset($EndDate)) {

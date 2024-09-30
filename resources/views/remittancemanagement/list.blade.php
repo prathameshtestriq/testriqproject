@@ -94,7 +94,7 @@
                                             <div class="col-sm-3">
                                                 <label for="form-control">Remittance Name</label>
                                                 <input type="text" id="remittance_name" class="form-control"
-                                                    placeholder="Remittance Name" name="remittance_name"
+                                                    placeholder="Search Remittance Name" name="remittance_name"
                                                     value="{{old('remittance_name',$search_remittance_name)}}" autocomplete="off" />
                                             </div>
                                             
@@ -134,7 +134,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-3 col-12">
+                                            <div class="col-sm-3 col-12 mt-2">
                                                 <label for="form-control"> Events</label>
                                                 <select id="event" name="event" class="form-control select2 form-control">
                                                     <option value="">Select  Event</option>
@@ -153,7 +153,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-2 mt-2">
+                                            <div class="col-sm-2 mt-3">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_remittance_name) || !empty($search_start_remittance_date) || !empty($search_end_remittance_date) || ($search_remittance_status != '')||!empty($search_event_id))
                                                     <a title="Clear" href="{{ url('/remittance_management/clear_search') }}"
@@ -162,6 +162,26 @@
                                                     </a>
                                                 @endif
                                             </div>
+
+                                            <div class="col-sm-7 mt-3 float-right">
+                                                <div class="d-flex justify-content-end">
+                                                    <!-- Add button -->
+                                                    <a href="{{ url('remittance_management/add') }}" 
+                                                       class="btn btn-outline-primary pr-2 mr-1"> <!-- Added 'mr-3' for spacing -->
+                                                        <i data-feather="plus"></i><span> Add </span>
+                                                    </a>
+                                            
+                                                    <!-- Download button (conditionally displayed) -->
+                                                    @if (!empty($Remittance)) 
+                                                        <a href="{{ url('remittance_management/export_remittance_management') }}" 
+                                                           class="btn btn-danger text-white" title="Download">
+                                                           Download
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -171,44 +191,32 @@
                         <form method="post" action="{{route('remittance_management.import_remittance_management') }}" enctype="multipart/form-data">
                             @csrf 
                             <div class="row">
-                                <div class="col-sm-2 ">
+                                <div class="col-sm-2">
                                     <div class="form-group p-2">
-                                       Remittance Data Import <span style="color:red;">*</span>
+                                        <label for="rem_file">Remittance Data Import <span style="color:red;">*</span></label>
                                     </div>
                                 </div>
                                 <div class="col-sm-3">
-                                    <div class="form-group mr-3">
+                                    <div class="form-group">
                                         <input type="file" id="rem_file" name="rem_file" class="form-control">
                                         <input type="hidden" name="remittance_id">
-                                        <h5><small class="text-danger" id="rem_file_err"></small></h5>
+                                        <small class="text-danger" id="rem_file_err"></small>
                                         @error('rem_file')
                                             <span class="error" style="color:red;">{{ $message }}</span>
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="col-sm-2">
-                                    <div class="form-group m-0">
-                                       <button type="submit" class="btn btn-primary">Submit</button>
+                                <div class="col-sm-5">
+                                    <div class="form-group m-0 d-flex align-items-center">
+                                        <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                                        <a href="{{ asset('sample_remittance_excel/remittance_sample_report_1725434917.xlsx') }}" 
+                                           class="btn btn-danger text-white" title="Download" download>
+                                           Sample Excel Download
+                                        </a>
                                     </div>
                                 </div>
-
-                                <div class="col-sm-5 float-right ">
-                                    <div class="float-right">
-                                        <a href="{{ asset('sample_remittance_excel/remittance_sample_report_1725434917.xlsx') }}" class="btn btn-danger text-white float-right mr-1 " title="Download" download>Sample Excel Download </a>
-                                    </div>
-                                    @if (!empty($Remittance)) 
-                                        <div class="float-right">
-                                            <a href="{{ url('remittance_management/export_remittance_management') }}" class="btn btn-danger text-white float-right mr-1 ml-2 " title="Download">Download </a>
-                                        </div>
-                                    @endif
-                                    <div class="float-right ml-3">
-                                    <a href="{{ url('remittance_management/add') }}"
-                                    class="btn btn-outline-primary float-right pr-2">
-                                        <i data-feather="plus"></i><span>Add </span></a>
-                                    </div>    
-                                </div>
-                               
                             </div>
+                            
                         </form>
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered">
@@ -217,7 +225,7 @@
                                         <th class="text-center">Sr. No</th>
                                         <th class="text-left">Remittance Name</th>
                                         <th class="text-left">Remittance Date</th>
-                                        <th class="text-left">Event Name</th>
+                                        <th class="text-left" >Event Name</th>
                                         <th class="text-center">Gross Amount</th>
                                         <th class="text-center">Service Charge</th>
                                         <th class="text-center">SGST</th>
@@ -228,7 +236,7 @@
                                         <th class="text-center">Amount Remitted</th>
                                         <th class="text-left">Bank Reference</th>
                                         <th class="text-center">Status</th>
-                                        <th class="text-center">Actions</th>
+                                        <th class="text-center" style="width: 150px">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>

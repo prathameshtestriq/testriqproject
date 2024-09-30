@@ -141,7 +141,7 @@ class BannerController extends Controller
                     'required',
                     'regex:/^(www\.|http:\/\/|https:\/\/).*/i', 
                 ],
-                'banner_image' => empty($edit_array) || $edit_array['banner_image'] === '' ? 'required|mimes:jpeg,jpg,png,gif' : '',
+                'banner_image' => empty($edit_array) || $edit_array['banner_image'] === '' ? 'required|mimes:jpeg,jpg,png,gif|Max:2048' : 'mimes:jpeg,jpg,png,gif|Max:2048',
                 'start_date' => 'required',
                 'end_date' => 'required',
                 'city' => 'required',
@@ -155,7 +155,7 @@ class BannerController extends Controller
                 'banner_url.regex' => 'The Banner URL must start with "www.", "http://", or "https://".',
                 'banner_image.required' => 'The image field is required .',
                 'banner_image.mimes' => 'The image must be a file of type: jpeg, jpg, png, gif.',
-                // 'img.size' => 'The image must be 2MB or below.', 
+                'banner_image.Max' => 'The image size must not exceed 2MB.', 
             ];  
 
             $validator = Validator::make($request->all(), $rules,$message);

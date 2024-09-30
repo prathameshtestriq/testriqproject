@@ -95,7 +95,7 @@
                                             <div class="col-sm-3">
                                                 <label for="form-control"> Race Category Name</label>
                                                 <input type="text" id="name" class="form-control"
-                                                    placeholder="Races Category Name" name="name" value="{{ $search_name }}"
+                                                    placeholder="Search Races Category Name" name="name" value="{{ $search_name }}"
                                                     autocomplete="off" />
                                             </div>
 
@@ -213,9 +213,9 @@
 
                                                 <td>
                                                     <a href="{{ route('edit_type', $val->id) }}"><i
-                                                            class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
+                                                            class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                                     <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                        onclick="remove_type({{ $val->id }})" title="delete"></i>
+                                                        onclick="remove_type({{ $val->id }})" title="Delete"></i>
                                                 </td>
                                             </tr>
                                         <?php } ?>

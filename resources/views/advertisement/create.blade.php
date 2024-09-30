@@ -114,13 +114,13 @@ if (!empty($edit_data)) {
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="url">Url <span style="color:red;">*</span></label>
+                                                <label for="url">URL <span style="color:red;">*</span></label>
                                                 <input type="text" id="url" class="form-control"
-                                                    placeholder="Url" name="url"
-                                                    value="{{ old('url', $url) }}"
+                                                    placeholder="URL" name="URL"
+                                                    value="{{ old('URL', $url) }}"
                                                     autocomplete="off" />
-                                                <h5><small class="text-danger" id="url_err"></small></h5>
-                                                @error('url')
+                                                <h5><small class="text-danger" id="URL_err"></small></h5>
+                                                @error('URL')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>

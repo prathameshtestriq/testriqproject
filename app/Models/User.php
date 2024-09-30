@@ -85,7 +85,7 @@ class User extends Authenticatable
 
 
     public $timestamps = false;
-
+ 
     public static function get_all($limit, $a_search = array())
     {
         $a_return = [];

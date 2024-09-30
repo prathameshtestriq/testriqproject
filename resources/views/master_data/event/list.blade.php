@@ -91,7 +91,7 @@
                                             <div class="col-sm-2">
                                                 <label for="form-control">Event Name</label>
                                                 <input type="text" id="name" class="form-control"
-                                                    placeholder="Event Name" name="name" value="{{ $search_event_name }}"
+                                                    placeholder="Search Event Name" name="name" value="{{ $search_event_name }}"
                                                     autocomplete="off" />
                                             </div>
                                           
@@ -166,9 +166,9 @@
                                             </div>
 
                                             <div class="col-sm-2 col-12 mt-2">
-                                                <label for="form-control"> Organizer</label>
+                                                <label for="form-control"> Organiser</label>
                                                 <select id="organizer" name="organizer" class="form-control select2 form-control">
-                                                    <option value="">Select  Organizer</option>
+                                                    <option value="">Select  Organiser</option>
                                                     <?php 
                                                         foreach ($organizer as  $value)
                                                         {
@@ -184,13 +184,13 @@
                                                     ?>
                                                 </select>
                                             </div>
- 
+                                        
                                             <div class="col-sm-2 mt-3">
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                                 @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != '')|| !empty($search_organizer)|| !empty($search_event_country)|| !empty($search_event_state)|| !empty($search_event_city))
                                                     <a title="Clear" href="{{ url('event/clear_search') }}" type="button"
-                                                        class="btn btn-outline-primary">
-                                                        <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
+                                                    class="btn btn-outline-primary">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rotate-ccw me-25"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Clear Search
                                                     </a>
                                                 @endif
                                             </div>
@@ -285,9 +285,9 @@
                                                 <td style="text-align: center;">
                                                     <a href="{{ url('event/edit', $event->id) }}"><i
                                                             class="fa fa-edit btn btn-primary btn-sm"
-                                                            title="edit"></i></a>
+                                                            title="Edit"></i></a>
                                                     <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                        onclick="remove_event({{ $event->id }})" title="delete"></i>
+                                                        onclick="remove_event({{ $event->id }})" title="Delete"></i>
                                                 </td>
                                             </tr>
                                         @endforeach

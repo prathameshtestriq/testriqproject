@@ -95,7 +95,7 @@
                                         </div>
                                         <div class="col-md-2 col-12">
                                             <div class="form-group mt-2">
-                                                <input type="checkbox" id="show_as_home" class="checkbox m-1" name="show_as_home" value="1"<?php if(old('show_as_home', $show_as_home)==1){ echo 'checked';};?> autocomplete="off" style="transform: scale(1.5);" />
+                                                <input type="checkbox" id="show_as_home" class="checkbox m-1" name="show_as_home" value="1"<?php if(old('show_as_home', $show_as_home)==1){ echo 'checked';};?> autocomplete="off" style="transform: scale(1.5);" onchange="toggleImageSection()"/>
                                                 <label for="show_as_home">Show as home</label>
                                                 <h5><small class="text-danger" id="show_as_home_err"></small></h5>
                                                 @error('show_as_home')
@@ -195,7 +195,22 @@
             }
         }
     });
+
+    function toggleImageSection() {
+        var checkbox = document.getElementById('show_as_home');
+        var logoSection = document.getElementById('races_logo_section');
+        if (checkbox.checked) {
+            logoSection.style.display = 'block';
+            document.getElementById('preview').style.display = 'block';
+        } else {
+            logoSection.style.display = 'none';
+            document.getElementById('preview').style.display = 'none'; // Hide image preview when unchecked
+        }
+    }
+
+   
 </script>
+
 <script type="text/javascript">
     function previewImage(input) {
         var file = input.files[0];

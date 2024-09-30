@@ -161,7 +161,7 @@ class CategoryController extends Controller
     public function delete_category($iId)
     {
         Category::delete_category($iId);
-        return redirect(url('/category'))->with('success', 'category deleted successfully');
+        return redirect(url('/category'))->with('success', 'Category deleted successfully');
     }
 
     // public function uploadFile($file, $path)

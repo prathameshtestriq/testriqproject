@@ -241,9 +241,9 @@
 
                                                 <td>
                                                     <a href="{{ url('/advertisement/add_edit', $val->id) }}"><i
-                                                            class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
+                                                            class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                                     <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                        onclick="delAdd({{ $val->id }})" title="delete"></i>
+                                                        onclick="delAdd({{ $val->id }})" title="Delete"></i>
                                                 </td>
                                             </tr>
                                       <?php }

@@ -10,7 +10,7 @@
         <div class="row" id="table-bordered">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header w-100">
+                    <div class="card-header w-100"> 
                         <div class="content-header-left">
                             <div class="row breadcrumbs-top">
                                 <div class="col-sm-12">
@@ -20,7 +20,7 @@
                               <?php if($event_id != 0){ ?>
                                 <h5 class="content-header-title float-left mb-0 ml-2"><b>Event Name:-</b> {{$event_name[0]->name}}</h5>
                               <?php } ?>
-                                </div>
+                            </div>
                         </div>
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
                             <nav aria-label="breadcrumb">
@@ -306,7 +306,7 @@
                                                 <td>
                                                     {{-- <a href=""><i
                                                             class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a> --}}
-                                                    <i class="fa fa-trash-o btn btn-danger btn-sm" onclick="remove_type({{ $val->id }},{{$val->event_id}})" title="delete"></i>
+                                                    <i class="fa fa-trash-o btn btn-danger btn-sm" onclick="remove_type({{ $val->id }},{{$val->event_id}})" title="Delete"></i>
                                                 </td>
                                             </tr>
                                       <?php }

@@ -114,16 +114,16 @@
 
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
-                                                <label for="testimonial_img">Testimonial Image <span style="color:red;">*</span>
+                                                <label for="testimonial_image">Testimonial Image <span style="color:red;">*</span>
                                                     <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
                                                 </label>
                                                 
-                                                <input type="file" id="testimonial_img" class="form-control"
-                                                    name="testimonial_img"
+                                                <input type="file" id="testimonial_image" class="form-control"
+                                                    name="testimonial_image"
                                                     accept="image/jpeg, image/png" 
                                                     autocomplete="off" onchange="previewImage(this); validateSize(this);" />
-                                                <h5><small class="text-danger" id="testimonial_img_err"></small></h5>
-                                                @error('testimonial_img')
+                                                <span class="error" id="testimonial_image_err" style="color:red;"></span>
+                                                @error('testimonial_image')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -214,17 +214,17 @@
     function validateSize(input) {
         var isValid = true;
       const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var testimonial_img = $('#testimonial_img').val().trim();
+      var testimonial_img = $('#testimonial_image').val().trim();
       if(fileSize > 2) {
         //  alert('File size exceeds 2 MB');
          if (testimonial_img !== "") {
             // alert("here");
-            $('#testimonial_img').parent().addClass('has-error');
-            $('#testimonial_img_err').html('The image must be 2MB or below.');
-            $('#testimonial_img').focus();
-            $('#testimonial_img').keyup(function() {
-                $('#testimonial_img').parent().removeClass('has-error');
-                $('#testimonial_img_err').html('');
+            $('#testimonial_image').parent().addClass('has-error');
+            $('#testimonial_image_err').html('The image must be 2MB or below.');
+            $('#testimonial_image').focus();
+            $('#testimonial_image').keyup(function() {
+                $('#testimonial_image').parent().removeClass('has-error');
+                $('#testimonial_image_err').html('');
             });
             isValid = false;
         }

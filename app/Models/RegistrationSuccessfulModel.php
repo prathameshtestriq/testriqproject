@@ -115,10 +115,12 @@ class RegistrationSuccessfulModel extends Model
     public static function get_all_count($event_id,$a_search = array()){
         $count = 0;
 
-        $s_sql = "SELECT COUNT(eb.id) AS count FROM event_booking AS eb 
-        LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
-        LEFT JOIN users AS u ON u.id = eb.user_id
-        WHERE  1=1";
+        // $s_sql = "SELECT COUNT(eb.id) AS count FROM event_booking AS eb 
+        // LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
+        // LEFT JOIN users AS u ON u.id = eb.user_id
+        // WHERE  1=1";
+      
+         $s_sql = "SELECT COUNT(e.id) AS count FROM event_booking e WHERE 1=1";
 
         if (!empty($a_search['search_registration_user_name'])) {
             $s_sql .= ' AND (LOWER((CONCAT(u.firstname, " ", u.lastname))) LIKE \'%' . strtolower($a_search['search_registration_user_name']) . '%\')';
@@ -142,6 +144,7 @@ class RegistrationSuccessfulModel extends Model
             // dd($sSQL);
         } 
 
+        // $s_sql .= " AND e.transaction_status IN (1,3)";
         // $s_sql .= " GROUP BY bd.booking_id";
         // $s_sql .= " ORDER BY eb.id DESC";
 
@@ -150,10 +153,9 @@ class RegistrationSuccessfulModel extends Model
         if (!empty($CountsResult)) {
             $count = $CountsResult[0]->count;
         }
-    // dd( $count);
+        // dd( $count);
         return $count;
     }
-
     public static function get_all($limit,$event_id,$a_search = array()){
         $a_return = [];
 
@@ -190,6 +192,7 @@ class RegistrationSuccessfulModel extends Model
             // dd($sSQL);
         } 
 
+        // $s_sql .= " AND eb.transaction_status IN (1,3)";
         $s_sql .= " GROUP BY bd.booking_id";
         $s_sql .= " ORDER BY eb.id DESC";
      

@@ -60,7 +60,7 @@ class UserController extends Controller
            session(['gender' => $request->gender]);
            session(['role' => $request->role]);
            session(['rows' => $request->rows]);
-           session( ['organizer_id' => $request->organizer_id]);
+           session(['organizer_id' => $request->organizer_id]);
 
             return redirect('/users');
         }
@@ -157,19 +157,24 @@ class UserController extends Controller
 
             if ($iId > 0) {
                 $rules['firstname'] = 'required|regex:/^[a-zA-Z\s]+$/';
-                $rules['lastname'] = 'required';           
+                $rules['lastname'] = 'required|regex:/^[a-zA-Z\s]+$/';           
                 $rules['email'] = 'required|email:rfc,dns|unique:users,email,'.$iId.',Id';
                 $rules['password'] = 'nullable|confirmed|min:5';
             } else { 
-                $rules['firstname'] = 'required';
-                $rules['lastname'] = 'required';
+                $rules['firstname'] = 'required|regex:/^[a-zA-Z\s]+$/';
+                $rules['lastname'] = 'required|regex:/^[a-zA-Z\s]+$/';
                 $rules['email'] = 'required|email:rfc,dns|unique:users';
                 $rules['password'] = 'required|confirmed|min:5';
             }
 
-          
+            $message = [ 
+                'firstname.required' => 'The first name field is required.',
+                'firstname.regex' => 'The first name may only contain letters.',
+                'lastname.required' => 'The last name field is required.',
+                'lastname.regex' => 'The lastname may only contain letters.',
+            ];  
 
-            $request->validate($rules);
+            $request->validate($rules,$message);
 
 
             if ($iId > 0) {

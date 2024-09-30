@@ -217,11 +217,14 @@
                         <td>Organiser</td>
                         <td>{{ isset($org_details->name) ? $org_details->name : '' }}</td>
                     </tr>
+                    
+                    <?php if($event_details->event_type != 2){ ?>
+                        <tr>
+                            <td>Venue</td>
+                            <td>{{ isset($event_details->Venue) ? $event_details->Venue : '' }}</td>
+                        </tr>
+                    <?php } ?>
 
-                    <tr>
-                        <td>Venue</td>
-                        <td>{{ isset($event_details->Venue) ? $event_details->Venue : '' }}</td>
-                    </tr>
                     <tr>
                         <td>Event Starts On</td>
                         <td>{{ isset($event_details->start_date) ? $event_details->start_date : '' }} :

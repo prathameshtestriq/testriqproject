@@ -95,7 +95,7 @@
                                             <div class="col-sm-3">
                                                 <label for="form-control">Banner Name</label>
                                                 <input type="text" id="name" class="form-control"
-                                                    placeholder="Banner Name" name="name" value="{{ $search_banner }}"
+                                                    placeholder="Search Banner Name" name="name" value="{{ $search_banner }}"
                                                     autocomplete="off" />
                                             </div>
                                          
@@ -252,7 +252,7 @@
                                             <a href="{{ url('/banner/add_edit', $val->id) }}"><i
                                                     class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                             <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                onclick="delbanner({{ $val->id }})" title="delete"></i>
+                                                onclick="delbanner({{ $val->id }})" title="Delete"></i>
                                         </td>
                                     </tr>
                                     <?php }

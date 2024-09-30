@@ -93,7 +93,7 @@
                                             <div class="col-sm-3">
                                                 <label for="form-control">Campaign Name</label>
                                                 <input type="text" id="campaign_name" class="form-control"
-                                                    placeholder="Campaign Name" name="campaign_name"
+                                                    placeholder="Search Campaign Name" name="campaign_name"
                                                     value="{{old('campaign_name',$search_campaign_name)}}" autocomplete="off" />
                                             </div>
                                          
@@ -222,8 +222,8 @@
                                         <tr>
                                             <td class="text-center">{{ $i }}</td>
                                             <td class="text-left">{{ ucfirst($val->campaign_name) }}</td>
-                                            <td class="text-center">{{ $val->event_name }}</td>
-                                            <td class="text-center">{{ $val->campaign_type }}</td>
+                                            <td class="text-left">{{ $val->event_name }}</td>
+                                            <td class="text-left">{{ $val->campaign_type }}</td>
                                             <td class="text-center">{{ $val->count }}</td>
                                             <td class="text-left">{{  date('d-m-Y ',$val->start_date) }}</td>
                                             <td class="text-left">{{  date('d-m-Y ',$val->end_date) }}</td>

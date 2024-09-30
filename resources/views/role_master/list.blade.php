@@ -93,7 +93,7 @@
                                             <div class="col-sm-3">
                                                 <label for="form-control">Role Name</label>
                                                 <input type="text" id="role_name" class="form-control"
-                                                    placeholder="Role Name" name="role_name"
+                                                    placeholder="Search Role Name" name="role_name"
                                                     value="{{old('role_name',$search_role_name)}}" autocomplete="off" />
                                             </div>
                                             

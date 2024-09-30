@@ -93,21 +93,21 @@
                                             <div class="col-sm-3 col-12">
                                                 <label for="form-control">User Name</label>
                                                 <input type="text" id="user_name" class="form-control"
-                                                        placeholder="User Name" name="name"
+                                                        placeholder="Search User Name" name="name"
                                                         value="{{ $search_name }}" autocomplete="off" />
                                             </div>
 
                                             <div class="col-sm-3 col-12">
                                                 <label for="form-control">Email Id</label>
                                                 <input type="text" id="email_id" class="form-control"
-                                                    placeholder="Email Id" name="email_id" value="{{ $search_email_id }}"
+                                                    placeholder="Search Email Id" name="email_id" value="{{ $search_email_id }}"
                                                     autocomplete="off" />
                                             </div>
                                             
                                             <div class="col-sm-3 col-12">
                                                 <label for="form-control">Mobile No</label>
                                                 <input type="text" id="mobile_no" class="form-control"
-                                                    placeholder="Mobile No" name="mobile_no" value="{{ $search_mobile }}"
+                                                    placeholder="Search Mobile No" name="mobile_no" value="{{ $search_mobile }}"
                                                     autocomplete="off" />
                                             </div>
 
@@ -208,9 +208,9 @@
                                             </div>
 
                                             <div class="col-sm-3 col-12 mt-1">
-                                                <label for="form-control">Organizer</label>
+                                                <label for="form-control">Organiser</label>
                                                 <select id="organizer_id" name="organizer_id" class="select2 form-control">
-                                                    <option value="">Select Organizer</option>
+                                                    <option value="">Select Organiser</option>
                                                     <?php  
                                                     foreach ($organizer_name as $value)
                                                     {  

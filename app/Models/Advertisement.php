@@ -155,7 +155,7 @@ class Advertisement extends Model
            'position' => $request->position,
            'start_time' => strtotime($request->start_date),
            'end_time' => strtotime($request->end_date),
-           'url' => $request->url,
+           'url' => $request->URL,
            'img' => $img_name
        ];
       
@@ -192,7 +192,7 @@ class Advertisement extends Model
            'position' =>$request->position,
            'start_time' => strtotime($request->start_date),
            'end_time' => strtotime($request->end_date),
-           'url' => $request->url,
+           'url' => $request->URL,
            'id' => $id
        ];
    

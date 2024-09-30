@@ -85,7 +85,7 @@ class MarketingController extends Controller
                 'event' => 'required',
                 'campaign_name' => 'required|unique:marketing,campaign_name,' . $iId . 'id',
                 'campaign_type' => 'required',
-                'count' => 'required',
+                'count' => 'required|numeric|min:1',
                 'start_date' => 'required',
                 'end_date' => 'required'
             ];
@@ -108,9 +108,10 @@ class MarketingController extends Controller
               $sSQL = 'SELECT id,event_id,campaign_name,campaign_type,count,start_date,end_date FROM marketing WHERE id=:id';
               $marketingdetails = DB::select($sSQL, array( 'id' => $iId));
               $a_return = (array)$marketingdetails[0];
-             //dd($a_return );
+              $a_return['start_date'] = date('d-m-Y',$a_return['start_date']);
+              $a_return['end_date'] = date('d-m-Y',$a_return['end_date']);
             }
-          }      
+        }      
         
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());

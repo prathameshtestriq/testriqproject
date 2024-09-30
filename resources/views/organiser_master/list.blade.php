@@ -77,7 +77,7 @@
                                             <div class="col-sm-3">
                                                 <label for="form-control">Organiser Name</label>
                                                 <input type="text" id="organiser_name" class="form-control"
-                                                    placeholder="Organiser Name" name="organiser_name" value="{{ $search_organiser_name }}"
+                                                    placeholder="Search Organiser Name" name="organiser_name" value="{{ $search_organiser_name }}"
                                                     autocomplete="off" />
                                             </div>
 
@@ -103,7 +103,7 @@
                                             <div class="col-sm-3">
                                                 <label for="form-control">GST Number</label>
                                                 <input type="text" id="gst_number" class="form-control"
-                                                    placeholder="GST Number" name="gst_number" value="{{ $search_gst_number }}"
+                                                    placeholder="Search GST Number" name="gst_number" value="{{ $search_gst_number }}"
                                                     autocomplete="off" />
                                             </div>
 
@@ -173,9 +173,9 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <a href="{{ url('organiser_master/edit', $val->id) }}"><i
-                                                        class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
+                                                        class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                                         <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                        onclick="delorganiser({{ $val->id }})" title="delete"></i>
+                                                        onclick="delorganiser({{ $val->id }})" title="Delete"></i>
                                                 </td>
                                                
                                             </tr>

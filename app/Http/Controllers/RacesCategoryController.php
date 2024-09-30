@@ -132,7 +132,7 @@ class RacesCategoryController extends Controller
 
            if($request->input('show_as_home', '') == 1){
             $Rules = array_merge($Rules, [
-                'races_logo' =>  'required|mimes:jpeg,jpg,png,gif|max:2000',
+                'races_logo' =>  empty($iId) ? 'required|mimes:jpeg,jpg,png,gif|max:2000':'',
             ]);
            }
             $message = [ 
@@ -150,16 +150,19 @@ class RacesCategoryController extends Controller
             if($iId>0){
                 $request->validate($Rules, $message);
                 // Determine if image update is required
+            
                 if($request->input('show_as_home', '') == 1){
                    $updateImage = $request->hasFile('races_logo');
+                //    dd( $updateImage);
                    // Handle image update if necessary
                     $image_name = '';
                     if ($updateImage) {
                         $image_name = $request->file('races_logo')->getClientOriginalName();
                         $request->file('races_logo')->move(public_path('uploads/type_images/'), $image_name);
                     }
+                    
                 }
-        
+               
                 // Update record
                 $Bindings = [
                     'name' => $name,
@@ -172,6 +175,9 @@ class RacesCategoryController extends Controller
                 if (!empty($updateImage)) {
                     $sSQL .= ', logo = :logo';
                     $Bindings['logo'] = $image_name;
+                }else{
+                    $sSQL .= ', logo = :logo';
+                    $Bindings['logo'] = '';
                 }
                 $sSQL .= ' , show_as_home= :show_as_home WHERE id = :id';
         

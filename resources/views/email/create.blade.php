@@ -92,7 +92,7 @@
                                             ?>
                                             <label for="form-control">Email Type <span
                                                 style="color:red;">*</span></label>
-                                            <select id="email_type" name="email_type" class="form-control select2 form-control" onchange="hideshow_event_receiver(event.target.value)">
+                                            <select id="email_type" name="email_type" class="form-control select2 form-control" onchange="hideshow_event_receiver(event.target.value);hideshow_event(event.target.value)">
                                                 <option value="">Select Type</option>
                                                 <?php 
                                                     foreach ($Email_Type as  $key => $value)
@@ -261,7 +261,7 @@
                                                 <label for="date">Date <span style="color:red;">*</span></label>
                                                 <input type="datetime-local" id="date" class="form-control"
                                                        placeholder="Start Date" name="shedulingdate" value="{{ old('shedulingdate') }}"
-                                                       autocomplete="off" />
+                                                       autocomplete="off" min="{{ now()->format('Y-m-d\TH:i') }}"/>
                                                 <h5><small class="text-danger" id="date_err"></small></h5>
                                                 @error('shedulingdate')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -364,7 +364,7 @@
             if(value == '2'){
                 $('.email').show();
                 $('.email').next(".select2-container").show();
-               
+                $('#receiver').val(null).trigger('change');
             }else{
                 $('.email').hide();
                 $('.email').next(".select2-container").hide();
@@ -373,6 +373,7 @@
             if(value == '3'){
                 $('.email_file').show();
                 $('.email_file').next(".select2-container").show();
+                $('#receiver').val(null).trigger('change');
             }else{
                 $('.email_file').hide();
                 $('.email_file').next(".select2-container").hide();

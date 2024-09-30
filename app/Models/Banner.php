@@ -227,8 +227,19 @@ class Banner extends Model
     {
 
         $banner_image_name = '';
+// dd($request->hasFile('banner_image'));
+        // if (!empty($request->file('banner_image'))) { // Check if banner_image is not empty
+        //     $path = public_path('uploads/banner_image/');
+        //     $banner_image = $request->file('banner_image');
+        //     $imageExtension = $banner_image->getClientOriginalExtension();
 
-        if (!empty($request->file('banner_image'))) { // Check if banner_image is not empty
+        //     $banner_image_name = strtotime('now') . '_banner.' . $imageExtension;
+
+        //     $banner_image->move($path, $banner_image_name);
+        // } else {
+        //     $banner_image_name = $request->banner_image_name;
+        // }
+        if ($request->hasFile('banner_image')) { // Check if banner_image is not empty
             $path = public_path('uploads/banner_image/');
             $banner_image = $request->file('banner_image');
             $imageExtension = $banner_image->getClientOriginalExtension();

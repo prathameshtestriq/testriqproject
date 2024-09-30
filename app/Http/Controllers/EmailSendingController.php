@@ -104,7 +104,9 @@ class EmailSendingController extends Controller
             if ($request->date == 'shedule_date') {
                 $rules['shedulingdate'] = 'required';
             }
-
+           $message = [
+            'shedulingdate.required' => 'The scheduled date field is required.',
+           ];
            
             // install(composer require league/csv)
             // Add rules based on email type
@@ -132,7 +134,7 @@ class EmailSendingController extends Controller
             }
             //dd($request->all());
            
-            $validator = Validator::make($request->all(), $rules);
+            $validator = Validator::make($request->all(), $rules,$message);
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();
             }

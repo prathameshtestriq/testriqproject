@@ -113,13 +113,13 @@ class TestimonialController extends Controller
                 'testimonial_name' => 'required|unique:testimonial,name,' . $iId . 'id',
                 'subtitle'         => 'required|string',
                 'description'      => 'required|string',
-                'testimonial_img'  => 'required|mimes:jpeg,jpg,png,gif|max:2000'
+                'testimonial_image'  => !empty($iId) ? '' :'required|mimes:jpeg,jpg,png,gif'
             ]; 
             $testimonial_name = (!empty($request->testimonial_name)) ? $request->testimonial_name : '';
             $subtitle = (!empty($request->subtitle)) ? $request->subtitle : '';
             $description = (!empty($request->description)) ? $request->description : '';
-            $testimonial_img = (!empty($request->testimonial_img)) ? $request->testimonial_img : '';
-            $hidden_testimonial_img = (!empty($request->testimonial_img)) ? $request->hidden_testimonial_img : '';
+            $testimonial_img = (!empty($request->testimonial_image)) ? $request->testimonial_image : '';
+            $hidden_testimonial_img = (!empty($request->testimonial_image)) ? $request->hidden_testimonial_img : '';
             $image_name = '';
             //  $SuccessMessage = 'testimonial  updated successfully'; 
             if ($iId > 0) {
@@ -127,9 +127,9 @@ class TestimonialController extends Controller
                 #UPDATE
                 $request->validate($Rules);
 
-                if ($request->file('testimonial_img')) {
+                if ($request->file('testimonial_image')) {
                    $path = public_path('uploads/testimonial_images/');
-                   $img_file = $request->file('testimonial_img');
+                   $img_file = $request->file('testimonial_image');
                    $img_extension = $img_file->getClientOriginalExtension();
                    $img_name = strtotime('now').'.'.$img_extension;
                    
@@ -153,15 +153,15 @@ class TestimonialController extends Controller
 
                 $sSQL .= ' WHERE id = :id';
                 $Result = DB::update($sSQL, $Bindings);
-                $SuccessMessage = 'testimonial updated successfully';
+                $SuccessMessage = 'Testimonial updated successfully';
                 
             } else {
                
                 $request->validate($Rules);
 
-                if ($request->file('testimonial_img')) {
+                if ($request->file('testimonial_image')) {
                    $path = public_path('uploads/testimonial_images/');
-                   $img_file = $request->file('testimonial_img');
+                   $img_file = $request->file('testimonial_image');
                    $img_extension = $img_file->getClientOriginalExtension();
                    $img_name = strtotime('now').'.'.$img_extension;
                    
@@ -179,7 +179,7 @@ class TestimonialController extends Controller
                 );
 
                 $Result = DB::insert($sSQL, $Bindings);
-                $SuccessMessage = 'testimonial added successfully';
+                $SuccessMessage = 'Testimonial added successfully';
                
             }
             return redirect('/testimonial')->with('success', $SuccessMessage);
@@ -214,7 +214,7 @@ class TestimonialController extends Controller
             );
             // dd($Result);       
         }
-        return redirect(url('/testimonial'))->with('success', 'testimonial deleted successfully');
+        return redirect(url('/testimonial'))->with('success', 'Testimonial deleted successfully');
     }
     public function change_active_status(Request $request)
     {

@@ -47,7 +47,7 @@ class PaymentLogModel extends Model
         }
      
         if(isset( $a_search['search_transaction_status_payment']) &&  $a_search['search_transaction_status_payment'] != ''){
-            $s_sql .= ' AND p.payment_status = '.$a_search['search_transaction_status_payment'];
+            $s_sql .= ' AND p.payment_status = '.'"'.$a_search['search_transaction_status_payment'].'"';
         } 
 
         $CountsResult = DB::select($s_sql);
@@ -88,7 +88,7 @@ class PaymentLogModel extends Model
      
 
         if(isset( $a_search['search_transaction_status_payment']) &&  $a_search['search_transaction_status_payment'] != ''){
-            $s_sql .= ' AND p.payment_status = '.$a_search['search_transaction_status_payment'];
+            $s_sql .= ' AND p.payment_status = '.'"'.$a_search['search_transaction_status_payment'].'"';
         } 
 
         if ($limit > 0) {

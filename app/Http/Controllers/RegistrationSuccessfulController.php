@@ -7,6 +7,7 @@ use App\Models\RegistrationSuccessfulModel;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 
 class RegistrationSuccessfulController extends Controller
@@ -72,8 +73,11 @@ class RegistrationSuccessfulController extends Controller
             $Return["Registration_successful"] = RegistrationSuccessfulModel::get_all($Limit,$event_id,$Return);
           
         }    
-
-        $Return['event_id']   = $event_id;
+        $sql = 'SELECT name FROM events where id ='.$event_id;
+        $Return['event_name'] = DB::select($sql,array());
+        // dd( $Return['event_name']);
+       
+        $Return['event_id']   = !empty($event_id) ? $event_id : 0;
         $Return['Paginator'] = new LengthAwarePaginator($Return["Registration_successful"] , $CountRows, $Limit, $PageNo);
         $Return['Paginator']->setPath(request()->url());
       

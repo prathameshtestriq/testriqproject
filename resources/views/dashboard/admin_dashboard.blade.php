@@ -180,12 +180,12 @@
                                                     <lable><br></label>
                                                         <button type="submit"
                                                             class="btn btn-primary waves-effect waves-float waves-light">Search</button>
-                                                        @if (!empty($search_filter) || !empty($search_category) || !empty($search_event_name) || !empty($search_from_date) || !empty($search_to_date))
-                                                        <a title="Clear" href="{{ url('dashboard/clear_search') }}"
-                                                            type="button" class="btn btn-outline-primary">
-                                                            <i data-feather="rotate-ccw" class="me-25"></i> Clear
-                                                        </a>
-                                                        @endif
+                                                        <?php if((!empty($search_filter) || !empty($search_category) || !empty($search_event_name) || !empty($search_from_date) || !empty($search_to_date))){ ?>
+                                                            <a title="Clear" href="{{ url('dashboard/clear_search') }}"
+                                                                type="button" class="btn btn-outline-primary">
+                                                                <i data-feather="rotate-ccw" class="me-25"></i> Clear
+                                                            </a>
+                                                        <?php } ?>
                                                 </div>
                                             </div>
 

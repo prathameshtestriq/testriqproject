@@ -119,9 +119,17 @@ class OrganiserController extends Controller
                 ];
                  // Merge base rules with GST rules
                  $rules = array_merge($rules, $gstRules);
+            
             }
+
+            $customMessages = [
+                'gst_number.required' => 'The GST number is required.',
+                'gst_number.regex' => 'The GST number format is invalid. It should match the GSTIN format.',
+                'contact_gst_percentage.required' => 'The GST percentage is required.',
+                'contact_gst_percentage.numeric' => 'The GST percentage must be a valid number.',
+            ];
            
-            $request->validate($rules);
+            $request->validate($rules,$customMessages);
 
             if($iId > 0){
                 // dd("jdskfkdsj");

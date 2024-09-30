@@ -77,7 +77,7 @@
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="organiser_name">Oraniser Name<span style="color:red;">*</span></label>
+                                                <label for="organiser_name">Organiser Name<span style="color:red;">*</span></label>
                                                 <input type="text" id="organiser_name" class="form-control"
                                                     placeholder="Enter Oraniser Name" name="organiser_name" value="{{ old('organiser_name', $name) }}"   autocomplete="off" pattern="[A-Za-z\s]*" 
                                                     oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '');" />
@@ -140,9 +140,9 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="contact_person_contact">Contact person contact </label>
+                                                <label for="contact_person_contact">Contact person contact  number</label>
                                                 <input type="text" id="contact_person_contact" class="form-control" name="contact_person_contact"
-                                                    placeholder="Enter Contact person contact" autocomplete="off" value="{{ old('contact_person_contact',$contact_no) }}"
+                                                    placeholder="Enter Contact person contact number" autocomplete="off" value="{{ old('contact_person_contact',$contact_no) }}"
                                                     inputmode="numeric" pattern="\d*" oninput="this.value = this.value.replace(/[^0-9]/g, '');" maxlength="10" />
                                                 <h5><small class="text-danger" id="contact_person_contact_err"></small></h5>
                                                 @error('contact_person_contact')

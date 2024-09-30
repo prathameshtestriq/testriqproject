@@ -93,7 +93,7 @@
                                             <div class="col-sm-4">
                                                 <label for="form-control">Category Type Name</label>
                                                 <input type="text" id="category_name" class="form-control"
-                                                    placeholder="Category Type Name" name="category_name"
+                                                    placeholder="Search Category Type Name" name="category_name"
                                                     value="{{ $search_category }}" autocomplete="off" />
                                             </div>
                                             <div class="col-sm-4 ">

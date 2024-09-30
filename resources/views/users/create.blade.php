@@ -190,9 +190,9 @@
                                                     <label class="custom-control-label" for="customRadio2">Female</label>
                                                 </div>
                                                 <div class="custom-control custom-radio mt-0">
-                                                    <input type="radio" id="customRadio2" name="gender"
+                                                    <input type="radio" id="customRadio3" name="gender"
                                                         class="custom-control-input" value="3" {{ old('gender', $gender ?? '') == 3 ? 'checked' : '' }} />
-                                                    <label class="custom-control-label" for="customRadio2">Other</label>
+                                                    <label class="custom-control-label" for="customRadio3">Other</label>
                                                 </div>
                                             </div>
                                             <h5><small class="text-danger" id="gender_err"></small></h5>

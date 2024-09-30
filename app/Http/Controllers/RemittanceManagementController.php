@@ -98,11 +98,14 @@ class RemittanceManagementController extends Controller
                 'deductions' => 'required|numeric',
                 'Tds' => 'required|numeric',
                 'amount_remitted' => 'required|numeric',
-                'bank_reference' => 'required',
+                'bank_reference' => 'required|regex:/^[a-zA-Z\s]+$/',
                 'event'=> 'required'
             ];
 
-            $request->validate($rules);
+            $message = [
+                'bank_reference.regex' => 'The bank reference must contain only letters.',
+            ]; 
+            $request->validate($rules,$message);
 
 
             if ($iId > 0) {
@@ -123,7 +126,7 @@ class RemittanceManagementController extends Controller
               $a_return = (array)$remittance_management_details[0];
             //   dd(  $remittance_management_details);
             }
-          }      
+        }      
         
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());

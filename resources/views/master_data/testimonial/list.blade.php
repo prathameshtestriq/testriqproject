@@ -32,7 +32,7 @@
         </div>
      <!-- Bordered table end -->
     </div>    
-<
+
     @if ($message = Session::get('success'))
     <div class="demo-spacing-0 mb-1">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -93,13 +93,13 @@
                                     <div class="row">
                                         <div class="col-sm-3">
                                             <label for="form-control"> Testimonial Name</label>
-                                            <input type="text" id="user_id" class="form-control" placeholder="Testimonial Name"
+                                            <input type="text" id="user_id" class="form-control" placeholder="Search Testimonial Name"
                                                 name="user_id" value="{{ $search_name }}" autocomplete="off" />
                                         </div>
 
                                         <div class="col-sm-3">
                                             <label for="form-control"> Subtitle </label>
-                                            <input type="text" id="subtitle" class="form-control" placeholder="Subtitle "
+                                            <input type="text" id="subtitle" class="form-control" placeholder="Search Subtitle "
                                                 name="subtitle" value="{{ $search_subtitle }}" autocomplete="off" />
                                         </div>
 
@@ -195,9 +195,9 @@
 
                                     <td>
                                         <a href="{{ route('edit_testimonial', $val->id) }}"><i
-                                                class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a>
+                                                class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                         <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                            onclick="remove_testimonial({{ $val->id }})" title="delete"></i>
+                                            onclick="remove_testimonial({{ $val->id }})" title="Delete"></i>
                                     </td>
                                 </tr>
                                 <?php }

@@ -91,7 +91,7 @@ class AdvertiseController extends Controller
 
             $rules = [
                 'name' => 'required|unique:advertisement,name,' . $iId . 'id',
-                'url' => [
+                'URL' => [
                     'required',
                     'regex:/^(www\.|http:\/\/|https:\/\/).*/i', 
                 ],
@@ -102,8 +102,8 @@ class AdvertiseController extends Controller
             ];
 
             $message = [ 
-                'url.required' => 'The URL field is required.',
-                'url.regex' => 'The URL must start with "www.", "http://", or "https://".',
+                'URL.required' => 'The URL field is required.',
+                'URL.regex' => 'The URL must start with "www.", "http://", or "https://".',
                 'img.required' => 'The image field is required .',
                 'img.mimes' => 'The image must be a file of type: jpeg, jpg, png, gif.',
                 // 'img.size' => 'The image must be 2MB or below.', 
@@ -121,7 +121,7 @@ class AdvertiseController extends Controller
             } else {
 
                 $result =  Advertisement::add_advertisement($request);
-                $successMessage = 'advertisement added successfully';
+                $successMessage = 'Advertisement added successfully';
             }
 
             return redirect('/advertisement')->with('success', $successMessage);
@@ -169,6 +169,6 @@ class AdvertiseController extends Controller
     public function delete_advertisement($iId)
     {
         Advertisement::remove_add($iId);
-        return redirect(url('/advertisement'))->with('success', 'advertisement deleted successfully');
+        return redirect(url('/advertisement'))->with('success', 'Advertisement deleted successfully');
     }
 } 

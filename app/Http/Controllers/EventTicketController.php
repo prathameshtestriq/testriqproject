@@ -1296,6 +1296,10 @@ class EventTicketController extends Controller
             // $Venue = $Event[0]->address.", ".$Event[0]->city.", ".$Event[0]->state.", ".$Event[0]->country.", ".$Event[0]->pincode;
         }
 
+        if(!empty($Event) && isset($Event[0]->event_type) && $Event[0]->event_type == 2){
+            $Venue = 'Virtual Event';
+        }
+
         $sql3 = "SELECT * FROM organizer WHERE user_id=:user_id";
         $Organizer = DB::select($sql3, ['user_id' => $UserId]);
         $OrgName = "";
@@ -1833,7 +1837,7 @@ class EventTicketController extends Controller
 
                 $created_by = 0;
                 if (!empty($EventId)) {
-                    $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode,created_by FROM events WHERE id=:event_id";
+                    $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode,created_by,event_type FROM events WHERE id=:event_id";
                     $Event = DB::select($sql2, ['event_id' => $EventId]);
                     // dd($Event);
                     if (sizeof($Event) > 0) {
@@ -2166,6 +2170,10 @@ class EventTicketController extends Controller
             $Venue .= ($Event[0]->country !== "") ? $master->getCountryName($Event[0]->country) . ", " : "";
             $Venue .= ($Event[0]->pincode !== "") ? $Event[0]->pincode . ", " : "";
             // $Venue = $Event[0]->address.", ".$Event[0]->city.", ".$Event[0]->state.", ".$Event[0]->country.", ".$Event[0]->pincode;
+        }
+
+        if(!empty($Event) && isset($Event[0]->event_type) && $Event[0]->event_type == 2){
+            $Venue = 'Virtual Event';
         }
 
         $sql3 = "SELECT * FROM organizer WHERE user_id=:user_id";

@@ -16,6 +16,10 @@
                                 <div class="col-sm-12">
                                     <h2 class="content-header-title float-left mb-0">Registration List</h2>
                                 </div>
+
+                                <?php if($event_id != 0){ ?>
+                                    <h5 class="content-header-title float-left mb-0 ml-2"><b>Event Name:-</b> {{$event_name[0]->name}}</h5>
+                                  <?php } ?>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end breadcrumb-wrapper">
