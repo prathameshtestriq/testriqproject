@@ -755,15 +755,16 @@ class EventTicketController extends Controller
                                 $jsonString = $value->question_form_option;
                                 $array = json_decode($jsonString, true);
 
-                                foreach ($array as &$item) { // Note the "&" before $item to modify it directly
+                                foreach ($array as &$item) { // Note the "&" before $item to modify it directly // epb.current_count
                                     if (isset($item['count']) && !empty($item["count"])) {
-                                        $sql = "SELECT current_count FROM extra_pricing_booking WHERE question_id=:question_id AND option_id=:option_id";
+                                        $sql = "SELECT COUNT(eb.id) as current_count FROM extra_pricing_booking as epb left join event_booking as eb on eb.id = epb.booking_id WHERE epb.question_id=:question_id AND epb.option_id=:option_id AND eb.transaction_status IN(1,3)";
                                         $SoldItems = DB::select($sql, array("question_id" => $value->id, "option_id" => $item["id"]));
-                                        if (count($SoldItems) > 0) {
-                                            $currentCount = $SoldItems[0]->current_count;
+                                        // if (count($SoldItems) > 0) {
+                                            $currentCount = !empty($SoldItems) ? $SoldItems[0]->current_count : 0;
                                             // Adding current_count to the $item array
                                             $item['current_count'] = $currentCount;  // json array to extra key (rx. red,blue) array
-                                        }
+                                            $item['select_count']  = 0;
+                                        // }
                                     }
                                 }
                                 // Unset $item to avoid potential conflicts with other loops
@@ -930,7 +931,7 @@ class EventTicketController extends Controller
         return response()->json($response, $ResposneCode);
     }
 
-    function BookTickets(Request $request)
+    function BookTickets(Request $request,$booking_pay_id=0)
     {
         $ResponseData = $FinalFormQuestions = [];
         $response['message'] = "";
@@ -941,7 +942,7 @@ class EventTicketController extends Controller
 
         if ($aToken['code'] == 200) {
             $aPost = $request->all();
-            if (empty($aPost['booking_pay_id'])) {
+            if (isset($aPost['booking_pay_id']) && empty($aPost['booking_pay_id'])) {
                 $empty = true;
                 $field = 'Booking Payment Id';
             }
@@ -951,12 +952,17 @@ class EventTicketController extends Controller
             // }
 
 
-            if (!$empty) {
+            if (!$empty || empty($booking_pay_id)) {
                 $UserId = $aToken["data"]->ID;
                 $Auth = new Authenticate();
                 $Auth->apiLog($request, $UserId, "after payment");
-
-                $BookingPaymentId = !empty($aPost['booking_pay_id']) ? $aPost['booking_pay_id'] : 0;
+                
+                if(!empty($booking_pay_id)){
+                    $BookingPaymentId = $booking_pay_id;
+                }else{
+                    $BookingPaymentId = !empty($aPost['booking_pay_id']) ? $aPost['booking_pay_id'] : 0;
+                }
+               
                 $sql = "SELECT * FROM temp_booking_ticket_details WHERE booking_pay_id =:booking_pay_id";
                 $BookingPayment = DB::select($sql, array('booking_pay_id' => $BookingPaymentId));
 

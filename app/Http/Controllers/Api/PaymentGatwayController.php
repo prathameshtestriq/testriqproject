@@ -288,6 +288,11 @@ class PaymentGatwayController extends Controller
             }
 
             $payment_details_array = array_merge($Bindings, array("booking_pay_id" => $last_inserted_id));
+            
+            //---------- new added direct call for book tickets
+            $BookTickets = app('App\Http\Controllers\EventTicketController')->BookTickets($request,$last_inserted_id);
+            //------------
+
             $ResposneCode = 200;
             $response['data'] = !empty($payment_details_array) ? $payment_details_array : [];
             $response['message'] = 'Request processed successfully';
