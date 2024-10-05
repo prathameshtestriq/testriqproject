@@ -1681,7 +1681,7 @@ class EventDashboardController extends Controller
                             $questionSizArray = !empty($QueData) ? json_decode($QueData[0]->question_form_option) : [];
                             if(!empty($questionSizArray)){
                                 foreach($questionSizArray as $val){
-                                    $new_array[$val->id] = $val->count;
+                                    $new_array[$val->id] = isset($val->count) ? $val->count : 0;
                                 }
                             }
 
