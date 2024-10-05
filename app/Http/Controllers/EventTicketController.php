@@ -723,9 +723,15 @@ class EventTicketController extends Controller
                 // $ResponseData['DuplicatedEmailIds'] = $EmailIdsArray;
                 // $ResponseData['DuplicatedMobileNo'] = $MobileNoArray;
 
+                $SQL5 = "SELECT GROUP_CONCAT(id SEPARATOR ', ') AS Ids,GROUP_CONCAT(general_form_id SEPARATOR ', ') AS GIds FROM event_form_question WHERE event_id=:event_id AND is_custom_form=:is_custom_form ";
+                $EventFormQuestions = DB::select($SQL5, array('event_id' => $aPost['event_id'], 'is_custom_form' => 0));
+
+                $QuestionIds = (count($EventFormQuestions) > 0) ? $EventFormQuestions[0]->Ids : "";
+                $questionIdsArray = !empty($QuestionIds) ? explode(',', $QuestionIds) : [];
+               // dd($AllTickets);
                 if (!empty($AllTickets)) {
                     foreach ($AllTickets as $ticket) {
-                        // dd($ticket);
+                        // dd($ticket['id']);
                         $sSQL = 'SELECT * 
                                     FROM event_form_question 
                                     WHERE event_id = :event_id 
@@ -743,7 +749,99 @@ class EventTicketController extends Controller
                             $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order,parent_question_id';
                             $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
                         }
+                        // dd($FormQuestions);
+                       
+                        //-------------- T-shirt size limit check ----------
+                        $SQL6 = "SELECT a.ticket_id,a.attendee_details,b.event_id,a.id as attendeeId,e.id as booking_id
+                        FROM attendee_booking_details AS a 
+                        LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                        LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                        WHERE b.event_id =:event_id AND e.transaction_status IN (1,3)";
+                       
+                        if (!empty($Ticket)) {
+                            $SQL6 .= ' AND b.ticket_id =' .$ticket['id'];
+                        }
+                       
+                        $bind = array('event_id' => $aPost['event_id']);
+                        $CustomQue = DB::select($SQL6, $bind);
+                        $CustomQuestions = [];
+                         $questionIdsArray = !empty($QuestionIds) ? explode(',', $QuestionIds) : [];
+                        //dd($CustomQue);
+                        
+                        if(!empty($CustomQue)){
+                            foreach ($CustomQue as $key => $value) {
+                                $attendee_details = json_decode(json_decode($value->attendee_details));
+                                foreach ($attendee_details as $key => $attendee) {
+                                    if (in_array($attendee->id, $questionIdsArray)) {
+                                        if ($attendee->ActualValue != "" && $attendee->question_form_option != "") {
+                                            $question_form_option = json_decode($attendee->question_form_option);
+                                            $CustomQuestions[$attendee->id][] = $attendee;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                       
+                        // dd($CustomQuestions);
+                        $CountArray = array();
+                        
+                        if(!empty($CustomQuestions)){
+                            foreach ($CustomQuestions as $key => $items) {
 
+                                foreach ($items as $item) {
+
+                                    $actualValue = $item->ActualValue;
+                                    $question_label = $item->question_label;
+
+                                    $options = json_decode($item->question_form_option, true);
+                                    $label = "";
+                                    $limit = 0;
+                                    $limit_flag = false;
+                                    $labels = [];
+                                    $option_id = 0;
+
+                                    if($item->question_form_type == 'select'){
+
+                                        $new_array = [];
+                                        $questionSizArray = !empty($QueData) ? json_decode($QueData[0]->question_form_option) : [];
+                                        if(!empty($questionSizArray)){
+                                            foreach($questionSizArray as $val){
+                                                $new_array[$val->id] = $val->count;
+                                            }
+                                        }
+
+                                        // dd($new_array); 
+                                        foreach ($options as $option) {
+                                            if (in_array($option['id'], explode(',', $actualValue))) {
+                                                $labels[] = $option['label'];
+
+                                                $final_limit = (isset($new_array[$option['id']])) ? $new_array[$option['id']] : 0;
+                                                $limit =  (int)$final_limit;
+                                                $limit_flag = true;
+                                                $option_id = $option['id'];
+                                            } 
+                                            $label = implode(', ', $labels);
+                                        }
+
+                                        if (!isset($CountArray[$actualValue])) {
+                                            $CountArray[$actualValue] = ["id" => $option_id,  "label" => $label, "count" => 0];
+                                        }
+
+                                        $CountArray[$actualValue]["count"]++;
+                                    }
+                                }//die;
+                            }
+                        }
+
+                        $finalArray = [];
+                        if(!empty($CountArray)){
+                            foreach($CountArray as $item) {
+                               $finalArray[$item['id']] = $item['count'];
+                            } 
+                        }
+
+                        // dd($finalArray);
+                        //-----------------------
                         foreach ($FormQuestions as $value) {
                             $hasCountriesQuestion = $hasStatesQuestion = false;
                             // echo "<pre>";print_r($value);
@@ -751,24 +849,35 @@ class EventTicketController extends Controller
                             $value->Error = "";
                             $value->TicketId = 0;
 
-                            if (!empty($value->question_form_option)) {
+                       
+                            if (!empty($value->question_form_option) && $value->question_form_type == "select") {
                                 $jsonString = $value->question_form_option;
                                 $array = json_decode($jsonString, true);
+                            // dd($array);
+                               
+                                if(!empty($array)){
+                                   
+                                    foreach ($array as $parentItemKey => &$item) { 
 
-                                foreach ($array as &$item) { // Note the "&" before $item to modify it directly // epb.current_count
-                                    if (isset($item['count']) && !empty($item["count"])) {
-                                        $sql = "SELECT COUNT(eb.id) as current_count FROM extra_pricing_booking as epb left join event_booking as eb on eb.id = epb.booking_id WHERE epb.question_id=:question_id AND epb.option_id=:option_id AND eb.transaction_status IN(1,3)";
-                                        $SoldItems = DB::select($sql, array("question_id" => $value->id, "option_id" => $item["id"]));
-                                        // if (count($SoldItems) > 0) {
-                                            $currentCount = !empty($SoldItems) ? $SoldItems[0]->current_count : 0;
-                                            // Adding current_count to the $item array
-                                            $item['current_count'] = $currentCount;  // json array to extra key (rx. red,blue) array
-                                            $item['select_count']  = 0;
-                                        // }
+                                    // Note the "&" before $item to modify it directly // epb.current_count
+                                        if (isset($item['count']) && !empty($item["count"])) {
+                                            // $sql = "SELECT COUNT(eb.id) as current_count FROM extra_pricing_booking as epb left join event_booking as eb on eb.id = epb.booking_id WHERE epb.question_id=:question_id AND epb.option_id=:option_id AND eb.transaction_status IN(1,3)";
+                                            // $SoldItems = DB::select($sql, array("question_id" => $value->id, "option_id" => $item["id"]));
+                                            // if (count($SoldItems) > 0) {
+                                            //     $currentCount = !empty($SoldItems) ? $SoldItems[0]->current_count : 0;
+                                            //     // Adding current_count to the $item array
+                                            //     $item['current_count'] = $currentCount;  // json array to extra key (rx. red,blue) array
+                                            //     $item['select_count']  = 0;
+                                            // }
+                                        
+                                            $final_count = (isset($finalArray[$item["id"]])) ? $finalArray[$item["id"]] : 0;
+                                            $item['current_count'] = $final_count;
+
+                                        }
                                     }
+                                    // Unset $item to avoid potential conflicts with other loops
+                                    unset($item);
                                 }
-                                // Unset $item to avoid potential conflicts with other loops
-                                unset($item);
 
                                 $updatedJsonString = json_encode($array);
 
@@ -1079,6 +1188,9 @@ class EventTicketController extends Controller
                             }
                         }
                     }
+
+                    //$BookingDetailsId = 3306 // temp 
+
                     #ADD EXTRA AMOUNT FOR PAYABLE FOR USER in booking_details
                     if (!empty($ExtraPricing)) {
                         foreach ($ExtraPricing as $value) {
@@ -1177,6 +1289,8 @@ class EventTicketController extends Controller
                         }
                     }
 
+                    // dd($separatedArrays);
+
                     foreach ($separatedArrays as $key => $value) {
                         $subArray = [];
                         $subArray = json_decode($value);
@@ -1200,6 +1314,63 @@ class EventTicketController extends Controller
                             if (empty($TicketId)) {
                                 $TicketId = !empty($sArray->TicketId) ? $sArray->TicketId : 0;
                             }
+
+                             //------------------ new quetision limit wise insert/update entry -------------------------------
+                            //dd($new_ticket_id);
+                            // $loc_ticket_id = !empty($TicketId) ? $TicketId : $new_ticket_id;
+                           
+                            // if(!empty($sArray->question_form_option) && $sArray->question_form_type == 'select' && $sArray->question_option_limit_flag == 1){
+                            //     $subQuestionArray = json_decode($sArray->question_form_option);
+                            //     // dd($subQuestionArray);
+                            //     $total_count = 0; $label = '';
+                            //     if(!empty($subQuestionArray)){
+                            //         foreach($subQuestionArray as $res){
+                            //             if($sArray->ActualValue == $res->id){
+                            //               $total_count = $res->count;
+                            //               $label = $res->label;
+                            //             }
+                            //         }
+                            //     }
+                            //     $loc_option_id = !empty($sArray->ActualValue) ? $sArray->ActualValue : 0 ;
+                            //     // dd($loc_option_id);
+
+                            //     $sql = "SELECT COUNT(id) as tot_count,current_count,id FROM extra_question_limit_booking WHERE event_id =:event_id AND ticket_id =:ticket_id AND option_id =:option_id";
+                            //     $extraQuestionDet = DB::select($sql, array('event_id' => $EventId, 'ticket_id' => $loc_ticket_id, 'option_id' => $loc_option_id));
+                                
+                            //     // dd($extraQuestionDet);
+                            //     if(!empty($extraQuestionDet) && $extraQuestionDet[0]->tot_count == 1){
+
+                            //         $Binding5 = array(
+                            //                 "total_count"   => $total_count,
+                            //                 "current_count" => ($extraQuestionDet[0]->current_count)+1,
+                            //                 "datetime"      => strtotime('now'),
+                            //                 "id"            => $extraQuestionDet[0]->id
+                            //         );
+                            //         $Sql5 = "UPDATE extra_question_limit_booking SET
+                            //                   total_count =:total_count,
+                            //                   current_count =:current_count,
+                            //                   datetime =:datetime
+                            //                   WHERE id =:id";
+                            //         DB::update($Sql5, $Binding5);
+
+                            //     }else{
+                            //         $Binding6 = array(
+                            //                 "user_id" => $UserId,
+                            //                 "event_id" => $EventId,
+                            //                 "ticket_id" => $loc_ticket_id,
+                            //                 "event_question_id" => $sArray->id,
+                            //                 "label" => $label,
+                            //                 "option_id" => $loc_option_id,
+                            //                 "total_count" => $total_count,
+                            //                 "current_count" => 1,
+                            //                 "datetime" => strtotime('now')
+                            //             );
+                            //         $Sql6 = "INSERT INTO extra_question_limit_booking (user_id,event_id,ticket_id,event_question_id,label,option_id,total_count,current_count,datetime) VALUES (:user_id,:event_id,:ticket_id,:event_question_id,:label,:option_id,:total_count,:current_count,:datetime)";
+                            //         DB::insert($Sql6, $Binding6);
+                            //     }
+
+                            // }
+                            //------------------------------------
                         }
                         // die;
                         $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
@@ -1244,6 +1415,7 @@ class EventTicketController extends Controller
                         $aResult1 = DB::select($sql1, array("ticket_id" => !empty($TicketId) ? $TicketId : $new_ticket_id));
                         $new_ticket_name_array = !empty($aResult1) ? array_column($aResult1,"ticket_name") : [];
                         $new_registration_id_array[] = $uniqueId;
+                        
                     }
 
                     //------- new added for update ticket_names, registration_ids on 25-06-24 (because send email to reg no, tick name issue)

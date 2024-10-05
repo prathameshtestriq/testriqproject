@@ -1609,7 +1609,7 @@ class EventDashboardController extends Controller
                 $QuestionIds = (count($EventFormQuestions) > 0) ? $EventFormQuestions[0]->Ids : "";
                 // $GeneralQuestionIds = (count($EventFormQuestions) > 0) ? $EventFormQuestions[0]->GIds : "";
 
-                $SQL6 = "SELECT a.ticket_id,a.attendee_details,b.event_id
+                $SQL6 = "SELECT a.ticket_id,a.attendee_details,b.event_id,a.id as attendeeId,e.id as booking_id
                 FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id
@@ -1629,9 +1629,10 @@ class EventDashboardController extends Controller
                 $CustomQue = DB::select($SQL6, $bind);
                 $CustomQuestions = [];
                 $questionIdsArray = explode(',', $QuestionIds);
-                // dd($questionIdsArray);
+                // dd($CustomQue);
                 foreach ($CustomQue as $key => $value) {
                     $attendee_details = json_decode(json_decode($value->attendee_details));
+                    // dd($attendee_details);
 
                     foreach ($attendee_details as $key => $attendee) {
                         if (in_array($attendee->id, $questionIdsArray)) {
@@ -1659,32 +1660,57 @@ class EventDashboardController extends Controller
                         $question_label = $item->question_label;
 
                         $options = json_decode($item->question_form_option, true);
-                        // echo $actualValue.'<br>';
-                        // dd($actualValue);
+                         //echo '<pre>';
+                        //dd($options);
+                        // print_r($options);
                         $label = "";
-                        $limit = "";
+                        $limit = 0;
                         $limit_flag = false;
                         $labels = [];
-                        foreach ($options as $option) {
-                            
-                            // if ($option["id"] == $actualValue) {
-                                //$label = $option["label"];
-                                // if (isset($option["count"])) {
-                                //     $limit_flag = true;
-                                //     $limit = $option["count"];
-                                // }
 
+                        if($item->question_form_type == 'select'){
+
+                            $SQL2 = "SELECT question_form_option
+                            FROM event_form_question 
+                            WHERE id =:que_id ";
+                           
+                            $params = array('que_id' => $item->id);
+                            $QueData = DB::select($SQL2, $params);
+                           
+                            $new_array = [];
+                            $questionSizArray = !empty($QueData) ? json_decode($QueData[0]->question_form_option) : [];
+                            if(!empty($questionSizArray)){
+                                foreach($questionSizArray as $val){
+                                    $new_array[$val->id] = $val->count;
+                                }
+                            }
+
+                            // dd($new_array); 
+                            foreach ($options as $option) {
 
                                 if (in_array($option['id'], explode(',', $actualValue))) {
                                     $labels[] = $option['label'];
+
+                                    $final_limit = (isset($new_array[$option['id']])) ? $new_array[$option['id']] : 0;
+                                    $limit =  (int)$final_limit;
                                     $limit_flag = true;
                                 }
+                                
+                                $label = implode(', ', $labels);
+                            }
+                        }else{
+                             foreach ($options as $option) {
 
-                              //  break;
-                            // }
-
-                            $label = implode(', ', $labels);
+                                if (in_array($option['id'], explode(',', $actualValue))) {
+                                    $labels[] = $option['label'];
+                                    $limit = isset($option["count"]) ? (int)$option["count"] : 0 ;
+                                    $limit_flag = true;
+                                }
+                                $label = implode(', ', $labels);
+                            }
                         }
+
+                       
 
                         if (!isset($CountArray[$key])) {
                             $CountArray[$key] = [
@@ -1701,10 +1727,11 @@ class EventDashboardController extends Controller
                         // dd($CountArray[$key][$actualValue]);
 
                         $CountArray[$key][$actualValue]["count"]++;
+                        // $CountArray[$key][$actualValue]["limit"]++;
                     }//die;
                 }
 
-             //dd($CountArray);
+               //dd($CountArray);
                 $ResponseData['CountArray'] = $CountArray;
 
                 $ResposneCode = 200;
