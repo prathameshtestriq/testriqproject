@@ -2332,8 +2332,13 @@ class EventTicketController extends Controller
 
             if (!empty($attendee_id)) {
 
-                $SQL = "SELECT email,CONCAT(firstname, ' ', lastname) AS username,firstname,lastname,registration_id,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE id =:id";
+                $SQL = "SELECT booking_details_id,email,CONCAT(firstname, ' ', lastname) AS username,firstname,lastname,registration_id,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
+
+                $SQL1 = "SELECT (select booking_pay_id from event_booking where id = booking_details.booking_id) as booking_pay_id FROM booking_details WHERE id =:id";
+                $bookingDetResult = DB::select($SQL1, array('id' => $attendeeResult[0]->booking_details_id));
+                // dd($bookingDetResult);
+                $BookingPayId =  !empty($bookingDetResult) && $bookingDetResult[0]->booking_pay_id ? $bookingDetResult[0]->booking_pay_id : 0;
                 
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
                 $attendee_username = !empty($attendeeResult) && $attendeeResult[0]->username ? $attendeeResult[0]->username : '';
@@ -2348,7 +2353,7 @@ class EventTicketController extends Controller
 
                 if (!empty($attendee_email)) {
                     // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
-                    $this->ResendEmailDetails($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, 0, $falg = 2, $attendee_array, $EmailType);
+                    $this->ResendEmailDetails($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, $BookingPayId, $falg = 2, $attendee_array, $EmailType);
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
@@ -2380,7 +2385,7 @@ class EventTicketController extends Controller
         // $Email1 = new Emails();
         // $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $UserEmail, $flag);
 
-        // dd($CommEmailType);
+        //dd($BookingPayId);
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
         $User = DB::select($sql1, ['user_id' => $UserId]);
