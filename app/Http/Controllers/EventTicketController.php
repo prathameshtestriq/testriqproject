@@ -117,7 +117,7 @@ class EventTicketController extends Controller
 
                 //----------------------------------------
 
-                $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end';
+                $sSQL = 'SELECT * FROM event_tickets WHERE event_id = :event_id AND active = 1 AND is_deleted = 0 AND ticket_sale_start_date <= :now_start AND ticket_sale_end_date >= :now_end order by sort_order asc';
 
                 $ResponseData['event_tickets'] = DB::select($sSQL, array('event_id' => $aPost['event_id'], 'now_start' => $now, 'now_end' => $now));
                 $ticket_calculation_details = [];
@@ -1491,10 +1491,32 @@ class EventTicketController extends Controller
         // dd($booking_detail_Result);
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
 
-        $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
+        $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
         $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
         //dd($tAttendeeResult, $BookingPayId , $booking_detail_id, $flag , $EventId);
         $registration_ids = $ticket_names = '';
+        
+        $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
+        // dd($attendee_details);
+        $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = '';
+        if(!empty($attendee_details)){
+            foreach($attendee_details as $res){
+                if($res->question_form_name == "enter_team_name"){
+                    $TeamName = $res->ActualValue;
+                }
+                if($res->question_form_name == "participant_2_name"){
+                    $Participant_2_name = $res->ActualValue;
+                }
+                if($res->question_form_name == "participant_3_name"){
+                    $Participant_3_name = $res->ActualValue;
+                }
+                if($res->question_form_name == "participant_4_name"){
+                    $Participant_4_name = $res->ActualValue;
+                }
+            }
+        }
+        // dd($TeamName,$Participant_2_name, $Participant_3_name,$Participant_4_name );
+
         if (!empty($tAttendeeResult)) {
             $registration_ids_array = array_column($tAttendeeResult, "registration_id");
             $registration_ids = implode(", ", $registration_ids_array);
@@ -1544,8 +1566,10 @@ class EventTicketController extends Controller
             "TICKETAMOUNT" => $TotalPrice,
             "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
             "RACECATEGORY" => !empty($ticket_names) ? $ticket_names : $loc_ticket_names, // !empty($ticket_names) ? $ticket_names : ''
-            // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
-            // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
+            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
+            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
+            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
+            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : ''
         );
 
         // dd($ConfirmationEmail);
@@ -1584,7 +1608,7 @@ class EventTicketController extends Controller
         }
 
         // Output the filled message
-        //dd($MessageContent);
+        // dd($MessageContent);
         $Email = new Emails();
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status);
 
@@ -1598,6 +1622,25 @@ class EventTicketController extends Controller
             foreach ($tAttendeeResult as $res) {
 
                 $attendee_email = !empty($res->email) ? $res->email : '';
+
+                $attendee_details = !empty($res->attendee_details) ? json_decode(json_decode($res->attendee_details)) : '';
+                // dd($attendee_details);
+                if(!empty($attendee_details)){
+                    foreach($attendee_details as $res){
+                        if($res->question_form_name == "enter_team_name"){
+                            $TeamName = $res->ActualValue;
+                        }
+                        if($res->question_form_name == "participant_2_name"){
+                            $Participant_2_name = $res->ActualValue;
+                        }
+                        if($res->question_form_name == "participant_3_name"){
+                            $Participant_3_name = $res->ActualValue;
+                        }
+                        if($res->question_form_name == "participant_4_name"){
+                            $Participant_4_name = $res->ActualValue;
+                        }
+                    }
+                }
 
                 $ConfirmationEmail = array(
                     // "USERID" => $UserId,
@@ -1620,6 +1663,10 @@ class EventTicketController extends Controller
                     "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : $registration_id,
                     "RACECATEGORY" => !empty($res->ticket_name) ? $res->ticket_name : $ticket_names,
                     // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
+                    "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
+                    "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
+                    "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
+                    "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : ''
                 );
 
                 $Subject = "";
@@ -2367,9 +2414,30 @@ class EventTicketController extends Controller
         // dd($booking_detail_Result);
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
 
-        $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
+        $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
         $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
         //dd($tAttendeeResult, $BookingPayId , $booking_detail_id, $flag , $EventId);
+
+        $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
+        // ---------------- new added om 07-10-24
+        $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = '';
+        if(!empty($attendee_details)){
+            foreach($attendee_details as $res){
+                if($res->question_form_name == "enter_team_name"){
+                    $TeamName = $res->ActualValue;
+                }
+                if($res->question_form_name == "participant_2_name"){
+                    $Participant_2_name = $res->ActualValue;
+                }
+                if($res->question_form_name == "participant_3_name"){
+                    $Participant_3_name = $res->ActualValue;
+                }
+                if($res->question_form_name == "participant_4_name"){
+                    $Participant_4_name = $res->ActualValue;
+                }
+            }
+        }
+
         $registration_ids = $ticket_names = '';
         if (!empty($tAttendeeResult)) {
             $registration_ids_array = array_column($tAttendeeResult, "registration_id");
@@ -2416,6 +2484,10 @@ class EventTicketController extends Controller
             "TICKETAMOUNT" => $TotalPrice,
             "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
             "RACECATEGORY" => !empty($ticket_names) ? $ticket_names : $loc_ticket_names, // !empty($ticket_names) ? $ticket_names : ''
+            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
+            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
+            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
+            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : ''
         );
 
         // dd($ConfirmationEmail); $CommEmailType

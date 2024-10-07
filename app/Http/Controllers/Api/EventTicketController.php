@@ -27,7 +27,7 @@ class EventTicketController extends Controller
             }
 
             if (!$empty) {
-                $sSQL = 'SELECT * FROM event_tickets Where event_id =:event_id';
+                $sSQL = 'SELECT * FROM event_tickets Where event_id =:event_id order by sort_order asc';
                 $ResponseData = DB::select($sSQL, array(
                     'event_id' => $request->event_id
                 ));

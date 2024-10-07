@@ -1205,7 +1205,7 @@ class EventController extends Controller
             $ResponseData['EventImages'] = $EventImg;
 
             #EVENT TICKETS
-            $sql = "SELECT * FROM event_tickets WHERE event_id=:event_id AND is_deleted = 0 AND active = 1";
+            $sql = "SELECT * FROM event_tickets WHERE event_id=:event_id AND is_deleted = 0 AND active = 1 order by sort_order asc";
             $EventTickets = DB::select($sql, array('event_id' => $EventId));
             foreach ($EventTickets as $ticket) {
                 $ticket->ticket_sale_start_date = (!empty($ticket->ticket_sale_start_date)) ? date("d F Y", $ticket->ticket_sale_start_date) : 0;
