@@ -1297,6 +1297,7 @@ class EventTicketController extends Controller
                         $TicketId = 0;
                         $participants_files = [];
                         // dd($subArray);
+                        $isSendEmail = 0;
                         foreach ($subArray as $key => $sArray) {
                             if (isset($sArray->question_form_name)) {
                                 if ($sArray->question_form_name == 'first_name') {
@@ -1304,7 +1305,11 @@ class EventTicketController extends Controller
                                 } elseif ($sArray->question_form_name == 'last_name') {
                                     $last_name = $sArray->ActualValue;
                                 } elseif ($sArray->question_form_type == 'email') {
-                                    $email = $sArray->ActualValue;
+                                    // $email = $sArray->ActualValue;
+                                    if($isSendEmail == 0){
+                                        $email = $sArray->ActualValue;
+                                        $isSendEmail = 1;
+                                    }
                                 } elseif ($sArray->question_form_type == 'mobile' && $sArray->question_label == 'Mobile Number') {
                                     $mobile = $sArray->ActualValue;
                                 } elseif ($sArray->question_form_type == 'file') {
@@ -2565,7 +2570,6 @@ class EventTicketController extends Controller
 
         return;
     }
-
 
     public function SendEmailPaymentSuccess(Request $request)
     {
