@@ -76,8 +76,10 @@ class Authenticate
 			$return['code'] = 401;
 			$return['message'] = 'Forbidden';
 		} elseif (empty($aToken->end_time) || $aToken->end_time < strtotime('now')) {
-			$return['code'] = 401;
-			$return['message'] = 'Login expired';
+			// $return['code'] = 401;
+			$return['code'] = 200;
+			$return['message'] = 'Login expired.';
+			$return['data'] = $aToken;
 		} else {
 			$return['code'] = 200;
 			$return['message'] = 'success';
