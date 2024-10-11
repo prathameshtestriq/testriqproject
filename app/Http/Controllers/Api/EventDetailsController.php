@@ -145,7 +145,7 @@ class EventDetailsController extends Controller
                 $UserId = $aToken['data']->ID;
             }
 
-            $UserLoginId     = !empty($request->user_id) ? $request->user_id : $UserId;
+            $UserLoginId     = !empty($request->user_id) ? (int)$request->user_id : $UserId;
             $currentDateTime = time();
             $LastLoginFlag = 0;
            // dd($TenDaysAgo);
@@ -166,6 +166,8 @@ class EventDetailsController extends Controller
                     }
                 }
                 $response['data'] = !empty($aResult) ? $LastLoginFlag : 0;
+            }else{
+                $response['data'] = 1;
             }
                      
             $response['message'] = 'Request processed successfully';
