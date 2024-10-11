@@ -11,7 +11,7 @@ class Authenticate
 {
 	public function create_token($input)
 	{
-		$ExpireSeonds = 60 * 60 * 365;
+		$ExpireSeonds = 60 * 60 * 24 * 365;
 		// $ExpireSeonds = 60*60;
 		$input['start_time'] = strtotime('now');
 		$input['end_time'] = strtotime('now +' . $ExpireSeonds . ' seconds');
