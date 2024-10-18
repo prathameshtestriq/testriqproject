@@ -285,7 +285,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($Banners) == 0) {
-            $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
+            $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active = 1";
             if (!empty($NewCountry_id)) {
                 $BannerSql .= ' AND b.country=' . $NewCountry_id;
                 $Banners = DB::select($BannerSql);
@@ -317,7 +317,7 @@ class EventController extends Controller
 
         $BannerImages = [];
         foreach ($Banners as $key => $banner) {
-            if (!empty((!empty($banner->banner_image)) && ($key <= 4))) {
+            if (!empty((!empty($banner->banner_image)) && ($key <= config('custom.show_banner_limit')))) {
                 $banner->banner_url = !empty($banner->banner_url) ? $banner->banner_url : "";
                 $banner->banner_image = !empty($banner->banner_image) ? url('/') . '/uploads/banner_image/' . $banner->banner_image . '' : '';
                 $BannerImages[$key]['url'] = $banner->banner_url;

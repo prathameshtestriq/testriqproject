@@ -1614,6 +1614,7 @@ class EventTicketController extends Controller
 
         // Output the filled message
         // dd($MessageContent);
+       
         $Email = new Emails();
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status);
 
@@ -1627,26 +1628,28 @@ class EventTicketController extends Controller
             foreach ($tAttendeeResult as $res) {
 
                 $attendee_email = !empty($res->email) ? $res->email : '';
+                $attendee_firstname = !empty($res->firstname) ? $res->firstname : '';
 
-                $attendee_details = !empty($res->attendee_details) ? json_decode(json_decode($res->attendee_details)) : '';
+                $attendee_details_result = !empty($res->attendee_details) ? json_decode(json_decode($res->attendee_details)) : '';
                 // dd($attendee_details);
-                if(!empty($attendee_details)){
-                    foreach($attendee_details as $res){
-                        if($res->question_form_name == "enter_team_name"){
-                            $TeamName = $res->ActualValue;
+                if(!empty($attendee_details_result)){
+                    foreach($attendee_details_result as $res1){
+                        if($res1->question_form_name == "enter_team_name"){
+                            $TeamName = $res1->ActualValue;
                         }
-                        if($res->question_form_name == "participant_2_name"){
-                            $Participant_2_name = $res->ActualValue;
+                        if($res1->question_form_name == "participant_2_name"){
+                            $Participant_2_name = $res1->ActualValue;
                         }
-                        if($res->question_form_name == "participant_3_name"){
-                            $Participant_3_name = $res->ActualValue;
+                        if($res1->question_form_name == "participant_3_name"){
+                            $Participant_3_name = $res1->ActualValue;
                         }
-                        if($res->question_form_name == "participant_4_name"){
-                            $Participant_4_name = $res->ActualValue;
+                        if($res1->question_form_name == "participant_4_name"){
+                            $Participant_4_name = $res1->ActualValue;
                         }
                     }
                 }
-
+                // dd($attendee_firstname);
+                
                 $ConfirmationEmail = array(
                     // "USERID" => $UserId,
                     "USERNAME" => !empty($res->firstname) && !empty($res->lastname) ? $res->firstname . ' ' . $res->lastname : $user_name,
@@ -1700,7 +1703,7 @@ class EventTicketController extends Controller
                         " . $Event[0]->name . " Team";
                     $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
                 }
-
+             //dd($ConfirmationEmail);
                 foreach ($ConfirmationEmail as $key => $value) {
                     if (isset($key)) {
                         $placeholder = '{' . $key . '}';
@@ -1708,14 +1711,11 @@ class EventTicketController extends Controller
                     }
                 }
 
-                // echo $MessageContent.'<br><br>';
+                //echo $MessageContent.'<br><br>';
                 if (!empty($attendee_email) && strtolower($UserEmail) != strtolower($attendee_email)) {
                     $Email = new Emails();
                     $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag, $send_email_status);
                 }
-
-                // $Email2 = new Emails();
-                // $Email2->save_email_log('test email2', 'startshant@gmail.com', 'log test', $res->registration_id, '');
 
             }//die;
         }
