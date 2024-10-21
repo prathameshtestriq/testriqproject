@@ -887,7 +887,7 @@ class EventTicketController extends Controller
 
                             // nationality and country array
                             if ($value->question_form_type == 'countries') { 
-                                $sql = "SELECT id,name AS label FROM countries WHERE flag=1";
+                                $sql = "SELECT id,name AS label FROM countries WHERE flag=1 order by name asc";
                                 $countries = DB::select($sql);
 
                                 $value->question_form_option = json_encode($countries);
@@ -895,7 +895,7 @@ class EventTicketController extends Controller
                             }
 
                             if ($value->question_form_type == 'states') {
-                                $sql = "SELECT id,name FROM states WHERE country_id = 101";
+                                $sql = "SELECT id,name FROM states WHERE country_id = 101 order by name asc";
                                 $states = DB::select($sql);
 
                                 $value->question_form_option = json_encode($states);

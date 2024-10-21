@@ -127,7 +127,7 @@ class MasterController extends Controller
         $StateId = isset($request->state_id) ? $request->state_id : 0;
         $SearchFlag = isset($request->search_flag) ? $request->search_flag : 0;
 
-        $sql = "SELECT c.* FROM cities AS c WHERE show_flag=1";
+        $sql = "SELECT c.* FROM cities AS c WHERE show_flag=1 ";
         if (!empty($CountryCode)) {
             $SearchText = strtolower($CountryCode);
             $sql .= " AND LOWER(c.country_code) LIKE '%" . $SearchText . "%' ";
@@ -148,6 +148,9 @@ class MasterController extends Controller
         if (!empty($CountryId)) {
             $sql .= " AND c.country_id=" . $CountryId;
         }
+
+        $sql .= " order by name asc";
+        
         $AllCities = DB::select($sql);
 
         $ResponseData['AllCities'] = $AllCities;
