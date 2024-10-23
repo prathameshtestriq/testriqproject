@@ -258,7 +258,8 @@ class PaymentGatwayController extends Controller
                                     'TicketId' => isset($value->TicketId) ? $value->TicketId : "",
                                     'child_question_ids' => isset($value->child_question_ids) ? $value->child_question_ids : "",
                                     'apply_ticket' => isset($value->apply_ticket) ? $value->apply_ticket : "",
-                                    'data' => isset($value->data) ? $value->data : ""
+                                    'data' => isset($value->data) ? $value->data : "",
+                                    'question_option_limit_flag' => isset($value->question_option_limit_flag) ? $value->question_option_limit_flag : "",
                                 ];
                                 $newResult[$formId][$que][] = $result;
                                 // $i++;
@@ -922,23 +923,23 @@ class PaymentGatwayController extends Controller
             // dd($aResult);
             if (!empty($aResult)) {
 
-                $Bindings = array(
-                    "event_id" => $EventId,
-                    "booking_pay_id" => 0,
-                    "amount" => $Amount,
-                    "firstname" => $FirstName,
-                    "lastname" => $LastName,
-                    "email" => $Email,
-                    "mobile_no" => $MobNo,
-                    "FormQuestions" => !empty($FormQuestions) ? json_encode($FormQuestions) : '',
-                    "payment_payload" => !empty($request->booking_tickets_array) ? $request->booking_tickets_array : '',
-                    "payment_type" => !empty($Amount) && $Amount != '0.00' ? 'Paid' : 'Free',
-                    "created_date" => $Datetime
-                );
-                //dd($Bindings);
-                //-----------------
-                $insert_SQL = "INSERT INTO ticket_booking_log (event_id,booking_pay_id,amount,firstname,lastname,email,mobile_no,FormQuestions, payment_payload,payment_type,created_date) VALUES(:event_id,:booking_pay_id,:amount,:firstname,:lastname,:email,:mobile_no,:FormQuestions,:payment_payload,:payment_type,:created_date)";
-                DB::insert($insert_SQL, $Bindings);
+                // $Bindings = array(
+                //     "event_id" => $EventId,
+                //     "booking_pay_id" => 0,
+                //     "amount" => $Amount,
+                //     "firstname" => $FirstName,
+                //     "lastname" => $LastName,
+                //     "email" => $Email,
+                //     "mobile_no" => $MobNo,
+                //     "FormQuestions" => !empty($FormQuestions) ? json_encode($FormQuestions) : '',
+                //     "payment_payload" => !empty($request->booking_tickets_array) ? $request->booking_tickets_array : '',
+                //     "payment_type" => !empty($Amount) && $Amount != '0.00' ? 'Paid' : 'Free',
+                //     "created_date" => $Datetime
+                // );
+                // //dd($Bindings);
+                // //-----------------
+                // $insert_SQL = "INSERT INTO ticket_booking_log (event_id,booking_pay_id,amount,firstname,lastname,email,mobile_no,FormQuestions, payment_payload,payment_type,created_date) VALUES(:event_id,:booking_pay_id,:amount,:firstname,:lastname,:email,:mobile_no,:FormQuestions,:payment_payload,:payment_type,:created_date)";
+                // DB::insert($insert_SQL, $Bindings);
 
                 $response['message'] = 'Request processed successfully';
                 $ResposneCode = 200;
