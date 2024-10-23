@@ -40,6 +40,7 @@ return [
     'max_size' => 2097152,
     'page_title' => 'Races2.0 - ',
     'base_url' => env('APP_URL'),
+    'show_banner_limit' => 10, // races front showing banner slider set limit
 
     'a_countries'=>array(
         '1'=>env('URL_INDIA'),

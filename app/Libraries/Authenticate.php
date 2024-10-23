@@ -125,17 +125,17 @@ class Authenticate
 		}
 
         $Log = new Log;
-        $Log->url = $Request->url();
-        $Log->method= $Request->method();
-        $Log->event_id = isset($Request->event_id) ? $Request->event_id : 0;
-        $Log->user_id = isset($Request->user_id) ? $Request->user_id : 0;
-        $Log->action = isset($action) ? $action : "";
-        $Log->post_data = json_encode($RequestData);
-        $Log->created_timestamp = date("Y-m-d H:i:s");
-        $Log->header = !empty($Request->header('Authorization')) ? $Request->header('Authorization') : "";
-		// $Log->server_ip = $_SERVER['REMOTE_ADDR'];
-		$Log->created_by = $CreatedBy;
-        $Log->save();
+        // $Log->url = $Request->url();   // ------------ temp hide
+        // $Log->method= $Request->method();
+        // $Log->event_id = isset($Request->event_id) ? $Request->event_id : 0;
+        // $Log->user_id = isset($Request->user_id) ? $Request->user_id : 0;
+        // $Log->action = isset($action) ? $action : "";
+        // $Log->post_data = json_encode($RequestData);
+        // $Log->created_timestamp = date("Y-m-d H:i:s");
+        // $Log->header = !empty($Request->header('Authorization')) ? $Request->header('Authorization') : "";
+		// // $Log->server_ip = $_SERVER['REMOTE_ADDR'];
+		// $Log->created_by = $CreatedBy;
+        // $Log->save();
 		return $Log->id;
     }
 

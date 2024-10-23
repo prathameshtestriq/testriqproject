@@ -1491,10 +1491,11 @@ class EventTicketController extends Controller
         }
 
         //------ ticket registration id and race category
-        $sql2 = "select bd.id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
+        $sql2 = "select bd.id,bd.ticket_id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
         $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookingPayId));
         // dd($booking_detail_Result);
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
+        $ticket_id         = !empty($booking_detail_Result) ? $booking_detail_Result[0]->ticket_id : 0;
 
         $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
         $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
@@ -1503,7 +1504,7 @@ class EventTicketController extends Controller
         
         $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
         // dd($attendee_details);
-        $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = '';
+        $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = $preferred_date = $run_category = ''; 
         if(!empty($attendee_details)){
             foreach($attendee_details as $res){
                 if($res->question_form_name == "enter_team_name"){
@@ -1518,8 +1519,29 @@ class EventTicketController extends Controller
                 if($res->question_form_name == "participant_4_name"){
                     $Participant_4_name = $res->ActualValue;
                 }
+
+                if($res->question_form_name == "preferred_date_for_the_carnival"){
+                    $preferred_date_json = json_decode($res->question_form_option);
+                    foreach ($preferred_date_json as $item) {
+                        if ($item->id == $res->ActualValue){
+                            $preferred_date = $item->label;
+                            break;
+                        }
+                    }
+                }
+
+                if($res->question_form_name == "select_your_run_category"){
+                    $run_category_json = json_decode($res->question_form_option);
+                    foreach ($run_category_json as $item) {
+                        if ($item->id == $res->ActualValue){
+                            $run_category = $item->label;
+                            break;
+                        }
+                    }
+                }
             }
         }
+        // dd($run_category);
         // dd($TeamName,$Participant_2_name, $Participant_3_name,$Participant_4_name );
 
         if (!empty($tAttendeeResult)) {
@@ -1574,35 +1596,58 @@ class EventTicketController extends Controller
             "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
             "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
             "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
-            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : ''
+            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : '',
+            "PREFERREDDATE"  => isset($preferred_date) && !empty($preferred_date) ? $preferred_date : '',
+            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? $run_category : ''
         );
 
-        // dd($ConfirmationEmail);
+        // dd($ConfirmationEmail); 
+
         $Subject = "";
-        $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
-        $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
-        // dd($Communications);
-        if (count($Communications) > 0) {
-            $MessageContent = $Communications[0]->message_content;
-            $Subject = $Communications[0]->subject_name;
-        } else {
-            $MessageContent = "Dear " . $first_name . " " . $last_name . ",
-                 <br/><br/>
-                Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
-                 <br/><br/>
-                Event Details:
-                 <br/><br/>
-                ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
-                ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
-                ● Location: " . $Venue . "<br/>
-                <br/><br/>
-                Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
-                 <br/><br/>
-                We look forward to seeing you at the event!
-                 <br/><br/>
-                Best regards,<br/>
-                " . $Event[0]->name . " Team";
-            $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+        //--------------- new added as per client requirement
+        if($ticket_id == 108 || $ticket_id == 109){
+           
+            $MessageContent = "<p>Dear {USERNAME},
+                <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2024</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
+                <br><br>Your details are:<br><br>
+                <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
+                <strong>Category : {RACECATEGORY}</strong><br>
+                <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
+                <strong>Registration ID : {REGISTRATIONID}</strong><br>
+                <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
+                <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
+                <strong>Cost : {TICKETAMOUNT}</strong><br><br>
+                If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
+                <p>Best regards,<br/>
+                <strong>Team Pokémon Carnival and Run</strong></p>";
+
+            $Subject = "Your Pokémon Carnival 2024 Entry is Confirmed!";
+        }else{
+            $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
+            $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
+            // dd($Communications);
+            if (count($Communications) > 0) {
+                $MessageContent = $Communications[0]->message_content;
+                $Subject = $Communications[0]->subject_name;
+            } else {
+                $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                     <br/><br/>
+                    Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                     <br/><br/>
+                    Event Details:
+                     <br/><br/>
+                    ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
+                    ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
+                    ● Location: " . $Venue . "<br/>
+                    <br/><br/>
+                    Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
+                     <br/><br/>
+                    We look forward to seeing you at the event!
+                     <br/><br/>
+                    Best regards,<br/>
+                    " . $Event[0]->name . " Team";
+                $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+            }
         }
 
         foreach ($ConfirmationEmail as $key => $value) {
@@ -1613,14 +1658,13 @@ class EventTicketController extends Controller
         }
 
         // Output the filled message
-        // dd($MessageContent);
+        // dd($MessageContent,$Subject); 
+        // echo $MessageContent; die;
        
         $Email = new Emails();
         $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status);
 
         // $msg = $UserId.'---'.$tAttendeeResult.'---'.$MessageContent.'---'.$Subject.'---'.$flag.'---'.$UserEmail;
-        // $Email2 = new Emails();
-        // $Email2->save_email_log('test email1', 'startshant@gmail.com', 'log test', $msg, '');
 
         //--------- Send emails to participants also along with registering person
         // dd($tAttendeeResult);
@@ -1646,6 +1690,26 @@ class EventTicketController extends Controller
                         if($res1->question_form_name == "participant_4_name"){
                             $Participant_4_name = $res1->ActualValue;
                         }
+
+                        if($res1->question_form_name == "preferred_date_for_the_carnival"){
+                            $preferred_date_json = json_decode($res1->question_form_option);
+                            foreach ($preferred_date_json as $item) {
+                                if ($item->id == $res1->ActualValue){
+                                    $preferred_date = $item->label;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if($res1->question_form_name == "select_your_run_category"){
+                            $run_category_json = json_decode($res1->question_form_option);
+                            foreach ($run_category_json as $item) {
+                                if ($item->id == $res1->ActualValue){
+                                    $run_category = $item->label;
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
                 // dd($attendee_firstname);
@@ -1670,40 +1734,60 @@ class EventTicketController extends Controller
                     "TICKETAMOUNT" => $TotalPrice,
                     "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : $registration_id,
                     "RACECATEGORY" => !empty($res->ticket_name) ? $res->ticket_name : $ticket_names,
-                    // venue,cost,registration id,ticket name,ticket type,t-shirt size(is available)
                     "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
                     "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
                     "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
-                    "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : ''
+                    "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : '',
+                    "PREFERREDDATE"  => isset($preferred_date) && !empty($preferred_date) ? $preferred_date : '',
+                    "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? $run_category : ''
                 );
 
                 $Subject = "";
-                $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
-                $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
-                // dd($Communications);
-                if (count($Communications) > 0) {
-                    $MessageContent = $Communications[0]->message_content;
-                    $Subject = $Communications[0]->subject_name;
-                } else {
-                    $MessageContent = "Dear " . $first_name . " " . $last_name . ",
-                         <br/><br/>
-                        Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
-                         <br/><br/>
-                        Event Details:
-                         <br/><br/>
-                        ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
-                        ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
-                        ● Location: " . $Venue . "<br/>
-                        <br/><br/>
-                        Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
-                         <br/><br/>
-                        We look forward to seeing you at the event!
-                         <br/><br/>
-                        Best regards,<br/>
-                        " . $Event[0]->name . " Team";
-                    $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+                //--------------- new added as per client requirement
+                if($ticket_id == 108 || $ticket_id == 109){
+                    $MessageContent = "<p>Dear {USERNAME},
+                        <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2024</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
+                        <br><br>Your details are:<br><br>
+                        <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
+                        <strong>Category : {RACECATEGORY}</strong><br>
+                        <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
+                        <strong>Registration ID : {REGISTRATIONID}</strong><br>
+                        <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
+                        <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
+                        <strong>Cost : {TICKETAMOUNT}</strong><br><br>
+                        If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
+                        <p>Best regards,<br/>
+                        <strong>Team Pokémon Carnival and Run</strong></p>";
+
+                    $Subject = "Your Pokémon Carnival 2024 Entry is Confirmed!";
+                }else{
+                    $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
+                    $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
+                    // dd($Communications);
+                    if (count($Communications) > 0) {
+                        $MessageContent = $Communications[0]->message_content;
+                        $Subject = $Communications[0]->subject_name;
+                    } else {
+                        $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                             <br/><br/>
+                            Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                             <br/><br/>
+                            Event Details:
+                             <br/><br/>
+                            ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
+                            ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
+                            ● Location: " . $Venue . "<br/>
+                            <br/><br/>
+                            Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
+                             <br/><br/>
+                            We look forward to seeing you at the event!
+                             <br/><br/>
+                            Best regards,<br/>
+                            " . $Event[0]->name . " Team";
+                        $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+                    }
                 }
-             //dd($ConfirmationEmail);
+         
                 foreach ($ConfirmationEmail as $key => $value) {
                     if (isset($key)) {
                         $placeholder = '{' . $key . '}';
@@ -1711,7 +1795,7 @@ class EventTicketController extends Controller
                     }
                 }
 
-                //echo $MessageContent.'<br><br>';
+                // echo $MessageContent.'<br><br>';
                 if (!empty($attendee_email) && strtolower($UserEmail) != strtolower($attendee_email)) {
                     $Email = new Emails();
                     $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag, $send_email_status);
@@ -2419,10 +2503,11 @@ class EventTicketController extends Controller
         }
 
         //------ ticket registration id and race category
-        $sql2 = "select bd.id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
+        $sql2 = "select bd.id,bd.ticket_id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
         $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookingPayId));
         // dd($booking_detail_Result);
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
+        $ticket_id         = !empty($booking_detail_Result) ? $booking_detail_Result[0]->ticket_id : 0;
 
         $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
         $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
@@ -2430,7 +2515,7 @@ class EventTicketController extends Controller
 
         $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
         // ---------------- new added om 07-10-24
-        $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = '';
+        $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = $preferred_date = $run_category = '';
         if(!empty($attendee_details)){
             foreach($attendee_details as $res){
                 if($res->question_form_name == "enter_team_name"){
@@ -2445,9 +2530,29 @@ class EventTicketController extends Controller
                 if($res->question_form_name == "participant_4_name"){
                     $Participant_4_name = $res->ActualValue;
                 }
+
+                if($res->question_form_name == "preferred_date_for_the_carnival"){
+                    $preferred_date_json = json_decode($res->question_form_option);
+                    foreach ($preferred_date_json as $item) {
+                        if ($item->id == $res->ActualValue){
+                            $preferred_date = $item->label;
+                            break;
+                        }
+                    }
+                }
+
+                if($res->question_form_name == "select_your_run_category"){
+                    $run_category_json = json_decode($res->question_form_option);
+                    foreach ($run_category_json as $item) {
+                        if ($item->id == $res->ActualValue){
+                            $run_category = $item->label;
+                            break;
+                        }
+                    }
+                }
             }
         }
-
+       // dd($preferred_date,$run_category);
         $registration_ids = $ticket_names = '';
         if (!empty($tAttendeeResult)) {
             $registration_ids_array = array_column($tAttendeeResult, "registration_id");
@@ -2497,56 +2602,71 @@ class EventTicketController extends Controller
             "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
             "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
             "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
-            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : ''
+            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : '',
+            "PREFERREDDATE"  => isset($preferred_date) && !empty($preferred_date) ? $preferred_date : '',
+            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? $run_category : ''
         );
 
-        // dd($ConfirmationEmail); $CommEmailType
-
-        // $sql = "SELECT subject_name FROM `communication_master` WHERE status = 1 AND id = ".$CommEmailType." ";
-        // $CommunicationsMaster = DB::select($sql, array());
-
-        // $SubjectName = !empty($CommunicationsMaster) ? $CommunicationsMaster[0]->subject_name : '';
-
         $Subject = "";
-        $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND status = 1";
-
-        if(!empty($CommEmailType)){
-            $sql .= ' AND comm_id = '.$CommEmailType.' ';
-        }
-        $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
-        // dd($Communications);
-        $MessageContent = '';
-        if (count($Communications) > 0) {
-            $MessageContent = $Communications[0]->message_content;
-            $Subject = $Communications[0]->subject_name;
-        } else {
-            $MessageContent = "Dear " . $first_name . " " . $last_name . ",
-                 <br/><br/>
-                Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
-                 <br/><br/>
-                Event Details:
-                 <br/><br/>
-                ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
-                ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
-                ● Location: " . $Venue . "<br/>
-                <br/><br/>
-                Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
-                 <br/><br/>
-                We look forward to seeing you at the event!
-                 <br/><br/>
-                Best regards,<br/>
-                " . $Event[0]->name . " Team";
-
-            if($CommEmailType == 1){
-                $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
-            }else if($CommEmailType == 2){
-                $Subject = "BIB Collection Details - " . $Event[0]->name . "";
-            }else if($CommEmailType == 3){
-                $Subject = "Event Day Details - " . $Event[0]->name . "";
-            }else if($CommEmailType == 4){
-                $Subject = "Thank You Mailer - " . $Event[0]->name . "";
-            }
+        
+         //--------------- new added as per client requirement
+        if($ticket_id == 108 || $ticket_id == 109){
            
+            $MessageContent = "<p>Dear {USERNAME},
+                <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2024</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
+                <br><br>Your details are:<br><br>
+                <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
+                <strong>Category : {RACECATEGORY}</strong><br>
+                <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
+                <strong>Registration ID : {REGISTRATIONID}</strong><br>
+                <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
+                <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
+                <strong>Cost : {TICKETAMOUNT}</strong><br><br>
+                If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
+                <p>Best regards,<br/>
+                <strong>Team Pokémon Carnival and Run</strong></p>";
+
+            $Subject = "Your Pokémon Carnival 2024 Entry is Confirmed!";
+        }else{
+
+            $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND status = 1";
+            if(!empty($CommEmailType)){
+                $sql .= ' AND comm_id = '.$CommEmailType.' ';
+            }
+            $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
+            // dd($Communications);
+            $MessageContent = '';
+            if (count($Communications) > 0) {
+                $MessageContent = $Communications[0]->message_content;
+                $Subject = $Communications[0]->subject_name;
+            } else {
+                $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                     <br/><br/>
+                    Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                     <br/><br/>
+                    Event Details:
+                     <br/><br/>
+                    ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
+                    ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
+                    ● Location: " . $Venue . "<br/>
+                    <br/><br/>
+                    Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
+                     <br/><br/>
+                    We look forward to seeing you at the event!
+                     <br/><br/>
+                    Best regards,<br/>
+                    " . $Event[0]->name . " Team";
+
+                if($CommEmailType == 1){
+                    $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+                }else if($CommEmailType == 2){
+                    $Subject = "BIB Collection Details - " . $Event[0]->name . "";
+                }else if($CommEmailType == 3){
+                    $Subject = "Event Day Details - " . $Event[0]->name . "";
+                }else if($CommEmailType == 4){
+                    $Subject = "Thank You Mailer - " . $Event[0]->name . "";
+                }
+            }
         }
 
         foreach ($ConfirmationEmail as $key => $value) {
@@ -2557,7 +2677,7 @@ class EventTicketController extends Controller
         }
 
         // attach image
-        if(!empty($Communications[0]->content_image)){
+        if(!empty($Communications) && !empty($Communications[0]->content_image)){
 
             $image_path = url('/').'/uploads/communication_email_images/'.$Communications[0]->content_image;
             $attach_image = '<img src="'.$image_path.'" alt="Image">';
@@ -2609,7 +2729,7 @@ class EventTicketController extends Controller
 
                 $attendee_array = [];
 
-                // echo $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price; die;
+               // echo $message1 = $EventId.'---'.$EventUrl.'---'.$BookingPayId.'---'.$user_email.'---'.$event_name.'---'.$event_url.'---'.$UserId.'---'.$no_of_tickets.'---'.$total_price; die;
 
                 if (!empty($user_email)) {
 
