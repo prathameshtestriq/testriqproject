@@ -4,6 +4,7 @@
 /public/hot
 /public/storage
 /public/uploads
+/public/organisers
 /Transcation
 /Transcation/Payment_process.php
 /public/attendee_details_excell
