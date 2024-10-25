@@ -144,6 +144,41 @@ class PaymentGatwayController extends Controller
             DB::insert($insert_SQL, $Bindings);
             $last_inserted_id = DB::getPdo()->lastInsertId();
 
+            //------------------ new added
+            
+            $payu_payload = array(
+                "event_id" => $EventId,
+                "txnid" => $txnid,
+                "firstname" => $FirstName,
+                "lastname" => $LastName,
+                "email" => $Email,
+                "phone_no" => $PhoneNo,
+                "productinfo" => $ProductInfo,
+                "amount" => $Amount,
+                "merchant_key" => $Merchant_key,
+                "hash" => $hash,
+                "created_by" => $UserId,
+                "created_datetime" => $Datetime
+            );
+
+            $Bindings1 = array(
+                "event_id" => $EventId,
+                "booking_pay_id" => $last_inserted_id,
+                "amount" => $Amount,
+                "firstname" => $FirstName,
+                "lastname" => $LastName,
+                "email" => $Email,
+                "mobile_no" => $PhoneNo,
+                "FormQuestions" => '',
+                "payment_payload" => !empty($payu_payload) ? json_encode($payu_payload) : '',
+                "payment_type" => !empty($Amount) && $Amount != '0.00' ? 'Paid' : 'Free',
+                "created_date" => $Datetime
+            );
+            //dd($Bindings);
+            //-----------------
+            $insert_SQL1 = "INSERT INTO ticket_booking_log (event_id,booking_pay_id,amount,firstname,lastname,email,mobile_no,FormQuestions, payment_payload,payment_type,created_date) VALUES(:event_id,:booking_pay_id,:amount,:firstname,:lastname,:email,:mobile_no,:FormQuestions,:payment_payload,:payment_type,:created_date)";
+            DB::insert($insert_SQL1, $Bindings1);
+
             //----------------- log entry
             $post_data = json_encode($Bindings);
             // dd($post_data);
