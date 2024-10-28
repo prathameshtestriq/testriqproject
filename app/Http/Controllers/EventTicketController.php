@@ -1555,6 +1555,8 @@ class EventTicketController extends Controller
 
             $ticket_ids_array = array_column($tAttendeeResult, "ticket_name");
             $ticket_names = implode(", ", array_unique($ticket_ids_array));
+
+
         }
         //dd($registration_ids,$ticket_names);
         if ($flag == 2 && !empty($attendee_array)) {
@@ -1565,10 +1567,10 @@ class EventTicketController extends Controller
             $ticket_names = $attendee_array['ticket_name'];
         } else {
             $user_name = $User[0]->firstname . " " . $User[0]->lastname;
-            $first_name = $User[0]->firstname;
-            $last_name = $User[0]->lastname;
-            $registration_id = $registration_ids;
-            $ticket_names = $ticket_names;
+            $first_name = !empty($tAttendeeResult) && $tAttendeeResult[0]->firstname ? $tAttendeeResult[0]->firstname : $User[0]->firstname;
+            $last_name = !empty($tAttendeeResult) && $tAttendeeResult[0]->lastname ? $tAttendeeResult[0]->lastname : $User[0]->lastname;
+            $registration_id = $registration_ids;  
+            $ticket_names = $ticket_names;   
         }
 
         //------------ new added
