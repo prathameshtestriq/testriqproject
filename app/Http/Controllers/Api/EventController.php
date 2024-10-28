@@ -647,9 +647,9 @@ class EventController extends Controller
         }
         // dd($event_ids);
 
-        $EventSql = "SELECT * FROM events AS e";
+        $EventSql = "SELECT * FROM events AS e WHERE 1=1 ";
         if (!empty($EventId)) {
-            $EventSql .= " WHERE e.id=" . $EventId;
+            $EventSql .= " AND e.id=" . $EventId;
         }
         // dd($Category);
         if (!empty($Category)) {
@@ -658,11 +658,11 @@ class EventController extends Controller
         }
 
         if (!empty($Category) && !empty($event_ids)) {
-            $EventSql .= " WHERE e.id IN(".$event_ids.") ";
+            $EventSql .= " AND e.id IN(".$event_ids.") ";
         }
 
         if (empty($Category) && empty($EventId)) {
-            $EventSql .= " WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+            $EventSql .= " AND e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         } else {
             $EventSql .= " AND e.active=1 AND e.deleted=0 AND e.event_info_status=1";
         }
