@@ -142,7 +142,7 @@ class EventDetailsController extends Controller
 
             $UserId = 0;
             if (!empty($aToken)) {
-                $UserId = $aToken['data']->ID;
+                $UserId = isset($aToken['data']) ? $aToken['data']->ID : 0;
             }
 
             $UserLoginId     = !empty($request->user_id) ? (int)$request->user_id : $UserId;
@@ -174,6 +174,7 @@ class EventDetailsController extends Controller
             $ResposneCode = 200;
 
         } else {
+
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
@@ -232,6 +233,42 @@ class EventDetailsController extends Controller
                 $response['data'] = array("email_validate_flag" => $email_validation_flag, "mobile_validate_flag" => $mobile_validation_flag);
     
                      
+            $response['message'] = 'Request processed successfully';
+            $ResposneCode = 200;
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function cms_footer_page_details(Request $request) 
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
+
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+
+            $UserId = 0;
+            if (!empty($aToken)) {
+                $UserId = $aToken['data']->ID;
+            }
+            // dd($UserId);
+            $PageId = !empty($request->page_id) ? $request->page_id : 0;
+
+            $Sql = 'SELECT id,title,description FROM CMS_master WHERE is_active = 1';
+            if(!empty($PageId)){
+                $Sql .= ' AND id ='.$PageId;
+            }
+            $aResult = DB::select($Sql);
+            $response['data'] = !empty($aResult) ? $aResult : [];
+          
             $response['message'] = 'Request processed successfully';
             $ResposneCode = 200;
 

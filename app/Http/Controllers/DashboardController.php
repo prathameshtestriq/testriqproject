@@ -435,40 +435,41 @@ class DashboardController extends Controller
         //dd( $aReturn);    
 
         # Coupons Details
-        $SQL14 = "SELECT COUNT(ac.coupon_id) AS CouponCount,(SELECT id FROM event_coupon WHERE id=ac.coupon_id) AS coupon_id, (SELECT discount_name FROM event_coupon WHERE id=ac.coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=ac.coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
-        FROM applied_coupons as ac
-        WHERE 1=1";
-        if ($aReturn['search_filter'] !== "") {
-            if (isset($StartDate) && isset($EndDate)) {
-                $SQL14 .= " AND created_at BETWEEN " . $StartDate . " AND " . $EndDate;
-            }
-        }
-        if (!empty($aReturn['search_category'])) {
-            $SQL14 .= ' AND ticket_ids =' . $aReturn['search_category'];
-        }
-        if (!empty( $aReturn['search_from_date']) && !empty($aReturn['search_to_date'] )) {
-            $SQL14 .= ' AND created_at BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'] ;
-        }
+        // $SQL14 = "SELECT COUNT(ac.coupon_id) AS CouponCount,(SELECT id FROM event_coupon WHERE id=ac.coupon_id) AS coupon_id, (SELECT discount_name FROM event_coupon WHERE id=ac.coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=ac.coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
+        // FROM applied_coupons as ac
+        // WHERE 1=1";
+        // if ($aReturn['search_filter'] !== "") {
+        //     if (isset($StartDate) && isset($EndDate)) {
+        //         $SQL14 .= " AND created_at BETWEEN " . $StartDate . " AND " . $EndDate;
+        //     }
+        // }
+        // if (!empty($aReturn['search_category'])) {
+        //     $SQL14 .= ' AND ticket_ids =' . $aReturn['search_category'];
+        // }
+        // if (!empty( $aReturn['search_from_date']) && !empty($aReturn['search_to_date'] )) {
+        //     $SQL14 .= ' AND created_at BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'] ;
+        // }
 
-        if (!empty( $aReturn['search_event_name'] )) {
-            $SQL14 .= ' AND event_id =' .  $aReturn['search_event_name'] ;
-        }
-        $SQL14 .= " GROUP BY coupon_id";
-        $CouponCodes = DB::select($SQL14, array());
-        if (!empty($CouponCodes)) {
-            foreach ($CouponCodes as $res) {
+        // if (!empty( $aReturn['search_event_name'] )) {
+        //     $SQL14 .= ' AND event_id =' .  $aReturn['search_event_name'] ;
+        // }
+        // $SQL14 .= " GROUP BY coupon_id";
+        // $CouponCodes = DB::select($SQL14, array());
+        // if (!empty($CouponCodes)) {
+        //     foreach ($CouponCodes as $res) {
 
-                $SQL15 = "SELECT ac.id,COUNT(ac.coupon_id) AS Coupon_Count
-                        FROM applied_coupons as ac left join event_booking as eb on eb.id=ac.booking_id 
-                        WHERE ac.coupon_id = " . $res->coupon_id . " AND eb.transaction_status IN (1,3) ";
-                $aResult = DB::select($SQL15, array());
-                //dd($aResult);
+        //         $SQL15 = "SELECT ac.id,COUNT(ac.coupon_id) AS Coupon_Count
+        //                 FROM applied_coupons as ac left join event_booking as eb on eb.id=ac.booking_id 
+        //                 WHERE ac.coupon_id = " . $res->coupon_id . " AND eb.transaction_status IN (1,3) ";
+        //         $aResult = DB::select($SQL15, array());
+        //         //dd($aResult);
 
-                $res->CouponCount = !empty($aResult) ? $aResult[0]->Coupon_Count : $res->CouponCount;
-            }
+        //         $res->CouponCount = !empty($aResult) ? $aResult[0]->Coupon_Count : $res->CouponCount;
+        //     }
 
-        }
-        $aReturn['CouponCodes'] = $CouponCodes;
+        // }
+        // $aReturn['CouponCodes'] = $CouponCodes;
+        $aReturn['CouponCodes'] = [];
         // dd( $aReturn['CouponCodes'] );
 
         // male female graph

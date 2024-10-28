@@ -123,7 +123,7 @@ class FormQuestionsController extends Controller
             //dd($EventId);
             
             // $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0  ';
-            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,user_field_mapping,question_hint,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id,id';
+            $Sql = 'SELECT id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_subquestion,parent_question_id,form_id,user_field_mapping,question_hint,(select form_name from form_master where form_master.id = general_form_question.form_id) as form_name,hint_type FROM general_form_question WHERE question_status = 1 and is_compulsory != 1 and created_by in (0,'.$UserId.') and is_subquestion = 0 order by form_id,id';
             // created_by in (0,'.$UserId.')
             $aResult = DB::select($Sql);
            // dd($aResult);
@@ -246,13 +246,15 @@ class FormQuestionsController extends Controller
             $MinLength = !empty($request->min_length) ? $request->min_length : '';
             $MaxLength = !empty($request->max_length) ? $request->max_length : '';
             $FieldMapping = !empty($request->field_mapping) ? $request->field_mapping : '';
-            $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
+           
             $FormId = !empty($request->form_name) ? $request->form_name : 0;
 
             $SubQuestionFlag = !empty($request->sub_question_flag) ? 1 : 0;
             $QuestionType = !empty($request->question_type) ? $request->question_type : 0;
             $SubQuestionTitle = !empty($request->sub_question_title) ? $request->sub_question_title : '';
-            $QuestionFormOptionArray = !empty($request->sub_question_array) ? array_filter($request->sub_question_array) : [];
+            $QuestionFormOptionArray = !empty($request->sub_question_array) ? json_decode($request->sub_question_array) : [];
+            $QuestionFormOptionArray = !empty($QuestionFormOptionArray) ? array_filter($QuestionFormOptionArray) : [];
+            
             $SubQuestionMandatory = !empty($request->sub_question_mandatory_status) ? $request->sub_question_mandatory_status : 0;
             $SubQuestionFormType = !empty($request->sub_question_form_type) ? $request->sub_question_form_type : 'text';
            
@@ -265,6 +267,12 @@ class FormQuestionsController extends Controller
             
             $SubQuestionId = !empty($request->sub_question_id) ? $request->sub_question_id : 0;
             $MainQuestionHint = !empty($request->main_question_hint) ? $request->main_question_hint : '';
+            $HintType = !empty($request->hint_type) ? $request->hint_type : '1';
+            $UploadedImage = !empty($request->upload_hint_file) ? $request->file('upload_hint_file') : '';
+            
+            $SubQueHintType = !empty($request->sub_que_hint_type) ? $request->sub_que_hint_type : '1';
+            $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
+            $SubHintUploadedImage = !empty($request->upload_sub_hint_file) ? $request->file('upload_sub_hint_file') : '';
             
             //---------- all ticket apply -----------
             $ticket_ids = '';
@@ -340,11 +348,21 @@ class FormQuestionsController extends Controller
                     'subQuestionTreeFlag' => 0,
                     'parentQuestionId' => $GeneralFormId
                 ));
-            
 
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, form_id, sort_order, apply_ticket, ticket_details, created_by, question_hint)';
+                $hint_image = '';
+                if (($HintType == 2 || $HintType == "2") && !empty($UploadedImage)) {
+                   
+                    $upload_file_name = !empty($request->upload_file_name) ? $request->upload_file_name : '';
+                    $Path = public_path('uploads/hint_image/');
+                    $originalName = $UploadedImage->getClientOriginalName();
+                    $hint_image = $originalName;
+                    $UploadedImage->move($Path, $hint_image);
+                    $MainQuestionHint = !empty($MainQuestionHint) ? $MainQuestionHint: $upload_file_name;
+                }
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, :formId, :sortOrder, :applyTicket, :ticketDetails, :createdBy, :questionHint
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, form_id, sort_order, apply_ticket, ticket_details, created_by, question_hint, hint_type)';
+
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, :formId, :sortOrder, :applyTicket, :ticketDetails, :createdBy, :questionHint, :HintType
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -361,7 +379,8 @@ class FormQuestionsController extends Controller
                     'applyTicket'      => $ApplyTicket,
                     'ticketDetails'    => $ticket_ids,
                     'createdBy'        => $userId,
-                    'questionHint'     => $MainQuestionHint
+                    'questionHint'     => $MainQuestionHint,
+                    'HintType'         => $HintType
                 ));
                 $last_eventFormQue_id = DB::getPdo()->lastInsertId();
 
@@ -424,15 +443,15 @@ class FormQuestionsController extends Controller
                         foreach($QuestionFormOptionArray as $key=>$res){
                            //dd($res['id']);
                   
-                            if(!empty($res['label']) && empty($res['price']) && empty($res['count'])){
-                                $new_array[] = array("id" => $i, "label" => $res['label']);
-                            }else if(!empty($res['label']) && empty($res['count']) && $SubQuestionPriceFlag == 1){
-                                $new_array[] = array("id" => $i, "label" => $res['label'], "price" => !empty($res['price']) ? $res['price'] : 0 );
-                            }else if(!empty($res['label']) && empty($res['price']) && $SubQuestionPriceFlag == 1){
-                                $new_array[] = array("id" => $i, "label" => $res['label'], "price" => !empty($res['price']) ? $res['price'] : 0 );
+                            if(!empty($res->label) && empty($res->price) && empty($res->count)){
+                                $new_array[] = array("id" => $i, "label" => $res->label);
+                            }else if(!empty($res->label) && empty($res->count) && $SubQuestionPriceFlag == 1){
+                                $new_array[] = array("id" => $i, "label" => $res->label, "price" => !empty($res->price) ? $res->price : 0 );
+                            }else if(!empty($res->label) && empty($res->price) && $SubQuestionPriceFlag == 1){
+                                $new_array[] = array("id" => $i, "label" => $res->label, "price" => !empty($res->price) ? $res->price : 0 );
                             }
-                            else if(!empty($res['label']) && !empty($res['price']) && !empty($res['count']) && $SubQuestionPriceFlag == 1 && $SubQuestionCountFlag == 1){
-                                $new_array[] = array("id" => $i, "label" => $res['label'], "price" => !empty($res['price']) ? $res['price'] : 0, "count" => !empty($res['count']) ? $res['count'] : '');
+                            else if(!empty($res->label) && !empty($res->price) && !empty($res->count) && $SubQuestionPriceFlag == 1 && $SubQuestionCountFlag == 1){
+                                $new_array[] = array("id" => $i, "label" => $res->label, "price" => !empty($res->price) ? $res->price : 0, "count" => !empty($res->count) ? $res->count : '');
                             }
                             $i++;
                         }
@@ -463,12 +482,24 @@ class FormQuestionsController extends Controller
 
                     if($SubQuestionTitle != '')
                     {
+                        $hint_image1 = '';
+                        if (($SubQueHintType == 2 || $SubQueHintType == "2") && !empty($SubHintUploadedImage)) {
+                           
+                            $upload_sub_file_name = !empty($request->upload_sub_file_name) ? $request->upload_sub_file_name : '';
+
+                            $Path = public_path('uploads/hint_image/');
+                            $originalName1 = $SubHintUploadedImage->getClientOriginalName();
+                            $hint_image1 = $originalName1;
+                            $SubHintUploadedImage->move($Path, $hint_image1);
+                            $questionHint = !empty($questionHint) ? $hint_image1 : $upload_sub_file_name;
+                        }
+
                         //--------- sorting order
                         $SQL = "SELECT MAX(sort_order) AS last_sort_order FROM general_form_question WHERE created_by=:user_id";
                         $aResultSortOrder = DB::select($SQL, array('user_id' => $userId));
                         $sort_order = !empty($aResultSortOrder) && $aResultSortOrder[0]->last_sort_order !== '' ? $aResultSortOrder[0]->last_sort_order+1 : 1;
 
-                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint,sort_order) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint, :sortOrder)';
+                        $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, created_by, is_custom_form, parent_question_id, is_subquestion,sub_question_price_flag,sub_question_count_flag,sub_question_other_amount,question_hint,sort_order,hint_type) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:parentQusId, :isSubquestion, :subQuePrice, :subQueCount, :subQueOtherAmount, :questionHint, :sortOrder, :hintType)';
 
                         DB::insert($sSQL,array(
                             //'questionLabel'     => !empty($question_title_name) ? $question_title_name.' '.$SubQuestionTitle : $SubQuestionTitle,
@@ -487,7 +518,8 @@ class FormQuestionsController extends Controller
                             "subQueCount"       => $SubQuestionCountFlag,
                             "subQueOtherAmount" => $SubQuestionOtherAmountFlag,
                             "questionHint"      => $questionHint,
-                            "sortOrder"         => $sort_order
+                            "sortOrder"         => $sort_order,
+                            "hintType"          => $SubQueHintType
                         ));
 
                         $last_inserted_id = DB::getPdo()->lastInsertId();
@@ -548,7 +580,7 @@ class FormQuestionsController extends Controller
                         $event_sort_order = !empty($aResultSortOrder1) && !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
                         
 
-                        $sSQL1 = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, limit_length, child_question_ids, form_id, apply_ticket, ticket_details, created_by, question_hint, sort_order) VALUES (:eventId, :general_form_id, :questionLabel, :questionFormType, :questionFormName, :questionFormOption, :isManadatory, :questionStatus, :isCustomForm, :parentQusId, :is_compulsory, :is_custom_form, :limit_check, :limit_length, :child_question_ids, :form_id, :applyTicket, :ticketDetails, :createdBy, :questionHint, :sort_order)';
+                        $sSQL1 = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, limit_length, child_question_ids, form_id, apply_ticket, ticket_details, created_by, question_hint, sort_order, hint_type) VALUES (:eventId, :general_form_id, :questionLabel, :questionFormType, :questionFormName, :questionFormOption, :isManadatory, :questionStatus, :isCustomForm, :parentQusId, :is_compulsory, :is_custom_form, :limit_check, :limit_length, :child_question_ids, :form_id, :applyTicket, :ticketDetails, :createdBy, :questionHint, :sort_order, :hintType)';
 
                         DB::insert($sSQL1,array(
                             'eventId'           => $EventId,
@@ -571,7 +603,8 @@ class FormQuestionsController extends Controller
                             'ticketDetails'     => $ticket_ids,
                             'createdBy'         => $userId,
                             'questionHint'      => $questionHint,
-                            'sort_order'        => $event_sort_order
+                            'sort_order'        => $event_sort_order,
+                            'hintType'          => $SubQueHintType
                         ));
 
                         //------------ add general form entry for check other amount
@@ -654,7 +687,6 @@ class FormQuestionsController extends Controller
                                 'generalFormId' => $GeneralFormId,
                                 'eventId' => $EventId
                             )); 
-
 
                         }
 
@@ -803,11 +835,17 @@ class FormQuestionsController extends Controller
             $questionFormType = !empty($request->question_form_type) ? $request->question_form_type : '';
             $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
             $isManadatory = !empty($request->is_manadatory) ? $request->is_manadatory : 0;
-            $questionFormOption = !empty($request->question_form_option) ? array_filter($request->question_form_option) : 0;
+           
+            $questionFormOption = !empty($request->question_form_option) ? json_decode($request->question_form_option) : [];
+            $questionFormOption = array_filter($questionFormOption);
             $formId = !empty($request->form_id) ? $request->form_id : '';
 
             $question_name = strtolower($questionLabel);
             $question_name = str_replace(' ', '_', $question_name);
+            
+            $hintType = !empty($request->hint_type) ? $request->hint_type : '1';
+            $UploadedImage = !empty($request->upload_hint_file) ? $request->file('upload_hint_file') : '';
+
             //dd($question_name);
                 //dd(json_encode($questionFormOption));
             $new_array = [];
@@ -838,20 +876,31 @@ class FormQuestionsController extends Controller
             $aResult5 = DB::select($Sql5);
             // dd($aResult5);
             if(!empty($aResult5) && $aResult5[0]->tot_count == 0){
-                $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_hint,question_form_option, is_manadatory, question_status, created_by, is_custom_form, sort_order) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionHint,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:sortOrder)';
+                
+                $hint_image = '';
+                if ($hintType == 2 && !empty($UploadedImage)) {
+                   
+                    $Path = public_path('uploads/hint_image/');
+                    $originalName = $UploadedImage->getClientOriginalName();
+                    $hint_image = $originalName;
+                    $UploadedImage->move($Path, $hint_image);
+                }
+
+                $sSQL = 'INSERT INTO general_form_question (question_label, form_id, question_form_type, question_form_name, question_hint,question_form_option, is_manadatory, question_status, created_by, is_custom_form, sort_order, hint_type) VALUES (:questionLabel,:formId,:questionFormType,:questionFormName,:questionHint,:questionFormOption,:isManadatory,:questionStatus,:createdBy,:isCustomForm,:sortOrder,:hint_type)';
 
                 DB::insert($sSQL,array(
                     'questionLabel'     => $questionLabel,
                     'formId'            => $formId,
                     'questionFormType'  => $questionFormType,
                     'questionFormName'  => $question_name,
-                    'questionHint'      => $questionHint,
+                    'questionHint'      => $hintType == '1' ? $questionHint : $hint_image,
                     'questionFormOption' => $questionFormOptionArray,
                     'isManadatory'      => $isManadatory,
                     'questionStatus'    => 1,
                     'createdBy'         => $userId,
                     'isCustomForm'      => 0,
-                    'sortOrder'         => $sort_order
+                    'sortOrder'         => $sort_order,
+                    'hint_type'         => $hintType
                 ));
                 
                 $response['data'] = [];

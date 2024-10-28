@@ -154,7 +154,7 @@
             <a class="d-flex align-items-center " href="{{ url('/remittance_management ') }}">
                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M531-260h96v-3L462-438l1-3h10q54 0 89.5-33t43.5-77h40v-47h-41q-3-15-10.5-28.5T576-653h70v-47H314v57h156q26 0 42.5 13t22.5 32H314v47h222q-6 20-23 34.5T467-502H367v64l164 178ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg>
                {{-- <i class="fa fa-users" aria-hidden="true"></i> --}}
-               <span class="menu-title text-truncate">Remittance management </span></a>
+               <span class="menu-title text-truncate">Remittance Management </span></a>
             </a>
          </li>
 
@@ -189,6 +189,27 @@
             </a>
          </li>
 
+         <li class="nav-item <?php if($uriSegment == 'master_cms') echo 'active'; ?>">
+            <a class="d-flex align-items-center " href="{{ url('/master_cms ') }}">
+               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m159-168-34-14q-31-13-41.5-45t3.5-63l72-156v278Zm160 88q-33 0-56.5-23.5T239-160v-240l106 294q3 7 6 13.5t8 12.5h-40Zm206-4q-32 12-62-3t-42-47L243-622q-12-32 2-62.5t46-41.5l302-110q32-12 62 3t42 47l178 488q12 32-2 62.5T827-194L525-84Zm-86-476q17 0 28.5-11.5T479-600q0-17-11.5-28.5T439-640q-17 0-28.5 11.5T399-600q0 17 11.5 28.5T439-560Z"/></svg>
+               {{-- <i class="fa fa-users" aria-hidden="true"></i> --}}
+               <span class="menu-title text-truncate"> Master CMS</span></a>
+            </a>
+         </li>
+
+         <li class="nav-item <?php if($uriSegment == 'audit_log') echo 'active'; ?>">
+            <a class="d-flex align-items-center " href="{{ url('/audit_log ') }}">
+               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m159-168-34-14q-31-13-41.5-45t3.5-63l72-156v278Zm160 88q-33 0-56.5-23.5T239-160v-240l106 294q3 7 6 13.5t8 12.5h-40Zm206-4q-32 12-62-3t-42-47L243-622q-12-32 2-62.5t46-41.5l302-110q32-12 62 3t42 47l178 488q12 32-2 62.5T827-194L525-84Zm-86-476q17 0 28.5-11.5T479-600q0-17-11.5-28.5T439-640q-17 0-28.5 11.5T399-600q0 17 11.5 28.5T439-560Z"/></svg>
+               <span class="menu-title text-truncate">Audit Log</span></a>
+            </a>
+         </li>
+  
+         <li class="nav-item <?php if($uriSegment == 'participan_work_upload') echo 'active'; ?>">
+            <a class="d-flex align-items-center " href="{{ url('/participan_work_upload ') }}">
+               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m159-168-34-14q-31-13-41.5-45t3.5-63l72-156v278Zm160 88q-33 0-56.5-23.5T239-160v-240l106 294q3 7 6 13.5t8 12.5h-40Zm206-4q-32 12-62-3t-42-47L243-622q-12-32 2-62.5t46-41.5l302-110q32-12 62 3t42 47l178 488q12 32-2 62.5T827-194L525-84Zm-86-476q17 0 28.5-11.5T479-600q0-17-11.5-28.5T439-640q-17 0-28.5 11.5T399-600q0 17 11.5 28.5T439-560Z"/></svg>
+               <span class="menu-title text-truncate">Participant Bulk Upload</span></a>
+            </a>
+         </li>
 
      </ul>
      

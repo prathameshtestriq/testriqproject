@@ -324,6 +324,8 @@ class EventDashboardController extends Controller
                 $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
 
+                $TransactionID = isset($aPost['TransactionID']) ? $aPost['TransactionID'] : '';
+
                 $Page = (isset($aPost['page'])) ? $aPost['page'] : 1;
                 $Limit = (isset($aPost['limit'])) ? $aPost['limit'] : 10;
 
@@ -338,7 +340,8 @@ class EventDashboardController extends Controller
                          u.firstname,
                          u.lastname,
                          u.email,
-                         u.mobile
+                         u.mobile,
+                         eb.booking_pay_id,(select txnid from booking_payment_details where id = eb.booking_pay_id) as transaction_id
                      FROM event_booking AS eb 
                      LEFT JOIN booking_details AS bd ON bd.booking_id = eb.id
                      LEFT JOIN users AS u ON u.id = eb.user_id
@@ -364,6 +367,10 @@ class EventDashboardController extends Controller
                 }
                 if (!empty($ToDate)) {
                     $sql .= " AND bd.booking_date <= " . $ToDate;
+                }
+
+                if(!empty($TransactionID)){
+                    $sql .= " AND eb.booking_pay_id = (select id from booking_payment_details where txnid LIKE '%" . $TransactionID . "%') "; 
                 }
 
                 // if (!empty($FromDate) && !empty($ToDate)) {
@@ -443,11 +450,12 @@ class EventDashboardController extends Controller
                 $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
                 $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
                 $couponUsedFlag = isset($aPost['coupon_used_flag']) ? $aPost['coupon_used_flag'] : 0;
+                $TransactionID = isset($aPost['TransactionID']) ? $aPost['TransactionID'] : '';
 
                 $Page = (isset($aPost['page'])) ? $aPost['page'] : 1;
                 $Limit = (isset($aPost['limit'])) ? $aPost['limit'] : 30;
 
-                $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name, (SELECT ticket_status FROM event_tickets WHERE id=a.ticket_id) AS ticket_status FROM attendee_booking_details AS a 
+                $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name, (SELECT ticket_status FROM event_tickets WHERE id=a.ticket_id) AS ticket_status,e.booking_pay_id,(select txnid from booking_payment_details where id = e.booking_pay_id) as transaction_id FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
                 LEFT JOIN event_booking AS e ON b.booking_id = e.id";
                 
@@ -503,6 +511,10 @@ class EventDashboardController extends Controller
                 // if (!empty($FromDate) && !empty($ToDate)) {
                 //     $sql .= " AND b.booking_date BETWEEN '.$FromDate.' AND " . $ToDate;
                 // }
+                // dd($TransactionID);
+                if(!empty($TransactionID)){
+                    $sql .= " AND e.booking_pay_id = (select id from booking_payment_details where txnid LIKE '%" . $TransactionID . "%') "; 
+                }
                 
                 //------- applied coupon code handle condition
                 if (isset($couponUsedFlag) && !empty($couponUsedFlag)) {
@@ -713,6 +725,7 @@ class EventDashboardController extends Controller
                 $couponUsedFlag = isset($aPost['coupon_used_flag']) ? $aPost['coupon_used_flag'] : 0;
                 
                 $Command = isset($aPost['command']) ? $aPost['command'] : '';
+                $TransactionID = isset($aPost['TransactionID']) ? $aPost['TransactionID'] : '';
 
                 $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name, (SELECT ticket_status FROM event_tickets WHERE id=a.ticket_id) AS ticket_status FROM attendee_booking_details AS a 
                 LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
@@ -774,6 +787,10 @@ class EventDashboardController extends Controller
                 //------- applied coupon code handle condition
                 if (isset($couponUsedFlag) && !empty($couponUsedFlag)) {
                     $sql .= " AND ac.coupon_id = ".$couponUsedFlag;
+                }
+
+                if(!empty($TransactionID)){
+                    $sql .= " AND e.booking_pay_id = (select id from booking_payment_details where txnid LIKE '%".$TransactionID."%') "; 
                 }
 
                 $sql .= " ORDER BY a.id DESC";
@@ -1191,6 +1208,13 @@ class EventDashboardController extends Controller
 
                 $EventId = isset($aPost['event_id']) ? $aPost['event_id'] : 0;
                 $UserId = $aToken['data']->ID ? $aToken['data']->ID : 0;
+                
+                $UserName = isset($aPost['user_name']) ? $aPost['user_name'] : 0;
+                $TransactionStatus = isset($aPost['TransactionStatus']) ? $aPost['TransactionStatus'] : "";
+                $Email = isset($aPost['email']) ? $aPost['email'] : 0;
+                $FromDate = isset($aPost['from_date']) ? strtotime(date("Y-m-d", strtotime($aPost['from_date']))) : 0;
+                $ToDate = isset($aPost['to_date']) ? strtotime(date("Y-m-d 23:59:59", strtotime($aPost['to_date']))) : 0;
+                $TransactionID = isset($aPost['TransactionID']) ? $aPost['TransactionID'] : '';
 
                 $Page = (isset($aPost['page'])) ? $aPost['page'] : 1;
                 $Limit = (isset($aPost['limit'])) ? $aPost['limit'] : 30;
@@ -1198,13 +1222,46 @@ class EventDashboardController extends Controller
                 $sql = "SELECT p.id AS paymentId,p.txnid,p.amount,p.payment_status,p.created_datetime,u.id AS userId,u.firstname,u.lastname,u.email,u.mobile 
                         FROM booking_payment_details AS p 
                         LEFT JOIN users AS u ON u.id=p.created_by
-                        WHERE p.event_id=:event_id ORDER BY p.id DESC";
+                        WHERE p.event_id=:event_id ";
+
+                if (!empty($UserName)) {
+                    $sql .= " AND (p.firstname LIKE '%" . $UserName . "%' OR p.lastname LIKE '%" . $UserName . "%')";
+                }
+                
+                if (!empty($Email)) {
+                    $sql .= " AND p.email LIKE '%" . $Email . "%'";
+                }
+
+                if (!empty($TransactionID)) {
+                    $sql .= " AND p.txnid LIKE '%" . $TransactionID . "%'";
+                }
+
+                if (!empty($FromDate)) {
+                    $sql .= " AND p.created_datetime >= " . $FromDate;
+                }
+              
+                if (!empty($ToDate)) {
+                    $sql .= " AND p.created_datetime <= " . $ToDate;
+                }
+
+                if (!empty($TransactionStatus)) {
+                    if ($TransactionStatus == 101)
+                        $TransactionStatus = 'initiate';
+                    if ($TransactionStatus == 1)
+                        $TransactionStatus = 'success';
+                    if ($TransactionStatus == 3)
+                        $TransactionStatus = 'free';
+                    if ($TransactionStatus == 2)
+                        $TransactionStatus = 'fail';
+
+                    $sql .= " AND p.payment_status = '".$TransactionStatus."' ";
+                }
 
                 $TotalCount = DB::select($sql, array('event_id' => $EventId));
 
                 $Offset = ($Page * $Limit) - $Limit;
                 if($Limit > 0) {
-                   $sql .= " limit ".$Offset.",".$Limit." ";
+                   $sql .= " ORDER BY p.id DESC limit ".$Offset.",".$Limit." ";
                 }
 
                 $PaymentData = DB::select($sql, array('event_id' => $EventId));

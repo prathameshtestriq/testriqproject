@@ -30,6 +30,9 @@ use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\OrganiserController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\MasterCMSController;
+use App\Http\Controllers\ParticipantBulkController;
 
 //--------------------------------------------
 
@@ -207,7 +210,24 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get'], 'organiser_master/delete/{id}', [OrganiserController::class, 'delete_organiser'])->name('delete_organiser');
     Route::match(['get', 'post'],'/ckeditor_organiser/upload', [OrganiserController::class, 'upload'])->name('ckeditor_organiser.upload');
     Route::match(['get', 'post'],'/ckeditor_testimonial_description/upload', [TestimonialController::class, 'upload'])->name('ckeditor_testimonial_description.upload');
+    
+    // Audit Log
+    Route::match(['get', 'post'], '/audit_log', [AuditLogController::class, 'index'])->name('audit_log_index');
+    Route::get('/audit_log/clear_search', [AuditLogController::class, 'clear_search'])->name('clear_search_audit_log');
+    
+    // CMS Master
+    Route::match(['get', 'post'], '/master_cms', [MasterCMSController::class, 'index'])->name('master_cms_index');
+    Route::match(['get', 'post'],'master_cms/add', [MasterCMSController::class,'add_edit'])->name('add_master_cms');
+    Route::match(['get', 'post'],'master_cms/edit/{Id}', [MasterCMSController::class,'add_edit'])->name('edit_master_cms');
+    Route::get('/master_cms/clear_search', [MasterCMSController::class, 'clear_search'])->name('clear_search_master_cms');
+    Route::match(['get'], 'master_cms/delete/{id}', [MasterCMSController::class, 'delete_master_cms'])->name('delete_master_cms');
+    Route::match(['get', 'post'],'/ckeditor_master_cms/upload', [MasterCMSController::class, 'upload'])->name('ckeditor_master_cms.upload');
+    Route::match(['get', 'post'], 'master_cms/change_status', [MasterCMSController::class, 'change_active_status'])->name('change_status_master_cms');
 
-
+    // Participant Work Upload
+    Route::match(['get', 'post'], '/participan_work_upload', [ParticipantBulkController::class, 'index'])->name('participan_work_upload_index');
+    Route::get('/participan_work_upload/clear_search', [ParticipantBulkController::class, 'clear_search'])->name('clear_search_participan_work_upload');
+    Route::match(['get','post'],'participan_work_upload/export_download',[ParticipantBulkController::class,'export_event_participants_work'])->name('export_event_participants_work');
+    Route::match(['get', 'post'], '/participan_bulk_upload/import_participant', [ParticipantBulkController::class, 'event_participan_bulk_upload'])->name('event_participan_bulk_upload');
 
 });

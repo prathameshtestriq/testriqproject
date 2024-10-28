@@ -900,7 +900,12 @@ class EventTicketController extends Controller
 
                                 $value->question_form_option = json_encode($states);
                             }
-
+                            
+                            if($value->hint_type == 2){
+                               $value->hint_image = !empty($value->question_hint) ? url('/').'/uploads/hint_image/'.$value->question_hint : '';
+                            }else{
+                               $value->hint_image = '';  
+                            }
                             // $hasCountriesQuestion = !empty(array_filter($FormQuestions, function ($value) {
                             //     return $value->question_form_type == 'countries';
                             // }));
