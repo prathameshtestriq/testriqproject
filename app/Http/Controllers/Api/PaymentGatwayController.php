@@ -88,6 +88,7 @@ class PaymentGatwayController extends Controller
 
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $Amount = !empty($request->amount) ? $request->amount : '';
+            $TicketType = !empty($request->ticket_type) ? $request->ticket_type : 'free';
             $Datetime = time();
             $request_datetime = date('Y-m-d H:i:s');
             //dd($request_datetime);
@@ -169,10 +170,10 @@ class PaymentGatwayController extends Controller
                 "lastname" => $LastName,
                 "email" => $Email,
                 "mobile_no" => $PhoneNo,
-                "FormQuestions" => '',
+                "FormQuestions" => $TicketType,
                 "payment_payload" => !empty($payu_payload) ? json_encode($payu_payload) : '',
                 "payment_type" => !empty($Amount) && $Amount != '0.00' ? 'Paid' : 'Free',
-                "created_date" => $Datetime
+                "created_date" => $Datetime,
             );
             //dd($Bindings);
             //-----------------
