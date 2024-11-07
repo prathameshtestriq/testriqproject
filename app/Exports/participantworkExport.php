@@ -20,26 +20,29 @@ class participantworkExport implements FromArray, WithHeadings, ShouldAutoSize, 
         $event_name = Session::has('search_event') ? Session::get('search_event') : '';
     //    dd( $event_name );
         // Fetch question labels and store them as headings
-        $SQL = "SELECT question_label FROM event_form_question WHERE event_id = ".$event_name." ORDER BY sort_order ASC";
+        $SQL = "SELECT question_form_name,question_label FROM event_form_question WHERE event_id = ".$event_name." AND question_form_name != 'sub_question' ORDER BY sort_order ASC";
         $this->questionLabels = DB::select($SQL, array());
+        // dd($this->questionLabels);
     }
 
     public function array(): array
     {
         $excelData = [];
         return $excelData;
-      
     }
 
     public function headings(): array
     {
         $customHeadings = [
-            'Ticket Name'
+            'ticket_name'
         ];
 
          // Retrieve the question labels from the database and convert them to an array of strings
             $questionHeadings = array_map(function ($label) {
-                return $label->question_label;
+                if($label->question_form_name == 'sub_question')
+                  return strtolower(str_replace(" ", "_", $label->question_label)) ;
+                else
+                  return $label->question_form_name;
             }, $this->questionLabels);
 
             // Merge custom headings with question headings

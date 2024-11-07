@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Session;
 use App\Imports\ParticipantBulkDetailsImport;
+use App\Models\Master;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use App\Libraries\Emails;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use stdClass;
 
 class ParticipantBulkController extends Controller
 {
@@ -19,48 +24,533 @@ class ParticipantBulkController extends Controller
 
     public function index(){
         $a_return = [];
+        $a_return['search_event'] = '';
+        $a_return['HeaderData'] = [];
+        $a_return['ParticipantsExcelLink'] = '';
+        
+        $a_return['search_event'] = (!empty(session('search_event'))) ? session('search_event') : '';
+
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());
+        
+        $SQL1 = "SELECT id,productinfo,txnid,created_datetime FROM booking_payment_details WHERE bulk_upload_flag = 1";
+        if(isset($a_return['search_event']) && !empty($a_return['search_event']))
+            $SQL1 .= " AND event_id = ".$a_return['search_event']."";
+        else
+            $SQL1 .= " AND 1=2";
+        $SQL1 .= " order by id desc";
+        $ParticipantDetails = DB::select($SQL1, array());
+
+        if(!empty($ParticipantDetails)){
+            foreach($ParticipantDetails as $res){
+                $SQL1 = "SELECT (select sum(bd.quantity) as tot_count from booking_details as bd where bd.booking_id = event_booking.id) as tot_count FROM event_booking WHERE booking_pay_id = ".$res->id." ";
+                $ParticipantCount = DB::select($SQL1, array());
+                // dd($ParticipantCount);
+                $res->participant_count = !empty($ParticipantCount) ? $ParticipantCount[0]->tot_count : 0;
+            }
+        }
+        $a_return['ParticipantDetails'] = $ParticipantDetails;
+        
+        if(!empty($a_return['search_event'])){
+            $SQL1 = "SELECT question_form_name,question_label,question_form_type,question_form_option FROM event_form_question WHERE event_id = ".$a_return['search_event']." AND question_form_name != 'sub_question' ORDER BY sort_order ASC";
+            $a_return['HeaderData'] = DB::select($SQL1, array());
+            
+        
+            if(!empty($a_return['HeaderData'])){
+                foreach($a_return['HeaderData'] as $res){
+                    
+                    if($res->question_form_type == "mobile"){
+                        $res->answer_value    = '9088232618 (10 Digit Required)';
+                    }else if($res->question_form_type == "date"){
+                        $res->answer_value    = '(YYYY-MM-DD) Format Only';
+                    }else if((!empty($res->question_form_option)) && ($res->question_form_type == "radio" || $res->question_form_type == "select")){
+                        $question_form_option = json_decode($res->question_form_option);
+                        $option_label = array_column($question_form_option,"label");
+                         // dd($option_label);
+                        $res->answer_value    = 'Use only ('.implode(", ",$option_label).')'; 
+                    }else if($res->question_form_type == "countries"){
+                        $res->answer_value    = 'India';
+                    }else if($res->question_form_type == "states"){
+                        $res->answer_value    = 'Maharashtra';
+                    }else if($res->question_form_type == "cities"){
+                        $res->answer_value    = 'Nashik';
+                    }else{
+                       $res->answer_value    = ''; 
+                    }
+                }
+            }
+        }
+       
+
+        // dd($ParticipantDetails);
         return view('particpant_bulk_upload.list',$a_return);
     }
 
     public function export_event_participants_work(Request $request)
     {         
         // dd($request->all());
+        $a_return = [];
+        $a_return['search_event'] = '';
+        $a_return['ParticipantsExcelLink'] = '';
+        
         if (isset($request->form_type) && $request->form_type == 'Participant_work_upload') {
             session(['search_event' => $request->search_event]);
         }
         $a_return['search_event'] = (!empty(session('search_event'))) ? session('search_event') : '';
+      
         if(!empty($a_return['search_event']) ){
-            $filename = "participant_Excel_" .$a_return['search_event'].".xlsx";
-            return Excel::download(new participantworkExport(), $filename);
+            // $a_return['ParticipantsExcelLink'] = Excel::download(new participantworkExport($a_return['search_event']), $filename);
+            $a_return['ParticipantsExcelLink'] = ParticipantBulkController::participants_excel_export($a_return['search_event']);
+        }else{
+            $Message = 'Please select event name';
+            return redirect('/participan_work_upload')->with('error', $Message);
         }
-        
-        $a_return = [];
+
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());
 
+        $SQL1 = "SELECT id,productinfo,txnid,created_datetime FROM booking_payment_details WHERE bulk_upload_flag = 1 AND event_id = ".$a_return['search_event']." order by id desc";
+        $ParticipantDetails = DB::select($SQL1, array());
+
+        if(!empty($ParticipantDetails)){
+            foreach($ParticipantDetails as $res){
+                $SQL1 = "SELECT (select sum(bd.quantity) as tot_count from booking_details as bd where bd.booking_id = event_booking.id) as tot_count FROM event_booking WHERE booking_pay_id = ".$res->id." ";
+                $ParticipantCount = DB::select($SQL1, array());
+                // dd($ParticipantCount);
+                $res->participant_count = !empty($ParticipantCount) ? $ParticipantCount[0]->tot_count : 0;
+            }
+        }
+        $a_return['ParticipantDetails'] = $ParticipantDetails;
+
+        $SQL1 = "SELECT question_form_name,question_label,question_form_type,question_form_option FROM event_form_question WHERE event_id = ".$a_return['search_event']." AND question_form_name != 'sub_question' ORDER BY sort_order ASC";
+        $a_return['HeaderData'] = DB::select($SQL1, array());
+        // dd($a_return['HeaderData']);
+        
+        $aTemp = new stdClass;
+        $SampleDataDetails = [];
+        if(!empty($a_return['HeaderData'])){
+            foreach($a_return['HeaderData'] as $res){
+                
+                if($res->question_form_type == "mobile"){
+                    $res->answer_value    = '9088232618 (10 Digit Required)';
+                }else if($res->question_form_type == "date"){
+                    $res->answer_value    = '(YYYY-MM-DD) Format Only';
+                }else if((!empty($res->question_form_option)) && ($res->question_form_type == "radio" || $res->question_form_type == "select")){
+                    $question_form_option = json_decode($res->question_form_option);
+                    $option_label = array_column($question_form_option,"label");
+                     // dd($option_label);
+                    $res->answer_value    = 'Use only ('.implode(", ",$option_label).')'; 
+                }else if($res->question_form_type == "countries"){
+                    $res->answer_value    = 'India';
+                }else if($res->question_form_type == "states"){
+                    $res->answer_value    = 'Maharashtra';
+                }else if($res->question_form_type == "cities"){
+                    $res->answer_value    = 'Nashik';
+                }else{
+                   $res->answer_value    = ''; 
+                }
+            }
+        }
+        // dd($a_return['HeaderData']);
+
         return view('particpant_bulk_upload.list',$a_return);
+    }
+
+    function participants_excel_export($event_name)
+    {   
+        $filename = "participant_Excel_" .$event_name.".xlsx";
+        $path = 'attendee_details_excell/' . date('Ymd') . '/';
+        $data = Excel::store(new participantworkExport(), $path . '/' . $filename . '.xlsx', 'excel_uploads');
+        $excel_url = url($path) . "/" . $filename . ".xlsx";
+        // dd($excel_url); 
+        return $excel_url;
     }
 
     public function event_participan_bulk_upload(Request $request)
     { 
        //dd($request); 
-        $userId = 3;
+        ini_set('max_execution_time', 0);
+        $a_return = [];
+        $aResult['ParticipantsExcelLink'] = '';
+        $userId = 4;
         $participant_file = !empty($request->participant_file) ? $request->file('participant_file') : '';
         // dsd($participant_file);
         $event_id = (!empty(session('search_event'))) ? session('search_event') : '';
-        dd($event_id);
+         // dd($event_id);
+       
+        if(empty($event_id)){
+            $Message = 'Please download participant excel';
+            return redirect('/participan_work_upload')->with('error', $Message);
 
-        if(!empty($participant_file)){
+        }else if(!empty($event_id) && empty($participant_file)){
+            $Message = 'Please select file';
+            return redirect('/participan_work_upload')->with('error', $Message);
+
+        }else if(!empty($participant_file)){
             $data['userId'] = $userId;
-            $import = new ParticipantBulkDetailsImport($data);
-            Excel::import($import, request()->file('participant_file'));
+            $data['event_id'] = $event_id;
+            // $import = new ParticipantBulkDetailsImport($data);
+            // Excel::import($import, request()->file('participant_file'));
 
+            // $Booking_payment_id = !empty($import->returnData['BookPayId']) ? $import->returnData['BookPayId'] : 0;
+            // $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
+            $ParticipantSendEmail = ParticipantBulkController::participants_send_email(3447,13,4);
+
+            $Message = 'Participant Details Uploaded Successfully.';
+            $aResult = [
+                'message' => $Message,
+                'success_count' => isset($import->returnData['DataFound']) && !empty($import->returnData['DataFound']) ? $import->returnData['DataFound'] : 0,
+                'fail_count' => isset($import->returnData['emailAddressNotFound']) && !empty($import->returnData['emailAddressNotFound']) ? $import->returnData['emailAddressNotFound'] : 0
+            ];
+            // dd($aResult);
+            return redirect('/participan_work_upload')->with('success', $aResult);
         }
-
-
+       
+        // return view('particpant_bulk_upload.list',$a_return);
     }
 
+
+    public function participants_send_email($BookPayId,$EventId,$UserId){
+        // dd($BookPayId,$EventId);
+        if(!empty($BookPayId)){
+            
+            $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = $preferred_date = $run_category = ''; 
+            $master = new Master();
+            $sql1 = "SELECT * FROM users WHERE id=:user_id";
+            $User = DB::select($sql1, ['user_id' => $UserId]);
+
+            $sql2 = "SELECT * FROM events WHERE id=:event_id";
+            $Event = DB::select($sql2, ['event_id' => $EventId]);
+            $Venue = $OrgName = "";
+
+            if (count($Event) > 0) {
+                $Venue .= ($Event[0]->address !== "") ? $Event[0]->address . ", " : "";
+                $Venue .= ($Event[0]->city !== "") ? $master->getCityName($Event[0]->city) . ", " : "";
+                $Venue .= ($Event[0]->state !== "") ? $master->getStateName($Event[0]->state) . ", " : "";
+                $Venue .= ($Event[0]->country !== "") ? $master->getCountryName($Event[0]->country) . ", " : "";
+                $Venue .= ($Event[0]->pincode !== "") ? $Event[0]->pincode . ", " : "";
+            }
+
+            if(!empty($Event) && isset($Event[0]->event_type) && $Event[0]->event_type == 2){
+                $Venue = 'Virtual Event';
+            }
+   
+            $sql3 = "SELECT * FROM organizer WHERE user_id=:user_id";
+            $Organizer = DB::select($sql3, ['user_id' => $UserId]);
+            if (count($Organizer) > 0) {
+                $OrgName = $Organizer[0]->name;
+            }
+
+            //------ ticket registration id and race category
+            $sql2 = "select bd.id,bd.ticket_id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id"; // GROUP BY bd.booking_id
+            $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookPayId));
+            // dd($booking_detail_Result);
+            $bookingDetIdArray  = !empty($booking_detail_Result) ? array_column($booking_detail_Result,'id') : [];
+            $ticketIdArray      = !empty($booking_detail_Result) ? array_column($booking_detail_Result,'ticket_id') : [];
+            // dd($bookingDetIdArray,$ticket_id);
+ 
+            $EventName = !empty($Event[0]->name) ? str_replace(" ", "_", $Event[0]->name) : '';
+            // $EventUrl = url('/e').'/'.$EventName;
+            $EventUrl = 'https://racesregistrations.com/e/'.$EventName;
+            $TotalNoOfTickets = 1; // !empty($ticketIdArray) ? count($ticketIdArray) : 0;
+            $TotalPrice = '';
+            // dd($TotalNoOfTickets);
+            
+            if(!empty($bookingDetIdArray)){
+                $SQL1 = "SELECT id as attendee_id,ticket_id,email,firstname,lastname,registration_id,(select ticket_calculation_details from event_tickets where id = attendee_booking_details.ticket_id) as ticket_calculation_details,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id IN(".implode(",",$bookingDetIdArray).")";
+                $tAttendeeResult = DB::select($SQL1, array());
+                $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
+                // dd($tAttendeeResult);
+
+                //--------- Send emails to participants also along with registering person
+                if (!empty($tAttendeeResult)){
+                    foreach ($tAttendeeResult as $res) {
+                        $attendee_email = !empty($res->email) ? $res->email : '';
+                        $attendee_firstname = !empty($res->firstname) ? $res->firstname : '';
+                        $attendee_details_result = !empty($res->attendee_details) ? json_decode(json_decode($res->attendee_details)) : '';
+
+                        if(!empty($res->ticket_calculation_details)){
+                            $ticket_calculation_details = !empty($res->ticket_calculation_details) ? json_decode($res->ticket_calculation_details) : '';
+                            $TotalPrice = !empty($ticket_calculation_details->total_buyer) ? $ticket_calculation_details->total_buyer : 0;
+                        }
+                        // dd($res->ticket_id);
+
+                        if(!empty($attendee_details_result)){
+                            foreach($attendee_details_result as $res1){
+                                if($res1->question_form_name == "enter_team_name"){
+                                    $TeamName = $res1->ActualValue;
+                                }
+                                if($res1->question_form_name == "participant_2_name"){
+                                    $Participant_2_name = $res1->ActualValue;
+                                }
+                                if($res1->question_form_name == "participant_3_name"){
+                                    $Participant_3_name = $res1->ActualValue;
+                                }
+                                if($res1->question_form_name == "participant_4_name"){
+                                    $Participant_4_name = $res1->ActualValue;
+                                }
+
+                                if($res1->question_form_name == "preferred_date_for_the_carnival"){
+                                    $preferred_date_json = json_decode($res1->question_form_option);
+                                    foreach ($preferred_date_json as $item) {
+                                        if ($item->id == $res1->ActualValue){
+                                            $preferred_date = $item->label;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if($res1->question_form_name == "select_your_run_category"){
+                                    $run_category_json = json_decode($res1->question_form_option);
+                                    foreach ($run_category_json as $item) {
+                                        if ($item->id == $res1->ActualValue){
+                                            $run_category = $item->label;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        $ConfirmationEmail = array(
+                            "USERNAME" => !empty($res->firstname) && !empty($res->lastname) ? $res->firstname . ' ' . $res->lastname : '',
+                            "FIRSTNAME" => !empty($res->firstname) ? $res->firstname : '',
+                            "LASTNAME" => !empty($res->lastname) ? $res->lastname : '',
+                            "EVENTID" => $EventId,
+                            "EVENTNAME" => $Event[0]->name,
+                            "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
+                            "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
+                            "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
+                            "EVENTENDTIME" => (!empty($Event[0]->end_time)) ? date('H:i A', ($Event[0]->end_time)) : "",
+                            "YTCRTEAM" => "YouTooCanRun Team",
+                            "EVENTURL" => $EventUrl,
+                            "COMPANYNAME" => $OrgName,
+                            "TOTALTICKETS" => $TotalNoOfTickets,
+                            "VENUE" => $Venue,
+                            "TOTALAMOUNT" => $TotalPrice,
+                            "TICKETAMOUNT" => $TotalPrice,
+                            "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : '',
+                            "RACECATEGORY" => !empty($res->ticket_name) ? $res->ticket_name : '',
+                            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
+                            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
+                            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
+                            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : '',
+                            "PREFERREDDATE"  => isset($preferred_date) && !empty($preferred_date) ? $preferred_date : '',
+                            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? $run_category : ''
+                        );
+                        // echo '<pre>'; print_r($ConfirmationEmail);
+                      
+                        $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
+                        $Communications = DB::select($sql, ["event_id" => $EventId]);
+                        if(!empty($Communications)){
+                            $MessageContent = $Communications[0]->message_content;
+                            $Subject = $Communications[0]->subject_name;
+                        }else{
+                            $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                                 <br/><br/>
+                                Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                                 <br/><br/>
+                                Event Details:
+                                 <br/><br/>
+                                ● Date: " . $ConfirmationEmail["EVENTSTARTDATE"] . "<br/>
+                                ● Time: " . $ConfirmationEmail["EVENTSTARTTIME"] . "<br/>
+                                ● Location: " . $Venue . "<br/>
+                                <br/><br/>
+                                Please find your registration details and ticket attached to this email. If you have any questions or need further information, feel free to contact us.
+                                 <br/><br/>
+                                We look forward to seeing you at the event!
+                                 <br/><br/>
+                                Best regards,<br/>
+                                " . $Event[0]->name . " Team";
+                            $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+                        }
+
+                        foreach ($ConfirmationEmail as $key => $value) {
+                            if (isset($key)) {
+                                $placeholder = '{' . $key . '}';
+                                $MessageContent = str_replace($placeholder, $value, $MessageContent);
+                            }
+                        }
+                        // echo '<br>'; echo $MessageContent;
+                        $generatePdf = ParticipantBulkController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->attendee_id,$EventUrl,$TotalPrice);
+                        // dd($generatePdf);
+                        $Email = new Emails();
+                        $Email->send_email_participant($UserId, $attendee_email, $MessageContent, $Subject, $generatePdf);
+                
+                    }//die;
+                }
+
+
+            }
+
+        }
+    }
+
+    public function generateParticipantPDF($EventId,$UserId,$TicketId,$attendeeId,$EventUrl,$TotalPrice)
+    {
+        // dd($EventId,$UserId,$TicketId,$attendeeId);
+        $master = new Master();
+        $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username,email,mobile FROM users WHERE id=:user_id";
+        $User = DB::select($sql1, ['user_id' => $UserId]);
+
+        $Venue = "";
+        if (!empty($attendeeId)) {
+            $sql = "SELECT firstname,lastname,email,attendee_details,registration_id,created_at,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE id=:attendee_id";
+            $AttendeeData = DB::select($sql, ['attendee_id' => $attendeeId]);
+            if (!empty($AttendeeData)) {
+                $AttenddeeDetails = $AttendeeData[0]->attendee_details;
+                $UniqueTicketId   = $AttendeeData[0]->registration_id;
+                $attendee_details = json_decode(json_decode($AttenddeeDetails));
+                // dd($EventId);
+                $amount_details = $extra_details = [];
+
+                $sql1 = "SELECT question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0 AND question_form_name != 'sub_question' ";
+                $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
+                // dd($QuestionData);
+
+                $TicketArr = [ 
+                                "TicketName" => !empty($AttendeeData) ? $AttendeeData[0]->ticket_name : '',
+                                "firstname" => !empty($AttendeeData) ? $AttendeeData[0]->firstname : '',
+                                "lastname" => !empty($AttendeeData) ? $AttendeeData[0]->lastname : '',
+                                "email" => !empty($AttendeeData) ? $AttendeeData[0]->email : '',
+                                "unique_ticket_id" => !empty($AttendeeData) ? $AttendeeData[0]->registration_id : '',
+                                "booking_date" => !empty($AttendeeData) ? $AttendeeData[0]->created_at : '',
+                                "ticket_amount" => !empty($TotalPrice) ? $TotalPrice : ''
+                            ];
+                // dd($TicketArr);
+                // dd($QuestionData,$attendee_details);
+                // Iterate through attendee details to separate the amounts
+                if(!empty($QuestionData)){
+                    foreach($QuestionData as $res){
+                        foreach ($attendee_details as $detail) {
+                            $aTemp = new stdClass;
+                            $labels = [];
+                            if ($detail->question_form_name == $res->question_form_name) {
+                                
+                                $question_form_option = json_decode($detail->question_form_option, true);
+                                // dd($question_form_option);
+                                if($detail->question_form_type == 'radio' || $detail->question_form_type == 'select'){
+                    
+                                    $label = '';
+                                    foreach ($question_form_option as $option) {
+                                        if ($option['id'] === (int)$detail->ActualValue) {
+                                            $label = $option['label'];
+                                            break;
+                                        }
+                                    }
+                                    $aTemp->ActualValue    = $label;
+                                }else if($detail->question_form_type == 'checkbox'){
+                                    foreach ($question_form_option as $option) {
+                                        if (in_array($option['id'], explode(',', $detail->ActualValue))) {
+                                            $labels[] = $option['label'];
+                                        }
+                                    }
+                                    $aTemp->ActualValue   = implode(', ', $labels);
+                                }else{
+                                    $aTemp->ActualValue    = $detail->ActualValue;
+                                }
+                                $aTemp->id             = $detail->id;
+                                $aTemp->question_label = $detail->question_label;
+                                $aTemp->question_form_type = $detail->question_form_type;
+                                $extra_details[] = $aTemp;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $created_by = 0;
+        if (!empty($EventId)) {
+            $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode,created_by,event_type FROM events WHERE id=:event_id";
+            $Event = DB::select($sql2, ['event_id' => $EventId]);
+            // dd($Event);
+            if (sizeof($Event) > 0) {
+                foreach ($Event as $key => $event) {
+                    $event->name = (!empty($event->name)) ? $event->name : '';
+                    $event->start_date = (!empty($event->start_time)) ? date("d M Y", $event->start_time) : 0;
+                    $event->end_date = (!empty($event->end_time)) ? date("d M Y", $event->end_time) : 0;
+                    $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
+                    $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
+
+                    $Venue .= ($event->address !== "") ? $event->address . ", " : "";
+                    $Venue .= ($event->city !== "") ? $master->getCityName($event->city) . ", " : "";
+                    $Venue .= ($event->state !== "") ? $master->getStateName($event->state) . ", " : "";
+                    $Venue .= ($event->country !== "") ? $master->getCountryName($event->country) . ", " : "";
+                    $Venue .= ($event->pincode !== "") ? $event->pincode . ", " : "";
+                    $event->Venue = $Venue;
+                }
+                $created_by = $Event[0]->created_by;
+            }
+        }
+
+        $Organizer = [];
+        if (!empty($created_by)) {
+            $sql3 = "SELECT id,name,logo_image FROM organizer WHERE user_id=:user_id";
+            $Organizer = DB::select($sql3, ['user_id' => $created_by]);
+        }
+
+        if (!empty($Organizer))
+            foreach ($Organizer as $key => $value) {
+                $value->logo_image = !empty($value->logo_image) ? url('/') . 'organiser/logo_image/' . $value->logo_image : "";
+            }
+
+        // Generate QR code
+        $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($UniqueTicketId));
+        // dd($qrCode);
+        $data = [
+                'ticket_details' => $TicketArr,
+                'event_details' => (sizeof($Event) > 0) ? $Event[0] : [],
+                'org_details' => (sizeof($Organizer) > 0) ? $Organizer[0] : [],
+                'user_details' => (sizeof($User) > 0) ? $User[0] : [],
+                'EventLink' => $EventUrl,
+                'QrCode' => $qrCode,
+                'amount_details' => $amount_details,
+                'extra_details' => $extra_details
+        ];
+        // dd($data);
+        $pdf = PDF::loadView('pdf_template', $data);
+        $PdfName = $EventId . $TicketId . time() . '.pdf';
+        $pdf->save(public_path('ticket_pdf/' . $PdfName));
+        // $PdfPath = url('/') . "/ticket_pdf/" . $PdfName;
+        $PdfPath = public_path('ticket_pdf/' . $PdfName);
+        // dd($PdfPath);
+        return $PdfPath;
+    }
+
+    public function delete_participant($iId)
+    {
+      // dd($iId);
+        $SQL1 = "SELECT id FROM event_booking WHERE booking_pay_id =".$iId;
+        $eventData = DB::select($SQL1, array());
+
+        $SQL1 = "SELECT id FROM booking_details WHERE booking_id =".$eventData[0]->id;
+        $eventBookingData = DB::select($SQL1, array());
+
+        $event_booking_array = !empty($eventBookingData) ? array_column($eventBookingData, 'id') : [];
+
+        $SQL1 = "SELECT id FROM attendee_booking_details WHERE booking_details_id IN(".implode(",", $event_booking_array).")";
+        $attendeeData = DB::select($SQL1, array());
+
+        $attendee_array = !empty($attendeeData) ? array_column($attendeeData, 'id') : [];
+        // dd($attendee_array);
+
+        $sSQL11 = 'DELETE FROM `attendee_booking_details` WHERE id IN('.implode(",", $attendee_array).')';
+        DB::delete($sSQL11,array());
+
+        $sSQL12 = 'DELETE FROM `booking_details` WHERE id IN('.implode(",", $event_booking_array).')';
+        DB::delete($sSQL12,array());
+
+        $sSQL14 = 'DELETE FROM `event_booking` WHERE booking_pay_id ='.$iId;
+        DB::delete($sSQL14,array());
+
+        $sSQL15 = 'DELETE FROM `booking_payment_details` WHERE id ='.$iId;
+        DB::delete($sSQL15,array());
+
+        $aResult = [
+            'message' => 'Record deleted successfully'
+        ];
+        return redirect(url('/participan_work_upload'))->with('success', $aResult);
+    }
 
 }

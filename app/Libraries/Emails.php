@@ -164,6 +164,49 @@ Thank you for your attention to this matter.<br/>";
             echo 'Caught exception: ' . $e->getMessage() . "\n";
         }
     }
+    
+    public function send_email_participant($UserId, $UserEmail, $MessageContent, $Subject, $GeneratedPdfLink)
+    {
+        // dd($UserId, $UserEmail, $MessageContent, $Subject, $GeneratedPdfLink);
+        $email = new \SendGrid\Mail\Mail();
+        $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
+        $email->setSubject($Subject);
+        $email->addTo($UserEmail, $Subject);
+        $email->addContent("text/plain", "Dear, ");
+        $email->addContent(
+            "text/html",
+            "" . $MessageContent
+        );
+
+       
+        // dd($file_name);
+        // Attach PDF
+        $filePath = $GeneratedPdfLink;  // Specify the path to the PDF file
+       // $fileName = 'your-file.pdf';  // Name the PDF file
+        $file_name_array = explode("/", $GeneratedPdfLink);
+        $file_name = isset($file_name_array[count($file_name_array)-1]) ? $file_name_array[count($file_name_array)-1] : '';
+        $fileContent = file_get_contents($filePath);  // Read the file contents
+
+        $email->addAttachment(
+            base64_encode($fileContent),  // Encode the file to base64
+            'application/pdf',           // Mime type for PDF
+            $file_name,                   // Name of the file in the email
+            'attachment'                 // Disposition type (attachment)
+        );
+        //----------------------------
+ 
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+        try {
+            $response = $sendgrid->send($email);
+            // send mail
+            $type = "Ticket Booking";
+            $send_mail_to = $UserEmail;
+            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response, 1);
+
+        } catch (Exception $e) {
+            echo 'Caught exception: ' . $e->getMessage() . "\n";
+        }
+    }
 
     public function registered_email($mail, $firstname, $lastname)
     {

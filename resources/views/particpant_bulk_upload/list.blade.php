@@ -1,7 +1,7 @@
 @extends('layout.index')
-@section('title', 'Event ')
-
+@section('title', 'Participant Bulk Upload')
 @section('content')
+<?php //dd($search_event); ?>
     <section>
         <div class="content-body">
             <!-- Bordered table start -->
@@ -36,7 +36,11 @@
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <div class="alert-body">
                         <i class="fa fa-check-circle" style="font-size:16px;" aria-hidden="true"></i>
-                        {{ $message }}
+                            <span class="mr-5">{{session('success')['message']}}</span>
+                            <?php if(isset(session('success')['success_count']) || isset(session('success')['fail_count'])){ ?>
+                                |<span class="mx-5">Success count : <mark style="background: #28c76f91; border-radius: 3px; color: white; font-weight: 900;">{{session('success')['success_count']}}</mark></span>|
+                                <span class="mx-5">Failed count : <mark style="background: #28c76f91; border-radius: 3px; color: white; font-weight: 900;">{{session('success')['fail_count']}}</mark></span>
+                            <?php } ?>
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
                     </div>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -44,6 +48,7 @@
                     </button>
                 </div>
             </div>
+
         @elseif ($message = Session::get('error'))
             <div class="demo-spacing-0 mb-1">
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -87,15 +92,15 @@
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-3 col-12">
-                                                <label for="form-control"> Event</label>
+                                            <div class="col-sm-3">
+                                                <label for="form-control">Event Name</label>
                                                 <select id="search_event" name="search_event" class="form-control select2 form-control">
-                                                    <option value="">Select  Event</option>
+                                                    <option value="">Select Event</option>
                                                     <?php 
                                                         foreach ($EventsData as $value)
                                                         {
                                                             $selected = '';
-                                                            if(old('search_event') == $value->id){
+                                                            if($search_event == $value->id){
                                                                 $selected = 'selected';
                                                             }
                                                             ?>
@@ -108,56 +113,158 @@
                                               
 
                                             <div class="col-sm-3 mt-2">
-                                                    <button type="submit"  class="btn btn-primary">Download</button>
+                                                    <button type="submit" class="btn btn-primary">Search</button>
+                                                    <?php if(!empty($search_event)) { ?>
                                                     <a title="Clear" href="{{ url('/participan_work_upload/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary"><i data-feather="rotate-ccw" class="me-25"></i> Clear Search </a>
+                                                    <?php } ?>
                                             </div>
+
+                                            <div class="col-sm-6 mt-2 text-right" >
+                                                <?php if(!empty($search_event)) { ?>
+                                                    <a href="{{ $ParticipantsExcelLink }}" class="btn btn-primary" title = "Download" download>Download Excel</a>
+                                                <?php } ?>
+                                            </div>
+
+                                             
                                         </div>
                                     </div>
                                     
                                 </div>
                             </div>
                         </form>
+                       
+                        <?php if(!empty($search_event)) { ?>  
+                            <div class="row px-1">
+                                <div class="col-sm-8 float-right">
+                                    <h3 class="content-header-title float-left mb-0">Sample Excel Format</h3>
+                                </div>
+                            </div>
+                        <?php } ?>
+
+                          <div class="table-responsive mt-2">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <?php 
+                                            if (!empty($HeaderData)){
+                                                foreach ($HeaderData as $res){
+                                        ?>
+                                           <th class="text-left">{{$res->question_form_name}}</th>
+                                       <?php }} ?>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                    <tr>
+                                        <?php 
+                                            if (!empty($HeaderData)){
+                                                foreach ($HeaderData as $res){
+                                        ?>
+                                           <td class="text-left">{{$res->answer_value}}</td>
+                                       <?php }} ?>
+                                    </tr>
+                                   
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
             </div>
 
             <!-- ------------------------------------------ -->
-            <div class="row" id="table-bordered">
-                <div class="col-12">
-                    <div class="card ">
-                        <form class="dt_adv_search" action="{{ url('participan_bulk_upload/import_participant') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <input type="hidden" name="form_type" value="Participant_work_upload">
-                            <div class="card-header w-100 m-0">
-                                <div class="row w-100">
-                                    <div class="col-sm-12">
-                                        <div class="row">
-                                            <div class="col-sm-3 col-12">
-                                                <label for="form-control">Participant Excel</label>
-                                                <input type="file" class="form-control" name="participant_file" id="participant_file">
-                                            </div>
-                                              
-
-                                            <div class="col-sm-3 mt-2">
-                                                <button type="submit" class="btn btn-primary">Upload</button>
+            <?php if(!empty($search_event)) { ?>
+                <div class="row" id="table-bordered">
+                    <div class="col-12">
+                        <div class="card ">
+                            <form class="dt_adv_search" action="{{ url('participan_bulk_upload/import_participant') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <input type="hidden" name="form_type" value="Participant_work_upload">
+                                <div class="card-header w-100 m-0">
+                                    <div class="row w-100">
+                                        <div class="col-sm-12">
+                                            <div class="row">
+                                                <div class="col-sm-3 col-12">
+                                                    <label for="form-control">Participant Upload Excel</label>
+                                                    <input type="file" class="form-control" name="participant_file" id="participant_file">
+                                                </div>
+                                                  
+                                                <div class="col-sm-3 mt-2">
+                                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                                </div>
                                             </div>
                                         </div>
+                                        
                                     </div>
-                                    
                                 </div>
-                            </div>
-                        </form>
+                            </form>
+                         
+                           
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">Sr. No</th>
+                                                <th class="text-left">Event Name</th>
+                                                <th class="text-left">Transaction Id</th>
+                                                <th class="text-left">Created Date/Time</th>
+                                                <th class="text-center">Participant Count</th>
+                                                <th class="text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="text-center">
+                                            <?php 
+                                              if (!empty($ParticipantDetails)){
+                                                $i = 1;
+                                                foreach ($ParticipantDetails as $val){
+                                            ?>
+                                                <tr>
+                                                    <td class="text-center">{{ $i }}</td>
+                                                    <td class="text-left">{{ ucfirst($val->productinfo) }}</td>
+                                                    <td class="text-left">{{ $val->txnid }}</td>
+                                                    <td class="text-left">{{ date('d-m-Y h:i A', $val->created_datetime) }}</td>
+                                                    <td class="text-center">{{ $val->participant_count }}</td>
+                                                    <td>
+                                                        <i class="fa fa-trash-o btn btn-danger btn-sm"
+                                                            onclick="delete_record({{ $val->id }})" title="Delete"></i>
+                                                    </td>
+                                                </tr>
+                                            <?php
+                                              $i++;
+                                               }
+                                             }else{
+                                            ?>
+                                                <tr>
+                                                    <td colspan="16" style="text-align:center; color:red;">No Record Found</td>
+                                                </tr>
+                                            <?php }?>
+                                           
+                                        </tbody>
+                                    </table>
+                                </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-
+               <?php } ?>
         </div>
 
 
     </section>
 
-    
-
-   
 @endsection
+
+<script src={{ asset('/app-assets/js/scripts/jquerycdn.js') }}></script>
+<script>
+    function delete_record(id) {
+        // alert(id);
+        var url = '<?php echo url('participan_bulk_upload/delete'); ?>';
+        url = url + '/' + id;
+        //    alert(url);
+        bConfirm = confirm('Are you sure you want to remove this record ?');
+        if (bConfirm) {
+            window.location.href = url;
+        } else {
+            return false;
+        }
+    }
+</script>

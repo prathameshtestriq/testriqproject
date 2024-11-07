@@ -229,5 +229,6 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::get('/participan_work_upload/clear_search', [ParticipantBulkController::class, 'clear_search'])->name('clear_search_participan_work_upload');
     Route::match(['get','post'],'participan_work_upload/export_download',[ParticipantBulkController::class,'export_event_participants_work'])->name('export_event_participants_work');
     Route::match(['get', 'post'], '/participan_bulk_upload/import_participant', [ParticipantBulkController::class, 'event_participan_bulk_upload'])->name('event_participan_bulk_upload');
+    Route::match (['get'], 'participan_bulk_upload/delete/{id}', [ParticipantBulkController::class, 'delete_participant'])->name('delete_participant');
 
 });

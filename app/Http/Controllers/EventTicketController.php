@@ -741,7 +741,7 @@ class EventTicketController extends Controller
 
                         $FormQuestions = DB::select($sSQL, [
                             'event_id' => $aPost['event_id'],
-                            'ticket_id' => $ticket['id']
+                            'ticket_id' => isset($ticket['id']) && !empty($ticket['id']) ? $ticket['id'] : 0
                         ]);
 
                         if (count($FormQuestions) > 0) {
