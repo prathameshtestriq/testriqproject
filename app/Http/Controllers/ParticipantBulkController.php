@@ -238,7 +238,7 @@ class ParticipantBulkController extends Controller
             $sql3 = "SELECT * FROM organizer WHERE user_id=:user_id";
             $Organizer = DB::select($sql3, ['user_id' => $UserId]);
             if (count($Organizer) > 0) {
-                $OrgName = $Organizer[0]->name;
+                $OrgName = !empty($Organizer[0]->name) ? ucfirst($Organizer[0]->name) : '';
             }
 
             //------ ticket registration id and race category
@@ -313,9 +313,9 @@ class ParticipantBulkController extends Controller
                         }
                         
                         $ConfirmationEmail = array(
-                            "USERNAME" => !empty($res->firstname) && !empty($res->lastname) ? $res->firstname . ' ' . $res->lastname : '',
-                            "FIRSTNAME" => !empty($res->firstname) ? $res->firstname : '',
-                            "LASTNAME" => !empty($res->lastname) ? $res->lastname : '',
+                            "USERNAME" => !empty($res->firstname) && !empty($res->lastname) ? ucfirst($res->firstname). ' ' . ucfirst($res->lastname) : '',
+                            "FIRSTNAME" => !empty($res->firstname) ? ucfirst($res->firstname) : '',
+                            "LASTNAME" => !empty($res->lastname) ? ucfirst($res->lastname) : '',
                             "EVENTID" => $EventId,
                             "EVENTNAME" => $Event[0]->name,
                             "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
@@ -330,13 +330,13 @@ class ParticipantBulkController extends Controller
                             "TOTALAMOUNT" => $TotalPrice,
                             "TICKETAMOUNT" => $TotalPrice,
                             "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : '',
-                            "RACECATEGORY" => !empty($res->ticket_name) ? $res->ticket_name : '',
-                            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
-                            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
-                            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
-                            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : '',
+                            "RACECATEGORY" => !empty($res->ticket_name) ? ucfirst($res->ticket_name) : '',
+                            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? ucfirst($TeamName) : '',
+                            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? ucfirst($Participant_2_name) : '',
+                            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? ucfirst($Participant_3_name) : '',
+                            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? ucfirst($Participant_4_name) : '',
                             "PREFERREDDATE"  => isset($preferred_date) && !empty($preferred_date) ? $preferred_date : '',
-                            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? $run_category : ''
+                            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? ucfirst($run_category) : ''
                         );
                         // echo '<pre>'; print_r($ConfirmationEmail);
                       
