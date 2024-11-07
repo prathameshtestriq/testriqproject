@@ -189,12 +189,12 @@ class ParticipantBulkController extends Controller
         }else if(!empty($participant_file)){
             $data['userId'] = $userId;
             $data['event_id'] = $event_id;
-            // $import = new ParticipantBulkDetailsImport($data);
-            // Excel::import($import, request()->file('participant_file'));
+            $import = new ParticipantBulkDetailsImport($data);
+            Excel::import($import, request()->file('participant_file'));
 
-            // $Booking_payment_id = !empty($import->returnData['BookPayId']) ? $import->returnData['BookPayId'] : 0;
-            // $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
-            $ParticipantSendEmail = ParticipantBulkController::participants_send_email(3447,13,4);
+            $Booking_payment_id = !empty($import->returnData['BookPayId']) ? $import->returnData['BookPayId'] : 0;
+            $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
+            // $ParticipantSendEmail = ParticipantBulkController::participants_send_email(3447,13,4);
 
             $Message = 'Participant Details Uploaded Successfully.';
             $aResult = [
