@@ -33,6 +33,7 @@ use App\Http\Controllers\OrganiserController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\MasterCMSController;
 use App\Http\Controllers\ParticipantBulkController;
+use App\Http\Controllers\MaintenanceModeController;
 
 //--------------------------------------------
 
@@ -230,5 +231,10 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get','post'],'participan_work_upload/export_download',[ParticipantBulkController::class,'export_event_participants_work'])->name('export_event_participants_work');
     Route::match(['get', 'post'], '/participan_bulk_upload/import_participant', [ParticipantBulkController::class, 'event_participan_bulk_upload'])->name('event_participan_bulk_upload');
     Route::match (['get'], 'participan_bulk_upload/delete/{id}', [ParticipantBulkController::class, 'delete_participant'])->name('delete_participant');
+
+    // Races Mode
+    Route::match (['get', 'post'], 'index_mode', [MaintenanceModeController::class, 'index_mode'])->name('index_mode');
+
+    Route::match (['get', 'post'], 'user/change_status_mode', [MaintenanceModeController::class, 'change_active_status_mode'])->name('change_status_mode_user');
 
 });

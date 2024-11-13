@@ -186,18 +186,27 @@ class Banner extends Model
     }
 
     public static function add_banner($request)
-{
+    {
         $banner_image_name = '';
 
-        if ($request->file('banner_image')) {
+        // Check if cropped image data is provided
+        if ($request->cropped_image_data) {
+            $path = public_path('uploads/banner_image/');
+            $imageData = $request->cropped_image_data;
+            $banner_image_name = time() . '_cropped_banner.jpg';
+
+            // Decode base64 image data
+            $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $imageData));
+            file_put_contents($path . $banner_image_name, $imageData);
+        } elseif ($request->file('banner_image')) {
+            // Handle original image if cropped image not provided
             $path = public_path('uploads/banner_image/');
             $banner_image = $request->file('banner_image');
             $imageExtension = $banner_image->getClientOriginalExtension();
-            $banner_image_name = strtotime('now') . '_banner.' . $imageExtension;
-            //dd($banner_image_name);
+            $banner_image_name = time() . '_banner.' . $imageExtension;
             $banner_image->move($path, $banner_image_name);
         }
-
+        
         $ssql = 'INSERT INTO banner (
             banner_name, banner_image, banner_url, start_time, end_time, city, state, country, created_datetime
         ) VALUES (
@@ -217,7 +226,7 @@ class Banner extends Model
         );
 
         $Result = DB::insert($ssql, $bindings);
-// dd( $Result);
+            // dd( $Result);
         return $banner_image_name;
     }
 
@@ -227,30 +236,24 @@ class Banner extends Model
     {
 
         $banner_image_name = '';
-// dd($request->hasFile('banner_image'));
-        // if (!empty($request->file('banner_image'))) { // Check if banner_image is not empty
-        //     $path = public_path('uploads/banner_image/');
-        //     $banner_image = $request->file('banner_image');
-        //     $imageExtension = $banner_image->getClientOriginalExtension();
 
-        //     $banner_image_name = strtotime('now') . '_banner.' . $imageExtension;
+        if ($request->cropped_image_data) {
+            $path = public_path('uploads/banner_image/');
+            $imageData = $request->cropped_image_data;
+            $banner_image_name = time() . '_cropped_banner.jpg';
 
-        //     $banner_image->move($path, $banner_image_name);
-        // } else {
-        //     $banner_image_name = $request->banner_image_name;
-        // }
-        if ($request->hasFile('banner_image')) { // Check if banner_image is not empty
+            $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $imageData));
+            file_put_contents($path . $banner_image_name, $imageData);
+        } elseif ($request->hasFile('banner_image')) {
             $path = public_path('uploads/banner_image/');
             $banner_image = $request->file('banner_image');
             $imageExtension = $banner_image->getClientOriginalExtension();
-
-            $banner_image_name = strtotime('now') . '_banner.' . $imageExtension;
-
+            $banner_image_name = time() . '_banner.' . $imageExtension;
             $banner_image->move($path, $banner_image_name);
         } else {
             $banner_image_name = $request->banner_image_name;
         }
-
+        
         $ssql = 'UPDATE banner SET
             banner_name = :banner_name,
             banner_url = :banner_url,

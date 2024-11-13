@@ -20,9 +20,9 @@ class participantworkExport implements FromArray, WithHeadings, ShouldAutoSize, 
         $event_name = Session::has('search_event') ? Session::get('search_event') : '';
     //    dd( $event_name );
         // Fetch question labels and store them as headings
-        $SQL = "SELECT question_form_name,question_label FROM event_form_question WHERE event_id = ".$event_name." AND question_form_name != 'sub_question' ORDER BY sort_order ASC";
+        $SQL = "SELECT question_form_name,question_label FROM event_form_question WHERE event_id = ".$event_name." ORDER BY sort_order ASC";
         $this->questionLabels = DB::select($SQL, array());
-        // dd($this->questionLabels);
+        // dd($this->questionLabels); //AND question_form_name != 'sub_question'
     }
 
     public function array(): array
@@ -34,13 +34,14 @@ class participantworkExport implements FromArray, WithHeadings, ShouldAutoSize, 
     public function headings(): array
     {
         $customHeadings = [
-            'ticket_name'
+            'ticket_name',
+            'ticket_price'
         ];
 
          // Retrieve the question labels from the database and convert them to an array of strings
             $questionHeadings = array_map(function ($label) {
                 if($label->question_form_name == 'sub_question')
-                  return strtolower(str_replace(" ", "_", $label->question_label)) ;
+                  return strtolower(str_replace(" ", "_", $label->question_label));
                 else
                   return $label->question_form_name;
             }, $this->questionLabels);

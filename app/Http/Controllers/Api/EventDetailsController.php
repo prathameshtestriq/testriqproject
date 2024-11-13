@@ -251,9 +251,9 @@ class EventDetailsController extends Controller
         $ResposneCode = 400;
         $empty = false;
 
-        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-        //dd($aToken);
-        if ($aToken['code'] == 200) {
+        // $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // //dd($aToken);
+        // if ($aToken['code'] == 200) {
 
             $UserId = 0;
             if (!empty($aToken)) {
@@ -272,10 +272,10 @@ class EventDetailsController extends Controller
             $response['message'] = 'Request processed successfully';
             $ResposneCode = 200;
 
-        } else {
-            $ResposneCode = $aToken['code'];
-            $response['message'] = $aToken['message'];
-        }
+        // } else {
+        //     $ResposneCode = $aToken['code'];
+        //     $response['message'] = $aToken['message'];
+        // }
 
         return response()->json($response, $ResposneCode);
     }

@@ -332,5 +332,17 @@ class User extends Authenticatable
         return $Result;
     }
 
+    public static function change_status_mode($request){
+        $sSQL = 'UPDATE races_settings SET maintenance_mode=:mode WHERE id=:id';
+        $aReturn = DB::update(
+            $sSQL,
+            array(
+                'mode' => $request->mode,
+                'id' => $request->id
+            )
+        );
+        return $aReturn;
+
+    }
     
 }

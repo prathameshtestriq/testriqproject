@@ -52,10 +52,15 @@ class ParticipantBulkController extends Controller
         $a_return['ParticipantDetails'] = $ParticipantDetails;
         
         if(!empty($a_return['search_event'])){
-            $SQL1 = "SELECT question_form_name,question_label,question_form_type,question_form_option FROM event_form_question WHERE event_id = ".$a_return['search_event']." AND question_form_name != 'sub_question' ORDER BY sort_order ASC";
+            $SQL1 = "SELECT question_form_name,question_label,question_form_type,question_form_option FROM event_form_question WHERE event_id = ".$a_return['search_event']."  ORDER BY sort_order ASC";  // AND question_form_name != 'sub_question'
             $a_return['HeaderData'] = DB::select($SQL1, array());
+             if(!empty($a_return['HeaderData']))
+            foreach($a_return['HeaderData'] as $res){
+                if($res->question_form_name == 'sub_question'){
+                   $res->question_form_name = strtolower(str_replace(" ", "_", $res->question_label));
+                }
+            }
             
-        
             if(!empty($a_return['HeaderData'])){
                 foreach($a_return['HeaderData'] as $res){
                     
@@ -122,8 +127,14 @@ class ParticipantBulkController extends Controller
         }
         $a_return['ParticipantDetails'] = $ParticipantDetails;
 
-        $SQL1 = "SELECT question_form_name,question_label,question_form_type,question_form_option FROM event_form_question WHERE event_id = ".$a_return['search_event']." AND question_form_name != 'sub_question' ORDER BY sort_order ASC";
+        $SQL1 = "SELECT question_form_name,question_label,question_form_type,question_form_option FROM event_form_question WHERE event_id = ".$a_return['search_event']." ORDER BY sort_order ASC"; // AND question_form_name != 'sub_question'
         $a_return['HeaderData'] = DB::select($SQL1, array());
+        if(!empty($a_return['HeaderData']))
+            foreach($a_return['HeaderData'] as $res){
+                if($res->question_form_name == 'sub_question'){
+                   $res->question_form_name = strtolower(str_replace(" ", "_", $res->question_label));
+                }
+            }
         // dd($a_return['HeaderData']);
         
         $aTemp = new stdClass;

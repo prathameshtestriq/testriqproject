@@ -133,7 +133,7 @@ Thank you for your attention to this matter.<br/>";
     }
 
 
-    public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0, $send_email_status=0)
+    public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0, $send_email_status=0, $generatePdf)
     {
         $email = new \SendGrid\Mail\Mail();
         $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
@@ -144,6 +144,20 @@ Thank you for your attention to this matter.<br/>";
             "text/html",
             "" . $MessageContent
         );
+
+        // Attach PDF
+        $filePath = $generatePdf;
+        $file_name_array = explode("/", $generatePdf);
+        $file_name = isset($file_name_array[count($file_name_array)-1]) ? $file_name_array[count($file_name_array)-1] : '';
+        $fileContent = file_get_contents($filePath);  // Read the file contents
+
+        $email->addAttachment(
+            base64_encode($fileContent), 
+            'application/pdf',          
+            $file_name,                   
+            'attachment'               
+        );
+        //----------------------------
 
         $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
         try {
@@ -178,11 +192,8 @@ Thank you for your attention to this matter.<br/>";
             "" . $MessageContent
         );
 
-       
-        // dd($file_name);
         // Attach PDF
         $filePath = $GeneratedPdfLink;  // Specify the path to the PDF file
-       // $fileName = 'your-file.pdf';  // Name the PDF file
         $file_name_array = explode("/", $GeneratedPdfLink);
         $file_name = isset($file_name_array[count($file_name_array)-1]) ? $file_name_array[count($file_name_array)-1] : '';
         $fileContent = file_get_contents($filePath);  // Read the file contents

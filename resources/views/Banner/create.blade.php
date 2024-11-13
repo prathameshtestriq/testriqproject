@@ -36,7 +36,13 @@ if (!empty($edit_data)) {
 <!-- Dashboard Ecommerce start -->
 @section('content')
     <section>
-
+<style>
+    #imagePreview {
+    max-width: 100%;
+    height: auto;
+    margin-top: 20px;
+}
+</style>
         <div class="content-body">
             <!-- Bordered table start -->
             <div class="row" id="table-bordered">
@@ -134,7 +140,7 @@ if (!empty($edit_data)) {
                                             </div>
                                         </div>
 
-                                        <div class="col-md-4 col-12">
+                                        <div class="col-md-3 col-12">
                                             <div class="form-group">
                                                 <label for="banner_image">Banner Image <span style="color:red;">*</span>
                                                     <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
@@ -142,7 +148,7 @@ if (!empty($edit_data)) {
                                                 <input type="file" id="banner_image" class="form-control"
                                                     placeholder="Enter Banner Url" name="banner_image"
                                                     value="{{ old('banner_image', $banner_image) }}"
-                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this); validateSize(this);"  />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this);previewcropImage(this); validateSize(this);"  />
                                                    
                                                     <span class="error" id="banner_image_err" style="color:red;"></span>
                                                     @error('banner_image')
@@ -150,14 +156,18 @@ if (!empty($edit_data)) {
                                                     @enderror 
                                             </div>
                                         </div>
-                                        <div class="col-md-2 col-12">
+                                        <div class="col-md-3 col-12">
                                             <div class="form-group">
-                                                <span><br></span>
+                                                <span><br><br></span>
                                                <!-- Image preview section -->
+                                                <div class="form-group">
+                                                    <button type="button" onclick="cropImage()" class="btn btn-warning mr-1">Crop</button>
+                                                </div>
+
                                                 <div id="imagePreview">
                                                     <?php if(!empty($banner_image)){ ?>
                                                         <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
-                                                            <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;">
+                                                            <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;" >
                                                         </a>
                                                         <input type="hidden" name="hidden_banner_image" value="{{ old('banner_image', $banner_image) }}">
                                                     <?php } else { ?>
@@ -166,6 +176,7 @@ if (!empty($edit_data)) {
                                                 </div>
                                             </div>
                                         </div>
+
 
                                         <div class="col-md-6 col-12"> 
                                             <div class="form-group">
@@ -180,6 +191,13 @@ if (!empty($edit_data)) {
                                                 @enderror
                                             </div>
                                         </div>
+
+                                        <div class="col-md-12 col-12">
+                                            <div>
+                                                <input type="hidden" name="cropped_image_data" id="croppedImageInput">
+                                                <img id="imagePreview_crop" style="display:none; max-width:100%;" />
+                                            </div>
+                                        </div>    
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
@@ -256,6 +274,10 @@ if (!empty($edit_data)) {
     </section>
 @endsection
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include Cropper.js CSS and JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
 <script>
     function previewImage(input) {
         var file = input.files[0];
@@ -270,31 +292,132 @@ if (!empty($edit_data)) {
         }
     }
 
+    let cropper;
+
+    // Handle image preview and cropper initialization
+    function previewcropImage(input) {
+        const file = input.files[0];
+        if (!file) {
+            return; // If no file selected, exit the function
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const image = document.getElementById('imagePreview_crop');
+            image.style.display = 'block';  // Make sure the preview is visible
+            image.src = e.target.result;  // Set image source to the uploaded file
+
+            // Initialize cropper after the image is loaded
+            image.onload = function() {
+                console.log("Image loaded. Initializing cropper...");
+
+                // Destroy previous cropper instance if it exists
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                // Initialize the cropper
+                cropper = new Cropper(image, {
+                    aspectRatio: 1400 / 360,  // Set the aspect ratio to 1400x360
+                    viewMode: 1,
+                    responsive: true,
+                    autoCropArea: 1.0,
+                    movable: false,
+                    zoomable: false,
+                    scalable: false,
+                    cropBoxResizable: false
+                });
+                
+                console.log("Cropper initialized:", cropper);
+            };
+        };
+        
+        reader.readAsDataURL(file);  // Read the file and trigger onload event
+    }
+
+    // Crop the image and get the cropped data
+    function cropImage() {
+        if (!cropper) {
+            alert('Please upload and preview an image first.');
+            return;
+        }
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 1400,
+            height: 360
+        });
+
+        if (!canvas) {
+            alert('Could not create a cropped image. Make sure the image is loaded and try again.');
+            return;
+        }
+
+        // Get the cropped image as a base64-encoded string
+        const croppedImageDataUrl = canvas.toDataURL('image/jpeg');
+
+        // Display the cropped image result in preview
+        document.getElementById('preview').src = croppedImageDataUrl;
+        document.getElementById('imagePreview_crop').src = croppedImageDataUrl;
+
+        // Set the cropped image data to a hidden input field to send with form submission
+        document.getElementById('croppedImageInput').value = croppedImageDataUrl;
+    }
+
+
+
+
     function validateSize(input) {
         var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var banner_image = $('#banner_image').val().trim();
- 
-    
-      if(fileSize > 2) {
-         // alert('File size exceeds 2 MB');
-         if (banner_image !== "") {
-            // alert("here");
+        const fileSize = input.files[0].size / 1024 / 1024; // Convert size to MB
+
+        if (fileSize > 2) {
+            // Show error message
             $('#banner_image').parent().addClass('has-error');
+            $('#banner_image').val("");
             $('#banner_image_err').html('The image must be 2MB or below.');
-            $('#banner_image').focus();
-            $('#banner_image').keyup(function() {
-                $('#banner_image').parent().removeClass('has-error');
+
+            // Hide error message after 3 seconds
+            setTimeout(function() {
                 $('#banner_image_err').html('');
-            });
+                $('#banner_image').parent().removeClass('has-error');
+            }, 30000);
+
+            // Hide the image preview
+            $('#preview').attr('src', '').hide();
+            setTimeout(function() {
+                $('#preview').hide(); // Hide the image after 2 seconds (2000 milliseconds)
+            }, 500);
+            // Mark as invalid
             isValid = false;
+        } else {
+            // If valid, show the image preview
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#preview').attr('src', e.target.result).show();
+            }
+            reader.readAsDataURL(input.files[0]);
         }
 
         return isValid;
-      }
-      
     }
+    
+    function validation() { 
+        var isValid = true; // Default to true
 
+        // Check if the image file is selected and validate its size
+        if ($('#banner_image').val() !== '') {
+            isValid = validateSize(document.getElementById('banner_image'));
+        }
+
+        // If the validation fails, prevent form submission
+        if (!isValid) {
+            return false; // Prevent form submission
+        }
+
+        // If the validation passes, allow the form to submit
+        return true; // Proceed with form submission
+    }
     
 </script>
 

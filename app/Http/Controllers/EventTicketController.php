@@ -1492,7 +1492,7 @@ class EventTicketController extends Controller
         $Organizer = DB::select($sql3, ['user_id' => $UserId]);
         $OrgName = "";
         if (count($Organizer) > 0) {
-            $OrgName = $Organizer[0]->name;
+            $OrgName = !empty($Organizer[0]->name) ? ucfirst($Organizer[0]->name) : '' ;
         }
 
         //------ ticket registration id and race category
@@ -1502,11 +1502,12 @@ class EventTicketController extends Controller
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
         $ticket_id         = !empty($booking_detail_Result) ? $booking_detail_Result[0]->ticket_id : 0;
 
-        $SQL1 = "SELECT ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
+        $SQL1 = "SELECT id,ticket_id,email,firstname,lastname,registration_id,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id =:booking_details_id";
         $tAttendeeResult = DB::select($SQL1, array('booking_details_id' => $booking_detail_id));
         //dd($tAttendeeResult, $BookingPayId , $booking_detail_id, $flag , $EventId);
         $registration_ids = $ticket_names = '';
         
+        $attendee_id = !empty($tAttendeeResult) ? $tAttendeeResult[0]->id : 0;
         $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
         // dd($attendee_details);
         $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = $preferred_date = $run_category = ''; 
@@ -1556,7 +1557,6 @@ class EventTicketController extends Controller
             $ticket_ids_array = array_column($tAttendeeResult, "ticket_name");
             $ticket_names = implode(", ", array_unique($ticket_ids_array));
 
-
         }
         //dd($registration_ids,$ticket_names);
         if ($flag == 2 && !empty($attendee_array)) {
@@ -1582,11 +1582,11 @@ class EventTicketController extends Controller
 
         $ConfirmationEmail = array(
             // "USERID" => $UserId,
-            "USERNAME" => $user_name,
-            "FIRSTNAME" => $first_name,
-            "LASTNAME" => $last_name,
+            "USERNAME" => ucfirst($user_name),
+            "FIRSTNAME" => ucfirst($first_name),
+            "LASTNAME" => ucfirst($last_name),
             "EVENTID" => $EventId,
-            "EVENTNAME" => $Event[0]->name,
+            "EVENTNAME" => ucfirst($Event[0]->name),
             "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
             "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
             "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
@@ -1599,13 +1599,13 @@ class EventTicketController extends Controller
             "TOTALAMOUNT" => $TotalPrice,
             "TICKETAMOUNT" => $TotalPrice,
             "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
-            "RACECATEGORY" => !empty($ticket_names) ? $ticket_names : $loc_ticket_names, // !empty($ticket_names) ? $ticket_names : ''
-            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
-            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
-            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
-            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : '',
+            "RACECATEGORY" => !empty($ticket_names) ? ucfirst($ticket_names) : ucfirst($loc_ticket_names), // !empty($ticket_names) ? $ticket_names : ''
+            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? ucfirst($TeamName) : '',
+            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? ucfirst($Participant_2_name) : '',
+            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? ucfirst($Participant_3_name) : '',
+            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? ucfirst($Participant_4_name) : '',
             "PREFERREDDATE"  => isset($preferred_date) && !empty($preferred_date) ? $preferred_date : '',
-            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? $run_category : ''
+            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? ucfirst($run_category) : ''
         );
 
         // dd($ConfirmationEmail); 
@@ -1637,9 +1637,9 @@ class EventTicketController extends Controller
                 $MessageContent = $Communications[0]->message_content;
                 $Subject = $Communications[0]->subject_name;
             } else {
-                $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                $MessageContent = "Dear " . ucfirst($first_name) . " " . ucfirst($last_name) . ",
                      <br/><br/>
-                    Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                    Thank you for registering for " . ucfirst($Event[0]->name) . "! We are thrilled to have you join us.
                      <br/><br/>
                     Event Details:
                      <br/><br/>
@@ -1652,8 +1652,8 @@ class EventTicketController extends Controller
                     We look forward to seeing you at the event!
                      <br/><br/>
                     Best regards,<br/>
-                    " . $Event[0]->name . " Team";
-                $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+                    " . ucfirst($Event[0]->name) . " Team";
+                $Subject = "Event Registration Confirmation - " . ucfirst($Event[0]->name) . "";
             }
         }
 
@@ -1668,8 +1668,13 @@ class EventTicketController extends Controller
         // dd($MessageContent,$Subject); 
         // echo $MessageContent; die;
        
+        //--------------- new added for generate pdf ----------------
+        // dd($EventId,$UserId,$ticket_id,$attendee_id,$EventUrl,$TotalPrice);
+        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_id,$EventUrl,$TotalPrice);
+        // dd($generatePdf);
+      
         $Email = new Emails();
-        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status);
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf);
 
         // $msg = $UserId.'---'.$tAttendeeResult.'---'.$MessageContent.'---'.$Subject.'---'.$flag.'---'.$UserEmail;
 
@@ -1723,9 +1728,9 @@ class EventTicketController extends Controller
                 
                 $ConfirmationEmail = array(
                     // "USERID" => $UserId,
-                    "USERNAME" => !empty($res->firstname) && !empty($res->lastname) ? $res->firstname . ' ' . $res->lastname : $user_name,
-                    "FIRSTNAME" => !empty($res->firstname) ? $res->firstname : $first_name,
-                    "LASTNAME" => !empty($res->lastname) ? $res->lastname : $last_name,
+                    "USERNAME" => !empty($res->firstname) && !empty($res->lastname) ? ucfirst($res->firstname) . ' ' . ucfirst($res->lastname) : ucfirst($user_name),
+                    "FIRSTNAME" => !empty($res->firstname) ? ucfirst($res->firstname) : ucfirst($first_name),
+                    "LASTNAME" => !empty($res->lastname) ? ucfirst($res->lastname) : ucfirst($last_name),
                     "EVENTID" => $EventId,
                     "EVENTNAME" => $Event[0]->name,
                     "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
@@ -1740,13 +1745,13 @@ class EventTicketController extends Controller
                     "TOTALAMOUNT" => $TotalPrice,
                     "TICKETAMOUNT" => $TotalPrice,
                     "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : $registration_id,
-                    "RACECATEGORY" => !empty($res->ticket_name) ? $res->ticket_name : $ticket_names,
-                    "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
-                    "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
-                    "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
-                    "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : '',
+                    "RACECATEGORY" => !empty($res->ticket_name) ? ucfirst($res->ticket_name) : ucfirst($ticket_names),
+                    "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? ucfirst($TeamName) : '',
+                    "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? ucfirst($Participant_2_name) : '',
+                    "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? ucfirst($Participant_3_name) : '',
+                    "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? ucfirst($Participant_4_name) : '',
                     "PREFERREDDATE"  => isset($preferred_date) && !empty($preferred_date) ? $preferred_date : '',
-                    "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? $run_category : ''
+                    "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? ucfirst($run_category) : ''
                 );
 
                 $Subject = "";
@@ -1775,9 +1780,9 @@ class EventTicketController extends Controller
                         $MessageContent = $Communications[0]->message_content;
                         $Subject = $Communications[0]->subject_name;
                     } else {
-                        $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                        $MessageContent = "Dear " . ucfirst($first_name) . " " . ucfirst($last_name) . ",
                              <br/><br/>
-                            Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                            Thank you for registering for " . ucfirst($Event[0]->name) . "! We are thrilled to have you join us.
                              <br/><br/>
                             Event Details:
                              <br/><br/>
@@ -1790,8 +1795,8 @@ class EventTicketController extends Controller
                             We look forward to seeing you at the event!
                              <br/><br/>
                             Best regards,<br/>
-                            " . $Event[0]->name . " Team";
-                        $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+                            " . ucfirst($Event[0]->name) . " Team";
+                        $Subject = "Event Registration Confirmation - " . ucfirst($Event[0]->name) . "";
                     }
                 }
          
@@ -1804,14 +1809,149 @@ class EventTicketController extends Controller
 
                 // echo $MessageContent.'<br><br>';
                 if (!empty($attendee_email) && strtolower($UserEmail) != strtolower($attendee_email)) {
+
+                    $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->id,$EventUrl,$TotalPrice);
+                   
                     $Email = new Emails();
-                    $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag, $send_email_status);
+                    $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf);
                 }
 
             }//die;
         }
 
         return;
+    }
+
+    public function generateParticipantPDF($EventId,$UserId,$TicketId,$attendeeId,$EventUrl,$TotalPrice)
+    {
+        // dd($EventId,$UserId,$TicketId,$attendeeId);
+        $master = new Master();
+        $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username,email,mobile FROM users WHERE id=:user_id";
+        $User = DB::select($sql1, ['user_id' => $UserId]);
+
+        $Venue = "";
+        if (!empty($attendeeId)) {
+            $sql = "SELECT firstname,lastname,email,attendee_details,registration_id,created_at,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE id=:attendee_id";
+            $AttendeeData = DB::select($sql, ['attendee_id' => $attendeeId]);
+            if (!empty($AttendeeData)) {
+                $AttenddeeDetails = $AttendeeData[0]->attendee_details;
+                $UniqueTicketId   = $AttendeeData[0]->registration_id;
+                $attendee_details = json_decode(json_decode($AttenddeeDetails));
+                // dd($EventId);
+                $amount_details = $extra_details = [];
+
+                $sql1 = "SELECT question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0 AND question_form_name != 'sub_question' ";
+                $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
+                // dd($QuestionData);
+
+                $TicketArr = [ 
+                                "TicketName" => !empty($AttendeeData) ? $AttendeeData[0]->ticket_name : '',
+                                "firstname" => !empty($AttendeeData) ? $AttendeeData[0]->firstname : '',
+                                "lastname" => !empty($AttendeeData) ? $AttendeeData[0]->lastname : '',
+                                "email" => !empty($AttendeeData) ? $AttendeeData[0]->email : '',
+                                "unique_ticket_id" => !empty($AttendeeData) ? $AttendeeData[0]->registration_id : '',
+                                "booking_date" => !empty($AttendeeData) ? $AttendeeData[0]->created_at : '',
+                                "ticket_amount" => !empty($TotalPrice) ? $TotalPrice : ''
+                            ];
+                // dd($TicketArr);
+                // dd($QuestionData,$attendee_details);
+                // Iterate through attendee details to separate the amounts
+                if(!empty($QuestionData)){
+                    foreach($QuestionData as $res){
+                        foreach ($attendee_details as $detail) {
+                            $aTemp = new stdClass;
+                            $labels = [];
+                            if ($detail->question_form_name == $res->question_form_name) {
+                                
+                                $question_form_option = json_decode($detail->question_form_option, true);
+                                // dd($question_form_option);
+                                if($detail->question_form_type == 'radio' || $detail->question_form_type == 'select'){
+                    
+                                    $label = '';
+                                    foreach ($question_form_option as $option) {
+                                        if ($option['id'] === (int)$detail->ActualValue) {
+                                            $label = $option['label'];
+                                            break;
+                                        }
+                                    }
+                                    $aTemp->ActualValue    = $label;
+                                }else if($detail->question_form_type == 'checkbox'){
+                                    foreach ($question_form_option as $option) {
+                                        if (in_array($option['id'], explode(',', $detail->ActualValue))) {
+                                            $labels[] = $option['label'];
+                                        }
+                                    }
+                                    $aTemp->ActualValue   = implode(', ', $labels);
+                                }else{
+                                    $aTemp->ActualValue    = $detail->ActualValue;
+                                }
+                                $aTemp->id             = $detail->id;
+                                $aTemp->question_label = $detail->question_label;
+                                $aTemp->question_form_type = $detail->question_form_type;
+                                $extra_details[] = $aTemp;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $created_by = 0;
+        if (!empty($EventId)) {
+            $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode,created_by,event_type FROM events WHERE id=:event_id";
+            $Event = DB::select($sql2, ['event_id' => $EventId]);
+            // dd($Event);
+            if (sizeof($Event) > 0) {
+                foreach ($Event as $key => $event) {
+                    $event->name = (!empty($event->name)) ? $event->name : '';
+                    $event->start_date = (!empty($event->start_time)) ? date("d M Y", $event->start_time) : 0;
+                    $event->end_date = (!empty($event->end_time)) ? date("d M Y", $event->end_time) : 0;
+                    $event->start_time_event = (!empty($event->start_time)) ? date("h:i A", $event->start_time) : "";
+                    $event->end_date_event = (!empty($event->end_time)) ? date("h:i A", $event->end_time) : 0;
+
+                    $Venue .= ($event->address !== "") ? $event->address . ", " : "";
+                    $Venue .= ($event->city !== "") ? $master->getCityName($event->city) . ", " : "";
+                    $Venue .= ($event->state !== "") ? $master->getStateName($event->state) . ", " : "";
+                    $Venue .= ($event->country !== "") ? $master->getCountryName($event->country) . ", " : "";
+                    $Venue .= ($event->pincode !== "") ? $event->pincode . ", " : "";
+                    $event->Venue = $Venue;
+                }
+                $created_by = $Event[0]->created_by;
+            }
+        }
+
+        $Organizer = [];
+        if (!empty($created_by)) {
+            $sql3 = "SELECT id,name,logo_image FROM organizer WHERE user_id=:user_id";
+            $Organizer = DB::select($sql3, ['user_id' => $created_by]);
+        }
+
+        if (!empty($Organizer))
+            foreach ($Organizer as $key => $value) {
+                $value->logo_image = !empty($value->logo_image) ? url('/') . 'organiser/logo_image/' . $value->logo_image : "";
+            }
+
+        // Generate QR code
+        $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($UniqueTicketId));
+        // dd($qrCode);
+        $data = [
+                'ticket_details' => $TicketArr,
+                'event_details' => (sizeof($Event) > 0) ? $Event[0] : [],
+                'org_details' => (sizeof($Organizer) > 0) ? $Organizer[0] : [],
+                'user_details' => (sizeof($User) > 0) ? $User[0] : [],
+                'EventLink' => $EventUrl,
+                'QrCode' => $qrCode,
+                'amount_details' => $amount_details,
+                'extra_details' => $extra_details
+        ];
+        // dd($data);
+        $pdf = PDF::loadView('pdf_template', $data);
+        $PdfName = $EventId . $TicketId . time() . '.pdf';
+        $pdf->save(public_path('ticket_pdf/' . $PdfName));
+        // $PdfPath = url('/') . "/ticket_pdf/" . $PdfName;
+        $PdfPath = public_path('ticket_pdf/' . $PdfName);
+        // dd($PdfPath);
+        return $PdfPath;
     }
 
     function GetBookings(Request $request)
@@ -2428,7 +2568,7 @@ class EventTicketController extends Controller
 
             if (!empty($attendee_id)) {
 
-                $SQL = "SELECT booking_details_id,email,CONCAT(firstname, ' ', lastname) AS username,firstname,lastname,registration_id,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE id =:id";
+                $SQL = "SELECT id,booking_details_id,email,CONCAT(firstname, ' ', lastname) AS username,firstname,lastname,registration_id,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
 
                 $SQL1 = "SELECT (select booking_pay_id from event_booking where id = booking_details.booking_id) as booking_pay_id FROM booking_details WHERE id =:id";
@@ -2436,6 +2576,7 @@ class EventTicketController extends Controller
                 // dd($bookingDetResult);
                 $BookingPayId =  !empty($bookingDetResult) && $bookingDetResult[0]->booking_pay_id ? $bookingDetResult[0]->booking_pay_id : 0;
                 
+                $attendee_id = !empty($attendeeResult) && $attendeeResult[0]->id ? $attendeeResult[0]->id : '';
                 $attendee_email = !empty($attendeeResult) && $attendeeResult[0]->email ? $attendeeResult[0]->email : '';
                 $attendee_username = !empty($attendeeResult) && $attendeeResult[0]->username ? $attendeeResult[0]->username : '';
                 $ticket_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? '₹ ' . $attendeeResult[0]->ticket_amount : '';
@@ -2443,13 +2584,14 @@ class EventTicketController extends Controller
                 $attendee_lastname = !empty($attendeeResult) && $attendeeResult[0]->lastname ? $attendeeResult[0]->lastname : '';
                 $attendee_registration_id = !empty($attendeeResult) && $attendeeResult[0]->registration_id ? $attendeeResult[0]->registration_id : '';
                 $attendee_ticket_name = !empty($attendeeResult) && $attendeeResult[0]->ticket_name ? $attendeeResult[0]->ticket_name : '';
+                $ticket_paid_amount = !empty($attendeeResult) && $attendeeResult[0]->ticket_amount ? $attendeeResult[0]->ticket_amount : '';
                 //dd($attendee_username);
 
-                $attendee_array = array("firstname" => $attendee_firstname, "lastname" => $attendee_lastname, "username" => $attendee_username, "registration_id" => $attendee_registration_id, "ticket_name" => $attendee_ticket_name);
+                $attendee_array = array("attendee_id" => $attendee_id, "firstname" => $attendee_firstname, "lastname" => $attendee_lastname, "username" => $attendee_username, "registration_id" => $attendee_registration_id, "ticket_name" => $attendee_ticket_name);
 
                 if (!empty($attendee_email)) {
                     // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
-                    $this->ResendEmailDetails($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, $BookingPayId, $falg = 2, $attendee_array, $EmailType);
+                    $this->ResendEmailDetails($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, $BookingPayId, $falg = 2, $attendee_array, $EmailType, $ticket_paid_amount);
                     $ResponseData['data'] = 1;
                     $message = "Email send successfully";
                     $ResposneCode = 200;
@@ -2476,12 +2618,10 @@ class EventTicketController extends Controller
     }
 
 
-    function ResendEmailDetails($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_array, $CommEmailType)
+    function ResendEmailDetails($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_array, $CommEmailType, $ticket_paid_amount)
     {
-        // $Email1 = new Emails();
-        // $Email1->save_email_log('test email1', 'startshant@gmail.com', 'log test', $UserEmail, $flag);
-
-        //dd($BookingPayId);
+    
+        // dd($attendee_array);
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
         $User = DB::select($sql1, ['user_id' => $UserId]);
@@ -2506,7 +2646,7 @@ class EventTicketController extends Controller
         $Organizer = DB::select($sql3, ['user_id' => $UserId]);
         $OrgName = "";
         if (count($Organizer) > 0) {
-            $OrgName = $Organizer[0]->name;
+            $OrgName = !empty($Organizer[0]->name) ? ucfirst($Organizer[0]->name) : '';
         }
 
         //------ ticket registration id and race category
@@ -2586,11 +2726,11 @@ class EventTicketController extends Controller
 
         $ConfirmationEmail = array(
     
-            "USERNAME" => $user_name,
-            "FIRSTNAME" => $first_name,
-            "LASTNAME" => $last_name,
+            "USERNAME" => ucfirst($user_name),
+            "FIRSTNAME" => ucfirst($first_name),
+            "LASTNAME" => ucfirst($last_name),
             "EVENTID" => $EventId,
-            "EVENTNAME" => $Event[0]->name,
+            "EVENTNAME" => ucfirst($Event[0]->name),
             "EVENTSTARTDATE" => (!empty($Event[0]->start_time)) ? date('d-m-Y', ($Event[0]->start_time)) : "",
             "EVENTSTARTTIME" => (!empty($Event[0]->start_time)) ? date('H:i A', ($Event[0]->start_time)) : "",
             "EVENTENDDATE" => (!empty($Event[0]->end_time)) ? date('d-m-Y', ($Event[0]->end_time)) : "",
@@ -2605,13 +2745,13 @@ class EventTicketController extends Controller
             "TOTALAMOUNT" => $TotalPrice,
             "TICKETAMOUNT" => $TotalPrice,
             "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
-            "RACECATEGORY" => !empty($ticket_names) ? $ticket_names : $loc_ticket_names, // !empty($ticket_names) ? $ticket_names : ''
-            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? $TeamName : '',
-            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? $Participant_2_name : '',
-            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? $Participant_3_name : '',
-            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? $Participant_4_name : '',
+            "RACECATEGORY" => !empty($ticket_names) ? ucfirst($ticket_names) : ucfirst($loc_ticket_names), // !empty($ticket_names) ? $ticket_names : ''
+            "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? ucfirst($TeamName) : '',
+            "2NDPARTICIPANT" => isset($Participant_2_name) && !empty($Participant_2_name) ? ucfirst($Participant_2_name) : '',
+            "3RDPARTICIPANT" => isset($Participant_3_name) && !empty($Participant_3_name) ? ucfirst($Participant_3_name) : '',
+            "4THPARTICIPANT" => isset($Participant_4_name) && !empty($Participant_4_name) ? ucfirst($Participant_4_name) : '',
             "PREFERREDDATE"  => isset($preferred_date) && !empty($preferred_date) ? $preferred_date : '',
-            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? $run_category : ''
+            "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? ucfirst($run_category) : ''
         );
 
         $Subject = "";
@@ -2647,9 +2787,9 @@ class EventTicketController extends Controller
                 $MessageContent = $Communications[0]->message_content;
                 $Subject = $Communications[0]->subject_name;
             } else {
-                $MessageContent = "Dear " . $first_name . " " . $last_name . ",
+                $MessageContent = "Dear " . ucfirst($first_name) . " " . ucfirst($last_name) . ",
                      <br/><br/>
-                    Thank you for registering for " . $Event[0]->name . "! We are thrilled to have you join us.
+                    Thank you for registering for " . ucfirst($Event[0]->name) . "! We are thrilled to have you join us.
                      <br/><br/>
                     Event Details:
                      <br/><br/>
@@ -2662,16 +2802,16 @@ class EventTicketController extends Controller
                     We look forward to seeing you at the event!
                      <br/><br/>
                     Best regards,<br/>
-                    " . $Event[0]->name . " Team";
+                    " . ucfirst($Event[0]->name) . " Team";
 
                 if($CommEmailType == 1){
-                    $Subject = "Event Registration Confirmation - " . $Event[0]->name . "";
+                    $Subject = "Event Registration Confirmation - " . ucfirst($Event[0]->name) . "";
                 }else if($CommEmailType == 2){
-                    $Subject = "BIB Collection Details - " . $Event[0]->name . "";
+                    $Subject = "BIB Collection Details - " . ucfirst($Event[0]->name) . "";
                 }else if($CommEmailType == 3){
-                    $Subject = "Event Day Details - " . $Event[0]->name . "";
+                    $Subject = "Event Day Details - " . ucfirst($Event[0]->name) . "";
                 }else if($CommEmailType == 4){
-                    $Subject = "Thank You Mailer - " . $Event[0]->name . "";
+                    $Subject = "Thank You Mailer - " . ucfirst($Event[0]->name) . "";
                 }
             }
         }
@@ -2692,8 +2832,13 @@ class EventTicketController extends Controller
             $MessageContent .= $attach_image;
         }
         // dd($MessageContent);
+         //--------------- new added for generate pdf ----------------
+        // dd($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,$ticket_paid_amount);
+        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,$ticket_paid_amount);
+         // dd($generatePdf);
+
         $Email = new Emails();
-        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag);
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, 0, $generatePdf);
 
         return;
     }

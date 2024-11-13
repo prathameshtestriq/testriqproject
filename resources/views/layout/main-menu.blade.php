@@ -59,11 +59,19 @@
                   <span class="menu-item text-truncate" data-i18n="List">Download Database Backup</span>
                   </a>
                </li>
+
+               <li>
+                  <a class="d-flex align-items-center" href="{{ url('/index_mode') }}">
+                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 00.11-.65l-2-3.46a.5.5 0 00-.61-.22l-2.49 1a7.07 7.07 0 00-1.69-.98L13 2.5a.5.5 0 00-.5-.5h-4a.5.5 0 00-.5.5l-.38 2.52a7.07 7.07 0 00-1.69.98l-2.49-1a.5.5 0 00-.61.22l-2 3.46a.5.5 0 00.11.65l2.11 1.65c-.05.32-.08.65-.08.98s.03.66.08.98l-2.11 1.65a.5.5 0 00-.11.65l2 3.46a.5.5 0 00.61.22l2.49-1c.5.38 1.05.72 1.69.98l.38 2.52c0 .28.22.5.5.5h4c.28 0 .5-.22.5-.5l.38-2.52c.64-.26 1.19-.6 1.69-.98l2.49 1a.5.5 0 00.61-.22l2-3.46a.5.5 0 00-.11-.65l-2.1-1.66zm-7.43 2.52c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                    </svg>                    
+                  <span class="menu-item text-truncate" data-i18n="Edit">Setting</span>
+                  </a>
+               </li>
        
                <li>
                   <a class="d-flex align-items-center" href="{{ url('/logout') }}">
                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
-                  {{-- <i data-feather='log-out'></i> --}}
                   <span class="menu-item text-truncate" data-i18n="Edit">Logout</span>
                   </a>
                </li>

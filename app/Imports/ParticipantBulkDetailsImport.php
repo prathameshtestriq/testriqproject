@@ -52,7 +52,9 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
             // dd($question_form_name_array);
 
             // dd($collection);
-            $FinalFormQuestions = $FinalHeaderData = $selected_ticket_array = $ticket_ids_array = [];
+            $FinalFormQuestions = $FinalHeaderData = $selected_ticket_array = $ticket_ids_array = []; $Final_ticket_amount = 0; 
+            $total_extra_amount = 0;
+
             foreach ($collection as $key=>$row)
             {
                 //echo $row['email_address'].'<br>'
@@ -74,12 +76,12 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     });
                     //--------------------------
 
-                    $exSheetTicketName = isset($row['ticket_name']) ? $row['ticket_name']: '';
-                    // $exSheetTicketName1 = $question_form_name_array[$row['first_name']];
-                    // dd($exSheetTicketName1);
+                    $exSheetTicketName  = isset($row['ticket_name']) ? $row['ticket_name']: '';
+                    $exSheetTicketPrice = isset($row['ticket_price']) ? $row['ticket_price']: '';
+
                     $sSQL = 'SELECT id,ticket_name FROM event_tickets WHERE event_id =:event_id AND LOWER(ticket_name) =:ticket_name';
                     $AllTickets = DB::select($sSQL, array('event_id' => $event_id, 'ticket_name' => strtolower($exSheetTicketName)));
-                    // dd($AllTickets);
+                    // dd($FinalHeaderData);
 
                     if(!empty($AllTickets)){
                         foreach ($AllTickets as $ticket) {
@@ -98,8 +100,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                             
                             if(!empty($FormQuestions))
                                 foreach ($FormQuestions as $value) {
-                                    
-                                    //---------- check type [select, radio]
+                                    //---------- check type [select, radio] $value->question_form_type == "select" || 
                                     if (!empty($value->question_form_option) && ($value->question_form_type == "select" || $value->question_form_type == "radio") ) {
                                 
                                         $question_form_name = str_replace("_?", "", strtolower(trim($value->question_form_name)));
@@ -107,21 +108,26 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                         $question_form_name = str_replace("-", "_", $question_form_name);
                                         // dd($question_form_name);
                                         if(isset($FinalHeaderData[$question_form_name])){
-                                            $selectedValue = (isset($FinalHeaderData[$question_form_name])) ? str_replace("_?", "", $FinalHeaderData[$question_form_name]) : "";
-                                        }else{
+                                            $selectedValue = (isset($FinalHeaderData[$question_form_name])) ? $FinalHeaderData[$question_form_name] : "";
+                                        }else if($value->question_form_name == "sub_question"){
+                                            $question_label_name = str_replace(" ", "_", strtolower(trim($value->question_label)));
+                                            $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
+                                        }
+                                        else{
                                             $selectedValue = (isset($FinalHeaderData[$value->user_field_mapping])) ? $FinalHeaderData[$value->user_field_mapping] : "";
                                         }
- 
+                                    
                                         $jsonString = $value->question_form_option;
                                         $optionArray = json_decode($jsonString, true);
-                                        
+                                         
                                         // Get the id if the label exists
                                         if(!empty($selectedValue)){
                                             $index = array_search($selectedValue, array_column($optionArray, "label"));
                                             $option_id = $index !== false ? $optionArray[$index]['id'] : null;
                                             $value->ActualValue = (string)$option_id;
                                         }else
-                                           $value->ActualValue = '';  
+                                           $value->ActualValue = '';
+                                           // dd($value->ActualValue);
                                     }else if($value->question_form_type == "countries"){
                                         $selectedCountry = (isset($FinalHeaderData[$value->user_field_mapping])) ? $FinalHeaderData[$value->user_field_mapping] : "";
                                         $sql = "SELECT id,name AS label FROM countries WHERE flag=1 AND name = '".$selectedCountry."' order by name asc";
@@ -156,13 +162,25 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
 
                                         $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject( (isset($FinalHeaderData[$value->question_form_name])) ? $FinalHeaderData[$value->question_form_name] : "");
                                         $value->ActualValue = $date->format('Y-m-d');
-                                    }else{  // [text]
+
+                                    }else if($value->question_form_type == "amount"){
+                                        $question_label_name = str_replace(" ", "_", strtolower(trim($value->question_label)));
+                                        $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
+                                        $value->ActualValue = !empty($selectedValue) ? $selectedValue : 0;
+                                    }
+                                    else{  // [text]
                                         $value->ActualValue = (isset($FinalHeaderData[$value->question_form_name])) ? $FinalHeaderData[$value->question_form_name] : "";
                                     }
                                     
                                     
                                     $value->Error = "";
                                     $value->TicketId = isset($ticket->id) ? $ticket->id : 0;
+                                    
+                                    //---------------- new extra amount total
+                                    if($value->question_form_type == "amount"){
+                                        if(!empty($value->ActualValue))
+                                            $total_extra_amount += $value->ActualValue;
+                                    }
                                 }
                             
                            // / for ($i = 0; $i < 1; $i++) {
@@ -193,6 +211,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
             } 
             // dd($FinalHeaderData,$FormQuestions);
            // dd($this->returnData['emailAddressNotFound']);
+             // dd($total_extra_amount);
             //--------------------- data insert --------------------
 
             $Amount = !empty($request->amount) ? $request->amount : '0.00';
@@ -338,11 +357,20 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
             $GST_On_Platform_Fees = 18;
             $Payment_Gateway_Gst = 18;
                  // dd($AllTickets);  
-            $cart_details_array = [];
+            $cart_details_array = []; 
+            $Final_ticket_count = 0;
+            $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = $additional_amount = $Final_Extra_Amount = 0;
+
             if(!empty($AllTickets)){
                 foreach($AllTickets as $res){
-                    
-                     if(!empty($aCatChargesResult)){
+                     
+                    if(!empty($exSheetTicketPrice) && is_numeric($exSheetTicketPrice)) {
+                        $res->ticket_price = floatval($exSheetTicketPrice);
+                    }else{
+                        $res->ticket_price = $res->ticket_price;
+                    }
+                                        
+                    if(!empty($aCatChargesResult)){
                         for ($i=0; $i < count($aCatChargesResult); $i++) { 
                             // dd($aCatChargesResult[$i]->convenience_fee);
                             if ($aCatChargesResult[$i]->registration_amount >= floatval($res->ticket_price)){
@@ -367,7 +395,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                         $Basic_Amount_Gst = (floatval($BasePriceGst) + floatval($res->ticket_price));
                     } else {
                         $BasePriceGst = '0.00';
-                        $Basic_Amount_Gst = floatval($BasePriceGst); // registration amt
+                        $Basic_Amount_Gst = floatval($res->ticket_price); // registration amt
                     }
 
                     // dd($ConvenienceFeeBase,$NewPlatformFee,$NewPaymentGatewayFee);
@@ -375,7 +403,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                         //console.log('ss');
                         $Convenience_Fee_Amount = (int)$ConvenienceFeeBase;
                     }else{
-                        $Convenience_Fee_Amount = $Basic_Amount_Gst * ($ConvenienceFeeBase / 100);  
+                        $Convenience_Fee_Amount = $Basic_Amount_Gst * ((int)$ConvenienceFeeBase / 100);  
                     }
 
                     $GST_On_Convenience_Fees = floatval($Convenience_Fee_Amount) * ($Convenience_Fees_Gst_Percentage / 100); // GST 18%
@@ -384,6 +412,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $Total_Platform_Fees = (floatval($NewPlatformFee) + floatval($GST_On_Platform_Fees_Amount));
                     $Net_Registration_Amount = (floatval($Basic_Amount_Gst) + floatval($Total_Convenience_Fees) + floatval($Total_Platform_Fees));
 
+                    // dd($res->player_of_fee,$res->player_of_gateway_fee);
                     if((int)$res->player_of_fee == 1 && (int)$res->player_of_gateway_fee == 1) {  //Organiser + Organiser
         
                         $Payment_Gateway_Buyer = $Basic_Amount_Gst * ($NewPaymentGatewayFee / 100); // 1.85%
@@ -392,6 +421,9 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                         $BuyerPayment = $Basic_Amount_Gst;  // yes
                         $totalPlatformFee = 0;
                         $totalTaxes = floatval($BasePriceGst);
+                        
+                        //------------- additional amt calculation
+                        $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
 
                     }else if((int)$res->player_of_fee == 2 && (int)$res->player_of_gateway_fee == 2) {  // Participant + Participant
                         
@@ -401,6 +433,14 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                         $BuyerPayment = (floatval($Total_Payment_Gateway) + floatval($Net_Registration_Amount));
                         $totalPlatformFee = floatval($Convenience_Fee_Amount) + floatval($NewPlatformFee) + floatval($Payment_Gateway_Buyer);
                         $totalTaxes = floatval($BasePriceGst) + floatval($GST_On_Convenience_Fees) + floatval($GST_On_Platform_Fees_Amount) + floatval($Payment_Gateway_gst_amount);
+                        // dd($Convenience_Fee_Amount,$NewPlatformFee,$Payment_Gateway_Buyer);
+                        
+                        //--------------- additional amt calculation
+                        if(!empty($total_extra_amount)){
+                            $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
+                            $Extra_Amount_Payment_Gateway = $total_extra_amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                            $Extra_Amount_Payment_Gateway_Gst = $Extra_Amount_Payment_Gateway * ($Payment_Gateway_Gst / 100); //18%
+                        }
 
                     }else if((int)$res->player_of_fee == 1 && (int)$res->player_of_gateway_fee == 2) { // Organiser + Participant
                         
@@ -411,9 +451,19 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                         $totalPlatformFee = floatval($Payment_Gateway_Buyer);
                         $totalTaxes = floatval($BasePriceGst) + floatval($Payment_Gateway_gst_amount);
 
+                        //------------- additional amt calculation
+                        $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
+
                     }else if((int)$res->player_of_fee == 2 && (int)$res->player_of_gateway_fee == 1) { // Participant + Organiser
                         
-                        $Payment_Gateway_Buyer = $Net_Registration_Amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                        //--------------- additional amt calculation
+                        if(!empty($total_extra_amount)){
+                            $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
+                            $Payment_Gateway_Buyer = ($additional_amount + $Net_Registration_Amount) * ($NewPaymentGatewayFee / 100); // 1.85%
+                        }else{
+                            $Payment_Gateway_Buyer = $Net_Registration_Amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                        }
+
                         $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
                         $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
                         $BuyerPayment = (floatval($Basic_Amount_Gst) + floatval($Total_Convenience_Fees) + floatval($Total_Platform_Fees) );
@@ -426,7 +476,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $res->Main_Price  = number_format($res->ticket_price,2);
                     $res->OrgPayment  = '0.00';
                     $res->YtcrAmount  = number_format(($res->ticket_price * ($res->YTCR_FEE_PERCENT /100)),2);
-                    $res->Extra_Amount  = '0.00';
+                    $res->Extra_Amount  = number_format($additional_amount,2);
                     $res->Total_Taxes   = number_format($totalTaxes,2);
                     $res->BuyerPayment  = number_format($BuyerPayment,2);
                     $res->Platform_Fee  = number_format($NewPlatformFee,2);
@@ -450,15 +500,24 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $res->PaymentGatewayPercentage  = $res->PAYMENT_GATEWAY_FEE_PERCENT;
                     $res->RegistrationGstPercentage  = $res->OrgGstPercentage;
                     $res->PaymentGatewayGstPercentage  = $res->PAYMENT_GATEWAY_GST_PERCENT;
-                    $res->Extra_Amount_Payment_Gateway  = '0.00';
+                    $res->Extra_Amount_Payment_Gateway  = number_format($Extra_Amount_Payment_Gateway,2);
                     $res->BuyerAmtWithoutPaymentGateway  = '0.00';
-                    $res->Extra_Amount_Payment_Gateway_Gst  = '0.00';
+                    $res->Extra_Amount_Payment_Gateway_Gst  = number_format($Extra_Amount_Payment_Gateway_Gst,2);
 
                     $cart_details_array[] = $res;
+
+                    //------------- final ticket value
+                    $Final_ticket_amount += $BuyerPayment;
+                    $Final_ticket_count  += $value->count;
+                    $Final_Extra_Amount  += ($additional_amount+$Extra_Amount_Payment_Gateway+$Extra_Amount_Payment_Gateway_Gst);
+                   
                 }
             }
-            // dd(json_encode($cart_details_array));
+            // dd($Final_ticket_amount,$Final_ticket_count,$Final_Extra_Amount);
 
+            //----------- Ticket grand total
+            $Final_calculated_ticket_amount = (($Final_ticket_amount*$Final_ticket_count)+$Final_Extra_Amount);
+             // dd($Final_calculated_ticket_amount);
 
             //----------------------------- insert data for (booking_payment_details) table
             $Bindings = array(
@@ -469,7 +528,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 "email" => $Email,
                 "phone_no" => $PhoneNo,
                 "productinfo" => $ProductInfo,
-                "amount" => $Amount,
+                "amount" => !empty($Final_calculated_ticket_amount) ? number_format($Final_calculated_ticket_amount,2) : 0,
                 "merchant_key" => $Merchant_key,
                 "hash" => $hash,
                 "created_by" => $userId,
@@ -489,7 +548,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 "event_id" => $event_id,
                 "user_id" => $userId,
                 "booking_date" => strtotime("now"),
-                "total_amount" => '0.00',
+                "total_amount" => !empty($Final_calculated_ticket_amount) ? number_format($Final_calculated_ticket_amount,2) : 0,
                 "total_discount" => '0.00',
                 "cart_details" => !empty($cart_details_array) ? json_encode($cart_details_array) : '[{}]',  // json_encode($GstArray),
                 "transaction_status" => 1,

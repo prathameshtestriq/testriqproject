@@ -1364,7 +1364,7 @@ class EventController extends Controller
                     $res->discount_coupon_flag = !empty($CouponDetailsResult) && count($CouponDetailsResult) > 1 ? 1 : 0;
 
                     foreach ($CouponDetailsResult as $val) {
-                        $res->multiple_coupon_details[] = $val->discount_code;
+                        $res->multiple_coupon_details[] = ['id' => $val->event_coupon_id, 'name' => $val->discount_code, 'edit_id' => $val->edit_id];
                     }
                 }
             }
@@ -1646,10 +1646,17 @@ class EventController extends Controller
                 $EventId = $aPost['event_id'];
                 $Description = !empty($request->event_description) ? $request->event_description : '';
                 $event_keywords = !empty($request->event_keywords) ? $request->event_keywords : '';
-
+                $background_color = !empty($request->background_color) ? $request->background_color : '';
+                $background_status = !empty($request->background_status) ? $request->background_status : 0;
+               
                 // if (preg_match("/^[a-zA-Z-']*$/", $Description)) {
                 $banner_image = '';
                 $event_image = '';
+
+                if(!empty($background_status))
+                    $background_color = $background_color;
+                else
+                    $background_color = '';
 
                 //------------ description image upload for (ckeditor)
                 $content_image = '';
@@ -1673,16 +1680,20 @@ class EventController extends Controller
                     "description" => $final_description,
                     "event_keywords" => $event_keywords,
                     "description_image" => $content_image,
+                    "banner_bg_color"   => $background_color,
+                    "background_status"   => $background_status,
                     "id" => $EventId
                     ];
-                    $sql = 'UPDATE events SET event_description=:description, event_keywords=:event_keywords, description_image=:description_image WHERE id=:id';
+                    $sql = 'UPDATE events SET event_description=:description, event_keywords=:event_keywords, description_image=:description_image, banner_bg_color=:banner_bg_color, background_status=:background_status WHERE id=:id';
                 }else{
                     $bindings = [
                     "description" => $final_description,
                     "event_keywords" => $event_keywords,
+                    "banner_bg_color"   => $background_color,
+                    "background_status"   => $background_status,
                     "id" => $EventId
                     ];
-                    $sql = 'UPDATE events SET event_description=:description, event_keywords=:event_keywords WHERE id=:id';
+                    $sql = 'UPDATE events SET event_description=:description, event_keywords=:event_keywords, banner_bg_color=:banner_bg_color, background_status=:background_status WHERE id=:id';
                 }
                
         
@@ -2304,6 +2315,7 @@ class EventController extends Controller
 
             $EventId = !empty($request->event_id) ? $request->event_id : 0;
             $EventCommId = !empty($request->event_comm_id) ? $request->event_comm_id : 0;
+            $CouponId = isset($request->coupon_id) && !empty($request->coupon_id) ? $request->coupon_id : 0;
             $EventEditFlag = !empty($request->event_edit_flag) ? $request->event_edit_flag : '';
 
             if ($EventEditFlag == 'communication_edit') {
@@ -2377,7 +2389,11 @@ class EventController extends Controller
 
                 if (!empty($CouponResult)) {
                     foreach ($CouponResult as $res) {
-                        $sql2 = "SELECT * FROM event_coupon_details WHERE event_id=:event_id AND event_coupon_id=:event_coupon_id ";
+                        $sql2 = "SELECT * FROM event_coupon_details WHERE event_id=:event_id AND edit_id=:event_coupon_id ";
+                       
+                        if(!empty($CouponId))
+                            $sql2 .= ' AND event_coupon_id ='.$CouponId;
+            
                         $CouponDetailsResult = DB::select($sql2, array('event_id' => $EventId, 'event_coupon_id' => $res->id));
 
                         $res->discount_amt_per_type = !empty($CouponDetailsResult[0]->discount_amt_per_type) ? (string) $CouponDetailsResult[0]->discount_amt_per_type : '';
@@ -2492,6 +2508,7 @@ class EventController extends Controller
                 $UploadedCsv = !empty($request->upload_csv) ? $request->file('upload_csv') : '';
 
                 $EditCouponId = !empty($request->edit_coupon_id) ? $request->edit_coupon_id : '';
+                $CouponId = !empty($request->coupon_id) ? $request->coupon_id : '';
 
                 //---------- all ticket apply -----------
                 $ticket_ids = '';
@@ -2740,13 +2757,22 @@ class EventController extends Controller
                                     "discount_type" => $DiscountType,
                                     "discount_name" => $DiscountName,
                                     "description" => $description,
-                                    "discount_code" => $DiscountCode,
                                     "show_public" => $show_public,
                                     "event_id" => $EventId,
                                 );
-                                $edit_sql1 = 'UPDATE event_coupon SET discount_type = :discount_type, discount_name = :discount_name, description = :description, discount_code =:discount_code, show_public =:show_public  WHERE event_id = :event_id AND id IN('.$edit_ids.')';
+                                $edit_sql1 = 'UPDATE event_coupon SET discount_type = :discount_type, discount_name = :discount_name, description = :description, show_public =:show_public  WHERE event_id = :event_id AND id IN('.$edit_ids.')';
                                 DB::update($edit_sql1, $Bindings1);
                             }
+
+                            // if(!empty($CouponId)){
+                            //     $Bindings2 = array(
+                            //         "discount_code" => $DiscountCode,
+                            //         "event_id" => $EventId,
+                            //         "coupon_id" => $CouponId,
+                            //     );
+                            //     $edit_sql2 = 'UPDATE event_coupon SET discount_code = :discount_code WHERE event_id = :event_id AND id = :coupon_id';
+                            //     DB::update($edit_sql2, $Bindings2);
+                            // }
                             
                         }
 
@@ -2780,6 +2806,16 @@ class EventController extends Controller
                             );
                         } else {
 
+                            // if(!empty($CouponId)){
+                            //     $Bindings2 = array(
+                            //         "discount_code" => $DiscountCode,
+                            //         "event_id" => $EventId,
+                            //         "coupon_id" => $CouponId,
+                            //     );
+                            //     $edit_sql2 = 'UPDATE event_coupon_details SET discount_code = :discount_code WHERE event_id = :event_id AND event_coupon_id = :coupon_id';
+                            //     DB::update($edit_sql2, $Bindings2);
+                            // }
+
                             $Bindings1 = array(
                                 "discount_name" => $DiscountName,
                                 "discount_type" => $DiscountType,
@@ -2809,6 +2845,84 @@ class EventController extends Controller
                 ////
 
 
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+        return response()->json($response, $ResposneCode);
+    }
+
+    public function addEditCouponCode(Request $request)
+    {
+        // return $request->file('upload_csv');
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $flag = 0;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                
+                $EventId = $aPost['event_id'];
+                $EditCouponId = !empty($request->edit_coupon_id) ? $request->edit_coupon_id : '';
+                $CouponId = !empty($request->coupon_id) ? $request->coupon_id : '';
+                $DiscountCode = !empty($request->DiscountCodeEdit) ? $request->DiscountCodeEdit : '';
+
+                $SQL = "SELECT discount_name FROM event_coupon WHERE LOWER(discount_code) = :discount_code AND event_id = :event_id AND id != :edit_id";
+                $IsExist = DB::select($SQL, array('discount_code' => strtolower($DiscountCode), "event_id" => $EventId, "edit_id" => $CouponId));
+
+                if (!empty($IsExist)) {
+                        $ResposneCode = 200;
+                        $message = "Discount code is already exists, please use another.";
+                        $ResponseData = 2;
+                }else{
+
+                    if(!empty($CouponId) && !empty($DiscountCode)){
+                        $Bindings2 = array(
+                            "discount_code" => $DiscountCode,
+                            "event_id" => $EventId,
+                            "coupon_id" => $CouponId,
+                        );
+                        $edit_sql2 = 'UPDATE event_coupon SET discount_code = :discount_code WHERE event_id = :event_id AND id = :coupon_id';
+                        DB::update($edit_sql2, $Bindings2);
+
+                        $Bindings3 = array(
+                            "discount_code" => $DiscountCode,
+                            "event_id" => $EventId,
+                            "coupon_id" => $CouponId,
+                        );
+                        $edit_sql3 = 'UPDATE event_coupon_details SET discount_code = :discount_code WHERE event_id = :event_id AND event_coupon_id = :coupon_id';
+                        DB::update($edit_sql3, $Bindings3);
+                    }
+
+                    $ResposneCode = 200;
+                    $message = "Discount code updated successfully";
+                    $ResponseData = 1;
+                }
+                  
             } else {
                 $ResposneCode = 400;
                 $message = $field . ' is empty';

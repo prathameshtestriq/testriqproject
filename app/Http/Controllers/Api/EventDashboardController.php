@@ -885,7 +885,7 @@ class EventDashboardController extends Controller
                                     if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
                                         if (!empty($val->question_form_option)) {
                                             $question_form_option = json_decode($val->question_form_option, true);
-                                           
+                                            $label = '';
                                             if($val->question_form_type == "radio" || $val->question_form_type == "select"){
                                                 if(isset($val->ActualValue) && !empty($val->ActualValue)){
                                                     foreach ($question_form_option as $option) {
@@ -895,7 +895,6 @@ class EventDashboardController extends Controller
                                                         }
                                                     }
                                                 }
-                                                
                                             }else if($val->question_form_type == "checkbox"){
                                                 if(isset($val->ActualValue) && !empty($val->ActualValue)){
                                                     foreach ($question_form_option as $option) {
@@ -990,7 +989,7 @@ class EventDashboardController extends Controller
                                 }
                             }
                         }
-                        // dd($show_utm);
+                        // dd($ExcellDataArray);
 
                         $url = env('APP_URL') . '/public/';
                         //dd($url);
