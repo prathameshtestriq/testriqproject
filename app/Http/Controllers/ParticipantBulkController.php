@@ -169,7 +169,7 @@ class ParticipantBulkController extends Controller
 
     function participants_excel_export($event_name)
     {   
-        $filename = "participant_Excel_" .$event_name.".xlsx";
+        $filename = "participant_Excel_" .$event_name;
         $path = 'attendee_details_excell/' . date('Ymd') . '/';
         $data = Excel::store(new participantworkExport(), $path . '/' . $filename . '.xlsx', 'excel_uploads');
         $excel_url = url($path) . "/" . $filename . ".xlsx";
