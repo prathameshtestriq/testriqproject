@@ -34,6 +34,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\MasterCMSController;
 use App\Http\Controllers\ParticipantBulkController;
 use App\Http\Controllers\MaintenanceModeController;
+use App\Http\Controllers\EmailPlaceholderController;
 
 //--------------------------------------------
 
@@ -236,5 +237,14 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match (['get', 'post'], 'index_mode', [MaintenanceModeController::class, 'index_mode'])->name('index_mode');
 
     Route::match (['get', 'post'], 'user/change_status_mode', [MaintenanceModeController::class, 'change_active_status_mode'])->name('change_status_mode_user');
+
+    // # Email Placeholder Management
+    Route::match (['get', 'post'], '/email_placeholder_management', [EmailPlaceholderController::class, 'index'])->name('index');
+    Route::match(['get', 'post'],'email_placeholder_management/add', [EmailPlaceholderController::class,'add_edit'])->name('add_email_placeholder_management');
+    Route::match(['get', 'post'],'email_placeholder_management/edit/{Id}', [EmailPlaceholderController::class,'add_edit'])->name('edit_email_placeholder_management');
+    Route::match (['get'], 'email_placeholder_management/delete/{id}', [EmailPlaceholderController::class, 'delete_email_placeholder_management'])->name('delete_email_placeholder_management');
+    Route::match(['get', 'post'], 'email_placeholder_management/change_status', [EmailPlaceholderController::class, 'change_active_status'])->name('change_status_email_placeholder_management');
+    Route::match (['get', 'post'], '/get_questions', [EmailPlaceholderController::class, 'get_questionsby_event'])->name('get_questions_email');
+    Route::get('/email_placeholder_management/clear_search', [EmailPlaceholderController::class, 'clear_search'])->name('clear_search_email_placeholder_management');
 
 });

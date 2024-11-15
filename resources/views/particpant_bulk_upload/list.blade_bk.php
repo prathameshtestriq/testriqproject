@@ -168,92 +168,9 @@
                             </table>
                         </div>
 
-                        {{-- Neha Working on 15-11-24  start working --}}<br/>
-                            <?php if(!empty($search_event)) { ?>
-                                <div class="row" id="table-bordered">
-                                    <div class="col-12">
-                                        <div class="card ">
-                                            <div class="row px-1">
-                                                <div class="col-sm-8 float-right">
-                                                    <h3 class="content-header-title float-left mb-0">Ticket Details</h3>
-                                                </div>
-                                            </div> <br>
-                                                <div class="table-responsive">
-                                                    <table class="table table-striped table-bordered">
-                                                        <thead>
-                                                            <tr>
-                                                                <th class="text-center">Sr. No</th>
-                                                                <th class="text-left">Ticket Name</th>
-                                                                <th class="text-left">Ticket Status</th>
-                                                                <th class="text-center">Ticket Amount</th>
-                                                                <th class="text-center">Total Quantity</th>
-                                                                <th class="text-center">Early Bird Discount</th>
-                                                                <th class="text-left">Start Date</th>
-                                                                <th class="text-left">End Date</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody class="text-center">
-                                                            <?php 
-                                                            if (!empty($Ticket_details)){
-                                                                $i = 1;
-                                                                foreach ($Ticket_details as $val){
-                                                            ?>
-                                                                <tr>
-                                                                    <td class="text-center">{{ $i }}</td>
-                                                                    <td class="text-left">{{ ucfirst($val->ticket_name) }}</td>
-                                                                    <td class="text-center">
-                                                                        <?php
-                                                                        {{ 
-                                                                        if ($val->ticket_status == 1) {
-                                                                            echo "Paid";
-                                                                        }elseif ($val->ticket_status == 2) {
-                                                                            echo "Free";
-                                                                        }elseif ($val->ticket_status == 3) {
-                                                                            echo "Donation";
-                                                                        }
-                        
-                                                                        }}  ?>
-                                                                    </td>
-                                                                    <td class="text-center">{{ $val->ticket_price }}</td>
-                                                                    <td class="text-center">{{ $val->total_quantity }}</td>
-                                                                    <td class="text-center">
-                                                                        <?php
-                                                                        {{ 
-                                                                        if ($val->early_bird == 0) {
-                                                                            echo "No";
-                                                                        }elseif ($val->early_bird == 1) {
-                                                                            echo "Yes";
-                                                                        }
-                        
-                                                                        }}  ?>
-                                                                    </td>
-                                                                    <td class="text-left">{{ date('d-m-Y h:i A',$val->ticket_sale_start_date) }}</td>
-                                                                    <td class="text-left">{{ date('d-m-Y h:i A',$val->ticket_sale_end_date) }}</td>
-                                                                </tr>
-                                                            <?php
-                                                            $i++;
-                                                            }  
-                                                            }else{
-                                                            ?>
-                                                                <tr>
-                                                                    <td colspan="16" style="text-align:center; color:red;">No Record Found</td>
-                                                                </tr>
-                                                            <?php }?>
-                                                        
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php } ?>
-                        {{-- neha end working --}}
-
                     </div>
                 </div>
             </div>
-
-            
 
             <!-- ------------------------------------------ -->
             <?php if(!empty($search_event)) { ?>

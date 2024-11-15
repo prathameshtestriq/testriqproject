@@ -53,7 +53,8 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
 
             // dd($collection);
             $FinalFormQuestions = $FinalHeaderData = $selected_ticket_array = $ticket_ids_array = []; $Final_ticket_amount = 0; 
-            $total_extra_amount = 0;
+            $total_extra_amount = $ticket_amt = 0;
+            $excel_ticket_price_array = $excel_single_ticket_price = [];
 
             foreach ($collection as $key=>$row)
             {
@@ -79,9 +80,9 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $exSheetTicketName  = isset($row['ticket_name']) ? $row['ticket_name']: '';
                     $exSheetTicketPrice = isset($row['ticket_price']) ? $row['ticket_price']: '';
 
-                    $sSQL = 'SELECT id,ticket_name FROM event_tickets WHERE event_id =:event_id AND LOWER(ticket_name) =:ticket_name';
+                    $sSQL = 'SELECT id,ticket_name,player_of_fee,player_of_gateway_fee FROM event_tickets WHERE event_id =:event_id AND LOWER(ticket_name) =:ticket_name';
                     $AllTickets = DB::select($sSQL, array('event_id' => $event_id, 'ticket_name' => strtolower($exSheetTicketName)));
-                    // dd($FinalHeaderData);
+                    // dd($AllTickets);
 
                     if(!empty($AllTickets)){
                         foreach ($AllTickets as $ticket) {
@@ -185,9 +186,9 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                             
                            // / for ($i = 0; $i < 1; $i++) {
                                 if (count($FormQuestions) > 0)
-                                    $FinalFormQuestions[$ticket->id][] = $FormQuestions;
+                                    $FinalFormQuestions[$ticket->id][] = ["form_array" => $FormQuestions, "ticket_amount" => !empty($exSheetTicketPrice) ? $exSheetTicketPrice : 0, "player_of_fee" => $ticket->player_of_fee , "player_of_gateway_fee" => $ticket->player_of_gateway_fee] ;
                             // }
-                            $ticket_ids_array[] = $ticket->id;
+                            $ticket_ids_array[] = $ticket->id;  
 
                             //------------- 
                             if(isset($selected_ticket_array[$ticket->id])){
@@ -195,6 +196,15 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                             }else{
                                 $selected_ticket_array[$ticket->id] = 1;
                             }
+                           
+                            //----- new added
+                            if(isset($excel_ticket_price_array[$ticket->id])){
+                                $excel_ticket_price_array[$ticket->id] += $exSheetTicketPrice;
+                            }else{
+                                $excel_ticket_price_array[$ticket->id] = $exSheetTicketPrice;
+                            }
+
+                            // $excel_single_ticket_price[] = ["ticket_id" => $ticket->id, "ticket_amount" => !empty($exSheetTicketPrice) ? $exSheetTicketPrice : 0 ];
                         }
                     }
                     
@@ -209,9 +219,9 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                   }
                 }
             } 
-            // dd($FinalHeaderData,$FormQuestions);
-           // dd($this->returnData['emailAddressNotFound']);
-             // dd($total_extra_amount);
+           // dd($FinalHeaderData,$FormQuestions);
+            // dd($FinalFormQuestions);
+          
             //--------------------- data insert --------------------
 
             $Amount = !empty($request->amount) ? $request->amount : '0.00';
@@ -363,12 +373,16 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
 
             if(!empty($AllTickets)){
                 foreach($AllTickets as $res){
-                     
-                    if(!empty($exSheetTicketPrice) && is_numeric($exSheetTicketPrice)) {
-                        $res->ticket_price = floatval($exSheetTicketPrice);
-                    }else{
+                    
+                    $res->single_ticket_price = $res->ticket_price;
+
+                    if(isset($excel_ticket_price_array[$res->id]))
+                        $res->ticket_price = $excel_ticket_price_array[$res->id];
+                    else
                         $res->ticket_price = $res->ticket_price;
-                    }
+
+                    //$res->ticket_price = ($res->ticket_price * $res->count);
+                    // dd($res->ticket_price);
                                         
                     if(!empty($aCatChargesResult)){
                         for ($i=0; $i < count($aCatChargesResult); $i++) { 
@@ -388,7 +402,8 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                             }
                         }
                     }
-
+                    
+                    $NewPlatformFee = ($NewPlatformFee * $res->count);
 
                     if ($event_Result[0]->collect_gst == 1 && $event_Result[0]->prices_taxes_status == 2) {
                         $BasePriceGst = floatval($res->ticket_price) != 0 ? floatval($res->ticket_price) * ($GstPercentage / 100) : 0; // GST %
@@ -397,7 +412,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                         $BasePriceGst = '0.00';
                         $Basic_Amount_Gst = floatval($res->ticket_price); // registration amt
                     }
-
+                   
                     // dd($ConvenienceFeeBase,$NewPlatformFee,$NewPaymentGatewayFee);
                     if((int)$ConvenienceFeeBase == 30 || (int)$ConvenienceFeeBase == 40 || (int)$ConvenienceFeeBase == 10){
                         //console.log('ss');
@@ -411,7 +426,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $GST_On_Platform_Fees_Amount = $NewPlatformFee * ($GST_On_Platform_Fees / 100); // GST 18%
                     $Total_Platform_Fees = (floatval($NewPlatformFee) + floatval($GST_On_Platform_Fees_Amount));
                     $Net_Registration_Amount = (floatval($Basic_Amount_Gst) + floatval($Total_Convenience_Fees) + floatval($Total_Platform_Fees));
-
+                   // dd($Convenience_Fee_Amount,$GST_On_Convenience_Fees);
                     // dd($res->player_of_fee,$res->player_of_gateway_fee);
                     if((int)$res->player_of_fee == 1 && (int)$res->player_of_gateway_fee == 1) {  //Organiser + Organiser
         
@@ -422,7 +437,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                         $totalPlatformFee = 0;
                         $totalTaxes = floatval($BasePriceGst);
                         
-                        //------------- additional amt calculation
+                        //------------- additional amt calculation 
                         $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
 
                     }else if((int)$res->player_of_fee == 2 && (int)$res->player_of_gateway_fee == 2) {  // Participant + Participant
@@ -431,6 +446,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                         $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
                         $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
                         $BuyerPayment = (floatval($Total_Payment_Gateway) + floatval($Net_Registration_Amount));
+                        // dd($Convenience_Fee_Amount, $NewPlatformFee, $Payment_Gateway_Buyer);
                         $totalPlatformFee = floatval($Convenience_Fee_Amount) + floatval($NewPlatformFee) + floatval($Payment_Gateway_Buyer);
                         $totalTaxes = floatval($BasePriceGst) + floatval($GST_On_Convenience_Fees) + floatval($GST_On_Platform_Fees_Amount) + floatval($Payment_Gateway_gst_amount);
                         // dd($Convenience_Fee_Amount,$NewPlatformFee,$Payment_Gateway_Buyer);
@@ -507,16 +523,23 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $cart_details_array[] = $res;
 
                     //------------- final ticket value
-                    $Final_ticket_amount += $BuyerPayment;
+                  
                     $Final_ticket_count  += $value->count;
-                    $Final_Extra_Amount  += ($additional_amount+$Extra_Amount_Payment_Gateway+$Extra_Amount_Payment_Gateway_Gst);
-                   
+
+                    if(!empty($res->ticket_price)){
+                        $Final_ticket_amount += $BuyerPayment;
+                        $Final_Extra_Amount  += ($additional_amount+$Extra_Amount_Payment_Gateway+$Extra_Amount_Payment_Gateway_Gst);
+                    }else{
+                        $Final_Extra_Amount = $Final_ticket_amount = 0;
+                    }
+
                 }
             }
-            // dd($Final_ticket_amount,$Final_ticket_count,$Final_Extra_Amount);
+            // dd($Final_ticket_amount,$Final_Extra_Amount);
 
             //----------- Ticket grand total
-            $Final_calculated_ticket_amount = (($Final_ticket_amount*$Final_ticket_count)+$Final_Extra_Amount);
+            // $Final_calculated_ticket_amount = (($Final_ticket_amount*$Final_ticket_count)+$Final_Extra_Amount);
+            $Final_calculated_ticket_amount = ($Final_ticket_amount+$Final_Extra_Amount);
              // dd($Final_calculated_ticket_amount);
 
             //----------------------------- insert data for (booking_payment_details) table
@@ -534,7 +557,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 "created_by" => $userId,
                 "created_datetime" => $Datetime,
                 "counter" => $last_count,
-                "payment_status" => 'success',
+                "payment_status" => !empty($Final_calculated_ticket_amount) ? 'success' : 'free',
                 "bulk_upload_flag" => 1
             );
             
@@ -551,7 +574,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 "total_amount" => !empty($Final_calculated_ticket_amount) ? number_format($Final_calculated_ticket_amount,2) : 0,
                 "total_discount" => '0.00',
                 "cart_details" => !empty($cart_details_array) ? json_encode($cart_details_array) : '[{}]',  // json_encode($GstArray),
-                "transaction_status" => 1,
+                "transaction_status" => !empty($Final_calculated_ticket_amount) ? 1 : 3,
                 "booking_pay_id" => $BookingPaymentId
             );
             // dd($Binding1);
@@ -576,7 +599,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                             "user_id" => $userId,
                             "ticket_id" => $ticket->id,
                             "quantity" => $ticket->count,
-                            "ticket_amount" => !empty($ticket->Main_Price) && isset($ticket->Main_Price) ? $ticket->Main_Price : '0.00', 
+                            "ticket_amount" => !empty($ticket->single_ticket_price) && isset($ticket->single_ticket_price) ? $ticket->single_ticket_price : '0.00', 
                             "ticket_discount" => isset($ticket->ticket_discount) ? ($ticket->ticket_discount) : 0,
                             "booking_date" => strtotime("now"),
                         );
@@ -591,8 +614,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     }
                 }
             }
-            // dd($BookingDetailsIds);
-            // $BookingDetailsId = 3332;
+           
             //----------------------------- insert data for (attendee_booking_details) table
             $separatedArrays = [];
             foreach ($FinalFormQuestions as $key => $arrays) {
@@ -600,15 +622,110 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $separatedArrays[] = json_encode($subArray);
                 }
             }
-            // dd($FinalFormQuestions);
+            // dd($separatedArrays); 
+            $Total_Organiser = 0;
             foreach ($separatedArrays as $key => $value) {
                 $subArray = [];
                 $subArray = json_decode($value);
+                $ticket_price = !empty($subArray->ticket_amount) ? $subArray->ticket_amount : 0;
+               // dd($ticket_price);
+                
+                $attendee_details = json_encode(json_encode($subArray->form_array));
+                // dd($attendee_details);
+                //-----------single ticket calculations                    
+                if(!empty($aCatChargesResult)){
+                    for ($i=0; $i < count($aCatChargesResult); $i++) { 
+                        // dd($aCatChargesResult[$i]->convenience_fee);
+                        if ($aCatChargesResult[$i]->registration_amount >= floatval($ticket_price)){
+                            //console.log($aCatChargesResultDetails[i]['convenience_fee']);
+                            $ConvenienceFeeBase = ($aCatChargesResult[$i]->convenience_fee);
+                            $NewPlatformFee = ($aCatChargesResult[$i]->platform_fee);       // 5 Rs
+                            $NewPaymentGatewayFee = ($aCatChargesResult[$i]->payment_gateway_fee); // 1.85 %
+                            break;
+                        }else if($i == (count($aCatChargesResult)-1) && $aCatChargesResult[$i]->registration_amount <= floatval($ticket_price)){
+                            //console.log($aCatChargesResult[i]['convenience_fee']);
+                            $ConvenienceFeeBase = ($aCatChargesResult[$i]->convenience_fee);
+                            $NewPlatformFee = ($aCatChargesResult[$i]->platform_fee);       // 5 Rs
+                            $NewPaymentGatewayFee = ($aCatChargesResult[$i]->payment_gateway_fee); // 1.85 %
+                            break;
+                        }
+                    }
+                }
+               // dd($ConvenienceFeeBase,$NewPlatformFee,$NewPaymentGatewayFee);
+                if ($event_Result[0]->collect_gst == 1 && $event_Result[0]->prices_taxes_status == 2) {
+                    $BasePriceGst = floatval($ticket_price) != 0 ? floatval($ticket_price) * ($GstPercentage / 100) : 0; // GST %
+                    $Basic_Amount_Gst = (floatval($BasePriceGst) + floatval($ticket_price));
+                } else {
+                    $BasePriceGst = '0.00';
+                    $Basic_Amount_Gst = floatval($ticket_price); // registration amt
+                }
+               
+                // dd($ConvenienceFeeBase,$NewPlatformFee,$NewPaymentGatewayFee,$Basic_Amount_Gst);
+                if((int)$ConvenienceFeeBase == 30 || (int)$ConvenienceFeeBase == 40 || (int)$ConvenienceFeeBase == 10){
+                    //console.log('ss');
+                    $Convenience_Fee_Amount = (int)$ConvenienceFeeBase;
+                }else{
+                    $Convenience_Fee_Amount = $Basic_Amount_Gst * ((int)$ConvenienceFeeBase / 100);  
+                }
+
+                $GST_On_Convenience_Fees = floatval($Convenience_Fee_Amount) * ($Convenience_Fees_Gst_Percentage / 100); // GST 18%
+                $Total_Convenience_Fees = (floatval($Convenience_Fee_Amount) + $GST_On_Convenience_Fees);
+                $GST_On_Platform_Fees_Amount = $NewPlatformFee * ($GST_On_Platform_Fees / 100); // GST 18%
+                $Total_Platform_Fees = (floatval($NewPlatformFee) + floatval($GST_On_Platform_Fees_Amount));
+                $Net_Registration_Amount = (floatval($Basic_Amount_Gst) + floatval($Total_Convenience_Fees) + floatval($Total_Platform_Fees));
+
+                    if((int)$subArray->player_of_fee == 1 && (int)$subArray->player_of_gateway_fee == 1) {  //Organiser + Organiser
+        
+                        $Payment_Gateway_Buyer = $Basic_Amount_Gst * ($NewPaymentGatewayFee / 100); // 1.85%
+                        $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
+                        $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
+                        $BuyerPayment = $Basic_Amount_Gst;  // yes
+                        $totalPlatformFee = 0;
+                        $totalTaxes = floatval($BasePriceGst);
+
+                    }else if((int)$subArray->player_of_fee == 2 && (int)$subArray->player_of_gateway_fee == 2) {  // Participant + Participant
+                        
+                        $Payment_Gateway_Buyer = $Net_Registration_Amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                        $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
+                        $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
+                        $BuyerPayment = (floatval($Total_Payment_Gateway) + floatval($Net_Registration_Amount));
+                        // dd($Convenience_Fee_Amount, $NewPlatformFee, $Payment_Gateway_Buyer);
+                        $totalPlatformFee = floatval($Convenience_Fee_Amount) + floatval($NewPlatformFee) + floatval($Payment_Gateway_Buyer);
+                        $totalTaxes = floatval($BasePriceGst) + floatval($GST_On_Convenience_Fees) + floatval($GST_On_Platform_Fees_Amount) + floatval($Payment_Gateway_gst_amount);
+
+                    }else if((int)$subArray->player_of_fee == 1 && (int)$subArray->player_of_gateway_fee == 2) { // Organiser + Participant
+                        
+                        $Payment_Gateway_Buyer = $Basic_Amount_Gst * ($NewPaymentGatewayFee / 100); // 1.85%
+                        $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
+                        $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
+                        $BuyerPayment = (floatval($Basic_Amount_Gst) + floatval($Total_Payment_Gateway));
+                        $totalPlatformFee = floatval($Payment_Gateway_Buyer);
+                        $totalTaxes = floatval($BasePriceGst) + floatval($Payment_Gateway_gst_amount);
+
+                    }else if((int)$subArray->player_of_fee == 2 && (int)$subArray->player_of_gateway_fee == 1) { // Participant + Organiser
+                        
+                        $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
+                        $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
+                        $BuyerPayment = (floatval($Basic_Amount_Gst) + floatval($Total_Convenience_Fees) + floatval($Total_Platform_Fees) );
+                        $totalPlatformFee = floatval($Convenience_Fee_Amount) + floatval($NewPlatformFee);
+                        $totalTaxes = floatval($BasePriceGst) + floatval($GST_On_Convenience_Fees) + floatval($GST_On_Platform_Fees_Amount);
+                    }
+
+                    $Total_Organiser = (floatval($BuyerPayment) - floatval($Total_Payment_Gateway) - floatval($Total_Platform_Fees) - floatval($Total_Convenience_Fees));
+               
+                    if(!empty($ticket_price) || $ticket_price != 0){
+                        $cart_details_array = ["ExcPriceTaxesStatus" => $event_Result[0]->prices_taxes_status, "Ticket_count" => 1, "Ticket_price" => $ticket_price, "Registration_Fee_GST" => number_format($BasePriceGst,2), "Applied_Coupon_Amount" => 0, "Extra_amount" => 0, "Extra_amount_pg_charges" => 0, "Extra_amount_pg_GST" => 0, "Pass_Bare" => $subArray->player_of_fee, "Pg_Bare" => $subArray->player_of_gateway_fee, "Convenience_fee" => number_format($ConvenienceFeeBase,2), "Convenience_Fee_GST" => number_format($GST_On_Convenience_Fees,2), "Platform_fee" => number_format($NewPlatformFee,2), "Platform_Fee_GST" => number_format($GST_On_Platform_Fees_Amount,2), "Payment_gateway_charges" => number_format($Payment_Gateway_Buyer,2), "Payment_Gateway_GST" => number_format($Payment_Gateway_gst_amount,2), "Organiser_amount" => number_format($Total_Organiser,2), "Final_total_amount" => number_format($BuyerPayment,2) ];
+                    }else{
+                        $cart_details_array = ["ExcPriceTaxesStatus" => $event_Result[0]->prices_taxes_status, "Ticket_count" => 1, "Ticket_price" => 0, "Registration_Fee_GST" => 0, "Applied_Coupon_Amount" => 0, "Extra_amount" => 0, "Extra_amount_pg_charges" => 0, "Extra_amount_pg_GST" => 0, "Pass_Bare" => 0, "Pg_Bare" => 0, "Convenience_fee" => 0, "Convenience_Fee_GST" => 0, "Platform_fee" => 0, "Platform_Fee_GST" => 0, "Payment_gateway_charges" => 0, "Payment_Gateway_GST" => 0, "Organiser_amount" => 0, "Final_total_amount" => 0 ];
+                    }
+               
+               // dd($cart_details_array);
+                //--------------------------------
                 $TicketId = 0;
                 $participants_files = [];
                 // dd($subArray);
                 $isSendEmail = 0;
-                foreach ($subArray as $key => $sArray) {
+                foreach ($subArray->form_array as $key => $sArray) {
                     if (isset($sArray->question_form_name)) {
                         if ($sArray->question_form_name == 'first_name') {
                             $first_name = $sArray->ActualValue;
@@ -632,16 +749,21 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 }
                         
                 $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
-                $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,mobile,created_at) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:mobile,:created_at)";
+                $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,mobile,created_at,ticket_price,final_ticket_price,bulk_upload_flag,cart_detail) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:mobile,:created_at,:ticket_price,:final_ticket_price,:bulk_upload_flag,:cart_detail)";
                 $Bind1 = array(
                     "booking_details_id" => !empty($IdBookingDetails) ? $IdBookingDetails : 0,
                     "ticket_id" => !empty($TicketId) ? $TicketId : $new_ticket_id,
-                    "attendee_details" => json_encode($value),
+                    "attendee_details" => $attendee_details,
                     "email" => isset($email) ? strtolower($email) : '',
                     "firstname" => isset($first_name) ? strtolower($first_name) : '',
                     "lastname" => isset($last_name) ? strtolower($last_name) : '',
                     "mobile" => isset($mobile) ? $mobile : '',
-                    "created_at" => strtotime("now")
+                    "created_at" => strtotime("now"),
+                    "ticket_price" => number_format($ticket_price,2),
+                    "final_ticket_price" => !empty($ticket_price) ? number_format($BuyerPayment,2) : 0,
+                    "bulk_upload_flag" => 1,
+                    "cart_detail" => json_encode($cart_details_array) 
+
                 );
                 DB::insert($sql, $Bind1);
                 $attendeeId = DB::getPdo()->lastInsertId();

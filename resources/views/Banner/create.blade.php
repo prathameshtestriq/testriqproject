@@ -40,7 +40,6 @@ if (!empty($edit_data)) {
     #imagePreview {
     max-width: 100%;
     height: auto;
-    margin-top: 20px;
 }
 </style>
         <div class="content-body">
@@ -140,7 +139,7 @@ if (!empty($edit_data)) {
                                             </div>
                                         </div>
 
-                                        <div class="col-md-3 col-12">
+                                        <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="banner_image">Banner Image <span style="color:red;">*</span>
                                                     <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
@@ -156,23 +155,25 @@ if (!empty($edit_data)) {
                                                     @enderror 
                                             </div>
                                         </div>
-                                        <div class="col-md-3 col-12">
-                                            <div class="form-group">
-                                                <span><br><br></span>
+                                        <div class="col-md-2 col-12">
+                                            <div class="form-group d-flex flex-column">
+                                               <label><span style="visibility: hidden;">*</span></label>
                                                <!-- Image preview section -->
-                                                <div class="form-group">
-                                                    <button type="button" onclick="cropImage()" class="btn btn-warning mr-1">Crop</button>
-                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="form-group mb-0">
+                                                        <button type="button" onclick="cropImage()" class="btn btn-warning mr-1">Crop</button>
+                                                    </div>
 
-                                                <div id="imagePreview">
-                                                    <?php if(!empty($banner_image)){ ?>
-                                                        <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
-                                                            <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;" >
-                                                        </a>
-                                                        <input type="hidden" name="hidden_banner_image" value="{{ old('banner_image', $banner_image) }}">
-                                                    <?php } else { ?>
-                                                        <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
-                                                    <?php } ?>
+                                                    <div id="imagePreview">
+                                                        <?php if(!empty($banner_image)){ ?>
+                                                            <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
+                                                                <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;" >
+                                                            </a>
+                                                            <input type="hidden" name="hidden_banner_image" value="{{ old('banner_image', $banner_image) }}">
+                                                        <?php } else { ?>
+                                                            <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
+                                                        <?php } ?>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -193,7 +194,7 @@ if (!empty($edit_data)) {
                                         </div>
 
                                         <div class="col-md-12 col-12">
-                                            <div>
+                                            <div class="py-2">
                                                 <input type="hidden" name="cropped_image_data" id="croppedImageInput">
                                                 <img id="imagePreview_crop" style="display:none; max-width:100%;" />
                                             </div>

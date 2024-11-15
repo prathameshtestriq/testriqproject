@@ -33,7 +33,7 @@ class ParticipantBulkController extends Controller
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());
         
-        $SQL1 = "SELECT id,productinfo,txnid,created_datetime FROM booking_payment_details WHERE bulk_upload_flag = 1";
+        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status FROM booking_payment_details WHERE bulk_upload_flag = 1";
         if(isset($a_return['search_event']) && !empty($a_return['search_event']))
             $SQL1 .= " AND event_id = ".$a_return['search_event']."";
         else
@@ -85,7 +85,16 @@ class ParticipantBulkController extends Controller
                 }
             }
         }
-       
+            // Neha working 15-11-24 start work   
+            $SQL1 = 'SELECT id,ticket_name,ticket_status,ticket_price,total_quantity,ticket_sale_start_date,ticket_sale_end_date,early_bird,event_id FROM event_tickets WHERE is_deleted = 0 AND active = 1 ';
+            if(isset($a_return['search_event']) && !empty($a_return['search_event']))
+                $SQL1 .= " AND event_id = ".$a_return['search_event']."";
+            else
+                $SQL1 .= " AND 1=2";
+            $SQL1 .= ' ORDER BY sort_order ASC';
+            $a_return['Ticket_details'] = DB::select($SQL1,array());
+            // dd( $a_return['Ticket details']);
+        // neha end work 
 
         // dd($ParticipantDetails);
         return view('particpant_bulk_upload.list',$a_return);
@@ -114,7 +123,7 @@ class ParticipantBulkController extends Controller
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());
 
-        $SQL1 = "SELECT id,productinfo,txnid,created_datetime FROM booking_payment_details WHERE bulk_upload_flag = 1 AND event_id = ".$a_return['search_event']." order by id desc";
+        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status FROM booking_payment_details WHERE bulk_upload_flag = 1 AND event_id = ".$a_return['search_event']." order by id desc";
         $ParticipantDetails = DB::select($SQL1, array());
 
         if(!empty($ParticipantDetails)){
@@ -163,6 +172,17 @@ class ParticipantBulkController extends Controller
             }
         }
         // dd($a_return['HeaderData']);
+        
+        //neha working 15-11-24
+            $SQL1 = 'SELECT id,ticket_name,ticket_status,ticket_price,total_quantity,ticket_sale_start_date,ticket_sale_end_date,early_bird,event_id FROM event_tickets WHERE is_deleted = 0 AND active = 1 ';
+            if(isset($a_return['search_event']) && !empty($a_return['search_event']))
+                $SQL1 .= " AND event_id = ".$a_return['search_event']."";
+            else
+                $SQL1 .= " AND 1=2";
+            $SQL1 .= ' ORDER BY sort_order ASC';
+            $a_return['Ticket_details'] = DB::select($SQL1,array());
+            
+        // neha end working 
 
         return view('particpant_bulk_upload.list',$a_return);
     }
@@ -253,12 +273,14 @@ class ParticipantBulkController extends Controller
             }
 
             //------ ticket registration id and race category
-            $sql2 = "select bd.id,bd.ticket_id from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id"; // GROUP BY bd.booking_id
+            $sql2 = "select bd.id,bd.ticket_id,eb.cart_details from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id"; // GROUP BY bd.booking_id
             $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookPayId));
             // dd($booking_detail_Result);
             $bookingDetIdArray  = !empty($booking_detail_Result) ? array_column($booking_detail_Result,'id') : [];
             $ticketIdArray      = !empty($booking_detail_Result) ? array_column($booking_detail_Result,'ticket_id') : [];
             // dd($bookingDetIdArray,$ticket_id);
+            $cart_details = !empty($booking_detail_Result[0]->cart_details) ? json_decode($booking_detail_Result[0]->cart_details) : [];
+            $ticket_total_amount = !empty($cart_details) && isset($cart_details[0]->BuyerPayment) ? $cart_details[0]->BuyerPayment : '0.00';
  
             $EventName = !empty($Event[0]->name) ? str_replace(" ", "_", $Event[0]->name) : '';
             // $EventUrl = url('/e').'/'.$EventName;
@@ -266,9 +288,10 @@ class ParticipantBulkController extends Controller
             $TotalNoOfTickets = 1; // !empty($ticketIdArray) ? count($ticketIdArray) : 0;
             $TotalPrice = '';
             // dd($TotalNoOfTickets);
-            
+           
+            $emailPlaceholders_array = $FinalEmailArray = [];  $acutal_value = ''; $labels = [];  $label = '';
             if(!empty($bookingDetIdArray)){
-                $SQL1 = "SELECT id as attendee_id,ticket_id,email,firstname,lastname,registration_id,(select ticket_calculation_details from event_tickets where id = attendee_booking_details.ticket_id) as ticket_calculation_details,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id IN(".implode(",",$bookingDetIdArray).")";
+                $SQL1 = "SELECT id as attendee_id,ticket_id,email,firstname,lastname,registration_id,ticket_price,final_ticket_price,(select ticket_calculation_details from event_tickets where id = attendee_booking_details.ticket_id) as ticket_calculation_details,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,attendee_details FROM attendee_booking_details WHERE booking_details_id IN(".implode(",",$bookingDetIdArray).")";
                 $tAttendeeResult = DB::select($SQL1, array());
                 $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
                 // dd($tAttendeeResult);
@@ -279,6 +302,9 @@ class ParticipantBulkController extends Controller
                         $attendee_email = !empty($res->email) ? $res->email : '';
                         $attendee_firstname = !empty($res->firstname) ? $res->firstname : '';
                         $attendee_details_result = !empty($res->attendee_details) ? json_decode(json_decode($res->attendee_details)) : '';
+                        
+                        $single_ticket_price = !empty($res->ticket_price) ? $res->ticket_price : '0.00';
+                        $final_ticket_price  = !empty($res->final_ticket_price) ? $res->final_ticket_price : '0.00';
 
                         if(!empty($res->ticket_calculation_details)){
                             $ticket_calculation_details = !empty($res->ticket_calculation_details) ? json_decode($res->ticket_calculation_details) : '';
@@ -320,8 +346,68 @@ class ParticipantBulkController extends Controller
                                         }
                                     }
                                 }
+                                
+                                //------------------ new added on 15-11-24  (Email Placeholder Replace)
+                                $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 ";
+
+                                if(empty($res1->parent_question_id)){
+                                    $sql2 .= " AND question_form_name = '".$res1->question_form_name."' ";
+                                }else{
+                                    $sql2 .= " AND question_form_name = LOWER(REPLACE('".$res1->question_label."', ' ', '_')) ";
+                                }
+                             
+                                $emailPlaceHolderResult = DB::select($sql2, []);
+
+                                if(!empty($emailPlaceHolderResult) && $emailPlaceHolderResult[0]->question_form_type != "file"){
+                                    $question_form_option = !empty($emailPlaceHolderResult[0]->question_form_option) ? json_decode($emailPlaceHolderResult[0]->question_form_option, true) : [];
+                                    $label = ''; $labels = []; $acutal_value = '';
+
+                                    if($emailPlaceHolderResult[0]->question_form_type == "countries"){
+                                        $acutal_value = !empty($res1->ActualValue) ? $master->getCountryName($res1->ActualValue) : "";
+                                    }else if ($emailPlaceHolderResult[0]->question_form_type == "states") {
+                                        $acutal_value = !empty($res1->ActualValue) ? $master->getStateName($res1->ActualValue) : "";
+                                    }else if ($emailPlaceHolderResult[0]->question_form_type == "cities") {
+                                        $acutal_value = !empty($res1->ActualValue) ? $master->getCityName($res1->ActualValue) : "";
+                                    }else if($emailPlaceHolderResult[0]->question_form_type == "date"){
+                                        $acutal_value = !empty($res1->ActualValue) ? date('d-m-Y',strtotime($res1->ActualValue)) : '';
+                                    }else if($emailPlaceHolderResult[0]->question_form_type == "radio" || $emailPlaceHolderResult[0]->question_form_type == "select"){
+                                      
+                                        if(!empty($res1->ActualValue) && !empty($question_form_option)){
+                                            foreach ($question_form_option as $option) {
+                                                if ($option['id'] === (int) $res1->ActualValue) {
+                                                    $label = $option['label'];
+                                                    break;
+                                                }
+                                            }
+                                            $acutal_value = !empty($label) ? $label : '';
+                                        }
+                                    }else if($emailPlaceHolderResult[0]->question_form_type == "checkbox"){
+                                        if(isset($res1->ActualValue) && !empty($res1->ActualValue)){
+                                            foreach ($question_form_option as $option) {
+                                                if (in_array($option['id'], explode(',', $res1->ActualValue))) {
+                                                    $labels[] = $option['label'];
+                                                }
+                                            }
+                                            $label = implode(', ', $labels);
+                                        }
+                                        $acutal_value = !empty($label) ? $label : '';
+                                    }else{                                              // [text/email/textarea/amount/time]
+                                        $acutal_value = !empty($res1->ActualValue) ? $res1->ActualValue : '';
+                                    }
+
+                                    $emailPlaceholders_array[] = [$emailPlaceHolderResult[0]->placeholder_name => trim(ucfirst($acutal_value))];
+                                }
+
                             }
                         }
+
+                        if(!empty($emailPlaceholders_array)){
+                            foreach ($emailPlaceholders_array as $item) {  
+                                $key = key($item);
+                                $value = reset($item);
+                                $FinalEmailArray[$key] = $value;
+                            }
+                        } 
                         
                         $ConfirmationEmail = array(
                             "USERNAME" => !empty($res->firstname) && !empty($res->lastname) ? ucfirst($res->firstname). ' ' . ucfirst($res->lastname) : '',
@@ -338,8 +424,8 @@ class ParticipantBulkController extends Controller
                             "COMPANYNAME" => $OrgName,
                             "TOTALTICKETS" => $TotalNoOfTickets,
                             "VENUE" => $Venue,
-                            "TOTALAMOUNT" => $TotalPrice,
-                            "TICKETAMOUNT" => $TotalPrice,
+                            "TOTALAMOUNT" => !empty($final_ticket_price) ? '₹ '.$final_ticket_price : '₹ '.$ticket_total_amount,
+                            "TICKETAMOUNT" => !empty($single_ticket_price) ? '₹ '.$single_ticket_price : '₹ '.$TotalPrice,
                             "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : '',
                             "RACECATEGORY" => !empty($res->ticket_name) ? ucfirst($res->ticket_name) : '',
                             "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? ucfirst($TeamName) : '',
@@ -350,6 +436,9 @@ class ParticipantBulkController extends Controller
                             "RUNCATEGORY"    => isset($run_category) && !empty($run_category) ? ucfirst($run_category) : ''
                         );
                         // echo '<pre>'; print_r($ConfirmationEmail);
+
+                        if(!empty($FinalEmailArray))
+                            $ConfirmationEmail = array_merge($ConfirmationEmail,$FinalEmailArray);
                       
                         $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
                         $Communications = DB::select($sql, ["event_id" => $EventId]);
