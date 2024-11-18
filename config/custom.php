@@ -31,6 +31,7 @@ if($url_flag == 1){
     $base_url1 = '';
 }
 
+
 return [
     'ytcr_fee_percent' =>18,
     'platform_fee_percent' => 18, // previos 10 per set
