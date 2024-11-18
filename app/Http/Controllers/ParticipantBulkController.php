@@ -224,8 +224,7 @@ class ParticipantBulkController extends Controller
             Excel::import($import, request()->file('participant_file'));
 
             $Booking_payment_id = !empty($import->returnData['BookPayId']) ? $import->returnData['BookPayId'] : 0;
-            $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
-            // $ParticipantSendEmail = ParticipantBulkController::participants_send_email(3447,13,4);
+            // $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
 
             $Message = 'Participant Details Uploaded Successfully.';
             $aResult = [
