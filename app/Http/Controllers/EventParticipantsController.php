@@ -16,7 +16,7 @@ use \stdClass;
 class EventParticipantsController extends Controller
 {
 
-    public function clear_search($event_id)
+    public function clear_search($event_id,$dashboard_id)
     {
         session()->forget('participant_name');
         session()->forget('transaction_status');
@@ -27,10 +27,17 @@ class EventParticipantsController extends Controller
         session()->forget('start_booking_date');
         session()->forget('end_booking_date');
         session()->forget('transaction_order_id');
-        session()->forget('event_name');
-        return redirect('/participants_event/'.$event_id);
+        session()->forget('event_name_paticipant');
+
+        if($event_id > 0 && $dashboard_id == 0){
+            return redirect('/participants_event/'.$event_id);
+        }else{
+            return redirect('/participants_event/'.$event_id.'/'.$dashboard_id);
+        }
+
+      
     }
-    public function index(Request $request, $event_id=0)
+    public function index(Request $request, $event_id=0,$dashboard_id = 0)
     {
         // dd($event_id);
         $Return = array();
@@ -57,8 +64,13 @@ class EventParticipantsController extends Controller
             session(['start_booking_date' => $request->start_booking_date]);
             session(['end_booking_date' => $request->end_booking_date]);
             session(['transaction_order_id' => $request->transaction_order_id]);
-            session(['event_name' => $request->event_name]);
-            return redirect('/participants_event/'.$event_id);
+            session(['event_name_paticipant' => $request->event_name]);
+            if($event_id > 0 && $dashboard_id == 0){
+                return redirect('/participants_event/'.$event_id);
+            }else{
+                return redirect('/participants_event/'.$event_id.'/'.$dashboard_id);
+            }
+        
         }
 
         $Return['search_participant_name'] = (!empty(session('participant_name'))) ? session('participant_name') : '';
@@ -71,9 +83,9 @@ class EventParticipantsController extends Controller
         $Return['search_start_booking_date'] = (!empty(session('start_booking_date'))) ?  session('start_booking_date') : '';
         $Return['search_end_booking_date'] = (!empty(session('end_booking_date'))) ? session('end_booking_date'): '';
         $Return['search_transaction_order_id'] = (!empty(session('transaction_order_id'))) ? session('transaction_order_id'): '';
-        $Return['search_event'] = (!empty(session('event_name'))) ? session('event_name'): '';
+        $Return['search_event'] = (!empty(session('event_name_paticipant'))) ? session('event_name_paticipant'): '';
         // dd(session('transaction_status'),  $Return['search_transaction_status'] );
-        
+        // dd( $Return['search_category'] );
         $FiltersSql = '';
         if(!empty( $Return['search_participant_name'])){
             $FiltersSql .= ' AND (LOWER((CONCAT(a.firstname, " ", a.lastname))) LIKE \'%' . strtolower($Return['search_participant_name']) . '%\')';
@@ -97,8 +109,11 @@ class EventParticipantsController extends Controller
             
         } 
 
+        // if(!empty( $Return['search_category'])){
+        //     $FiltersSql .= ' AND (LOWER((SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id)) LIKE \'%' . strtolower($Return['search_category']) . '%\')';
+        // } 
         if(!empty( $Return['search_category'])){
-            $FiltersSql .= ' AND (LOWER((SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id)) LIKE \'%' . strtolower($Return['search_category']) . '%\')';
+            $FiltersSql .= ' AND a.ticket_id = '.$Return['search_category'];
         } 
 
         if(!empty($Return['search_start_booking_date'])){
@@ -149,15 +164,34 @@ class EventParticipantsController extends Controller
         }
         // dd($count);
     
-        $sSQL = 'SELECT a.*,e.booking_date,e.booking_pay_id, e.transaction_status, b.event_id,a.id AS aId, CONCAT(a.firstname, " ", a.lastname) AS user_name,
-            (SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name,
-            (SELECT bpd.txnid FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id) AS Transaction_order_id,
-            (SELECT bpd.amount FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id) AS amount,
-            (SELECT bpt.mihpayid FROM booking_payment_log bpt WHERE bpt.txnid = Transaction_order_id) AS payu_id
+        // $sSQL = 'SELECT a.*,e.booking_date,e.booking_pay_id, e.transaction_status, b.event_id,a.id AS aId, CONCAT(a.firstname, " ", a.lastname) AS user_name,
+        //     (SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name,
+        //     (SELECT bpd.txnid FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id) AS Transaction_order_id,
+        //     (SELECT bpd.amount FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id) AS amount,
+        //     (SELECT bpt.mihpayid FROM booking_payment_log bpt WHERE bpt.txnid = Transaction_order_id) AS payu_id
+        //     FROM attendee_booking_details a
+        //     LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+        //     Inner JOIN event_booking AS e ON b.booking_id = e.id
+        //     WHERE 1=1';
+        $sSQL= 'SELECT 
+                a.*, 
+                e.booking_date, 
+                e.booking_pay_id, 
+                e.transaction_status, 
+                b.event_id, 
+                a.id AS aId, 
+                CONCAT(a.firstname, " ", a.lastname) AS user_name,
+                et.ticket_name AS category_name,
+                bpd.txnid AS Transaction_order_id,
+                bpd.amount AS amount,
+                bpt.mihpayid AS payu_id
             FROM attendee_booking_details a
-            LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
-            Inner JOIN event_booking AS e ON b.booking_id = e.id
-            WHERE 1=1';
+            LEFT JOIN booking_details b ON a.booking_details_id = b.id
+            INNER JOIN event_booking e ON b.booking_id = e.id
+            LEFT JOIN event_tickets et ON et.id = a.ticket_id
+            LEFT JOIN booking_payment_details bpd ON bpd.id = e.booking_pay_id
+            LEFT JOIN booking_payment_log bpt ON bpt.txnid = bpd.txnid
+            WHERE 1=1 ';
 
         if(!empty($event_id)) {
             $sSQL .= ' AND b.event_id = '.$event_id;
@@ -165,11 +199,15 @@ class EventParticipantsController extends Controller
         if(!empty($serach_event_id)) {
             $sSQL .= ' AND b.event_id = '.$serach_event_id;
         }
-        $sSQL .= ' '.$FiltersSql.' ORDER BY a.id DESC';
+        // $sSQL .= ' '.$FiltersSql.' ORDER BY a.id DESC';
+        $sSQL .= ' ' . $FiltersSql; // Add any custom filters here
+        $sSQL .= ' GROUP BY a.id'; // Group by unique ID
+        $sSQL .= ' ORDER BY a.id DESC';
 
         if ($Limit > 0) {
             $sSQL .= ' LIMIT ' . $Return['Offset'] . ',' . $Limit;
         }
+       
         $Return['event_participants']  = DB::select($sSQL, array());
          
         // $Return['event_participants']  = DB::select($sSQL, array());
@@ -178,8 +216,9 @@ class EventParticipantsController extends Controller
         $Return['event_name'] = DB::select($sql,array());
         // dd( $Return['event_name']);
         $Return['event_id']   = !empty($event_id) ? $event_id : 0;
+        $Return['dashboard_id']   = !empty($dashboard_id) ? $dashboard_id : 0;
 
-        $sql = 'SELECT et.ticket_name FROM event_tickets et WHERE 1=1 GROUP BY et.ticket_name';
+        $sql = 'SELECT et.ticket_name,et.id FROM event_tickets et WHERE 1=1 GROUP BY et.ticket_name';
         $Return['Categories'] = DB::select($sql,array());
         // dd($Return['Categories']);
         // dd($Return['event_id']);
@@ -258,7 +297,9 @@ class EventParticipantsController extends Controller
             }
         }
         
-        if(!empty($serach_event_id) || !empty($event_id)){
+        if((!empty($serach_event_id) || !empty($event_id)) && $dashboard_id == 0){
+            $Return['ParticipantsExcelLink'] = EventParticipantsController::participants_excel_export($AttendeeData, $event_id, $serach_event_id);
+        }else{
             $Return['ParticipantsExcelLink'] = EventParticipantsController::participants_excel_export($AttendeeData, $event_id, $serach_event_id);
         }
         
@@ -266,6 +307,7 @@ class EventParticipantsController extends Controller
         // dd($Return['ParticipantsExcelLink']);
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $Return['EventsData'] = DB::select($SQL, array());
+      
 
         return view('participants_event.list', $Return);
     }
@@ -394,6 +436,9 @@ class EventParticipantsController extends Controller
                                   
                                 }
                                 
+                               
+                                
+                                
                                 $aTemp->answer_value = $label;
                             } else {
                                 if ($val->question_form_type == "countries") {
@@ -493,9 +538,10 @@ class EventParticipantsController extends Controller
                 // dd($ExcellDataArray);
                 $filename = "participant_report_" . $event_name."_".time();
                 $path = 'attendee_details_excell/' . date('Ymd') . '/';
+               
                 $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $header_data_array), $path . '/' . $filename . '.xlsx', 'excel_uploads');
                 $excel_url = url($path) . "/" . $filename . ".xlsx";
-                //dd($excel_url); 
+                // dd($excel_url); 
                 return $excel_url;
         }
         
@@ -536,7 +582,7 @@ class EventParticipantsController extends Controller
         return $Return;
     }
     public function get_cities(Request $request,$state_id){
-        $sSQL = 'SELECT id,name,state_id FROM cities WHERE state_id =' .$state_id.' AND country_id = '. 101;
+        $sSQL = 'SELECT id,name,state_id FROM cities WHERE state_id =' .$state_id;
         $Return["cities"] = DB::select($sSQL, array());
         return $Return;
     }
@@ -550,16 +596,28 @@ class EventParticipantsController extends Controller
                 // dd($dataArray);
                
                 foreach ($dataArray as &$question) {
+                    if (!array_key_exists('child_question_ids', $question)) {
+                        continue; // Skip this iteration if the key is missing
+                    }
                     // Check if the form has inputs corresponding to the question
                     $questionLabel = $question['question_label'];   
                    
                     if (array_key_exists($questionLabel, $request->input('text', []))) {
                         $question['ActualValue'] = $request->input('text')[$questionLabel];
+                    } elseif (array_key_exists($questionLabel, $request->input('checkbox', []))) {
+                        $actualValueArray = $request->input('checkbox')[$questionLabel] ?? [];
+                        // Convert the array to a comma-separated string
+                        $question['ActualValue'] = is_array($actualValueArray) 
+                            ? implode(',', $actualValueArray) 
+                            : $actualValueArray;
+
                     } elseif ($question['question_form_type'] == 'date' && $request->has('date')) {
                         $question['ActualValue'] = $request->input('date');
-                    } elseif ($question['question_form_type'] == 'textarea' && $request->has('textarea')) {
-                        $question['ActualValue'] = $request->input('textarea');
-                    } elseif (array_key_exists($questionLabel, $request->input('select', []))) {  
+                    } elseif (array_key_exists($questionLabel, $request->input('textarea', []))) {
+                        // Handling textarea input (address)
+                        $question['ActualValue'] = $request->input('textarea')[$questionLabel];
+                        
+                    }elseif (array_key_exists($questionLabel, $request->input('select', []))) {  
                         $question['ActualValue'] = $request->input('select')[$questionLabel];
                     } elseif (array_key_exists($questionLabel, $request->input('radio', []))) {   
                         $question['ActualValue'] = $request->input('radio')[$questionLabel];   

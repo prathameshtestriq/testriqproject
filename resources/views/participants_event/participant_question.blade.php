@@ -49,6 +49,9 @@
                     $state_sel_id = '';
                     $city_sel_id = '';
                     foreach ($dataArray as $item) { 
+                        if (!array_key_exists('child_question_ids', $item)) {
+                            continue; // Skip this iteration if the key is missing
+                        }
                         if(($item['child_question_ids'] == null) || ($item['child_question_ids'] == '')){
                             $ActualValue = !empty($item['ActualValue']) ?  $item['ActualValue'] : ''; 
                             if($item['question_form_type'] == 'countries'){
@@ -60,45 +63,79 @@
                             if($item['question_form_type'] == 'cities'){
                                 $city_sel_id = !empty( $ActualValue) ?   $ActualValue : 0;   
                             }
-
+                            
                             ?>
                             
                                 <div class="row">
                                     <div class="col-md-6 col-12">
                                         {{-- label name --}}
                                         <div class="form-group">
-                                            @if(!in_array($item['question_label'], ['Date of Birth', 'Email Address', 'Mobile Number','Emergency Contact Number','Amount','Other Amount']))
+                                            {{-- @if(!in_array($item['question_label'], ['Date of Birth','DOB','Upload ID Proof','Enter your Personal Best Timing', 'Email Address','Amount','Other Amount','Enter amount to donate','Personal Best Distance']))
                                                 <label for="question_label">
                                                     {{$item['question_label']}}<span style="color:red;">*</span> :
+                                                </label>
+                                            @endif --}}
+                                            @if(!in_array($item['question_form_type'], ['date','time','amount','email','file']))
+                                                <label for="question_label">
+                                                    {{$item['question_label']}}<span style="color:red;"></span> :
                                                 </label>
                                             @endif
                                         </div>
                                     </div>
                                     <div class="col-md-6 col-12">
                                         <div class="form-group">
-                                            <?php if($item['question_form_type'] == 'text' ){ ?>
+                                            <?php if(($item['question_form_type'] == 'text') || $item['question_form_type'] == 'mobile' ){ ?>
                                                 <input type="text" id="question_answer" class="form-control"
                                                     placeholder=" Question Answer" name="text[{{$item['question_label']}}]"
                                                     value="{{ old('question_answer',  $ActualValue) }}"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="text_err"></small></h5>
-
+                                            <?php } else if($item['question_form_type'] == 'checkbox'){ ?>
+                                                <?php  
+                                                    $optionsJson = $item['question_form_option']; 
+                                                    $optionsArray = json_decode($optionsJson, true); 
+                                                    // dd($optionsJson);
+                                                    $actualValue = $item['ActualValue'] ?? ''; // Retrieve the ActualValue
+                                                    $checkedValues = explode(',', $actualValue); 
+                                                ?>
+                                                    <div class="form-check">
+                                                    @foreach($optionsArray as $index => $option)
+                                                        <input 
+                                                            type="checkbox" 
+                                                            id="checkbox_{{$item['question_label']}}_{{$index}}" 
+                                                            name="checkbox[{{$item['question_label']}}][]" 
+                                                            class="form-check-input"
+                                                            value="{{ $option['id'] }}" 
+                                                            {{ in_array($option['id'], old('checkbox['.$item['question_label'].']', $checkedValues)) ? 'checked' : '' }} />
+                                                        
+                                                        <label class="form-check-label" for="checkbox_{{$item['question_label']}}_{{$index}}">
+                                                            {{ $option['label'] }}
+                                                        </label>
+                                                    @endforeach
+                                                    <h5><small class="text-danger" id="checkbox_err"></small></h5>
+                                                </div>
                                             <?php }else if($item['question_form_type'] == 'radio'){ ?>     
                                                 <?php  
                                                     $optionsJson = $item['question_form_option']; 
-                                                    $optionsArray = json_decode($optionsJson, true);  
+                                                    $optionsArray = json_decode($optionsJson, true); 
                                                 ?>
                                                 <div class="demo-inline-spacing">
                                                     @foreach ($optionsArray as $index => $value)
                                                         <div class="custom-control custom-radio mt-0">
-                                                            <input type="radio" id="customRadio{{$index}}" name="radio[{{$item['question_label']}}]"
-                                                                class="custom-control-input" value="{{ $value['id'] }}" 
-                                                                {{ old('radio.'.$item['question_label'], $item['ActualValue']) == $value['id'] ? 'checked' : '' }} />
-                                                            <label class="custom-control-label" for="customRadio{{$index}}">{{ $value['label'] }}</label>
+                                                            <input 
+                                                                type="radio" 
+                                                                id="customRadio{{$item['id']}}{{$index}}" 
+                                                                name="radio[{{$item['question_label']}}]"
+                                                                class="custom-control-input" 
+                                                                value="{{ $value['id'] }}" 
+                                                                {{ old('radio.'.$item['question_label'], $item['ActualValue']) == $value['id'] ? 'checked' : '' }} 
+                                                            />
+                                                            <label class="custom-control-label" for="customRadio{{$item['id']}}{{$index}}">{{ $value['label'] }}</label>
                                                         </div>
                                                     @endforeach
                                                 </div>
                                             <?php }else if($item['question_form_type'] == 'textarea'){ ?>
-                                                <textarea name="textarea" id="textarea" class="form-control" cols="1" rows="1">{{ old('textarea',  $ActualValue) }}</textarea>
+                                                <textarea name="textarea[{{$item['question_label']}}]" id="address" class="form-control" cols="1" rows="1" placeholder="Enter Address">{{ old('address.' . $item['question_label'], $ActualValue) }}</textarea>
+                                                <h5><small class="text-danger" id="address_err"></small></h5>
                                             <?php }else if($item['question_form_type'] == 'select'){ ?>
                                                 <?php  
                                                     $optionsJson = $item['question_form_option']; 
@@ -171,28 +208,6 @@
         var baseUrl = "{{ config('custom.app_url') }}";
        
         //console.log(country_id);
-        $('#countries').change(function() {
-        
-            var countryId = $(this).val();
-            if (countryId) {
-                $.ajax({
-                    url:  baseUrl +'/get_states/' + countryId,
-                    type: 'GET',
-                    success: function(data) {
-                        console.log(data);
-                        var stateDropdown = $('#states');
-                        stateDropdown.empty();
-                        stateDropdown.append('<option value="">All State</option>');
-                        $.each(data.states, function(index, state) {
-                            stateDropdown.append('<option value="' + state.id + '">' + state.name + '</option>');
-                        });
-                    }
-                });
-            } else {
-                $('#state').empty().append('<option value="">All state</option>');
-                $('#cities').empty().append('<option value="">All City</option>');
-            }
-        });
         if (country_id) {
             $.ajax({
                 url:  baseUrl +'/get_states/' + country_id,
@@ -215,11 +230,37 @@
             $('#state').empty().append('<option value="">All state</option>');
             $('#cities').empty().append('<option value="">All City</option>');
         }
+
+
+        $('#countries').change(function() {
+        
+            var countryId = $(this).val();
+            if (countryId) {
+                $.ajax({
+                    url:  baseUrl +'/get_states/' + countryId,
+                    type: 'GET',
+                    success: function(data) {
+                        console.log(data);
+                        var stateDropdown = $('#states');
+                        stateDropdown.empty();
+                        stateDropdown.append('<option value="">All State</option>');
+                        $.each(data.states, function(index, state) {
+                            stateDropdown.append('<option value="' + state.id + '">' + state.name + '</option>');
+                        });
+                    }
+                });
+            } else {
+                $('#state').empty().append('<option value="">All state</option>');
+                $('#cities').empty().append('<option value="">All City</option>');
+            }
+        });
     });
     $(document).ready(function() {
         
         var state_id = <?php echo $state_sel_id; ?> 
         var city_id = <?php echo $city_sel_id; ?> 
+        var baseUrl = "{{ config('custom.app_url') }}";
+       
         //console.log(state_id);
         $('#states').change(function() {
             var stateId = $(this).val();
