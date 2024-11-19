@@ -627,7 +627,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
             foreach ($separatedArrays as $key => $value) {
                 $subArray = [];
                 $subArray = json_decode($value);
-                $ticket_price = !empty($subArray->ticket_amount) ? $subArray->ticket_amount : 0;
+                $ticket_price1 = !empty($subArray->ticket_amount) ? $subArray->ticket_amount : 0;
                // dd($ticket_price);
                 
                 $attendee_details = json_encode(json_encode($subArray->form_array));
@@ -636,13 +636,13 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 if(!empty($aCatChargesResult)){
                     for ($i=0; $i < count($aCatChargesResult); $i++) { 
                         // dd($aCatChargesResult[$i]->convenience_fee);
-                        if ($aCatChargesResult[$i]->registration_amount >= floatval($ticket_price)){
+                        if ($aCatChargesResult[$i]->registration_amount >= floatval($ticket_price1)){
                             //console.log($aCatChargesResultDetails[i]['convenience_fee']);
                             $ConvenienceFeeBase = ($aCatChargesResult[$i]->convenience_fee);
                             $NewPlatformFee = ($aCatChargesResult[$i]->platform_fee);       // 5 Rs
                             $NewPaymentGatewayFee = ($aCatChargesResult[$i]->payment_gateway_fee); // 1.85 %
                             break;
-                        }else if($i == (count($aCatChargesResult)-1) && $aCatChargesResult[$i]->registration_amount <= floatval($ticket_price)){
+                        }else if($i == (count($aCatChargesResult)-1) && $aCatChargesResult[$i]->registration_amount <= floatval($ticket_price1)){
                             //console.log($aCatChargesResult[i]['convenience_fee']);
                             $ConvenienceFeeBase = ($aCatChargesResult[$i]->convenience_fee);
                             $NewPlatformFee = ($aCatChargesResult[$i]->platform_fee);       // 5 Rs
@@ -653,11 +653,11 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 }
                // dd($ConvenienceFeeBase,$NewPlatformFee,$NewPaymentGatewayFee);
                 if ($event_Result[0]->collect_gst == 1 && $event_Result[0]->prices_taxes_status == 2) {
-                    $BasePriceGst = floatval($ticket_price) != 0 ? floatval($ticket_price) * ($GstPercentage / 100) : 0; // GST %
-                    $Basic_Amount_Gst = (floatval($BasePriceGst) + floatval($ticket_price));
+                    $BasePriceGst = floatval($ticket_price1) != 0 ? floatval($ticket_price1) * ($GstPercentage / 100) : 0; // GST %
+                    $Basic_Amount_Gst = (floatval($BasePriceGst) + floatval($ticket_price1));
                 } else {
                     $BasePriceGst = '0.00';
-                    $Basic_Amount_Gst = floatval($ticket_price); // registration amt
+                    $Basic_Amount_Gst = floatval($ticket_price1); // registration amt
                 }
                
                 // dd($ConvenienceFeeBase,$NewPlatformFee,$NewPaymentGatewayFee,$Basic_Amount_Gst);
@@ -713,8 +713,8 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
 
                     $Total_Organiser = (floatval($BuyerPayment) - floatval($Total_Payment_Gateway) - floatval($Total_Platform_Fees) - floatval($Total_Convenience_Fees));
                
-                    if(!empty($ticket_price) || $ticket_price != 0){
-                        $cart_details_array = ["ExcPriceTaxesStatus" => $event_Result[0]->prices_taxes_status, "Ticket_count" => 1, "Ticket_price" => $ticket_price, "Registration_Fee_GST" => number_format($BasePriceGst,2), "Applied_Coupon_Amount" => 0, "Extra_amount" => 0, "Extra_amount_pg_charges" => 0, "Extra_amount_pg_GST" => 0, "Pass_Bare" => $subArray->player_of_fee, "Pg_Bare" => $subArray->player_of_gateway_fee, "Convenience_fee" => number_format($ConvenienceFeeBase,2), "Convenience_Fee_GST" => number_format($GST_On_Convenience_Fees,2), "Platform_fee" => number_format($NewPlatformFee,2), "Platform_Fee_GST" => number_format($GST_On_Platform_Fees_Amount,2), "Payment_gateway_charges" => number_format($Payment_Gateway_Buyer,2), "Payment_Gateway_GST" => number_format($Payment_Gateway_gst_amount,2), "Organiser_amount" => number_format($Total_Organiser,2), "Final_total_amount" => number_format($BuyerPayment,2) ];
+                    if(!empty($ticket_price1) || $ticket_price1 != 0){
+                        $cart_details_array = ["ExcPriceTaxesStatus" => $event_Result[0]->prices_taxes_status, "Ticket_count" => 1, "Ticket_price" => $ticket_price1, "Registration_Fee_GST" => number_format($BasePriceGst,2), "Applied_Coupon_Amount" => 0, "Extra_amount" => 0, "Extra_amount_pg_charges" => 0, "Extra_amount_pg_GST" => 0, "Pass_Bare" => $subArray->player_of_fee, "Pg_Bare" => $subArray->player_of_gateway_fee, "Convenience_fee" => number_format($ConvenienceFeeBase,2), "Convenience_Fee_GST" => number_format($GST_On_Convenience_Fees,2), "Platform_fee" => number_format($NewPlatformFee,2), "Platform_Fee_GST" => number_format($GST_On_Platform_Fees_Amount,2), "Payment_gateway_charges" => number_format($Payment_Gateway_Buyer,2), "Payment_Gateway_GST" => number_format($Payment_Gateway_gst_amount,2), "Organiser_amount" => number_format($Total_Organiser,2), "Final_total_amount" => number_format($BuyerPayment,2) ];
                     }else{
                         $cart_details_array = ["ExcPriceTaxesStatus" => $event_Result[0]->prices_taxes_status, "Ticket_count" => 1, "Ticket_price" => 0, "Registration_Fee_GST" => 0, "Applied_Coupon_Amount" => 0, "Extra_amount" => 0, "Extra_amount_pg_charges" => 0, "Extra_amount_pg_GST" => 0, "Pass_Bare" => 0, "Pg_Bare" => 0, "Convenience_fee" => 0, "Convenience_Fee_GST" => 0, "Platform_fee" => 0, "Platform_Fee_GST" => 0, "Payment_gateway_charges" => 0, "Payment_Gateway_GST" => 0, "Organiser_amount" => 0, "Final_total_amount" => 0 ];
                     }
@@ -759,8 +759,8 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     "lastname" => isset($last_name) ? strtolower($last_name) : '',
                     "mobile" => isset($mobile) ? $mobile : '',
                     "created_at" => strtotime("now"),
-                    "ticket_price" => number_format($ticket_price,2),
-                    "final_ticket_price" => !empty($ticket_price) ? number_format($BuyerPayment,2) : 0,
+                    "ticket_price" => number_format($ticket_price1,2),
+                    "final_ticket_price" => !empty($ticket_price1) ? number_format($BuyerPayment,2) : 0,
                     "bulk_upload_flag" => 1,
                     "cart_detail" => json_encode($cart_details_array) 
 
