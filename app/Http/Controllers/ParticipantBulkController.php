@@ -240,6 +240,7 @@ class ParticipantBulkController extends Controller
     {
         // dd($iId,$event_id,$userId);
         $Booking_payment_id = !empty($iId) ? $iId : 0;
+        
             if(!empty($Booking_payment_id))
                $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
 

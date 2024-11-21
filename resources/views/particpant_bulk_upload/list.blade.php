@@ -133,7 +133,11 @@
                                 </div>
                             </div>
                         </form>
-                       
+
+                        <!-- <div id="loader" style="display: none;">
+                            <img src="{{ asset('uploads/images/running.gif') }}" alt="Loading...">
+                        </div> -->
+
                         <?php if(!empty($search_event)) { ?>  
                             <div class="row px-1">
                                 <div class="col-sm-8 float-right">
@@ -361,15 +365,61 @@
 
     function send_email_to_all_participant(id,event_id,created_by) {
         // alert(id+'--------'+event_id+'--------'+created_by);
+       
         var url = '<?php echo url('participan_bulk_upload/send_email'); ?>';
         url = url + '/' + id + '/' + event_id + '/' + created_by;
+
+        window.location.href = url;
            
-        bConfirm = confirm('Are you sure you want to send email this record ?');
-        if (bConfirm) {
-            window.location.href = url;
-        } else {
-            return false;
-        }
+        // bConfirm = confirm('Are you sure you want to send email this record ?');
+        // if (bConfirm) {
+        //     // window.location.href = url;
+
+        //      fetch(url)
+        //         .then(response => response.json())  // Assuming the response is JSON
+        //             .then(data => {
+        //                 document.getElementById('loader').style.display = 'none';
+        //                 window.location.href = url;
+        //     })
+        //     .catch(error => {
+               
+        //         document.getElementById('loader').style.display = 'none';
+        //         // alert('An error occurred while sending the email.');
+        //     });
+
+        // } else {
+        //     return false;
+        // }
+
+    //      var bConfirm = confirm('Are you sure you want to send email this record ?');
+    // if (bConfirm) {
+    //     // Show loader
+    //     $('#loader').show();
+
+    //     var url = '<?php echo url('participan_bulk_upload/send_email'); ?>';
+    //     url = url + '/' + id + '/' + event_id + '/' + created_by;
+
+    //     // Use jQuery AJAX to handle the request
+    //     $.ajax({
+    //         url: url,
+    //         type: 'post',
+    //         success: function(response) {
+    //             // Hide loader
+    //             $('#loader').hide();
+
+    //             // Handle the response (assuming the server returns a JSON object)
+    //             alert(response.message);
+    //             // window.location.href = response.redirect_url || window.location.href;
+    //         },
+    //         error: function() {
+    //             $('#loader').hide();
+    //             alert('An error occurred while sending the email.');
+    //         }
+    //     });
+    // } else {
+    //     return false;
+    // }
+
     }
 
     function validateFileType() {
