@@ -232,6 +232,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get','post'],'participan_work_upload/export_download',[ParticipantBulkController::class,'export_event_participants_work'])->name('export_event_participants_work');
     Route::match(['get', 'post'], '/participan_bulk_upload/import_participant', [ParticipantBulkController::class, 'event_participan_bulk_upload'])->name('event_participan_bulk_upload');
     Route::match (['get'], 'participan_bulk_upload/delete/{id}', [ParticipantBulkController::class, 'delete_participant'])->name('delete_participant');
+    Route::match(['get', 'post'], '/participan_bulk_upload/send_email/{id}/{event_id}/{user_id}', [ParticipantBulkController::class, 'event_participant_send_email'])->name('event_participant_send_email');
 
     // Races Mode
     Route::match (['get', 'post'], 'index_mode', [MaintenanceModeController::class, 'index_mode'])->name('index_mode');

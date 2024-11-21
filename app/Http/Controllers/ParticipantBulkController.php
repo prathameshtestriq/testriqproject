@@ -33,7 +33,7 @@ class ParticipantBulkController extends Controller
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());
         
-        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status FROM booking_payment_details WHERE bulk_upload_flag = 1";
+        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status,event_id,created_by FROM booking_payment_details WHERE bulk_upload_flag = 1";
         if(isset($a_return['search_event']) && !empty($a_return['search_event']))
             $SQL1 .= " AND event_id = ".$a_return['search_event']."";
         else
@@ -123,7 +123,7 @@ class ParticipantBulkController extends Controller
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());
 
-        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status FROM booking_payment_details WHERE bulk_upload_flag = 1 AND event_id = ".$a_return['search_event']." order by id desc";
+        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status,event_id,created_by FROM booking_payment_details WHERE bulk_upload_flag = 1 AND event_id = ".$a_return['search_event']." order by id desc";
         $ParticipantDetails = DB::select($SQL1, array());
 
         if(!empty($ParticipantDetails)){
@@ -223,9 +223,6 @@ class ParticipantBulkController extends Controller
             $import = new ParticipantBulkDetailsImport($data);
             Excel::import($import, request()->file('participant_file'));
 
-            $Booking_payment_id = !empty($import->returnData['BookPayId']) ? $import->returnData['BookPayId'] : 0;
-            // $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
-
             $Message = 'Participant Details Uploaded Successfully.';
             $aResult = [
                 'message' => $Message,
@@ -237,6 +234,19 @@ class ParticipantBulkController extends Controller
         }
        
         // return view('particpant_bulk_upload.list',$a_return);
+    }
+
+    public function event_participant_send_email($iId,$event_id,$userId)
+    {
+        // dd($iId,$event_id,$userId);
+        $Booking_payment_id = !empty($iId) ? $iId : 0;
+            if(!empty($Booking_payment_id))
+               $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
+
+        $aResult = [
+            'message' => 'Participants email send successfully'
+        ];
+        return redirect(url('/participan_work_upload'))->with('success', $aResult);
     }
 
 
@@ -651,5 +661,4 @@ class ParticipantBulkController extends Controller
         ];
         return redirect(url('/participan_work_upload'))->with('success', $aResult);
     }
-
 }

@@ -91,11 +91,11 @@
 
                    <!-- <td style="text-align: right;"><?php //echo $res->Single_ticket_price; ?></td> -->
                    <td style="text-align: right;"><?php echo $res->Ticket_count; ?></td>
-                   <td style="text-align: right;"><?php echo $res->Ticket_price; ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Ticket_price,2); ?></td>
                    <td style="text-align: right;"><?php echo $res->Registration_Fee_GST; ?></td>
-                   <td style="text-align: right;"><?php echo $res->Applied_Coupon_Amount; ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Applied_Coupon_Amount,2); ?></td>
 
-                   <td style="text-align: right;"><?php echo $res->Extra_amount; ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Extra_amount,2); ?></td>
                    <td style="text-align: right;"><?php echo $res->Extra_amount_pg_charges; ?></td>
                    <td style="text-align: right;"><?php echo $res->Extra_amount_pg_GST; ?></td>
 
@@ -106,13 +106,13 @@
                    <td style="text-align: right;"><?php echo $res->Convenience_Fee_GST; ?></td>
 
                    <td style="text-align: right;"><?php echo $res->Platform_fee; ?></td>
-                   <td style="text-align: right;"><?php echo $res->Platform_Fee_GST; ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Platform_Fee_GST,2); ?></td>
 
-                   <td style="text-align: right;"><?php echo $res->Payment_gateway_charges; ?></td>
-                   <td style="text-align: right;"><?php echo $res->Payment_Gateway_GST; ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Payment_gateway_charges,2); ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Payment_Gateway_GST,2); ?></td>
 
-                   <td style="text-align: right;"><?php echo $res->Organiser_amount; ?></td>
-                   <td style="text-align: right;"><?php echo $res->Final_total_amount; ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Organiser_amount,2); ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Final_total_amount,2); ?></td>
                 </tr>
             <?php $i++; }} ?>
 
@@ -133,28 +133,28 @@
 
                    <!-- <td style="text-align: right;"><strong><?php //echo $total_Single_ticket_price; ?></strong></td> -->
                    <td style="text-align: right;"><strong><?php echo $total_Ticket_count; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Ticket_price; ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Ticket_price,2); ?></strong></td>
                    <td style="text-align: right;"><strong><?php echo $total_Registration_Fee_GST; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Applied_Coupon_Amount; ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Applied_Coupon_Amount,2); ?></strong></td>
 
-                   <td style="text-align: right;"><strong><?php echo $total_Extra_amount; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Extra_amount_pg_charges; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Extra_amount_pg_GST; ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Extra_amount,2); ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Extra_amount_pg_charges,2); ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Extra_amount_pg_GST,2); ?></strong></td>
 
                    <td style="text-align: center;"><strong>&nbsp;</strong></td>
                    <td style="text-align: center;"><strong>&nbsp;</strong></td>
 
-                   <td style="text-align: right;"><strong><?php echo $total_Convenience_fee; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Convenience_Fee_GST; ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Convenience_fee,2); ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Convenience_Fee_GST,2); ?></strong></td>
 
-                   <td style="text-align: right;"><strong><?php echo $total_Platform_fee; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Platform_Fee_GST; ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Platform_fee,2); ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Platform_Fee_GST,2); ?></strong></td>
 
-                   <td style="text-align: right;"><strong><?php echo $total_Payment_gateway_charges; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Payment_Gateway_GST; ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Payment_gateway_charges,2); ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Payment_Gateway_GST,2); ?></strong></td>
 
-                   <td style="text-align: right;"><strong><?php echo $total_Organiser_amount; ?></strong></td>
-                   <td style="text-align: right;"><strong><?php echo $total_Final_total_amount; ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Organiser_amount,2); ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_Final_total_amount,2); ?></strong></td>
             </tr>
 
     </tbody>

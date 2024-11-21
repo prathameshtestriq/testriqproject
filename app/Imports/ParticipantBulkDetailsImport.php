@@ -572,7 +572,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 "event_id" => $event_id,
                 "user_id" => $userId,
                 "booking_date" => strtotime("now"),
-                "total_amount" => !empty($Final_calculated_ticket_amount) ? number_format($Final_calculated_ticket_amount,2) : 0,
+                "total_amount" => !empty($Final_calculated_ticket_amount) ? $Final_calculated_ticket_amount : 0,
                 "total_discount" => '0.00',
                 "cart_details" => !empty($cart_details_array) ? json_encode($cart_details_array) : '[{}]',  // json_encode($GstArray),
                 "transaction_status" => !empty($Final_calculated_ticket_amount) ? 1 : 3,
@@ -715,7 +715,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $Total_Organiser = (floatval($BuyerPayment) - floatval($Total_Payment_Gateway) - floatval($Total_Platform_Fees) - floatval($Total_Convenience_Fees));
                
                     if(!empty($ticket_price1) || $ticket_price1 != 0){
-                        $cart_details_array = ["ExcPriceTaxesStatus" => $event_Result[0]->prices_taxes_status, "Ticket_count" => 1, "Ticket_price" => $ticket_price1, "Registration_Fee_GST" => number_format($BasePriceGst,2), "Applied_Coupon_Amount" => 0, "Extra_amount" => 0, "Extra_amount_pg_charges" => 0, "Extra_amount_pg_GST" => 0, "Pass_Bare" => $subArray->player_of_fee, "Pg_Bare" => $subArray->player_of_gateway_fee, "Convenience_fee" => number_format($Convenience_Fee_Amount,2), "Convenience_Fee_GST" => number_format($GST_On_Convenience_Fees,2), "Platform_fee" => number_format($NewPlatformFee,2), "Platform_Fee_GST" => number_format($GST_On_Platform_Fees_Amount,2), "Payment_gateway_charges" => number_format($Payment_Gateway_Buyer,2), "Payment_Gateway_GST" => number_format($Payment_Gateway_gst_amount,2), "Organiser_amount" => $Total_Organiser, "Final_total_amount" => $BuyerPayment ];
+                        $cart_details_array = ["ExcPriceTaxesStatus" => $event_Result[0]->prices_taxes_status, "Ticket_count" => 1, "Ticket_price" => $ticket_price1, "Registration_Fee_GST" => $BasePriceGst, "Applied_Coupon_Amount" => 0, "Extra_amount" => 0, "Extra_amount_pg_charges" => 0, "Extra_amount_pg_GST" => 0, "Pass_Bare" => $subArray->player_of_fee, "Pg_Bare" => $subArray->player_of_gateway_fee, "Convenience_fee" => $Convenience_Fee_Amount, "Convenience_Fee_GST" => $GST_On_Convenience_Fees, "Platform_fee" => $NewPlatformFee, "Platform_Fee_GST" => $GST_On_Platform_Fees_Amount, "Payment_gateway_charges" => $Payment_Gateway_Buyer, "Payment_Gateway_GST" => $Payment_Gateway_gst_amount, "Organiser_amount" => $Total_Organiser, "Final_total_amount" => $BuyerPayment ];
                     }else{
                         $cart_details_array = ["ExcPriceTaxesStatus" => $event_Result[0]->prices_taxes_status, "Ticket_count" => 1, "Ticket_price" => 0, "Registration_Fee_GST" => 0, "Applied_Coupon_Amount" => 0, "Extra_amount" => 0, "Extra_amount_pg_charges" => 0, "Extra_amount_pg_GST" => 0, "Pass_Bare" => 0, "Pg_Bare" => 0, "Convenience_fee" => 0, "Convenience_Fee_GST" => 0, "Platform_fee" => 0, "Platform_Fee_GST" => 0, "Payment_gateway_charges" => 0, "Payment_Gateway_GST" => 0, "Organiser_amount" => 0, "Final_total_amount" => 0 ];
                     }

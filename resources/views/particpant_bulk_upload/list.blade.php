@@ -299,6 +299,7 @@
                                         </thead>
                                         <tbody class="text-center">
                                             <?php 
+                                             // dd($ParticipantDetails);
                                               if (!empty($ParticipantDetails)){
                                                 $i = 1;
                                                 foreach ($ParticipantDetails as $val){
@@ -309,11 +310,14 @@
                                                     <td class="text-left">{{ $val->txnid }}</td>
                                                     <td class="text-left">{{ date('d-m-Y h:i A', $val->created_datetime) }}</td>
                                                     <td class="text-center">{{ ucfirst($val->payment_status) }}</td>
-                                                    <td class="text-right">{{ $val->amount }}</td>
+                                                    <td class="text-right">{{ number_format($val->amount,2) }}</td>
                                                     <td class="text-center">{{ $val->participant_count }}</td>
                                                     <td>
                                                         <i class="fa fa-trash-o btn btn-danger btn-sm"
                                                             onclick="delete_record({{ $val->id }})" title="Delete"></i>
+
+                                                        <i class="fa fa-envelope btn btn-warning btn-sm"
+                                                            onclick="send_email_to_all_participant({{$val->id}},{{$val->event_id}},{{$val->created_by}})"  title="Send Email To Participant"></i>
                                                     </td>
                                                 </tr>
                                             <?php
@@ -348,6 +352,19 @@
         url = url + '/' + id;
         //    alert(url);
         bConfirm = confirm('Are you sure you want to remove this record ?');
+        if (bConfirm) {
+            window.location.href = url;
+        } else {
+            return false;
+        }
+    }
+
+    function send_email_to_all_participant(id,event_id,created_by) {
+        // alert(id+'--------'+event_id+'--------'+created_by);
+        var url = '<?php echo url('participan_bulk_upload/send_email'); ?>';
+        url = url + '/' + id + '/' + event_id + '/' + created_by;
+           
+        bConfirm = confirm('Are you sure you want to send email this record ?');
         if (bConfirm) {
             window.location.href = url;
         } else {
