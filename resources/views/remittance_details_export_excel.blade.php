@@ -102,10 +102,10 @@
                    <td style="text-align: left;"><?php echo $res->Pass_Bare; ?></td>
                    <td style="text-align: left;"><?php echo $res->Pg_Bare; ?></td>
 
-                   <td style="text-align: right;"><?php echo $res->Convenience_fee; ?></td>
-                   <td style="text-align: right;"><?php echo $res->Convenience_Fee_GST; ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Convenience_fee,2); ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Convenience_Fee_GST,2); ?></td>
 
-                   <td style="text-align: right;"><?php echo $res->Platform_fee; ?></td>
+                   <td style="text-align: right;"><?php echo number_format($res->Platform_fee,2); ?></td>
                    <td style="text-align: right;"><?php echo number_format($res->Platform_Fee_GST,2); ?></td>
 
                    <td style="text-align: right;"><?php echo number_format($res->Payment_gateway_charges,2); ?></td>
