@@ -551,7 +551,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 "email" => $Email,
                 "phone_no" => $PhoneNo,
                 "productinfo" => $ProductInfo,
-                "amount" => !empty($Final_calculated_ticket_amount) ? number_format($Final_calculated_ticket_amount,2) : 0,
+                "amount" => !empty($Final_calculated_ticket_amount) ? $Final_calculated_ticket_amount : 0,
                 "merchant_key" => $Merchant_key,
                 "hash" => $hash,
                 "created_by" => $userId,
@@ -759,8 +759,8 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     "lastname" => isset($last_name) ? strtolower($last_name) : '',
                     "mobile" => isset($mobile) ? $mobile : '',
                     "created_at" => strtotime("now"),
-                    "ticket_price" => number_format($ticket_price1,2),
-                    "final_ticket_price" => !empty($ticket_price1) ? number_format($BuyerPayment,2) : 0,
+                    "ticket_price" => $ticket_price1,
+                    "final_ticket_price" => !empty($ticket_price1) ? $BuyerPayment : 0,
                     "bulk_upload_flag" => 1,
                     "cart_detail" => json_encode($cart_details_array) 
 
