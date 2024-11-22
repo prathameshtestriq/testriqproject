@@ -160,10 +160,14 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                            $value->ActualValue = '';  
                                         
                                     }else if($value->question_form_type == "date"){
-
-                                        $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject( (isset($FinalHeaderData[$value->question_form_name])) ? $FinalHeaderData[$value->question_form_name] : "");
-                                        $value->ActualValue = $date->format('Y-m-d');
-
+                                        
+                                        if(isset($FinalHeaderData[$value->question_form_name]) && !empty($FinalHeaderData[$value->question_form_name])){
+                                            $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject( (isset($FinalHeaderData[$value->question_form_name])) ? $FinalHeaderData[$value->question_form_name] : "");
+                                            $value->ActualValue = $date->format('Y-m-d');
+                                        }else{
+                                            $value->ActualValue = ''; 
+                                        }
+                                        
                                     }else if($value->question_form_type == "amount"){
                                         $question_label_name = str_replace(" ", "_", strtolower(trim($value->question_label)));
                                         $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
