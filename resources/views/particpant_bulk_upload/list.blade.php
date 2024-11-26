@@ -1,6 +1,23 @@
 @extends('layout.index')
 @section('title', 'Participant Bulk Upload')
 @section('content')
+
+<style>
+    .loading-overlay {
+    display: none;
+    background: rgba(0, 0, 0, 0.477);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 9998;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+</style>
+
 <?php //dd($search_event); ?>
     <section>
         <div class="content-body">
@@ -132,10 +149,18 @@
                                 </div>
                             </div>
                         </form>
-
-                        <div id="loader" style="display: none;">
+                        
+                        <!-- style="display: none;" -->
+                        <!-- <div id="loader" >
                             <img src="{{ asset('uploads/images/running.gif') }}" alt="Loading...">
+                        </div> -->
+
+                        <div class="loading-overlay" id="loader" style="display: none;">
+                            <span>
+                                <img src="{{ asset('uploads/images/running.gif') }}" alt="" style="width:100px;">
+                            </span>
                         </div>
+
 
                         <?php if(!empty($search_event)) { ?>  
                             <div class="row px-1">
@@ -380,7 +405,7 @@
         var bConfirm = confirm('Are you sure you want to send email this record ?');
             if (bConfirm) {
                 // Show loader
-                // $('#loader').show();
+                $('#loader').show();
 
                 // var url = '<?php echo url('participan_bulk_upload/send_email'); ?>';
                 // url = url + '/' + id + '/' + event_id + '/' + created_by;
@@ -397,7 +422,7 @@
                     },
                     success: function(result) {
                         // console.log(result);
-                        // $('#loader').hide();
+                        $('#loader').hide();
 
                         $("#success-message").text(result.message); // Update success message
                         $("#success-alert").show(); // Show the success alert
@@ -407,7 +432,7 @@
                     },
                     error:function(){
                         // alert('Some error occured');
-                        // $('#loader').hide();
+                        $('#loader').hide();
                         return false;
                     }
                 });
