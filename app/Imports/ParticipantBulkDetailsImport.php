@@ -78,6 +78,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     $FinalHeaderData = array_filter($HeaderData, function($value) {
                         return !is_null($value);
                     });
+                    // dd($FinalHeaderData);
                     //--------------------------
 
                     $exSheetTicketName  = isset($row['ticket_name']) ? $row['ticket_name']: '';
@@ -176,6 +177,13 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                         $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
                                         $value->ActualValue = !empty($selectedValue) ? $selectedValue : 0;
                                     }
+                                    else if($value->question_form_type == "text"){
+                                        $question_label_name = str_replace("_/_", "_", strtolower(trim($value->question_form_name)));   
+                                        $question_label_name = str_replace("(", "", strtolower(trim($question_label_name)));   
+                                        $question_label_name = str_replace(")", "", strtolower(trim($question_label_name)));   
+                                        $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
+                                        $value->ActualValue = !empty($selectedValue) ? $selectedValue : 0;
+                                    }
                                     else{  // [text]
                                         $value->ActualValue = (isset($FinalHeaderData[$value->question_form_name])) ? $FinalHeaderData[$value->question_form_name] : "";
                                     }
@@ -228,7 +236,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 }
             } 
            // dd($FinalHeaderData,$FormQuestions);
-            // dd($FinalFormQuestions);
+            // dd($FinalHeaderData,$FinalFormQuestions);
           
             //--------------------- data insert --------------------
 

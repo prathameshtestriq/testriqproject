@@ -189,8 +189,8 @@
         </div>
 
         <div class="main-banner">
-            <h1 class="event-name">{{ isset($event_details->name) ? $event_details->name : ""}}</h1>
-            <p class="event-organizer">{{ isset($ticket_details['TicketName']) ? $ticket_details['TicketName'] : "" }}
+            <h1 class="event-name">{{ isset($event_details->name) ? ucfirst($event_details->name) : ""}}</h1>
+            <p class="event-organizer">{{ isset($ticket_details['TicketName']) ? ucfirst($ticket_details['TicketName']) : "" }}
             </p>
         </div>
 
@@ -203,7 +203,7 @@
 
                     <tr>
                         <td style="width: 35%;">Name</td>
-                        <td>{{ isset($ticket_details["firstname"]) ? $ticket_details["firstname"] . " " . $ticket_details["lastname"] : "" }}
+                        <td>{{ isset($ticket_details["firstname"]) ? ucfirst($ticket_details["firstname"]) . " " . ucfirst($ticket_details["lastname"]) : "" }}
                         </td>
                     </tr>
                     <tr>
@@ -215,13 +215,13 @@
                     </tr>
                     <tr>
                         <td>Organiser</td>
-                        <td>{{ isset($org_details->name) ? $org_details->name : '' }}</td>
+                        <td>{{ isset($org_details->name) ? ucfirst($org_details->name) : '' }}</td>
                     </tr>
                     
                     <?php if($event_details->event_type != 2){ ?>
                         <tr>
                             <td>Venue</td>
-                            <td>{{ isset($event_details->Venue) ? $event_details->Venue : '' }}</td>
+                            <td>{{ isset($event_details->Venue) ? ucfirst($event_details->Venue) : '' }}</td>
                         </tr>
                     <?php } ?>
 
@@ -250,7 +250,7 @@
                     </tr>
                     <tr>
                         <td>Registered By</td>
-                        <td>{{ isset($user_details->username) ? $user_details->username : "" }}</td>
+                        <td>{{ isset($user_details->username) ? ucfirst($user_details->username) : "" }}</td>
                     </tr>
 
                     <tr>
@@ -299,7 +299,7 @@
                             <td style="text-align: left;">
                                 <?php if($res->question_form_type == 'file'){ ?>
                                    <a href="{{asset('uploads/attendee_documents/'.$res->ActualValue) }}" target="_blank" style="text-decoration: none; color: #212121;"> <?php echo $res->ActualValue; ?></a>
-                                <?php }else{ echo $res->ActualValue; }  ?>
+                                <?php }else{ echo ucfirst($res->ActualValue); }  ?>
                                 
                             </td>
                         </tr>

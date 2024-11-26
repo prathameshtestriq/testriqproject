@@ -525,7 +525,7 @@ class ParticipantBulkController extends Controller
                 // dd($EventId);
                 $amount_details = $extra_details = [];
 
-                $sql1 = "SELECT question_label,question_form_type,question_form_name,question_label FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0  "; // AND question_form_name != 'sub_question'
+                $sql1 = "SELECT question_label,question_form_type,question_form_name,question_label,form_id FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0  "; // AND question_form_name != 'sub_question'
                 $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
                 // dd($QuestionData);
 
@@ -541,16 +541,16 @@ class ParticipantBulkController extends Controller
                 // dd($TicketArr);
                // dd($QuestionData,$attendee_details);
                 // Iterate through attendee details to separate the amounts
-                $extra_details = []; $quetion_id = $question_label = $question_form_type = '';
+                $extra_details = []; $quetion_id = $question_label = $question_form_type = ''; $form_id = 0;
                 if(!empty($QuestionData)){
                     foreach($QuestionData as $res){
                         $aTemp = new stdClass;
-                       
+                        // echo $res->form_id.'aaaaaa<br>';
+                        $form_id = $res->form_id;
                         foreach ($attendee_details as $detail) {
                             // echo $detail->question_form_name.'---------'.$detail->question_form_type.'--------'.$detail->ActualValue.'<br>';
                             $labels = []; $label = ''; 
                             
-
                             if($res->question_form_name != 'sub_question' && $res->question_form_type != 'amount' && $res->question_form_type != 'select' && $res->question_form_type != 'text'){
                                 if ($detail->question_form_name == $res->question_form_name && $detail->ActualValue != '') {
                                     // echo 'bbb<br>';
@@ -590,6 +590,11 @@ class ParticipantBulkController extends Controller
                             }
                             else{
                                 $label = ''; 
+                                // $question_form_name = str_replace("_/_", "_", strtolower(trim($res->question_form_name)));
+                                // $question_form_name = str_replace("(", "", strtolower(trim($question_form_name)));   
+                                // $question_form_name = str_replace(")", "", strtolower(trim($question_form_name))); 
+
+                                // echo $question_form_name.'----------'.$detail->question_form_name.'<br>';
 
                                 if($res->question_form_type == 'select' &&  !empty($detail->question_form_option) && $detail->question_form_type == 'select' && $detail->ActualValue !== ''){
                                     // echo $res->question_form_type.'11<br>';
@@ -619,7 +624,7 @@ class ParticipantBulkController extends Controller
                                         $extra_details[] = $aTemp;
                                         break;
                                     } 
-                                }else if($res->question_form_type == 'text' && $detail->question_form_type == 'text' && $detail->ActualValue !== ''){
+                                }else if($form_id == '999999' && $res->question_form_type == 'text' && $detail->question_form_type == 'text' && ($res->question_form_name == $detail->question_form_name) ){
                                     if(!array_search($detail->id, array_column($extra_details, 'id'))){
                                         $aTemp->ActualValue    = $detail->ActualValue;
                                         $aTemp->id             = $detail->id; 
