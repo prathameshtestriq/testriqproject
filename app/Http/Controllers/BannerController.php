@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Libraries\Curlcall;
-use App\Libraries\Mysecurity;
+use App\Libraries\Mysecurity; 
 use App\Models\AdminModel;
 use App\Models\AdminUserRight;
 use App\Models\Banner;
@@ -144,18 +144,18 @@ class BannerController extends Controller
                 'banner_image' => empty($edit_array) || $edit_array['banner_image'] === '' ? 'required|mimes:jpeg,jpg,png,gif|Max:2048' : 'mimes:jpeg,jpg,png,gif|Max:2048',
                 'start_date' => 'required',
                 'end_date' => 'required',
-                'city' => 'required',
-                'state' => 'required',
-                'country' => 'required'
+                // 'city' => 'required',
+                // 'state' => 'required',
+                // 'country' => 'required'
             ];
  
             
             $message = [ 
-                'banner_url.required' => 'The Banner URL field is required.',
-                'banner_url.regex' => 'The Banner URL must start with "www.", "http://", or "https://".',
-                'banner_image.required' => 'The image field is required .',
-                'banner_image.mimes' => 'The image must be a file of type: jpeg, jpg, png, gif.',
-                'banner_image.Max' => 'The image size must not exceed 2MB.', 
+                'banner_url.required' => 'The banner URL field is required.',
+                'banner_url.regex' => 'The banner URL must start with "www.", "http://", or "https://".',
+                'banner_image.required' => 'The banner image field is required .',
+                'banner_image.mimes' => 'The banner image must be a file of type: jpeg, jpg, png, gif.',
+                'banner_image.Max' => 'The banner image size must not exceed 2MB.', 
             ];  
 
             $validator = Validator::make($request->all(), $rules,$message);

@@ -88,10 +88,6 @@ class EmailPlaceholderController extends Controller
                     }
                 }
                
-                // if ($event_form_question_name === $val->question_form_name && $val->id != $iId) {
-                //         $is_unique = false;
-                //         break;  
-                // }
             }
 
             // Validation rules and messages
@@ -99,22 +95,17 @@ class EmailPlaceholderController extends Controller
                 'event' => 'required',
                 'question' => 'required',
                 'placeholder_name' => 'required|unique:email_placeholders,placeholder_name,' . $iId . ',id',
-                'question_form_name' => 'unique:email_placeholders,question_form_name,' . $iId . ',id'
+                // 'question_form_name' => 'unique:email_placeholders,question_form_name,' . $iId . ',id'
             ];
+            if(!empty($request->question)){
+                $rules = [
+                    'question_form_name' => 'unique:email_placeholders,question_form_name,' . $iId . ',id'
+                ];
+            }
             $messages = [
                 'placeholder_name.unique' => 'The placeholder name must be unique for the selected question.',
                 // 'question_form_name' => 'The question name must be unique for the selected event .',
             ];
-
-            // Add unique validation rule for question_form_name and placeholder_name, excluding current ID on update
-            // if (!$is_name_unique) {
-            //     $rules['placeholder_name'] .= '|unique:email_placeholders,placeholder_name,' . $iId . ',id';
-            // }
-
-            // if (!$is_unique) {
-            //     $rules['question'] .= '|unique:email_placeholders,question_id,' . $iId . ',id';
-            //     // dd($rules['placeholder_name'] ,$rules['question']); 
-            // }
 
             // dd($messages );
             // Validate the request with custom validation logic

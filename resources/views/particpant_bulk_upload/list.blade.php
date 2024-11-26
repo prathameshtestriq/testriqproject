@@ -126,7 +126,6 @@
                                                 <?php } ?>
                                             </div>
 
-                                             
                                         </div>
                                     </div>
                                     
@@ -134,9 +133,9 @@
                             </div>
                         </form>
 
-                        <!-- <div id="loader" style="display: none;">
+                        <div id="loader" style="display: none;">
                             <img src="{{ asset('uploads/images/running.gif') }}" alt="Loading...">
-                        </div> -->
+                        </div>
 
                         <?php if(!empty($search_event)) { ?>  
                             <div class="row px-1">
@@ -271,8 +270,16 @@
                                     <div class="row w-100">
                                         <div class="col-sm-12">
                                             <div class="row">
+                                               
                                                 <div class="col-sm-3 col-12">
-                                                    <label for="form-control">Participant Upload Excel</label>
+                                                    <label for="form-control">Bulk Upload Group Name</label>
+                                                    <input type="text" id="group_name" class="form-control"
+                                                    placeholder="Enter Group Name" name="group_name"  value="{{ old('group_name', $group_name) }}" autocomplete="off" />
+                                                   
+                                                </div>
+
+                                                <div class="col-sm-3 col-12">
+                                                    <label for="form-control">Participant Upload Excel <span style="color:red;">*</span></label>
                                                     <input type="file" class="form-control" name="participant_file" id="participant_file" accept=".xlsx" onchange="validateFileType()">
                                                 </div>
                                                   
@@ -286,13 +293,12 @@
                                 </div>
                             </form>
                          
-                           
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered">
                                         <thead>
                                             <tr>
                                                 <th class="text-center">Sr. No</th>
-                                                <th class="text-left">Event Name</th>
+                                                <th class="text-left">Group Name</th>
                                                 <th class="text-left">Transaction Id</th>
                                                 <th class="text-left">Created Date/Time</th>
                                                 <th class="text-center">Transaction Status</th>
@@ -310,18 +316,18 @@
                                             ?>
                                                 <tr>
                                                     <td class="text-center">{{ $i }}</td>
-                                                    <td class="text-left">{{ ucfirst($val->productinfo) }}</td>
+                                                    <td class="text-left">{{ ucfirst($val->bulk_upload_group_name) }}</td>
                                                     <td class="text-left">{{ $val->txnid }}</td>
                                                     <td class="text-left">{{ date('d-m-Y h:i A', $val->created_datetime) }}</td>
                                                     <td class="text-center">{{ ucfirst($val->payment_status) }}</td>
                                                     <td class="text-right">{{ number_format($val->amount,2) }}</td>
                                                     <td class="text-center">{{ $val->participant_count }}</td>
                                                     <td>
-                                                        <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                            onclick="delete_record({{ $val->id }})" title="Delete"></i>
-
+                                                       
                                                         <i class="fa fa-envelope btn btn-warning btn-sm"
                                                             onclick="send_email_to_all_participant({{$val->id}},{{$val->event_id}},{{$val->created_by}})"  title="Send Email To Participant"></i>
+                                                        <i class="fa fa-trash-o btn btn-danger btn-sm"
+                                                            onclick="delete_record({{ $val->id }})" title="Delete"></i>
                                                     </td>
                                                 </tr>
                                             <?php
@@ -366,59 +372,49 @@
     function send_email_to_all_participant(id,event_id,created_by) {
         // alert(id+'--------'+event_id+'--------'+created_by);
        
-        var url = '<?php echo url('participan_bulk_upload/send_email'); ?>';
-        url = url + '/' + id + '/' + event_id + '/' + created_by;
+        // var url = '<?php echo url('participan_bulk_upload/send_email'); ?>';
+        // url = url + '/' + id + '/' + event_id + '/' + created_by;
 
-        window.location.href = url;
+        // window.location.href = url;
            
-        // bConfirm = confirm('Are you sure you want to send email this record ?');
-        // if (bConfirm) {
-        //     // window.location.href = url;
+        var bConfirm = confirm('Are you sure you want to send email this record ?');
+            if (bConfirm) {
+                // Show loader
+                // $('#loader').show();
 
-        //      fetch(url)
-        //         .then(response => response.json())  // Assuming the response is JSON
-        //             .then(data => {
-        //                 document.getElementById('loader').style.display = 'none';
-        //                 window.location.href = url;
-        //     })
-        //     .catch(error => {
-               
-        //         document.getElementById('loader').style.display = 'none';
-        //         // alert('An error occurred while sending the email.');
-        //     });
+                // var url = '<?php echo url('participan_bulk_upload/send_email'); ?>';
+                // url = url + '/' + id + '/' + event_id + '/' + created_by;
+                let _token = $('meta[name="csrf-token"]').attr('content');
 
-        // } else {
-        //     return false;
-        // }
+                $.ajax({
+                    url: "<?php echo url('participan_bulk_upload/send_email') ?>",
+                    type: 'post',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: id,
+                        event_id: event_id,
+                        created_by: created_by
+                    },
+                    success: function(result) {
+                        // console.log(result);
+                        // $('#loader').hide();
 
-    //      var bConfirm = confirm('Are you sure you want to send email this record ?');
-    // if (bConfirm) {
-    //     // Show loader
-    //     $('#loader').show();
+                        $("#success-message").text(result.message); // Update success message
+                        $("#success-alert").show(); // Show the success alert
+                        setTimeout(function() {
+                            $("#success-alert").fadeOut();
+                        }, 5000); 
+                    },
+                    error:function(){
+                        // alert('Some error occured');
+                        // $('#loader').hide();
+                        return false;
+                    }
+                });
 
-    //     var url = '<?php echo url('participan_bulk_upload/send_email'); ?>';
-    //     url = url + '/' + id + '/' + event_id + '/' + created_by;
-
-    //     // Use jQuery AJAX to handle the request
-    //     $.ajax({
-    //         url: url,
-    //         type: 'post',
-    //         success: function(response) {
-    //             // Hide loader
-    //             $('#loader').hide();
-
-    //             // Handle the response (assuming the server returns a JSON object)
-    //             alert(response.message);
-    //             // window.location.href = response.redirect_url || window.location.href;
-    //         },
-    //         error: function() {
-    //             $('#loader').hide();
-    //             alert('An error occurred while sending the email.');
-    //         }
-    //     });
-    // } else {
-    //     return false;
-    // }
+            } else {
+                return false;
+            }
 
     }
 

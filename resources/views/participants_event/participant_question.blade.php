@@ -75,7 +75,7 @@
                                                     {{$item['question_label']}}<span style="color:red;">*</span> :
                                                 </label>
                                             @endif --}}
-                                            @if(!in_array($item['question_form_type'], ['date','time','amount','email','file']))
+                                            @if(!in_array($item['question_form_type'], ['date','time','amount','email']))
                                                 <label for="question_label">
                                                     {{$item['question_label']}}<span style="color:red;"></span> :
                                                 </label>
@@ -174,7 +174,40 @@
                                                 <select id="cities" name="cities" class="select2 form-control">
                                                 <option value="">All City</option>
                                                 </select>            
-                                            <?php } ?>   
+                                            <?php }else if($item['question_form_type'] == 'file'){ ?>   
+                                                <input type="file" id="upload_file" class="form-control"
+                                                    placeholder="upload_file" name="upload_file"
+                                                    autocomplete="off"  accept=".png, .jpeg, .jpg, .pdf"  />
+                                                    <span class="error" id="image_err" style="color:red;"></span>
+                                                    @error('upload_file')
+                                                        <span class="error" style="color:red;">{{ $message }}</span>
+                                                    @enderror
+                                                  
+                                                    <div class="col-md-2 col-12">
+                                                        <span><br /></span>
+                                                        <!-- Image preview section -->
+                                                        <div id="imagePreview">
+                                                            <?php if(!empty( $ActualValue)){ ?>
+                                                                    <?php $extension = pathinfo($ActualValue, PATHINFO_EXTENSION);
+                                                               
+                                                                    if($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') { ?>
+                                                                        <a href="{{ asset('uploads/attendee_documents/' . $ActualValue) }}" target="_blank">
+                                                                            <img id="preview" src="{{ asset('uploads/attendee_documents/' . $ActualValue) }}" alt="Current Image" style="width: 50px;">
+                                                                        </a>
+                                                                        <input type="hidden" name="hidden_image" value="{{ old('upload_file', $ActualValue) }}" accept="image/jpeg, image/png">
+                                                                    <?php } else { ?>
+                                                                        <a href="{{ asset('uploads/attendee_documents/' . $ActualValue) }}" target="_blank">
+                                                                            <i class="fa fa-file"></i>
+                                                                        </a>
+                                                                        <input type="hidden" name="hidden_image" value="{{ old('upload_file', $ActualValue) }}" accept="image/jpeg, image/png">
+                                                                    <?php } ?>  
+                                                                
+                                                            <?php } else { ?>
+                                                                <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
+                                                            <?php } ?>
+                                                        </div>    
+                                                    </div>
+                                            <?php } ?>    
                                         </div>     
                                     </div>
                                 </div>   
@@ -194,6 +227,21 @@
        </div>
     </div>
 </div> 
+<script>
+
+    document.getElementById('upload_file').addEventListener('change', function () {
+       
+        const file = this.files[0];
+        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+
+        if (file && file.size > maxSize) {
+            document.getElementById('image_err').textContent = "File size must be less than 2MB.";
+            this.value = ""; // Clear the file input
+        } else {
+            document.getElementById('image_err').textContent = ""; // Clear any previous error message
+        }
+    });
+</script>
 
 <script>
     function popupclose(){

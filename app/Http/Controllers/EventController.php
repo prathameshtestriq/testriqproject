@@ -25,6 +25,7 @@ class EventController extends Controller
         session()->forget('event_end_date');
         session()->forget('event_status');
         session()->forget('organizer');
+        session()->forget('event_info_status');
         return redirect('/event');
     }
 
@@ -43,6 +44,8 @@ class EventController extends Controller
         $aReturn['search_event_end_date'] = '';
         $aReturn['search_event_status'] = '';
         $aReturn['search_organizer'] = '';
+        $aReturn['search_event_info_status'] = '';
+        $aReturn['search_event_name'] = '';
 
 
         if (isset($request->form_type) && $request->form_type == 'search_event') {
@@ -54,6 +57,7 @@ class EventController extends Controller
             session(['event_end_date' => $request->event_end_date]);
             session(['event_status' => $request->event_status]);
             session(['organizer' => $request->organizer]);
+            session(['event_info_status' => $request->event_info_status]);
             return redirect('/event');
         }
 
@@ -66,6 +70,7 @@ class EventController extends Controller
         $event_status = session('event_status');
         $aReturn['search_event_status'] = (isset($event_status) && $event_status != '') ? $event_status : '';
         $aReturn['search_organizer'] = (!empty(session('organizer'))) ? session('organizer') : '';
+        $aReturn['search_event_info_status'] = (!empty(session('event_info_status'))) ? session('event_info_status') : '';
         // dd($aReturn['search_organizer']);
 
  
@@ -74,7 +79,7 @@ class EventController extends Controller
         //  dd($aReturn['search_district_name']);
 
         if (!empty($aReturn['search_event_name'])) {
-            $FiltersSql .= ' AND (LOWER(vm.name) LIKE \'%' . strtolower($aReturn['search_event_name']) . '%\')';
+            $FiltersSql .= ' AND vm.id = '. $aReturn['search_event_name']. ' ';
         } else {
             $aReturn['search_name'] = '';
         }
@@ -115,6 +120,9 @@ class EventController extends Controller
         if (!empty($aReturn['search_organizer'])) {
             $FiltersSql .= ' AND vm.created_by = (select id from organizer where id = vm.created_by AND id = '.$aReturn['search_organizer'].')';
         } 
+        if(!empty( $aReturn['search_event_info_status'])){
+            $FiltersSql .= ' AND vm.event_info_status = '. $aReturn['search_event_info_status']. ' ';
+        } 
        
        
         #PAGINATION
@@ -150,7 +158,7 @@ class EventController extends Controller
                 (SELECT name FROM cities WHERE 
                 Id = vm.city) AS city,(SELECT name FROM states WHERE Id = vm.state) AS state, 
                 (SELECT name FROM countries WHERE Id = vm.country) AS country, 
-                vm.active
+                vm.active,vm.event_info_status
          FROM events AS vm
          WHERE vm.deleted = 0 ' . $FiltersSql . ' 
          ORDER BY vm.id ASC';
@@ -171,6 +179,10 @@ class EventController extends Controller
         $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
         $aReturn["countries"] = DB::select($sSQL, array());
         //return view('master_data.event.list', $aReturn);
+
+        $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
+        $aReturn['EventsData'] = DB::select($SQL, array());
+
         return view('master_data.event.list', $aReturn);
     }
 
@@ -216,8 +228,14 @@ class EventController extends Controller
                 $aReturn['Category'] = $selectedTypes; 
              //   $aReturn['Category'] = $selectedTypes; // Pass $allTypes to the view
 
-     //dd( $aReturn['Category']);
-
+        //dd( $aReturn['Category']);
+        if($id>0){
+            $sql_r = 'SELECT Banner_image FROM events WHERE id = '.$id;
+            $result = DB::select($sql_r,array());
+            $aReturn = (array) $result[0];
+           
+            
+        }
         // Validation Rules
         $rules = [
             'name' => 'required|unique:events,name,' . $id . 'id',
@@ -235,7 +253,7 @@ class EventController extends Controller
             'event_description' => 'required|string',
             'event_keywords' => 'required|string',
             'time_zone' => 'required|string',
-            'event_banner_image' => empty($id) ? 'required|mimes:jpeg,jpg,png' : '',
+            'event_banner_image' => empty($id) || $aReturn[ "Banner_image"] === ''  ? 'required|mimes:jpeg,jpg,png' : 'mimes:jpeg,jpg,png',
 
         ];
 

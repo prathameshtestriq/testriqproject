@@ -66,9 +66,10 @@ Route::get('/admin', function () {
 Route::post('/login', [LoginController::class,'index']);
 
 Route::group(['middleware' => ['checkLogin']], function () {
-     Route::match (['get', 'post'],'/dashboard', [DashboardController::class,'dashboard_details'])->name('dashboard');
-     Route::get('dashboard/clear_search', [DashboardController::class, 'clear_search'])->name('clear_search_dashboard');
-     Route::get('/db_backup', [DashboardController::class, 'db_backup']);
+    Route::match (['get', 'post'],'/dashboard', [DashboardController::class,'dashboard_details'])->name('dashboard');
+    Route::get('dashboard/clear_search', [DashboardController::class, 'clear_search'])->name('clear_search_dashboard');
+    Route::get('/db_backup', [DashboardController::class, 'db_backup']);
+    Route::any('/redirect_to_dashboard/{event_no}/{flag}', [DashboardController::class, 'EventInfoStatus'])->name('event_info_status');
     
      /* USER ROUTE */
      Route::match (['get', 'post'], '/users', [UserController::class, 'index'])->name('user_index')->name('users.index');
@@ -232,7 +233,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get','post'],'participan_work_upload/export_download',[ParticipantBulkController::class,'export_event_participants_work'])->name('export_event_participants_work');
     Route::match(['get', 'post'], '/participan_bulk_upload/import_participant', [ParticipantBulkController::class, 'event_participan_bulk_upload'])->name('event_participan_bulk_upload');
     Route::match (['get'], 'participan_bulk_upload/delete/{id}', [ParticipantBulkController::class, 'delete_participant'])->name('delete_participant');
-    Route::match(['get', 'post'], '/participan_bulk_upload/send_email/{id}/{event_id}/{user_id}', [ParticipantBulkController::class, 'event_participant_send_email'])->name('event_participant_send_email');
+    Route::match(['get', 'post'], '/participan_bulk_upload/send_email', [ParticipantBulkController::class, 'event_participant_send_email'])->name('event_participant_send_email');  // /{id}/{event_id}/{user_id}
 
     // Races Mode
     Route::match (['get', 'post'], 'index_mode', [MaintenanceModeController::class, 'index_mode'])->name('index_mode');

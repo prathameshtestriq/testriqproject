@@ -15,7 +15,11 @@ use \stdClass;
 
 class EventParticipantsController extends Controller
 {
-
+    public function __construct()
+    {
+        ini_set('memory_limit', '950M');
+        ini_set('max_execution_time', 300);
+    }
     public function clear_search($event_id,$dashboard_id)
     {
         session()->forget('participant_name');
@@ -39,6 +43,8 @@ class EventParticipantsController extends Controller
     }
     public function index(Request $request, $event_id=0,$dashboard_id = 0)
     {
+       
+        ini_set('max_execution_time', 1000);
         // dd($event_id);
         $Return = array();
         $Return['search_participant_name'] = '';
@@ -51,7 +57,50 @@ class EventParticipantsController extends Controller
         $Return['search_end_booking_date'] = '';
         $Return['search_transaction_order_id'] = '';
         $Return['search_event'] = '';
- 
+
+
+        $selectedStatus = $request->list_transaction_status;
+        $event_booking_id = $request->event_booking_id;
+        $bookingPaymentDetails = $request->booking_payment_details_id;
+        // dd($event_booking_id);
+        if(!empty($event_booking_id)){
+            foreach ($event_booking_id as $eventBookingId) {
+                // dd($eventBookingId);
+            //     // Get the selected status for the specific event_booking_id
+                $status = $selectedStatus[$eventBookingId];
+                //  dd($status, $eventBookingId);
+                $ssql = 'UPDATE event_booking SET transaction_status = :transaction_status WHERE id=:id';
+                $bindings = array(
+                    'transaction_status' =>  $status,
+                    'id' =>   $eventBookingId
+                );
+                // dd($bindings);
+                $Result = DB::update($ssql, $bindings);
+
+                // dd($status, $bookingPaymentDetails[$eventBookingId]);
+                if($status == 0) {
+                $booking_status = "Initiate";
+                }elseif ($status == 1) {
+                    $booking_status = "Success";
+                }elseif ($status == 2) {
+                    $booking_status = "Failure";
+                }elseif ($status == 3) {
+                    $booking_status = "Free";
+                }
+                // dd($booking_status);
+                $ssql = 'UPDATE booking_payment_details SET payment_status = :payment_status WHERE id=:id';
+                $bindings = array(
+                    'payment_status' => $booking_status,
+                    'id' =>  $bookingPaymentDetails[$eventBookingId]
+                );
+                // dd($bindings);
+                $Result = DB::update($ssql, $bindings);
+                $successMessage = "Transaction/Payment  Status Successfully";
+            }
+            
+            return redirect('/participants_event/'. $event_id)->with('success', $successMessage);
+            
+        }    
        
         if (isset($request->form_type) && $request->form_type == 'search_participant_event') {
         //  dd($request->category);
@@ -158,6 +207,7 @@ class EventParticipantsController extends Controller
 
         $CountsResult = DB::select($sSQL1, array());
         
+        
         $CountRows = 0;
         if (!empty($CountsResult)) {
             $CountRows = $CountsResult[0]->count;
@@ -173,8 +223,12 @@ class EventParticipantsController extends Controller
         //     LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
         //     Inner JOIN event_booking AS e ON b.booking_id = e.id
         //     WHERE 1=1';
-        $sSQL= 'SELECT 
-                a.*, 
+        $sSQL= 'SELECT a.registration_id,
+                e.id As event_booking_id,
+                a.email,a.mobile,a.id, 
+                a.bulk_upload_flag,
+                e.cart_details,
+                a.final_ticket_price,
                 e.booking_date, 
                 e.booking_pay_id, 
                 e.transaction_status, 
@@ -184,6 +238,7 @@ class EventParticipantsController extends Controller
                 et.ticket_name AS category_name,
                 bpd.txnid AS Transaction_order_id,
                 bpd.amount AS amount,
+                bpd.id As booking_payment_details_id,
                 bpt.mihpayid AS payu_id
             FROM attendee_booking_details a
             LEFT JOIN booking_details b ON a.booking_details_id = b.id
@@ -208,10 +263,32 @@ class EventParticipantsController extends Controller
             $sSQL .= ' LIMIT ' . $Return['Offset'] . ',' . $Limit;
         }
        
-        $Return['event_participants']  = DB::select($sSQL, array());
+        $event_participants  = DB::select($sSQL, array());
+        foreach( $event_participants  as $value){
+            if($value->bulk_upload_flag == 0 && !empty($value->cart_details)){
+                // dd(json_decode($value->cart_details));
+                foreach(json_decode($value->cart_details) as $res){
+                    if(!empty($res->ticket_price)){
+                        $Extra_Amount = isset($res->Extra_Amount) && !empty($res->Extra_Amount) ? floatval($res->Extra_Amount) : 0;
+                        $Extra_Amount_Payment_Gateway = isset($res->Extra_Amount_Payment_Gateway) && !empty($res->Extra_Amount_Payment_Gateway) ? floatval($res->Extra_Amount_Payment_Gateway) : 0;
+                        $Extra_Amount_Payment_Gateway_Gst = isset($res->Extra_Amount_Payment_Gateway_Gst) && !empty($res->Extra_Amount_Payment_Gateway_Gst) ? floatval($res->Extra_Amount_Payment_Gateway_Gst) : 0;
+
+                        $final_ticket_amount = (floatval($res->BuyerPayment) + $Extra_Amount + $Extra_Amount_Payment_Gateway + $Extra_Amount_Payment_Gateway_Gst);
+                    }else{
+                        $final_ticket_amount = 0;
+                    }
+                }
+                $value->total_amount =  number_format($final_ticket_amount,2);
+            }else{
+                $value->total_amount = number_format($value->final_ticket_price,2);
+            }
+        }    
          
+        $Return['event_participants'] = (count($event_participants) > 0) ? $event_participants : [];
         // $Return['event_participants']  = DB::select($sSQL, array());
         // dd($Return['event_participants']);
+
+        
         $sql = 'SELECT name FROM events where id ='.$event_id;
         $Return['event_name'] = DB::select($sql,array());
         // dd( $Return['event_name']);
@@ -295,6 +372,25 @@ class EventParticipantsController extends Controller
                 }
                 $value->mobile = $new_mobile_no;
             }
+
+            if($value->bulk_upload_flag == 0 && !empty($value->cart_details)){
+              
+                foreach(json_decode($value->cart_details) as $res){
+                    if(!empty($res->ticket_price)){
+                        $Extra_Amount = isset($res->Extra_Amount) && !empty($res->Extra_Amount) ? floatval($res->Extra_Amount) : 0;
+                        $Extra_Amount_Payment_Gateway = isset($res->Extra_Amount_Payment_Gateway) && !empty($res->Extra_Amount_Payment_Gateway) ? floatval($res->Extra_Amount_Payment_Gateway) : 0;
+                        $Extra_Amount_Payment_Gateway_Gst = isset($res->Extra_Amount_Payment_Gateway_Gst) && !empty($res->Extra_Amount_Payment_Gateway_Gst) ? floatval($res->Extra_Amount_Payment_Gateway_Gst) : 0;
+
+                        $final_ticket_amount = (floatval($res->BuyerPayment) + $Extra_Amount + $Extra_Amount_Payment_Gateway + $Extra_Amount_Payment_Gateway_Gst);
+                    }else{
+                        $final_ticket_amount = 0;
+                    }
+                }
+                $value->total_amount =  $final_ticket_amount;
+            }else{
+                $value->total_amount = $value->final_ticket_price;
+            }
+              
         }
         
         if((!empty($serach_event_id) || !empty($event_id)) && $dashboard_id == 0){
@@ -589,7 +685,6 @@ class EventParticipantsController extends Controller
     public function Edit_question(Request $request,$event_id,$attendance_id){
             // Extract data from the request
             if (isset($request->form_type) && $request->form_type == 'edit_question') {
-    
                 $jsonString = $request->dataArray;
                 $dataString = json_decode($jsonString, true);
                 $dataArray = json_decode($dataString, true);
@@ -629,6 +724,24 @@ class EventParticipantsController extends Controller
                         $question['ActualValue'] = $request->input('cities');
                     } elseif (array_key_exists($questionLabel, $request->input('mobile', []))) {
                         $question['ActualValue'] = $request->input('mobile')[$questionLabel];  
+                    } elseif ($question['question_form_type'] == 'file' && $request->has('upload_file')){
+                      
+                        // Retrieve the file from the request
+                        $file = $request->file('upload_file');
+                     
+                        // Define the upload path
+                        $uploadPath = public_path('uploads/attendee_documents/');
+                        // Generate a unique file name
+                        $fileName = time() . '-' . $file->getClientOriginalName();
+                       
+                        // Move the file to the target directory
+                        $file->move($uploadPath, $fileName);
+
+                        // Optionally, return the file path or save it in the database
+                        $filePath = 'uploads/attendee_documents/' . $fileName;
+                        $question['ActualValue'] = $fileName;
+                        
+                        
                     }
                 }
                 // dd($dataArray);

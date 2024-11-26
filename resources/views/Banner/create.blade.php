@@ -142,7 +142,7 @@ if (!empty($edit_data)) {
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="banner_image">Banner Image <span style="color:red;">*</span>
-                                                    <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
+                                                    <span style="color: #949090">(Allowed file formats: JPEG, JPG, or PNG. Maximum file size: 1400 x 360. )</span>  
                                                 </label>
                                                 <input type="file" id="banner_image" class="form-control"
                                                     placeholder="Enter Banner Url" name="banner_image"
@@ -215,7 +215,7 @@ if (!empty($edit_data)) {
                                         </div>
 
                                         <div class="col-sm-6 col-12">
-                                            <label for="country">Country: <span style="color:red;">*</span></label>
+                                            <label for="country">Country:</label>
                                             <select id="country" name="country" class="select2 form-control">
                                                 <option value="">All country</option>
                                                 <?php  
@@ -237,7 +237,7 @@ if (!empty($edit_data)) {
                                                 @enderror
                                         </div>
                                         <div class="col-sm-6 col-12">
-                                            <label for="state">State: <span style="color:red;">*</span></label>
+                                            <label for="state">State: </label>
                                             <select id="state" name="state" class="select2 form-control">
                                                 <option value="" class="placeholder">All state</option>
                                             </select>  
@@ -248,7 +248,7 @@ if (!empty($edit_data)) {
                                         </div>
 
                                         <div class="col-sm-6 col-12">
-                                            <label for="city">City: <span style="color:red;">*</span></label>
+                                            <label for="city">City:</label>
                                             <select id="city" name="city" class="select2 form-control">
                                                 <option value="">All City</option>
                                             </select>  
@@ -376,7 +376,7 @@ if (!empty($edit_data)) {
             // Show error message
             $('#banner_image').parent().addClass('has-error');
             $('#banner_image').val("");
-            $('#banner_image_err').html('The image must be 2MB or below.');
+            $('#banner_image_err').html('');
 
             // Hide error message after 3 seconds
             setTimeout(function() {

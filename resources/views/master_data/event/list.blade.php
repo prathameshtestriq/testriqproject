@@ -88,28 +88,40 @@
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-2">
-                                                <label for="form-control">Event Name</label>
-                                                <input type="text" id="name" class="form-control"
-                                                    placeholder="Search Event Name" name="name" value="{{ $search_event_name }}"
-                                                    autocomplete="off" />
+                                            <div class="col-sm-3">
+                                                <label for="form-control"> Event</label>
+                                                <select id="name" name="name" class="form-control select2 form-control">
+                                                    <option value="">Select  Event</option>
+                                                    <?php 
+                                                        foreach ($EventsData as $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('name', $search_event_name) == $value->id){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
                                             </div>
                                           
-                                            <div class="col-sm-2 ">
+                                            <div class="col-sm-3 ">
                                                 <label for="form-control">Start Booking Date</label>
                                                 <input type="date" id="event_start_date" class="form-control"
                                                     placeholder="Start Date" name="event_start_date"   value="{{ old('start_date', $search_event_start_date ? \Carbon\Carbon::parse($search_event_start_date)->format('Y-m-d') : '') }}"   
                                                     autocomplete="off" onkeydown="return false;" onchange="setEndDateMin()" />
                                             </div>
                                             
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">End Booking Date</label>
                                                 <input type="date" id="event_end_date" class="form-control"
                                                     placeholder="End Date" name="event_end_date" value="{{ old('end_date', $search_event_end_date ? \Carbon\Carbon::parse($search_event_end_date)->format('Y-m-d') : '') }}"
                                                     autocomplete="off" />
                                             </div>
 
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3">
                                                 <label for="form-control">Country</label>
                                                 <select id="country" name="event_country" class="select2 form-control">
                                                     <option value="">All country</option>
@@ -128,7 +140,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-2 ">
+                                            <div class="col-sm-3 mt-2">
                                                 <label for="form-control">State</label>
                                                 <select id="state" name="event_state" class="select2 form-control">
                                                     <option value="">All state</option>
@@ -136,14 +148,14 @@
                                             
                                             </div>
     
-                                            <div class="col-sm-2">
+                                            <div class="col-sm-3 mt-2">
                                                 <label for="form-control">City</label>
                                                 <select id="city" name="event_city" class="select2 form-control">
                                                     <option value="">All City</option>
                                                 </select>  
                                             </div>
 
-                                            <div class="col-sm-2 col-12 mt-2">
+                                            <div class="col-sm-3 col-12 mt-2">
                                                 <?php 
                                                    $event_status = array(0=>'Inactive',1=>'Active' );    
                                                 ?> 
@@ -165,7 +177,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-sm-2 col-12 mt-2">
+                                            <div class="col-sm-3 col-12 mt-2">
                                                 <label for="form-control"> Organiser</label>
                                                 <select id="organizer" name="organizer" class="form-control select2 form-control">
                                                     <option value="">Select  Organiser</option>
@@ -184,10 +196,32 @@
                                                     ?>
                                                 </select>
                                             </div>
+                                            <div class="col-sm-3 col-12 mt-2">
+                                                <?php 
+                                                   $event_info_status = array(1=>'public',2=>'private',3=>'draft' );    
+                                                ?> 
+                                                <label for="form-control"> Event Info Status</label>
+                                                <select id="event_info_status" name="event_info_status" class="form-control select2 form-control">
+                                                    <option value="">Select  Status</option>
+                                                    <?php 
+                                                        foreach ($event_info_status as $key => $value)
+                                                        {
+                                                            $selected = '';
+                                                            if(old('event_info_status',$search_event_info_status) == $key){
+                                                                $selected = 'selected';
+                                                            }
+                                                            ?>
+                                                            <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                            <?php 
+                                                        }
+                                                    ?>
+                                                </select>
+                                            </div>
+
                                         
-                                            <div class="col-sm-2 mt-3">
+                                            <div class="col-sm-3 mt-4">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != '')|| !empty($search_organizer)|| !empty($search_event_country)|| !empty($search_event_state)|| !empty($search_event_city))
+                                                @if (!empty($search_event_name)|| !empty($search_event_start_date) || !empty($search_event_end_date) || ($search_event_status != '')|| !empty($search_organizer)|| !empty($search_event_country)|| !empty($search_event_state)|| !empty($search_event_city) || !empty($search_event_info_status))
                                                     <a title="Clear" href="{{ url('event/clear_search') }}" type="button"
                                                     class="btn btn-outline-primary">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rotate-ccw me-25"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Clear Search
@@ -204,12 +238,17 @@
                             </div>
 
                         </form>
-
+                        <div class="row px-2">
+                            <div class="col-sm-8 float-right">
+                                <h2 class="content-header-title float-left mb-0">Event details</h2>
+                            </div>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
+                            <table class="table table-striped table-bordered mt-2">
                                 <thead>
                                     <tr> 
                                         <th style="text-align: center;">Sr No.</th>
+                                        <th>Event Id</th>
                                         <th>Event Name</th>
                                         <th>Event Start Date</th>
                                         <th>Event End Date</th>
@@ -224,9 +263,12 @@
                                 </thead>
                                 <tbody>
                                     @if (!empty($event_array))
+                                    <?php $i = $Offset; ?>
                                         @foreach ($event_array as $key => $event)
+                                        <?php $i++; ?>
                                             <tr>
-                                                <td style="text-align: center;">{{ $key + 1 }}</td>
+                                                <td style="text-align: center;">{{  $i }}</td>
+                                                <td>{{ $event->id }}</td>
                                                 <td>{{ ucfirst($event->name) }}</td>
                                                 <td><?php echo !empty($event->start_time) ? date('d-m-Y', $event->start_time) : ''; ?></td>
                                                 <td><?php echo !empty($event->end_time) ? date('d-m-Y', $event->end_time) : ''; ?></td>
@@ -234,10 +276,11 @@
                                                 <td>{{ ucfirst($event->state) }}</td>
                                                 <td>{{ ucfirst($event->city) }}</td>
                                                 <td style="text-align:center;">
-                                                    @php
+                                                    {{-- @php
                                                         $imagePath = public_path('uploads/banner_image/' . $event->banner_image);
-                                                    @endphp
-                                                    @if (file_exists($imagePath) && !empty($event->banner_image))
+                                                    @endphp --}}
+                                                   {{-- file_exists($imagePath) && !empty($event->banner_image) --}}
+                                                    @if (!empty($event->banner_image))
                                                         <a target="_blank" title="View Image"
                                                             href="{{ asset('uploads/banner_image/' . $event->banner_image) }}">
                                                             <img style="width:50px;" src="{{ asset('uploads/banner_image/' . $event->banner_image) }}" alt="Logo Image">
@@ -248,10 +291,10 @@
                                                 </td>
                                                 <td style="text-align: center;">
                                                     <a href={{ url('participants_event', $event->id) }}> 
-                                                        <i class="fa fa-eye btn btn-success btn-sm "  title="Participants event"></i>
+                                                        <i class="fa fa-users btn btn-success btn-sm "  title="Participants event"></i>
                                                     </a>
                                                     <a href={{ url('/registration_successful', $event->id) }}> 
-                                                        <i class="fa fa-eye btn btn-success btn-sm "  title="Registration successful"></i>
+                                                        <i class="fa fa fa-user btn btn-success btn-sm "  title="Registration successful"></i>
                                                     </a>
                                                 </td>
                                                 <!-- <td>{{ ucfirst($event->state) }}</td>

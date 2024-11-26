@@ -27,13 +27,14 @@ class ParticipantBulkController extends Controller
         $a_return['search_event'] = '';
         $a_return['HeaderData'] = [];
         $a_return['ParticipantsExcelLink'] = '';
+        $a_return['group_name'] = '';
         
         $a_return['search_event'] = (!empty(session('search_event'))) ? session('search_event') : '';
 
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());
         
-        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status,event_id,created_by FROM booking_payment_details WHERE bulk_upload_flag = 1";
+        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status,event_id,created_by,bulk_upload_group_name FROM booking_payment_details WHERE bulk_upload_flag = 1";
         if(isset($a_return['search_event']) && !empty($a_return['search_event']))
             $SQL1 .= " AND event_id = ".$a_return['search_event']."";
         else
@@ -106,6 +107,7 @@ class ParticipantBulkController extends Controller
         $a_return = [];
         $a_return['search_event'] = '';
         $a_return['ParticipantsExcelLink'] = '';
+        $a_return['group_name'] = '';
         
         if (isset($request->form_type) && $request->form_type == 'Participant_work_upload') {
             session(['search_event' => $request->search_event]);
@@ -123,7 +125,7 @@ class ParticipantBulkController extends Controller
         $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
         $a_return['EventsData'] = DB::select($SQL, array());
 
-        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status,event_id,created_by FROM booking_payment_details WHERE bulk_upload_flag = 1 AND event_id = ".$a_return['search_event']." order by id desc";
+        $SQL1 = "SELECT id,productinfo,txnid,created_datetime,amount,payment_status,event_id,created_by,bulk_upload_group_name FROM booking_payment_details WHERE bulk_upload_flag = 1 AND event_id = ".$a_return['search_event']." order by id desc";
         $ParticipantDetails = DB::select($SQL1, array());
 
         if(!empty($ParticipantDetails)){
@@ -199,13 +201,15 @@ class ParticipantBulkController extends Controller
 
     public function event_participan_bulk_upload(Request $request)
     { 
-       //dd($request); 
+        // dd($request); 
         ini_set('max_execution_time', 0);
         $a_return = [];
         $aResult['ParticipantsExcelLink'] = '';
-        $userId = 4;
+        $userId = 314; // 4;  // support@youtoocanrun.com  account
         $participant_file = !empty($request->participant_file) ? $request->file('participant_file') : '';
-        // dsd($participant_file);
+        $group_name = !empty($request->group_name) ? $request->group_name : '';
+        // dd($group_name);
+
         $event_id = (!empty(session('search_event'))) ? session('search_event') : '';
          // dd($event_id);
        
@@ -220,8 +224,11 @@ class ParticipantBulkController extends Controller
         }else if(!empty($participant_file)){
             $data['userId'] = $userId;
             $data['event_id'] = $event_id;
+            $data['group_name'] = $group_name;
             $import = new ParticipantBulkDetailsImport($data);
             Excel::import($import, request()->file('participant_file'));
+
+            // dd($import->returnData['DataFound'],$import->returnData['emailAddressNotFound']);
 
             $Message = 'Participant Details Uploaded Successfully.';
             $aResult = [
@@ -236,18 +243,21 @@ class ParticipantBulkController extends Controller
         // return view('particpant_bulk_upload.list',$a_return);
     }
 
-    public function event_participant_send_email($iId,$event_id,$userId)
+    public function event_participant_send_email(Request $request)
     {
-        // dd($iId,$event_id,$userId);
-        $Booking_payment_id = !empty($iId) ? $iId : 0;
-        
+       //dd($request);
+        $Booking_payment_id = !empty($request->id) ? $request->id : 0;
+        $event_id           = !empty($request->event_id) ? $request->event_id : 0;
+        $userId             = !empty($request->created_by) ? $request->created_by : 0;
+
             if(!empty($Booking_payment_id))
                $ParticipantSendEmail = ParticipantBulkController::participants_send_email($Booking_payment_id,$event_id,$userId);
 
         $aResult = [
             'message' => 'Participants email send successfully'
         ];
-        return redirect(url('/participan_work_upload'))->with('success', $aResult);
+        // return redirect(url('/participan_work_upload'))->with('success', $aResult);
+        return $aResult;
     }
 
 
@@ -435,7 +445,7 @@ class ParticipantBulkController extends Controller
                             "TOTALTICKETS" => $TotalNoOfTickets,
                             "VENUE" => $Venue,
                             "TOTALAMOUNT" => !empty($final_ticket_price) ? '₹ '.$final_ticket_price : '₹ '.$ticket_total_amount,
-                            "TICKETAMOUNT" => !empty($single_ticket_price) ? '₹ '.$single_ticket_price : '₹ '.$TotalPrice,
+                            "TICKETAMOUNT" => !empty($final_ticket_price) ? '₹ '.$final_ticket_price : '₹ 0.00',
                             "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : '',
                             "RACECATEGORY" => !empty($res->ticket_name) ? ucfirst($res->ticket_name) : '',
                             "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? ucfirst($TeamName) : '',
@@ -481,8 +491,9 @@ class ParticipantBulkController extends Controller
                                 $MessageContent = str_replace($placeholder, $value, $MessageContent);
                             }
                         }
-                        // echo '<br>'; echo $MessageContent;
-                        $generatePdf = ParticipantBulkController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->attendee_id,$EventUrl,$TotalPrice);
+                        // dd($MessageContent);
+                        // echo '<br>'; echo $MessageContent; die;
+                        $generatePdf = ParticipantBulkController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->attendee_id,$EventUrl,$final_ticket_price);
                         // dd($generatePdf);
                         $Email = new Emails();
                         $Email->send_email_participant($UserId, $attendee_email, $MessageContent, $Subject, $generatePdf);
@@ -514,7 +525,7 @@ class ParticipantBulkController extends Controller
                 // dd($EventId);
                 $amount_details = $extra_details = [];
 
-                $sql1 = "SELECT question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0 AND question_form_name != 'sub_question' ";
+                $sql1 = "SELECT question_label,question_form_type,question_form_name,question_label FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0  "; // AND question_form_name != 'sub_question'
                 $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
                 // dd($QuestionData);
 
@@ -528,45 +539,102 @@ class ParticipantBulkController extends Controller
                                 "ticket_amount" => !empty($TotalPrice) ? $TotalPrice : ''
                             ];
                 // dd($TicketArr);
-                // dd($QuestionData,$attendee_details);
+               // dd($QuestionData,$attendee_details);
                 // Iterate through attendee details to separate the amounts
+                $extra_details = []; $quetion_id = $question_label = $question_form_type = '';
                 if(!empty($QuestionData)){
                     foreach($QuestionData as $res){
+                        $aTemp = new stdClass;
+                       
                         foreach ($attendee_details as $detail) {
-                            $aTemp = new stdClass;
-                            $labels = [];
-                            if ($detail->question_form_name == $res->question_form_name) {
-                                
-                                $question_form_option = json_decode($detail->question_form_option, true);
-                                // dd($question_form_option);
-                                if($detail->question_form_type == 'radio' || $detail->question_form_type == 'select'){
-                    
-                                    $label = '';
-                                    foreach ($question_form_option as $option) {
-                                        if ($option['id'] === (int)$detail->ActualValue) {
-                                            $label = $option['label'];
-                                            break;
+                            // echo $detail->question_form_name.'---------'.$detail->question_form_type.'--------'.$detail->ActualValue.'<br>';
+                            $labels = []; $label = ''; 
+                            
+
+                            if($res->question_form_name != 'sub_question' && $res->question_form_type != 'amount' && $res->question_form_type != 'select' && $res->question_form_type != 'text'){
+                                if ($detail->question_form_name == $res->question_form_name && $detail->ActualValue != '') {
+                                    // echo 'bbb<br>';
+                                    if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                        $question_form_option = json_decode($detail->question_form_option, true);
+                                        // dd($question_form_option);
+                                        if($detail->question_form_type == 'radio'){
+                                          
+                                            $label = '';
+                                            foreach ($question_form_option as $option) {
+                                                if ($option['id'] === (int)$detail->ActualValue) {
+                                                    $label = $option['label'];
+                                                    break;
+                                                }
+                                            }
+                                            $aTemp->ActualValue    = $label;
+                                        }else if($detail->question_form_type == 'checkbox'){
+                                            foreach ($question_form_option as $option) {
+                                                if (in_array($option['id'], explode(',', $detail->ActualValue))) {
+                                                    $labels[] = $option['label'];
+                                                }
+                                            }
+                                            $aTemp->ActualValue   = implode(', ', $labels);
                                         }
-                                    }
-                                    $aTemp->ActualValue    = $label;
-                                }else if($detail->question_form_type == 'checkbox'){
-                                    foreach ($question_form_option as $option) {
-                                        if (in_array($option['id'], explode(',', $detail->ActualValue))) {
-                                            $labels[] = $option['label'];
+                                        else{
+                                            $aTemp->ActualValue    = '';
                                         }
+                                      
+                                        $aTemp->id             = $detail->id; 
+                                        $aTemp->question_label = $detail->question_label; 
+                                        $aTemp->question_form_type = $detail->question_form_type;
+                                        $extra_details[] = $aTemp;
+                                        break;
                                     }
-                                    $aTemp->ActualValue   = implode(', ', $labels);
-                                }else{
-                                    $aTemp->ActualValue    = $detail->ActualValue;
+
                                 }
-                                $aTemp->id             = $detail->id;
-                                $aTemp->question_label = $detail->question_label;
-                                $aTemp->question_form_type = $detail->question_form_type;
-                                $extra_details[] = $aTemp;
+                            }
+                            else{
+                                $label = ''; 
+
+                                if($res->question_form_type == 'select' &&  !empty($detail->question_form_option) && $detail->question_form_type == 'select' && $detail->ActualValue !== ''){
+                                    // echo $res->question_form_type.'11<br>';
+                                   // if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                        $question_form_option = json_decode($detail->question_form_option, true); 
+                                        
+                                        foreach ($question_form_option as $option) {
+                                            if ($option['id'] === (int)$detail->ActualValue) {
+                                                $label = $option['label'];
+                                                break;
+                                            }
+                                        }
+                                        $aTemp->ActualValue    = $label;
+
+                                        $aTemp->id             = $detail->id; 
+                                        $aTemp->question_label = $detail->question_label; 
+                                        $aTemp->question_form_type = $detail->question_form_type;
+                                        $extra_details[] = $aTemp;
+                                        break;
+                                  //  }
+                                }else if($res->question_form_type == 'amount' && $detail->question_form_type == 'amount' && $detail->ActualValue !== ''){
+                                    if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                        $aTemp->ActualValue    = $detail->ActualValue;
+                                        $aTemp->id             = $detail->id; 
+                                        $aTemp->question_label = $detail->question_label; 
+                                        $aTemp->question_form_type = $detail->question_form_type;
+                                        $extra_details[] = $aTemp;
+                                        break;
+                                    } 
+                                }else if($res->question_form_type == 'text' && $detail->question_form_type == 'text' && $detail->ActualValue !== ''){
+                                    if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                        $aTemp->ActualValue    = $detail->ActualValue;
+                                        $aTemp->id             = $detail->id; 
+                                        $aTemp->question_label = $detail->question_label; 
+                                        $aTemp->question_form_type = $detail->question_form_type;
+                                        $extra_details[] = $aTemp;
+                                        break;
+                                    } 
+                                } 
                             }
                         }
-                    }
+
+                    }//die;
                 }
+                // dd($extra_details);
             }
         }
 

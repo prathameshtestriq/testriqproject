@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use App\Libraries\Numberformate; 
 
 class DashboardController extends Controller
 {
@@ -39,7 +40,7 @@ class DashboardController extends Controller
             return redirect('/dashboard');
         }
 
-
+        $numberFormate = new Numberformate();
         $aReturn['search_filter'] = (!empty(session('filter'))) ? session('filter') : [];
         $aReturn['search_category'] = (!empty(session('category'))) ? session('category') : '';
         $aReturn['search_event_name'] = (!empty(session('event_name'))) ? session('event_name') : '';
@@ -147,7 +148,9 @@ class DashboardController extends Controller
         $TotalRegistration = DB::select($SQL2, array());
         $aReturn['TotalSuccessRegistration'] = !empty($TotalRegistration) ? count($TotalRegistration) : 0;
         $aReturn['TotalAmount1'] = (count($TotalRegistration) > 0) ? $TotalRegistration[0]->TotalAmount : 0;
-        $aReturn['TotalAmount'] = number_format($total_net_earning_amount, 2);
+        // $aReturn['TotalAmount'] = number_format($total_net_earning_amount, 2);
+        
+        $aReturn['TotalAmount'] =  $numberFormate->formatInIndianCurrency($total_net_earning_amount);
         // dd($aReturn['TotalAmount']);
 
         //---------------------------------- Total Registration Users
@@ -190,7 +193,7 @@ class DashboardController extends Controller
         if (!empty($aReturn['search_event_name'])) {
             $SQL6 .= ' AND e.event_id =' . $aReturn['search_event_name'];
         }
-        // dd($SQL6);
+        // dd($SQL6); 
         $TotalRegistrationUsersWithSuccess = DB::select($SQL6, array());
         // dd($TotalRegistrationUsersWithSuccess);
         $TotalRegistrationUsersWithSuccessCount = (count($TotalRegistrationUsersWithSuccess) > 0) ? $TotalRegistrationUsersWithSuccess[0]->TotalRegistrationUsersWithSuccess : 0;
@@ -351,8 +354,8 @@ class DashboardController extends Controller
         $TotalRemittedAmount1 = DB::select($SQL12, array());
        
         $TotalRemittedAmount2 = (count($TotalRemittedAmount1) > 0) ? $TotalRemittedAmount1[0]->amount_remitted : 0;
-        ;
-        $aReturn['TotalRemittedAmount'] = number_format($TotalRemittedAmount2, 2);
+        
+        $aReturn['TotalRemittedAmount'] = $numberFormate->formatInIndianCurrency($TotalRemittedAmount2);
         //dd($aReturn['TotalRemittedAmount']);
 
         //----------------------------------- Payment Count
@@ -421,7 +424,7 @@ class DashboardController extends Controller
         
         $aReturn['BookingData'] = (count($BookingData) > 0) ? $BookingData : [];
 
-        $aReturn['NetEarningAmt'] = !empty($net_earning_amt) ? number_format($net_earning_amt,2) : 0;
+        $aReturn['NetEarningAmt'] = !empty($net_earning_amt) ? $numberFormate->formatInIndianCurrency($net_earning_amt) : 0;
         // dd( $aReturn['BookingData']);
 
         #Total active Event
@@ -435,41 +438,43 @@ class DashboardController extends Controller
         //dd( $aReturn);    
 
         # Coupons Details
-        // $SQL14 = "SELECT COUNT(ac.coupon_id) AS CouponCount,(SELECT id FROM event_coupon WHERE id=ac.coupon_id) AS coupon_id, (SELECT discount_name FROM event_coupon WHERE id=ac.coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=ac.coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
-        // FROM applied_coupons as ac
-        // WHERE 1=1";
-        // if ($aReturn['search_filter'] !== "") {
-        //     if (isset($StartDate) && isset($EndDate)) {
-        //         $SQL14 .= " AND created_at BETWEEN " . $StartDate . " AND " . $EndDate;
-        //     }
-        // }
-        // if (!empty($aReturn['search_category'])) {
-        //     $SQL14 .= ' AND ticket_ids =' . $aReturn['search_category'];
-        // }
-        // if (!empty( $aReturn['search_from_date']) && !empty($aReturn['search_to_date'] )) {
-        //     $SQL14 .= ' AND created_at BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'] ;
-        // }
+        $SQL14 = "SELECT COUNT(ac.coupon_id) AS CouponCount,(SELECT id FROM event_coupon WHERE id=ac.coupon_id) AS coupon_id, (SELECT discount_name FROM event_coupon WHERE id=ac.coupon_id) AS DiscountName, (SELECT discount_code FROM event_coupon_details WHERE event_coupon_id=ac.coupon_id) AS DiscountCode, (SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=coupon_id) AS TotalDiscountCode
+        FROM applied_coupons as ac
+        WHERE 1=1";
+        if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL14 .= " AND created_at BETWEEN " . $StartDate . " AND " . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_category'])) {
+            $SQL14 .= ' AND ticket_ids =' . $aReturn['search_category'];
+        }
+        if (!empty( $aReturn['search_from_date']) && !empty($aReturn['search_to_date'] )) {
+            $SQL14 .= ' AND created_at BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'] ;
+        }
 
-        // if (!empty( $aReturn['search_event_name'] )) {
-        //     $SQL14 .= ' AND event_id =' .  $aReturn['search_event_name'] ;
-        // }
-        // $SQL14 .= " GROUP BY coupon_id";
-        // $CouponCodes = DB::select($SQL14, array());
-        // if (!empty($CouponCodes)) {
-        //     foreach ($CouponCodes as $res) {
+        if (!empty( $aReturn['search_event_name'] )) {
+            $SQL14 .= ' AND event_id =' .  $aReturn['search_event_name'] ;
+        }
+        $SQL14 .= " GROUP BY coupon_id";
+        $CouponCodes = DB::select($SQL14, array());
+        if (!empty($CouponCodes)) {
+            foreach ($CouponCodes as $res) {
+                if (empty($res->coupon_id)) {
+                    $res->CouponCount = 0; // Default value if coupon_id is missing
+                    continue;
+                }
+                $SQL15 = "SELECT ac.id,COUNT(ac.coupon_id) AS Coupon_Count
+                        FROM applied_coupons as ac left join event_booking as eb on eb.id=ac.booking_id 
+                        WHERE ac.coupon_id = " . $res->coupon_id . " AND eb.transaction_status IN (1,3) ";
+                $aResult = DB::select($SQL15, array());
+                //dd($aResult);
 
-        //         $SQL15 = "SELECT ac.id,COUNT(ac.coupon_id) AS Coupon_Count
-        //                 FROM applied_coupons as ac left join event_booking as eb on eb.id=ac.booking_id 
-        //                 WHERE ac.coupon_id = " . $res->coupon_id . " AND eb.transaction_status IN (1,3) ";
-        //         $aResult = DB::select($SQL15, array());
-        //         //dd($aResult);
+                $res->CouponCount = !empty($aResult) ? $aResult[0]->Coupon_Count : $res->CouponCount;
+            }
 
-        //         $res->CouponCount = !empty($aResult) ? $aResult[0]->Coupon_Count : $res->CouponCount;
-        //     }
-
-        // }
-        // $aReturn['CouponCodes'] = $CouponCodes;
-        $aReturn['CouponCodes'] = [];
+        }
+        $aReturn['CouponCodes'] = $CouponCodes;
         // dd( $aReturn['CouponCodes'] );
 
         // male female graph
@@ -626,9 +631,10 @@ class DashboardController extends Controller
         $total_convenience_fee = ($Platform_fee + $Platform_Fee_GST + $Convenience_fee + $Convenience_Fee_GST);
            
         // dd($Organiser_amount);
-        $aReturn['OrganiserAmount'] = !empty($Organiser_amount) ? number_format($Organiser_amount,2) : 0;
-        $aReturn['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $total_payment_gateway : 0;
-        $aReturn['TotalConvenience'] = !empty($total_convenience_fee) ? number_format($total_convenience_fee,2) : 0;
+        // $aReturn['OrganiserAmount'] = !empty($Organiser_amount) ? number_format($Organiser_amount,2) : 0;
+        $aReturn['OrganiserAmount'] = !empty($Organiser_amount) ? $numberFormate->formatInIndianCurrency($Organiser_amount) : 0;
+        $aReturn['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $numberFormate->formatInIndianCurrency($total_payment_gateway) : 0;
+        $aReturn['TotalConvenience'] = !empty($total_convenience_fee) ? $numberFormate->formatInIndianCurrency($total_convenience_fee) : 0;
        
         //-------------- Daily Category Count 
 
@@ -773,8 +779,8 @@ class DashboardController extends Controller
                         $attendee_details = json_decode(json_decode($value->attendee_details));
                         if(!empty($attendee_details)){
                             foreach ($attendee_details as $key => $attendee) {
-                                if (in_array($attendee->id, $questionIdsArray)) {
-                                    if ($attendee->ActualValue != "" && $attendee->question_form_option != "") {
+                                if (isset($attendee->id) && in_array($attendee->id, $questionIdsArray)) {
+                                    if (!empty($attendee->ActualValue) && !empty($attendee->question_form_option)) {
                                         $question_form_option = json_decode($attendee->question_form_option);
                                         $CustomQuestions[$attendee->id][] = $attendee;
                                     }
@@ -846,5 +852,32 @@ class DashboardController extends Controller
         }
         // Return the backup file as a download and delete it afterward
         return response()->download($backupPath, $FileName)->deleteFileAfterSend();
+    }
+
+    public function sidebarajax(Request $request,$user_id = 0){
+        // dd($request->all());
+        $sql = 'SELECT toggle_sidebar FROM users Where id = '.$user_id;
+        $a_return = DB::select($sql,array());
+        // dd($a_return[0]->toggle_sidebar);
+        if($a_return[0]->toggle_sidebar == 1){
+            $status  = 0;
+        }else{
+            $status = 1;
+        }
+        // dd( $status);
+        if($request->user_id > 0){
+            $sql = 'UPDATE users SET toggle_sidebar = :toggle_sidebar WHERE id = :user_id';
+            $a_return = DB::update( $sql,
+            array( 'toggle_sidebar' => $status,'user_id' => $request->user_id ));
+            // dd( $a_return);
+        } 
+        return $a_return;
+    }
+
+    public function EventInfoStatus(Request $request ,$event_id,$flag){
+        
+        session(['event_info_status' => $flag]);
+        session(['name' => $event_id]);
+        return redirect('/event');
     }
 }

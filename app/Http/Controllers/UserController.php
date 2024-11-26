@@ -106,6 +106,7 @@ class UserController extends Controller
         $sSQL = 'SELECT id,name FROM role_master WHERE status = 1 AND is_deleted = 0';
         $aReturn["role_details"] = DB::select($sSQL, array());
 
+     
         $aReturn['Paginator'] = new LengthAwarePaginator($aReturn['user_array'], $CountRows, $Limit, $PageNo);
         $aReturn['Paginator']->setPath(request()->url());
         // dd($aReturn);
@@ -246,6 +247,18 @@ class UserController extends Controller
     {       
         $filename = "user_report_" . time();
         return Excel::download(new UserExport(),  $filename.'.xlsx');
+    }
+
+
+    public function change_active_status_mode(Request $request){
+        $aReturn = User::change_status_mode($request);
+        $successMessage  = 'Races Setting changed successfully';
+        $sucess = 'true';
+        $aReturn = [];
+        $aReturn['message'] =  $successMessage ;
+        $aReturn['sucess'] = $sucess;
+        //dd($aReturn);
+        return $aReturn;
     }
     
 }

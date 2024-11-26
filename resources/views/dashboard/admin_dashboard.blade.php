@@ -1,5 +1,5 @@
 @extends('layout.index')
-@section('title', 'Admin Dashboard')
+@section('title', 'Dashboard')
 @section('content')
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
@@ -201,11 +201,6 @@
 
 
         <div class="row">
-           
-           <!--  <div class="col-12 ">
-                <h3>Event Overview:</h3>
-            </div> -->
-
              <!-- Total Events  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
@@ -216,7 +211,6 @@
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalNumberEvents }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -226,7 +220,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -239,9 +232,13 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $TotalNumberLiveEvents }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
+                                    <?php if($search_event_name > 0){ ?>
+                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/1') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{  $TotalNumberLiveEvents }}</h1></a>
+                                    <?php }else{ ?>
+                                        <a href="{{ url('redirect_to_dashboard/0/1') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                            {{  $TotalNumberLiveEvents }}</h1></a>
+                                    <?php } ?>     
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -251,7 +248,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -264,9 +260,13 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $TotalNumberDraftEvents }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
+                                    <?php if($search_event_name > 0){ ?>
+                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/3') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{  $TotalNumberDraftEvents }}</h1></a>
+                                    <?php }else{ ?>
+                                        <a href="{{ url('redirect_to_dashboard/0/3') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                            {{  $TotalNumberDraftEvents }}</h1></a>
+                                    <?php } ?>   
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -276,7 +276,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -289,9 +288,13 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $TotalNumberPrivateEvents }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
+                                    <?php if($search_event_name > 0){ ?>
+                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/2') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        {{ $TotalNumberPrivateEvents }}</h1></a>
+                                    <?php }else{ ?>
+                                        <a href="{{ url('redirect_to_dashboard/0/2') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                            {{ $TotalNumberPrivateEvents }}</h1></a>
+                                    <?php } ?>    
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -301,12 +304,11 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
 
-            <!-- Total Registrations -->
+            {{-- <!-- Total Registrations -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
@@ -316,7 +318,6 @@
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalRegistrationCount }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -326,10 +327,9 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Registrations Successful  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
@@ -340,10 +340,16 @@
                             <div class="col-sm-6">
 
                                 <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                    {{ $TotalSuccessRegistration }}</h1>   
-                                    <p class="text-primary canvas1 mt-2"
-                                    style="font-weight:500; position: absolute; bottom: -45px;"><a
-                                        href="{{ url('/registration_successful/'.$search_event_name) }}">View Details</a></p>
+                                    {{ $TotalSuccessRegistration }}</h1>  
+                                    <?php if($search_event_name > 0){ ?>
+                                        <p class="text-primary canvas1 mt-2"
+                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
+                                            href="{{ url('/registration_successful/'.$search_event_name.'/1') }}">View Details</a></p>
+                                    <?php }else{ ?>
+                                        <p class="text-primary canvas1 mt-2"
+                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
+                                            href="{{ url('/registration_successful/'.$search_event_name) }}">View Details</a></p>
+                                    <?php } ?>         
                             </div>
                             <div class="col-sm-6">
                                 <div class="d-flex align-items-center justify-content-center">
@@ -352,7 +358,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -367,9 +372,16 @@
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $NetSales }}</h1>
+                                        <?php if($search_event_name > 0){ ?>
                                         <p class="text-primary canvas1 mt-2"
                                         style="font-weight:500; position: absolute; bottom: -45px;"><a
-                                            href="{{ url('/participants_event/'.$search_event_name) }}">View Details</a></p>
+                                            href="{{ url('/participants_event/'.$search_event_name.'/1') }}">View Details</a></p>
+                                        <?php }else{ ?>
+                                            <p class="text-primary canvas1 mt-2"
+                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
+                                            href="{{ url('/participants_event/'.$search_event_name) }}">View Details</a></p>  
+                                        <?php } ?>     
+
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -379,12 +391,11 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
 
-             <!-- Page Views  -->
+             {{-- <!-- Page Views  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
@@ -394,7 +405,6 @@
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalPageViews }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -404,22 +414,20 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
              <!-- Coversion Rate -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Coversion Rate </h5>
+                        <h5 class="text-primary mb-0 text-dark">Conversion Rate </h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $SuccessPercentage }} %</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -429,19 +437,9 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
-
-       <!--  </div>
-        
-        <div class="row">
-           
-            <div class="col-12 ">
-                <h3>Financial Summary:</h3>
-            </div> -->
-
 
             <!-- Net Sales -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
@@ -453,7 +451,6 @@
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $NetSales }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -463,7 +460,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -476,7 +472,8 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"> <i class="fa fa-inr" aria-hidden="true"></i><?php echo !empty($NetEarningAmt) ? $NetEarningAmt : $TotalAmount; ?> 
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"> <i class="fa fa-inr" aria-hidden="true"></i>
+                                        <?php echo !empty($NetEarningAmt) ? $NetEarningAmt : $TotalAmount; ?> 
                                     </h1>
                                 </div>
                             </div>
@@ -487,7 +484,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -501,7 +497,7 @@
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $OrganiserAmount }}</h1>
+                                        <i class="fa fa-inr" aria-hidden="true"></i>{{ $OrganiserAmount }}</h1>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -511,7 +507,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -527,7 +522,6 @@
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"><i
                                             class="fa fa-inr" aria-hidden="true"></i>{{ $TotalRemittedAmount }}
                                     </h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -537,7 +531,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -551,7 +544,7 @@
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $TotalPaymentGateway }}</h1>
+                                        <i class="fa fa-inr" aria-hidden="true"></i>{{ $TotalPaymentGateway }}</h1>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -561,7 +554,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
@@ -575,7 +567,7 @@
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        {{ $TotalConvenience }}</h1>
+                                        <i class="fa fa-inr" aria-hidden="true"></i>{{ $TotalConvenience }}</h1>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -585,18 +577,10 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
        
-       <!-- </div>
-       <div class="row">
-           
-            <div class="col-12 ">
-                <h3>User Summary:</h3>
-            </div>  -->
-
             <!-- Users  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
@@ -607,7 +591,6 @@
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
                                         {{ $TotalNumberUsers }}</h1>
-                                    {{-- <p class="m-1 text-center" style="font-weight:500">New farmers registered in </p> --}}
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -617,18 +600,10 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>
        
-       <!--  </div>
-        <div class="row">
-           
-            <div class="col-12 ">
-                <h3>Payment Details:</h3>
-            </div> -->
-
             <!-- Payment  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
@@ -651,7 +626,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="dashboard-card-min canvas1 mt-1" id=""></div> --}}
                     </div>
                 </div>
             </div>

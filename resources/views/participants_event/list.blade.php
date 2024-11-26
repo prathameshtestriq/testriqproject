@@ -139,11 +139,11 @@
                                                         foreach ($Categories as $value)
                                                         {
                                                             $selected = '';
-                                                            if(old('category',$search_category) == $value->ticket_name){
+                                                            if(old('category',$search_category) == $value->id){
                                                                 $selected = 'selected';
                                                             }
                                                             ?>
-                                                            <option value="<?php echo $value->ticket_name; ?>" <?php echo $selected; ?>><?php echo $value->ticket_name; ?></option>
+                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->ticket_name; ?></option>
                                                             <?php 
                                                         }
                                                     ?>
@@ -203,27 +203,39 @@
                                                 || !empty($search_email_id) || !empty($search_category) || !empty($search_start_booking_date) 
                                                 || !empty($search_end_booking_date) ||  $search_transaction_status !== '' || !empty($search_transaction_order_id) || !empty($search_event))
                                                 {{-- {{ url('/participants_event/'.$event_participants[0]->event_id.'/clear_search') }} --}}
+                                                <?php  if($event_id > 0 && $dashboard_id == 0){ ?> 
                                                     <a title="Clear" href="{{ url('/participants_event/'.$event_id.'/clear_search') }}" type="button"
                                                         class="btn btn-outline-primary">
                                                         <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
                                                     </a>
+                                                <?php }else{?>
+                                                    <a title="Clear" href="{{ url('/participants_event/'.$event_id.'/'.$dashboard_id.'/clear_search') }}" type="button"
+                                                        class="btn btn-outline-primary">
+                                                        <i data-feather="rotate-ccw" class="me-25"></i> Clear Search
+                                                    </a>
+                                                <?php } ?>
                                                 @endif
 
                                                 <div class="float-right">
-                                                    <?php if(!empty($search_event) || !empty($event_id)){ ?>
-                                                        <a href="{{ url('participants_event/'.$event_id.'/export_revenue') }}" class="btn btn-danger text-white " title = "Revenue">Revenue </a>
-                                                    <?php } ?>
+
+                                                    <?php if((!empty($search_event) || !empty($event_id)) && $dashboard_id == 0){ ?>
+                                                        <a href="{{ url('participants_event/'.$event_id.'/0/export_revenue') }}" class="btn btn-danger text-white " title = "Revenue">Revenue </a>
+                                                    <?php }else{ ?>
+                                                        <a href="{{ url('participants_event/'.$event_id.'/'.$dashboard_id.'/export_revenue') }}" class="btn btn-danger text-white " title = "Revenue">Revenue </a>
+                                                    <?php } ?>    
                                                   <!--   @if (!empty($event_participants))
                                                       <a href="{{ url('participants_event/'.$event_id.'/export_download') }}" class="btn btn-danger text-white " title = "Download">Download </a>
                                                     @endif -->
                                                      @if (!empty($event_participants))
-                                                        <?php if(!empty($search_event) || !empty($event_id)) { ?>
+                                                        <?php if((!empty($search_event) || !empty($event_id)) && $dashboard_id == 0) { ?>
                                                             <a href="{{ $ParticipantsExcelLink }}" class="btn btn-danger text-white " title = "Download" download>Download </a>
-                                                        <?php } ?>
+                                                        <?php }else{ ?>
+                                                            <a href="{{ $ParticipantsExcelLink }}" class="btn btn-danger text-white " title = "Download" download>Download </a>
+                                                        <?php } ?>    
                                                     @endif
-                                                    <?php  if($event_id > 0){ ?>
-                                                    <a href="{{ url('/event') }}"  class="btn btn-primary ">
-                                                        <span>Back</span></a>
+                                                    <?php  if($event_id > 0 && $dashboard_id == 0){ ?>
+                                                        <a href="{{ url('/event') }}"  class="btn btn-primary ">
+                                                            <span>Back</span></a>
                                                     <?php  }else{ ?>    
                                                         <a href="{{ url('/dashboard') }}"  class="btn btn-primary ">
                                                             <span>Back</span></a>
@@ -247,11 +259,11 @@
                                         <th class="text-center">Transaction/Order Id</th>
                                         <th class="text-center">Registration Id</th>
                                         <th class="text-center">Payu Id</th>
-                                        <th class="text-center">Amount</th>
                                         <th class="text-center">Transaction/Payment Status</th>
-                                        <th class="text-center">Email Address</th>
-                                        <th class="text-center">Mobile Number</th>
+                                        <th class="text-center">Email/Mobile Number</th>
+                                        {{-- <th class="text-center">Mobile Number</th> --}}
                                         <th class="text-center">Category Name</th>
+                                        <th class="text-center">Amount</th>
                                         <th class="text-center">View</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -275,34 +287,44 @@
                                                 <td class="text-left">{{ $val->Transaction_order_id }}</td>
                                                 <td class="text-left">{{ $val->registration_id }}</td>
                                                 <td class="text-left">{{ $val->payu_id }}</td>
-                                                <td class="text-left">{{ $val->amount }}</td>
                                                 <td class="text-left">
-                                                    <?php
-                                                 {{ 
-                                                    if($val->transaction_status ==0) {
-                                                        echo "Initiate";
-                                                    }elseif ($val->transaction_status == 1) {
-                                                        echo "Success";
-                                                    }elseif ($val->transaction_status == 2) {
-                                                        echo "Failure";
-                                                    }elseif ($val->transaction_status == 3) {
-                                                        echo "Free";
-                                                    }
-    
-                                                 }}  ?>
-                                                    </td>
-                                                <td class="text-left">{{ $val->email }}</td>
-                                                <td class="text-left">{{ $val->mobile }}</td>
-                                                <td class="text-left">
+                                                    <!-- Form for each row -->
+                                                    <form class="dt_adv_search" method="POST" id="transactionForm_{{ $val->event_booking_id }}">
+                                                        @csrf
+                                                        <input type="hidden" name="form_type" value="transaction_status_add">
+                                                        <input type="hidden" name="event_booking_id[{{ $val->event_booking_id }}]" value="{{ $val->event_booking_id }}">
+                                                        <input type="hidden" name="booking_payment_details_id[{{ $val->event_booking_id }}]" value="{{ $val->booking_payment_details_id }}">
+        
+                                                        <?php 
+                                                        $Transaction_Status = array(0=>'Inprocess', 1=>'Success', 2=>'Failure', 3=>'Free');    
+                                                        ?>
+                                                        <select id="list_transaction_status_{{ $val->event_booking_id }}" name="list_transaction_status[{{ $val->event_booking_id }}]" class="form-control select2 form-control" onchange="this.form.submit()">
+                                                            <option value="">Select Payment Status</option>
+                                                            <?php 
+                                                            foreach ($Transaction_Status as $key => $value) {
+                                                                $selected = '';
+                                                                if (old('list_transaction_status.' . $val->event_booking_id, $val->transaction_status) == $key) {
+                                                                    $selected = 'selected';
+                                                                }
+                                                                ?>
+                                                                <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                                <?php 
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                    </form>
+                                                </td>
+                                                <td class="text-left">{!! $val->email . '<br>' . $val->mobile !!}</td>
+                                                {{-- <td class="text-left">{{ $val->mobile }}</td> --}}
+                                                <td class="text-center">
                                                  {{ ucfirst($val->category_name) }}
                                                 </td>
+                                                <td class="text-center">{{ $val->total_amount }}</td>
                                                  <td>
                                                     <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showDetails({{ $val->id }},{{$val->event_id}})" title="show" data-bs-toggle="modal" data-bs-target="#exampleModallaptop1">
                                                         <i class="fa fa-eye btn btn-success btn-sm "></i>
                                                     </a>
-                                                 </td>
-                                              
-                                               
+                                                </td>                                               
                                                 <td>
                                                     {{-- <a href=""><i
                                                             class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a> --}}
@@ -353,7 +375,7 @@
 
 
     </section>
-
+    
     <script>
             
             function remove_type(iId,event_id) {

@@ -41,8 +41,11 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
             $this->returnData['DataFound'] = array();
             $this->returnData['emailAddressNotFound']  = array();
             $this->returnData['BookPayId'] = 0;
-            $userId   =  $this->userData['userId'];
-            $event_id =  (int)$this->userData['event_id'];
+            $userId     =  $this->userData['userId'];
+            $event_id   =  (int)$this->userData['event_id'];
+            $group_name =  $this->userData['group_name'];
+            // dd($group_name);
+
             $i = 1; $j = 1;
             // dd($userId,$event_id);
             
@@ -210,14 +213,15 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
 
                             // $excel_single_ticket_price[] = ["ticket_id" => $ticket->id, "ticket_amount" => !empty($exSheetTicketPrice) ? $exSheetTicketPrice : 0 ];
                         }
+                        $this->returnData['DataFound'] = $i;
+                        $i++;
+                    }else{
+                        $this->returnData['emailAddressNotFound'] = $j;
+                        $j++;
                     }
                     
-                    $this->returnData['DataFound'] = $i;
-                    $i++;
                   }else{
-                    // $this->returnData['emailAddressNotFound'][] = [
-                    //     'name' => $row['first_name'].' '.$row['last_name'],
-                    // ];
+                 
                     $this->returnData['emailAddressNotFound'] = $j;
                     $j++;
                   }
@@ -563,10 +567,11 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                 "created_datetime" => $Datetime,
                 "counter" => $last_count,
                 "payment_status" => !empty($Final_calculated_ticket_amount) ? 'success' : 'free',
-                "bulk_upload_flag" => 1
+                "bulk_upload_flag" => 1,
+                "bulk_upload_group_name" => $group_name
             );
             
-            $insert_SQL = "INSERT INTO booking_payment_details (event_id,txnid,firstname,lastname,email,phone_no,productinfo,amount,merchant_key,hash,created_by,created_datetime,counter,payment_status,bulk_upload_flag) VALUES(:event_id,:txnid,:firstname,:lastname,:email,:phone_no,:productinfo,:amount,:merchant_key,:hash,:created_by,:created_datetime,:counter,:payment_status,:bulk_upload_flag)";
+            $insert_SQL = "INSERT INTO booking_payment_details (event_id,txnid,firstname,lastname,email,phone_no,productinfo,amount,merchant_key,hash,created_by,created_datetime,counter,payment_status,bulk_upload_flag,bulk_upload_group_name) VALUES(:event_id,:txnid,:firstname,:lastname,:email,:phone_no,:productinfo,:amount,:merchant_key,:hash,:created_by,:created_datetime,:counter,:payment_status,:bulk_upload_flag,:bulk_upload_group_name)";
             DB::insert($insert_SQL, $Bindings);
             $BookingPaymentId = DB::getPdo()->lastInsertId();
             
