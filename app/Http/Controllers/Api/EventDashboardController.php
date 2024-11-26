@@ -876,7 +876,8 @@ class EventDashboardController extends Controller
                             array("id" => 101195, "question_label" => "Total Amount", "question_form_type" => "text", "ActualValue"=> ""),
                             array("id" => 101196, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> ""),
                             array("id" => 101197, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
-                            array("id" => 101198, "question_label" => "Race Category", "question_form_type" => "text", "ActualValue" => "")
+                            array("id" => 101198, "question_label" => "Race Category", "question_form_type" => "text", "ActualValue" => ""),
+                            array("id" => 101241, "question_label" => "Bulk Upload Group Name", "question_form_type" => "text", "ActualValue" => "")
                         );
 
                         //dd(json_encode($new_array));
@@ -902,7 +903,7 @@ class EventDashboardController extends Controller
                             $final_attendee_details_array = json_encode(array_merge($attendee_details_array, $card_array, $ageCategory_array, $utmCapning_array));
 
                             //-----------------------------
-                            $sql = "SELECT txnid,payment_mode,payment_status,created_datetime,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid FROM booking_payment_details WHERE id =:booking_pay_id ";
+                            $sql = "SELECT txnid,payment_mode,payment_status,created_datetime,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid,bulk_upload_group_name FROM booking_payment_details WHERE id =:booking_pay_id ";
                             $paymentDetails = DB::select($sql, array('booking_pay_id' => $res1->booking_pay_id));
                             //dd($paymentDetails);
                             $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
@@ -910,7 +911,7 @@ class EventDashboardController extends Controller
                             $payment_status = !empty($paymentDetails) ? $paymentDetails[0]->payment_status : '';
                             $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
                             $booking_datetime = !empty($paymentDetails) ? date('d-m-Y h:i:s A', $paymentDetails[0]->created_datetime) : '';
-
+                            $bulk_upload_group_name = !empty($paymentDetails) && !empty($paymentDetails[0]->bulk_upload_group_name) ? $paymentDetails[0]->bulk_upload_group_name : '';
                             // dd(json_decode($final_attendee_details_array));
                             //-----------------------------
                             foreach (json_decode($final_attendee_details_array) as $val) {
@@ -1006,6 +1007,10 @@ class EventDashboardController extends Controller
                                         $aTemp->answer_value = !empty($res1->TicketName) ? $res1->TicketName : '';
                                     }
 
+                                    if($val->question_label == 'Bulk Upload Group Name'){
+                                        $aTemp->answer_value = !empty($bulk_upload_group_name) ? $bulk_upload_group_name : '';
+                                    }
+
                                     if($val->question_label == 'UTM Campaign'){
                                        
                                         if(!empty($res1->utm_campaign)){
@@ -1085,7 +1090,7 @@ class EventDashboardController extends Controller
         if (!empty($AttendeeData)) {
             foreach ($AttendeeData as $key => $res) {
 
-                $sql = "SELECT txnid,payment_status,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid,bulk_upload_flag FROM booking_payment_details WHERE id =:booking_pay_id ";
+                $sql = "SELECT txnid,payment_status,(select mihpayid from booking_payment_log where booking_payment_details.id = booking_det_id) as mihpayid,bulk_upload_flag,bulk_upload_group_name FROM booking_payment_details WHERE id =:booking_pay_id ";
                 $paymentDetails = DB::select($sql, array('booking_pay_id' => $res->booking_pay_id));
                 // dd($paymentDetails);
                 // $tran_id = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
@@ -1093,6 +1098,7 @@ class EventDashboardController extends Controller
                 $mihpayid = !empty($paymentDetails) ? $paymentDetails[0]->mihpayid : '';
                 $txnid = !empty($paymentDetails) ? $paymentDetails[0]->txnid : '';
                 $bulk_upload_flag = !empty($paymentDetails) ? $paymentDetails[0]->bulk_upload_flag : 0;
+                $bulk_upload_group_name = !empty($paymentDetails) && !empty($paymentDetails[0]->bulk_upload_group_name) ? $paymentDetails[0]->bulk_upload_group_name : '';
 
                 $card_details_array = json_decode($res->cart_details);
                 // dd($card_details_array);
@@ -1106,6 +1112,7 @@ class EventDashboardController extends Controller
                 $aTemp->payu_id = $mihpayid;
                 $aTemp->payment_status = $payment_status;
                 $aTemp->transaction_id = $txnid;
+                $aTemp->bulk_upload_group_name = $bulk_upload_group_name;
 
                 $aTemp->mobile = $res->mobile;
                 $aTemp->category_name = $res->category_name; 

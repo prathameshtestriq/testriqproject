@@ -7,6 +7,7 @@
             <th style="text-align: left; font-weight: bold;">Lastname</th>
             <th style="text-align: left; font-weight: bold;">Email</th>
             <th style="text-align: left; font-weight: bold;">Mobile</th>
+            <th style="text-align: left; font-weight: bold;">Bulk Upload Group Name</th>
             <th style="text-align: left; font-weight: bold;">Event Category</th>
             <th style="text-align: left; font-weight: bold;">Type or Registration</th>
             <th style="text-align: left; font-weight: bold;">Transaction/Order ID</th>
@@ -80,6 +81,7 @@
                    <td style="text-align: left;"><?php echo $res->lastname; ?></td>
                    <td style="text-align: left;"><?php echo $res->email; ?></td>
                    <td style="text-align: left;"><?php echo $res->mobile; ?></td>
+                   <td style="text-align: left;"><?php echo $res->bulk_upload_group_name; ?></td>
                    <td style="text-align: left;"><?php echo $res->category_name; ?></td>
                    <td style="text-align: left;"><?php echo $res->category_type; ?></td>
                    <td style="text-align: left;"><?php echo $res->transaction_id; ?></td>
@@ -117,6 +119,7 @@
             <?php $i++; }} ?>
 
             <tr>
+                   <td style="text-align: center;">&nbsp;</td>
                    <td style="text-align: center;">&nbsp;</td>
                    <td style="text-align: center;">&nbsp;</td>
                    <td style="text-align: center;">&nbsp;</td>
