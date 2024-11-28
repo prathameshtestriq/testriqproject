@@ -370,13 +370,18 @@ class ParticipantBulkController extends Controller
                                 //------------------ new added on 15-11-24  (Email Placeholder Replace)
                                 $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 ";
 
-                                if(empty($res1->parent_question_id)){
-                                    $sql2 .= " AND question_form_name = '".$res1->question_form_name."' ";
+                                // if(empty($res1->parent_question_id)){
+                                //     $sql2 .= " AND question_form_name = '".$res1->question_form_name."' ";
+                                // }else{
+                                //     $sql2 .= " AND question_form_name = LOWER(REPLACE('".$res1->question_label."', ' ', '_')) ";
+                                // }
+                                if(empty($res->parent_question_id)){
+                                    $emailPlaceHolderResult = DB::select($sql2, array('question_form_name' => $res->question_form_name));
                                 }else{
-                                    $sql2 .= " AND question_form_name = LOWER(REPLACE('".$res1->question_label."', ' ', '_')) ";
+                                    $emailPlaceHolderResult = DB::select($sql2, array('question_form_name' => strtolower(str_replace(" ", "_", $res->question_label))));
                                 }
                              
-                                $emailPlaceHolderResult = DB::select($sql2, []);
+                                // $emailPlaceHolderResult = DB::select($sql2, []);
 
                                 if(!empty($emailPlaceHolderResult) && $emailPlaceHolderResult[0]->question_form_type != "file"){
                                     $question_form_option = !empty($emailPlaceHolderResult[0]->question_form_option) ? json_decode($emailPlaceHolderResult[0]->question_form_option, true) : [];
@@ -491,6 +496,14 @@ class ParticipantBulkController extends Controller
                                 $MessageContent = str_replace($placeholder, $value, $MessageContent);
                             }
                         }
+
+                        if(!empty($Communications) && !empty($Communications[0]->content_image)){
+                            $image_path = url('/').'/uploads/communication_email_images/'.$Communications[0]->content_image;
+                            $attach_image = '<img src="'.str_replace(" ", "%20", $image_path).'" alt="Image">';
+                            $MessageContent .= ' <br/><br/>';
+                            $MessageContent .= $attach_image;
+                        }
+
                         // dd($MessageContent);
                         // echo '<br>'; echo $MessageContent; die;
                         $generatePdf = ParticipantBulkController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->attendee_id,$EventUrl,$final_ticket_price);
