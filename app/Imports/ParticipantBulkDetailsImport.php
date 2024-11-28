@@ -111,6 +111,8 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                         $question_form_name = str_replace("_?", "", strtolower(trim($value->question_form_name)));
                                         $question_form_name = str_replace("?", "", $question_form_name);
                                         $question_form_name = str_replace("-", "_", $question_form_name);
+                                        $question_form_name = str_replace("'", "", $question_form_name);
+                                        $question_form_name = str_replace(".", "", $question_form_name);
                                         // dd($question_form_name);
                                         if(isset($FinalHeaderData[$question_form_name])){
                                             $selectedValue = (isset($FinalHeaderData[$question_form_name])) ? $FinalHeaderData[$question_form_name] : "";
@@ -133,8 +135,12 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                         }else
                                            $value->ActualValue = '';
                                            // dd($value->ActualValue);
-                                    }else if($value->question_form_type == "countries"){
+                                    }else if($value->question_form_type == "countries"){ 
                                         $selectedCountry = (isset($FinalHeaderData[$value->user_field_mapping])) ? $FinalHeaderData[$value->user_field_mapping] : "";
+                                        if(empty($selectedCountry))
+                                            $selectedCountry = (isset($FinalHeaderData[strtolower($value->question_form_name)])) ? $FinalHeaderData[strtolower($value->question_form_name)] : "";
+                                        
+                                        // dd($value->user_field_mapping);
                                         $sql = "SELECT id,name AS label FROM countries WHERE flag=1 AND name = '".$selectedCountry."' order by name asc";
                                         $countries = DB::select($sql);
                                         
@@ -178,11 +184,19 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                         $value->ActualValue = !empty($selectedValue) ? $selectedValue : 0;
                                     }
                                     else if($value->question_form_type == "text"){
-                                        $question_label_name = str_replace("_/_", "_", strtolower(trim($value->question_form_name)));   
+                                        
+                                        if($value->question_form_name != "sub_question")
+                                            $question_label_name = str_replace("_/_", "_", strtolower(trim($value->question_form_name)));   
+                                        else
+                                            $question_label_name = str_replace(" ", "_", strtolower(trim($value->question_label))); 
+                                       
+                                        $question_label_name = str_replace("_/_", "_", strtolower(trim($question_label_name)));  
                                         $question_label_name = str_replace("(", "", strtolower(trim($question_label_name)));   
-                                        $question_label_name = str_replace(")", "", strtolower(trim($question_label_name)));   
+                                        $question_label_name = str_replace(")", "", strtolower(trim($question_label_name))); 
+                                        $question_label_name = str_replace("'", "", $question_label_name);  
                                         $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
-                                        $value->ActualValue = !empty($selectedValue) ? $selectedValue : 0;
+
+                                        $value->ActualValue = !empty($selectedValue) ? $selectedValue : '';
                                     }
                                     else{  // [text]
                                         $value->ActualValue = (isset($FinalHeaderData[$value->question_form_name])) ? $FinalHeaderData[$value->question_form_name] : "";

@@ -611,7 +611,7 @@ class ParticipantBulkController extends Controller
 
                                 if($res->question_form_type == 'select' &&  !empty($detail->question_form_option) && $detail->question_form_type == 'select' && $detail->ActualValue !== ''){
                                     // echo $res->question_form_type.'11<br>';
-                                   // if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                    if(!array_search($detail->id, array_column($extra_details, 'id'))){
                                         $question_form_option = json_decode($detail->question_form_option, true); 
                                         
                                         foreach ($question_form_option as $option) {
@@ -627,7 +627,7 @@ class ParticipantBulkController extends Controller
                                         $aTemp->question_form_type = $detail->question_form_type;
                                         $extra_details[] = $aTemp;
                                         break;
-                                  //  }
+                                    }
                                 }else if($res->question_form_type == 'amount' && $detail->question_form_type == 'amount' && $detail->ActualValue !== ''){
                                     if(!array_search($detail->id, array_column($extra_details, 'id'))){
                                         $aTemp->ActualValue    = $detail->ActualValue;
@@ -637,7 +637,7 @@ class ParticipantBulkController extends Controller
                                         $extra_details[] = $aTemp;
                                         break;
                                     } 
-                                }else if($form_id == '999999' && $res->question_form_type == 'text' && $detail->question_form_type == 'text' && ($res->question_form_name == $detail->question_form_name) ){
+                                }else if($form_id == '999999' && $res->question_form_type == 'text' && $detail->question_form_type == 'text' && ($res->question_form_name == $detail->question_form_name) && $detail->ActualValue !== '' ){
                                     if(!array_search($detail->id, array_column($extra_details, 'id'))){
                                         $aTemp->ActualValue    = $detail->ActualValue;
                                         $aTemp->id             = $detail->id; 
