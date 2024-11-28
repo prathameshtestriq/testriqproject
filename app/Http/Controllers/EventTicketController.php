@@ -2860,8 +2860,9 @@ class EventTicketController extends Controller
                 if(empty($res->parent_question_id)){
                     $emailPlaceHolderResult = DB::select($sql2, array('question_form_name' => $res->question_form_name));
                 }else{
-                    $emailPlaceHolderResult = DB::select($sql2, array('question_form_name' => LOWER(REPLACE($res->question_label, ' ', '_'))));
+                    $emailPlaceHolderResult = DB::select($sql2, array('question_form_name' => strtolower(str_replace(" ", "_", $res->question_label))));
                 }
+
 
                 if(!empty($emailPlaceHolderResult) && $emailPlaceHolderResult[0]->question_form_type != "file"){
                     $question_form_option = !empty($emailPlaceHolderResult[0]->question_form_option) ? json_decode($emailPlaceHolderResult[0]->question_form_option, true) : [];
