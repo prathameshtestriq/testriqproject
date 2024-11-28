@@ -246,6 +246,7 @@ class ParticipantBulkController extends Controller
     public function event_participant_send_email(Request $request)
     {
        //dd($request);
+        ini_set('max_execution_time', 0);
         $Booking_payment_id = !empty($request->id) ? $request->id : 0;
         $event_id           = !empty($request->event_id) ? $request->event_id : 0;
         $userId             = !empty($request->created_by) ? $request->created_by : 0;
@@ -263,6 +264,7 @@ class ParticipantBulkController extends Controller
 
     public function participants_send_email($BookPayId,$EventId,$UserId){
         // dd($BookPayId,$EventId);
+        ini_set('max_execution_time', 0);
         if(!empty($BookPayId)){
             
             $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = $preferred_date = $run_category = ''; 
@@ -523,6 +525,7 @@ class ParticipantBulkController extends Controller
     public function generateParticipantPDF($EventId,$UserId,$TicketId,$attendeeId,$EventUrl,$TotalPrice)
     {
         // dd($EventId,$UserId,$TicketId,$attendeeId);
+        ini_set('max_execution_time', 0);
         $master = new Master();
         $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username,email,mobile FROM users WHERE id=:user_id";
         $User = DB::select($sql1, ['user_id' => $UserId]);
