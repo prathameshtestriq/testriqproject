@@ -3050,7 +3050,7 @@ class EventTicketController extends Controller
         if(!empty($Communications) && !empty($Communications[0]->content_image)){
 
             $image_path = url('/').'/uploads/communication_email_images/'.$Communications[0]->content_image;
-            $attach_image = '<img src="'.$image_path.'" alt="Image">';
+            $attach_image = '<img src="'.urlencode($image_path).'" alt="Image">';
             $MessageContent .= ' <br/><br/>';
             $MessageContent .= $attach_image;
         }
