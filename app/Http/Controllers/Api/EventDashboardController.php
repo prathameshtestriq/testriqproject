@@ -532,6 +532,7 @@ class EventDashboardController extends Controller
 
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
                  // dd($AttendeeData);
+                 $final_ticket_amount = $Extra_Amount = $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = 0;
                 foreach ($AttendeeData as $key => $value) {
                     $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
 
@@ -548,26 +549,26 @@ class EventDashboardController extends Controller
                     }
                      
                     //------------- new added
-                    $final_ticket_amount = $Extra_Amount = $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = 0;
+                   
                     
                     if($value->bulk_upload_flag == 0 && !empty($value->cart_details)){
                         // dd(json_decode($value->cart_details));
                         foreach(json_decode($value->cart_details) as $res){
-                            if(!empty($res->ticket_price)){
+                            if(!empty($res->ticket_price) && $value->ticket_id == $res->id){
                                 $Extra_Amount = isset($res->Extra_Amount) && !empty($res->Extra_Amount) ? floatval($res->Extra_Amount) : 0;
                                 $Extra_Amount_Payment_Gateway = isset($res->Extra_Amount_Payment_Gateway) && !empty($res->Extra_Amount_Payment_Gateway) ? floatval($res->Extra_Amount_Payment_Gateway) : 0;
                                 $Extra_Amount_Payment_Gateway_Gst = isset($res->Extra_Amount_Payment_Gateway_Gst) && !empty($res->Extra_Amount_Payment_Gateway_Gst) ? floatval($res->Extra_Amount_Payment_Gateway_Gst) : 0;
 
                                 $final_ticket_amount = (floatval($res->BuyerPayment) + $Extra_Amount + $Extra_Amount_Payment_Gateway + $Extra_Amount_Payment_Gateway_Gst);
-                            }else{
-                                 $final_ticket_amount = 0;
+
+                                // echo floatval($res->BuyerPayment).'----'.$Extra_Amount.'----'.$Extra_Amount_Payment_Gateway.'----'.$Extra_Amount_Payment_Gateway_Gst.'<br>';
                             }
                         }
                         $value->total_amount = $final_ticket_amount;
                     }else{
                         $value->total_amount = $value->final_ticket_price;
                     }
-                }
+                }//die;
 
                 // dd($AttendeeData);
 
@@ -818,6 +819,7 @@ class EventDashboardController extends Controller
                 // dd($sql);
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
                  // dd($AttendeeData);
+                $final_ticket_amount = $Extra_Amount = $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = 0;
                 foreach ($AttendeeData as $key => $value) {
                     $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
 
@@ -834,17 +836,17 @@ class EventDashboardController extends Controller
                     }
 
                     //------------- new added
-                    $final_ticket_amount = $Extra_Amount = $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = 0;
+                   
                     if($value->bulk_upload_flag == 0 && !empty($value->cart_details)){
                         // dd(json_decode($value->cart_details));
                         foreach(json_decode($value->cart_details) as $res){
-                            if(!empty($res->ticket_price)){
+                            if(!empty($res->ticket_price) && $value->ticket_id == $res->id){
                                 $Extra_Amount = isset($res->Extra_Amount) && !empty($res->Extra_Amount) ? floatval($res->Extra_Amount) : 0;
                                 $Extra_Amount_Payment_Gateway = isset($res->Extra_Amount_Payment_Gateway) && !empty($res->Extra_Amount_Payment_Gateway) ? floatval($res->Extra_Amount_Payment_Gateway) : 0;
                                 $Extra_Amount_Payment_Gateway_Gst = isset($res->Extra_Amount_Payment_Gateway_Gst) && !empty($res->Extra_Amount_Payment_Gateway_Gst) ? floatval($res->Extra_Amount_Payment_Gateway_Gst) : 0;
 
                                 $final_ticket_amount = (floatval($res->BuyerPayment) + $Extra_Amount + $Extra_Amount_Payment_Gateway + $Extra_Amount_Payment_Gateway_Gst);
-                            }else{ $final_ticket_amount = 0 ; }
+                            }
                         }
                         $value->total_amount = $final_ticket_amount;
                     }else{
@@ -913,6 +915,7 @@ class EventDashboardController extends Controller
                             $booking_datetime = !empty($paymentDetails) ? date('d-m-Y h:i:s A', $paymentDetails[0]->created_datetime) : '';
                             $bulk_upload_group_name = !empty($paymentDetails) && !empty($paymentDetails[0]->bulk_upload_group_name) ? $paymentDetails[0]->bulk_upload_group_name : '';
                             // dd(json_decode($final_attendee_details_array));
+                            $label = '';
                             //-----------------------------
                             foreach (json_decode($final_attendee_details_array) as $val) {
                                 if (isset($val->question_label)) {
@@ -965,7 +968,7 @@ class EventDashboardController extends Controller
                                                         $aTemp->answer_value = htmlspecialchars($val->data[0]->age_category);
                                                     }else{ $aTemp->answer_value = ''; }
                                                 }else if($val->question_form_type == "date"){
-                                                    $aTemp->answer_value = date('d-m-Y',strtotime($val->ActualValue));
+                                                    $aTemp->answer_value = isset($val->ActualValue) && !empty($val->ActualValue) ? date('d-m-Y',strtotime($val->ActualValue)) : '';
                                                 }else{
                                                     $aTemp->answer_value = htmlspecialchars($val->ActualValue);
                                                 }
