@@ -2849,8 +2849,8 @@ class EventTicketController extends Controller
                 }
 
                 //------------------ new added on 15-11-24  (Email Placeholder Replace)
-                $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 AND question_form_name =: question_form_name ";
-                
+                $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 AND question_form_name =:question_form_name";
+
                 // if(empty($res->parent_question_id)){
                 //     $sql2 .= " AND question_form_name = '".$res->question_form_name."' ";
                 // }else{
@@ -2862,7 +2862,6 @@ class EventTicketController extends Controller
                 }else{
                     $emailPlaceHolderResult = DB::select($sql2, array('question_form_name' => LOWER(REPLACE($res->question_label, ' ', '_'))));
                 }
-                
 
                 if(!empty($emailPlaceHolderResult) && $emailPlaceHolderResult[0]->question_form_type != "file"){
                     $question_form_option = !empty($emailPlaceHolderResult[0]->question_form_option) ? json_decode($emailPlaceHolderResult[0]->question_form_option, true) : [];
