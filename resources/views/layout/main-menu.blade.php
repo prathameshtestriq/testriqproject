@@ -166,6 +166,14 @@
             </a>
          </li>
 
+         <li class="nav-item <?php if($uriSegment == 'event_certificate') echo 'active'; ?>">
+            <a class="d-flex align-items-center " href="{{ url('/event_certificate ') }}">
+               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#161616"><path d="M160-440v80h640v-80H160Zm0-440h640q33 0 56.5 23.5T880-800v440q0 33-23.5 56.5T800-280H640v200l-160-80-160 80v-200H160q-33 0-56.5-23.5T80-360v-440q0-33 23.5-56.5T160-880Zm0 320h640v-240H160v240Zm0 200v-440 440Z"/></svg>
+               {{-- <i class="fa fa-users" aria-hidden="true"></i> --}}
+               <span class="menu-title text-truncate"> Event Certificates </span></a>
+            </a>
+         </li>
+
          <li class="nav-item <?php if($uriSegment == 'email_sending') echo 'active'; ?>">
             <a class="d-flex align-items-center " href="{{ url('/email_sending ') }}">
                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280 320-200v-80L480-520 160-720v80l320 200Z"/></svg>

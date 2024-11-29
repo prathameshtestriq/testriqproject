@@ -98,7 +98,7 @@ class AdvertiseController extends Controller
                 'start_date' => 'required',
                 'end_date' => 'required',
                 'position' => 'required', 
-                'img' => empty($aResult) || $aResult['img'] === '' ? 'required|mimes:jpeg,jpg,png,gif' : '',
+                'img' => empty($aResult) || $aResult['img'] === '' ? 'required|mimes:jpeg,jpg,png,gif|max:2048' : 'mimes:jpeg,jpg,png,gif|Max:2048',
             ];
 
             $message = [ 
@@ -106,7 +106,7 @@ class AdvertiseController extends Controller
                 'URL.regex' => 'The URL must start with "www.", "http://", or "https://".',
                 'img.required' => 'The image field is required .',
                 'img.mimes' => 'The image must be a file of type: jpeg, jpg, png, gif.',
-                // 'img.size' => 'The image must be 2MB or below.', 
+                'img.max' => 'The image must be 2MB or below.', 
             ];
             $validator = Validator::make($request->all(), $rules,$message);
 

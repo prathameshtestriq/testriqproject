@@ -109,12 +109,21 @@ class TestimonialController extends Controller
         if (isset($request->form_type) && $request->form_type == 'add_edit_testimonial') {
             // dd('ss');
             #VALIDATION RULES
+            if($iId>0){
+                $sSQL = 'SELECT id,name as testimonial_name,testimonial_img,subtitle,description,active FROM testimonial WHERE id=:id';
+                $Materials = DB::select($sSQL, array('id' => $iId));
+                $aReturn = (array) $Materials[0];    
+            }
             $Rules = [
                 'testimonial_name' => 'required|unique:testimonial,name,' . $iId . 'id',
                 'subtitle'         => 'required|string',
                 'description'      => 'required|string',
-                'testimonial_image'  => !empty($iId) ? '' :'required|mimes:jpeg,jpg,png,gif'
+                'testimonial_image'  => !empty($iId) || $aReturn[ "testimonial_img"] === '' ? 'required|mimes:jpeg,jpg,png,gif|max:2048' :'mimes:jpeg,jpg,png,gif|max:2048'
             ]; 
+            $message = [
+                'testimonial_image.max' => 'Testimonial image must be less than 5MB.',
+            ];
+
             $testimonial_name = (!empty($request->testimonial_name)) ? $request->testimonial_name : '';
             $subtitle = (!empty($request->subtitle)) ? $request->subtitle : '';
             $description = (!empty($request->description)) ? $request->description : '';
@@ -125,7 +134,7 @@ class TestimonialController extends Controller
             if ($iId > 0) {
                
                 #UPDATE
-                $request->validate($Rules);
+                $request->validate($Rules,$message);
 
                 if ($request->file('testimonial_image')) {
                    $path = public_path('uploads/testimonial_images/');
@@ -157,7 +166,7 @@ class TestimonialController extends Controller
                 
             } else {
                
-                $request->validate($Rules);
+                $request->validate($Rules,$message);
 
                 if ($request->file('testimonial_image')) {
                    $path = public_path('uploads/testimonial_images/');

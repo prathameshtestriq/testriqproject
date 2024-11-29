@@ -125,22 +125,29 @@ class RacesCategoryController extends Controller
         if (isset($request->form_type) && $request->form_type == 'add_edit_type') {
             // Validation rules
              //dd($request->all());
+             if ($iId > 0) {
+                $sSQL = 'SELECT * FROM eTypes WHERE id=:id';
+                $Materials = DB::select($sSQL, array('id' => $iId));
+                $aReturn = (array) $Materials[0];
+
+            }
+
             $Rules = [
                 'race_category_name' => 'required|unique:eTypes,name,' . $iId . 'id',
               
-            ];
-
+            ]; 
+        
            if($request->input('show_as_home', '') == 1){
             $Rules = array_merge($Rules, [
-                'races_logo' =>  empty($iId) ? 'required|mimes:jpeg,jpg,png,gif|max:2000':'',
+                'races_logo' =>  empty($iId) || $aReturn[ "logo"] === '' ? 'required|mimes:jpeg,jpg,png,gif|max:2048':'mimes:jpeg,jpg,png,gif|max:2048',
             ]);
            }
             $message = [ 
                 'race_category_name.required' => 'The race category name field is required.',
                 'race_category_name.unique' => 'The race category name must be unique.',
-                'races_logo.required' => 'The logo field is required .',
-                'races_logo.mimes' => 'The logo must be a file of type: jpeg, jpg, png, gif.',
-                // 'logo.size' => 'The logo must be 2MB or below.', 
+                'races_logo.required' => 'The races logo field is required .',
+                'races_logo.mimes' => 'The races logo must be a file of type: jpeg, jpg, png, gif.',
+                'races_logo.max' => 'The races logo image must be less than 2MB.',
             ];
     
             // Retrieve data from request
@@ -226,7 +233,7 @@ class RacesCategoryController extends Controller
             }
         }
         $aReturn['allTypes'] = $allTypes; // Pass $allTypes to the view
-    //    dd($aReturn['allTypes']);
+        //dd($aReturn['allTypes']);
         return view('master_data.races_category.create', $aReturn);
     }
    

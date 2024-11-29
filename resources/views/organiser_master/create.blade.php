@@ -201,7 +201,7 @@
                                                 <input type="file" id="organiser_logo_image" class="form-control"
                                                     placeholder="Enter Organiser Logo Image " name="organiser_logo_image"
                                                     value="{{ old('organiser_logo_image',$logo_image) }}"
-                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewLogoImage(this); LogovalidateSize(this);"  />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewLogoImage(this);"  />
                                                    
                                                     <span class="error" id="organiser_logo_image_err" style="color:red;"></span>
                                                     @error('organiser_logo_image')
@@ -235,14 +235,14 @@
                                                 <input type="file" id="banner_image" class="form-control"
                                                     placeholder="Enter Banner Image" name="banner_image"
                                                     value="{{ old('banner_image') }}"
-                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewBannerImage(this); BannervalidateSize(this);"  />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewBannerImage(this); "  />
                                                    
                                                     <span class="error" id="banner_image_err" style="color:red;"></span>
                                                     @error('banner_image')
                                                         <span class="error" style="color:red;">{{ $message }}</span>
                                                     @enderror 
                                             </div>
-                                        </div>
+                                        </div> 
                                         <div class="col-md-2 col-12">
                                             <div class="form-group">
                                                 <span><br></span>
@@ -268,7 +268,7 @@
                                                 <input type="file" id="registered_pancard" class="form-control"
                                                     placeholder="Enter Registered Pancard" name="registered_pancard"
                                                     value="{{ old('registered_pancard') }}"
-                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewPancardImage(this); PancardvalidateSize(this);"  />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewPancardImage(this); "  />
                                                    
                                                     <span class="error" id="registered_pancard_err" style="color:red;"></span>
                                                     @error('registered_pancard')
@@ -301,7 +301,7 @@
                                                 <input type="file" id="registered_gst_certificate" class="form-control"
                                                     placeholder="Enter Registered GST Certificate" name="registered_gst_certificate"
                                                     value="{{ old('registered_gst_certificate') }}"
-                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewGSTImage(this); GSTvalidateSize(this);"  />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewGSTImage(this);"  />
                                                    
                                                     <span class="error" id="registered_gst_certificate_err" style="color:red;"></span>
                                                     @error('registered_gst_certificate')
@@ -387,30 +387,7 @@
             reader.readAsDataURL(file);
         }
     }
-
-    function LogovalidateSize(input) {
-        var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var banner_image = $('#organiser_logo_image').val().trim();
- 
     
-      if(fileSize > 5) {
-         // alert('File size exceeds 2 MB');
-         if (banner_image !== "") {
-            // alert("here");
-            $('#organiser_logo_image').parent().addClass('has-error');
-            $('#organiser_logo_image_err').html('The image must be 5MB or belows.');
-            $('#organiser_logo_image').focus();
-            $('#organiser_logo_image').keyup(function() {
-                $('#organiser_logo_image').parent().removeClass('has-error');
-                $('#organiser_logo_image_err').html('');
-            });
-            isValid = false;
-        }
-
-        return isValid;
-      }
-    }
 
     // banner image
     function previewBannerImage(input) {
@@ -426,29 +403,6 @@
         }
     }
 
-    function BannervalidateSize(input) {
-        var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var banner_image = $('#banner_image').val().trim();
- 
-    
-      if(fileSize > 5) {
-         // alert('File size exceeds 2 MB');
-         if (banner_image !== "") {
-            // alert("here");
-            $('#banner_image').parent().addClass('has-error');
-            $('#banner_image_err').html('The image must be 5MB or belows.');
-            $('#banner_image').focus();
-            $('#banner_image').keyup(function() {
-                $('#banner_image').parent().removeClass('has-error');
-                $('#banner_image_err').html('');
-            });
-            isValid = false;
-        }
-
-        return isValid;
-      }
-    }
 
 
     // // Pancard
@@ -465,31 +419,6 @@
         }
     }
 
-    function PancardvalidateSize(input) {
-        var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var banner_image = $('#registered_pancard').val().trim();
- 
-    
-      if(fileSize > 5) {
-         // alert('File size exceeds 2 MB');
-         if (banner_image !== "") {
-            // alert("here");
-            $('#registered_pancard').parent().addClass('has-error');
-            $('#registered_pancard_err').html('The image must be 5MB or belows.');
-            $('#registered_pancard').focus();
-            $('#registered_pancard').keyup(function() {
-                $('#registered_pancard').parent().removeClass('has-error');
-                $('#registered_pancard_err').html('');
-            });
-            isValid = false;
-        }
-
-        return isValid;
-      }
-    }
-
-
     // // gst certificate
     function previewGSTImage(input) {
         var file = input.files[0];
@@ -504,29 +433,7 @@
         }
     }
 
-    function GSTvalidateSize(input) {
-        var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var banner_image = $('#registered_gst_certificate').val().trim();
- 
     
-      if(fileSize > 5) {
-         // alert('File size exceeds 2 MB');
-         if (banner_image !== "") {
-            // alert("here");
-            $('#registered_gst_certificate').parent().addClass('has-error');
-            $('#registered_gst_certificate_err').html('The image must be 5MB or belows.');
-            $('#registered_gst_certificate').focus();
-            $('#registered_gst_certificate').keyup(function() {
-                $('#registered_gst_certificate').parent().removeClass('has-error');
-                $('#registered_gst_certificate_err').html('');
-            });
-            isValid = false;
-        }
-
-        return isValid;
-      }
-    }
 </script>
 
 <script>

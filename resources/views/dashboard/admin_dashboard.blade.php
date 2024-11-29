@@ -55,6 +55,23 @@
         .highcharts-data-table tr:hover {
             background: #f1f7ff;
         }
+
+        /* hover */
+
+         /* Default style for the <h1> */
+        .hover-effect {
+            font-size: 20px;
+            font-weight: bold;
+            color: #000; 
+            transition: color 0.3s ease; 
+        }
+
+        /* Hover effect: Change color */
+        .hover-effect:hover {
+            color: #007bff; 
+        }
+
+       
     </style>
 
 
@@ -228,15 +245,16 @@
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Live Events</h5>
+                        <h5 class="text-primary mb-0 text-dark">Public Events</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
+                                    {{--  <h1 style="font-size: 20px; font-weight:bold; color:rgb(103, 157, 238) !important" class="mt-1 text-dark"> --}}
                                     <?php if($search_event_name > 0){ ?>
-                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/1') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/1') }}" title="Click Here"><h1 class="hover-effect">
                                         {{  $TotalNumberLiveEvents }}</h1></a>
                                     <?php }else{ ?>
-                                        <a href="{{ url('redirect_to_dashboard/0/1') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        <a href="{{ url('redirect_to_dashboard/0/1') }}" title="Click Here"><h1 class="hover-effect">
                                             {{  $TotalNumberLiveEvents }}</h1></a>
                                     <?php } ?>     
                                 </div>
@@ -261,10 +279,10 @@
                             <div class="col-sm-6">
                                 <div>
                                     <?php if($search_event_name > 0){ ?>
-                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/3') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/3') }}" title="Click Here"><h1 class="hover-effect">
                                         {{  $TotalNumberDraftEvents }}</h1></a>
                                     <?php }else{ ?>
-                                        <a href="{{ url('redirect_to_dashboard/0/3') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        <a href="{{ url('redirect_to_dashboard/0/3') }}" title="Click Here"><h1 class="hover-effect">
                                             {{  $TotalNumberDraftEvents }}</h1></a>
                                     <?php } ?>   
                                 </div>
@@ -289,10 +307,10 @@
                             <div class="col-sm-6">
                                 <div>
                                     <?php if($search_event_name > 0){ ?>
-                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/2') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                    <a href="{{ url('redirect_to_dashboard/' . $search_event_name . '/2') }}" title="Click Here"><h1 class="hover-effect">
                                         {{ $TotalNumberPrivateEvents }}</h1></a>
                                     <?php }else{ ?>
-                                        <a href="{{ url('redirect_to_dashboard/0/2') }}"><h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
+                                        <a href="{{ url('redirect_to_dashboard/0/2') }}" title="Click Here"><h1 class="hover-effect">
                                             {{ $TotalNumberPrivateEvents }}</h1></a>
                                     <?php } ?>    
                                 </div>
@@ -472,8 +490,8 @@
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
-                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"> <i class="fa fa-inr" aria-hidden="true"></i>
-                                        <?php echo !empty($NetEarningAmt) ? $NetEarningAmt : $TotalAmount; ?> 
+                                    <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"> <i class="fa fa-inr" aria-hidden="true"> </i>
+                                         <?php echo !empty($NetEarningAmt) ? $NetEarningAmt : $TotalAmount; ?> 
                                     </h1>
                                 </div>
                             </div>
@@ -497,7 +515,7 @@
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        <i class="fa fa-inr" aria-hidden="true"></i>{{ $OrganiserAmount }}</h1>
+                                        <i class="fa fa-inr" aria-hidden="true"></i>  {{ $OrganiserAmount }}</h1>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -520,7 +538,7 @@
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark"><i
-                                            class="fa fa-inr" aria-hidden="true"></i>{{ $TotalRemittedAmount }}
+                                            class="fa fa-inr" aria-hidden="true"></i>  {{ $TotalRemittedAmount }}
                                     </h1>
                                 </div>
                             </div>
@@ -544,7 +562,7 @@
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        <i class="fa fa-inr" aria-hidden="true"></i>{{ $TotalPaymentGateway }}</h1>
+                                        <i class="fa fa-inr" aria-hidden="true"></i>  {{ $TotalPaymentGateway }}</h1>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -567,7 +585,7 @@
                             <div class="col-sm-6">
                                 <div>
                                     <h1 style="font-size: 20px; font-weight:bold" class="mt-1 text-dark">
-                                        <i class="fa fa-inr" aria-hidden="true"></i>{{ $TotalConvenience }}</h1>
+                                        <i class="fa fa-inr" aria-hidden="true"></i>   {{ $TotalConvenience }}</h1>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -776,7 +794,7 @@
                                         <td>{{ $val->PendingCount }}</td>
                                         <!-- <td> <i class="fa fa-inr" aria-hidden="true"></i>
                                             {{ $val->SingleTicketPrice }}</td> -->
-                                        <td align="right"> <i class="fa fa-inr" aria-hidden="true"></i>
+                                        <td align="right">  <i class="fa fa-inr" aria-hidden="true"></i> 
                                            <?php echo !empty($val->TotalAmount) ? number_format($val->TotalAmount,2) : '0.00' ?></td>
                                     </tr>
                                     <?php } ?>

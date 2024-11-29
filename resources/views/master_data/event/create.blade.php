@@ -269,7 +269,7 @@
                                                 </label>
                                                 <input type="file" id="event_banner_image" class="form-control"
                                                     placeholder="Event Banner Image" name="event_banner_image"
-                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this); validateSize(this);" />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this);" />
                                                     
                                                  <span class="error" id="event_banner_image_err" style="color:red;"></span>
 
@@ -283,14 +283,19 @@
                                             <span><br /></span>
                                             <!-- Image preview section -->
                                             <div id="imagePreview">
-                                                <?php if(!empty($banner_image)){ ?>
-                                                    <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
-                                                        <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;">
-                                                    </a>
-                                                    <input type="hidden" name="hidden_image" value="{{ old('event_banner_image/', $banner_image) }}" accept="image/jpeg, image/png">
-                                                <?php } else { ?>
-                                                    <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
-                                                <?php } ?>
+                                                @php
+                                                    $imagePath = public_path('uploads/banner_image/' . $banner_image);
+                                                @endphp
+                                                {{-- <?php if(file_exists($imagePath) && !empty($banner_image)){ ?> --}}
+                                                    <?php if(!empty($banner_image)){ ?>
+                                                        <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
+                                                            <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;">
+                                                        </a>
+                                                        <input type="hidden" name="hidden_image" value="{{ old('event_banner_image/', $banner_image) }}" accept="image/jpeg, image/png">
+                                                    <?php } else { ?>
+                                                        <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
+                                                    <?php } ?>
+                                                {{-- <?php } else { echo '-'; } ?>     --}}
                                             </div>    
                                         </div>
                                      
@@ -458,30 +463,6 @@
             }
             reader.readAsDataURL(file);
         }
-    }
-
-    function validateSize(input) {
-        var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var banner_image = $('#event_banner_image').val().trim();
- 
-    
-      if(fileSize > 5) {
-         // alert('File size exceeds 2 MB');
-         if (banner_image !== "") {
-            // alert("here");
-            $('#event_banner_image').parent().addClass('has-error');
-            $('#event_banner_image_err').html('The image must be 5MB or belows.');
-            $('#event_banner_image').focus();
-            $('#event_banner_image').keyup(function() {
-                $('#event_banner_image').parent().removeClass('has-error');
-                $('#event_banner_image_err').html('');
-            });
-            isValid = false;
-        }
-
-        return isValid;
-      }
     }
 
 

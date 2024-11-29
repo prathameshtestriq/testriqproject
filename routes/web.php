@@ -35,6 +35,7 @@ use App\Http\Controllers\MasterCMSController;
 use App\Http\Controllers\ParticipantBulkController;
 use App\Http\Controllers\MaintenanceModeController;
 use App\Http\Controllers\EmailPlaceholderController;
+use App\Http\Controllers\EventCertificateController;
 
 //--------------------------------------------
 
@@ -248,5 +249,13 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'], 'email_placeholder_management/change_status', [EmailPlaceholderController::class, 'change_active_status'])->name('change_status_email_placeholder_management');
     Route::match (['get', 'post'], '/get_questions', [EmailPlaceholderController::class, 'get_questionsby_event'])->name('get_questions_email');
     Route::get('/email_placeholder_management/clear_search', [EmailPlaceholderController::class, 'clear_search'])->name('clear_search_email_placeholder_management');
+    
+    // Event Certificate
+    Route::match (['get', 'post'], '/event_certificate', [EventCertificateController::class, 'index'])->name('index');
+    Route::get('/event_certificate/clear_search', [EventCertificateController::class, 'clear_search'])->name('clear_search_event_certificate');
+    Route::match(['get', 'post'],'event_certificate/add_edit/{id?}', [EventCertificateController::class,'add_edit'])->name('add_event_certificate');
+    Route::match (['get'], 'event_certificate/delete/{id}', [EventCertificateController::class, 'delete_event_certificate'])->name('delete_event_certificate');
+    Route::match(['get', 'post'], 'event_certificate/change_status', [EventCertificateController::class, 'change_active_status'])->name('change_status_event_certificate');
+    
 
 });

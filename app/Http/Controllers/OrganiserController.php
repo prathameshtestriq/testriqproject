@@ -87,15 +87,23 @@ class OrganiserController extends Controller
         // gst_number_format = 22ABCDE1234F1Z5 ;
         // dd(  $a_return['logo_image']);
         
-
+        if($iId>0){
+            $sql_r = 'SELECT logo_image FROM organizer WHERE id = '.$iId;
+            $result = DB::select($sql_r,array());
+            $a_return = (array) $result[0];
+        //   dd($a_return[ "logo_image"] );
+             
+        }
         if (isset($request->form_type) && $request->form_type == 'add_edit_organiser') {
+           
           
             $rules = [
                 'organiser_name' => 'required|unique:organizer,name,'.$iId.',id',
                 'email' => 'required|email:rfc,dns',
                 'contact_number' => 'required|digits:10',
                 'about' => 'required',
-                'organiser_logo_image' => !empty($iId) ? '' : 'required|mimes:jpeg,jpg,png',
+                'organiser_logo_image' =>   empty($iId) || $a_return[ "logo_image"] === '' ? 'required|mimes:jpeg,jpg,png|max:5120|dimensions:max_width=1920,max_height=744' : 'mimes:jpeg,jpg,png|max:5120|dimensions:max_width=1920,max_height=744',
+                // 'organiser_logo_image' => !empty($iId) ? '' : 'required|mimes:jpeg,jpg,png',    
                 //  |max:5120|dimensions:width=1920,height=744 
                 // ,gif|dimensions:width=1920,height=744
             ];
@@ -103,9 +111,9 @@ class OrganiserController extends Controller
 
             if(!empty($request->banner_image) || !empty($request->registered_pancard) || !empty($request->registered_gst_certificate)){
                 $Rules = [
-                    'banner_image' => 'mimes:jpeg,jpg,png',
-                    'registered_pancard' => 'mimes:jpeg,jpg,png',
-                    'registered_gst_certificate' => 'mimes:jpeg,jpg,png'
+                    'banner_image' => 'mimes:jpeg,jpg,png|max:5120|dimensions:max_width=1920,max_height=744',
+                    'registered_pancard' => 'mimes:jpeg,jpg,png|max:5120|dimensions:max_width=1920,max_height=744',
+                    'registered_gst_certificate' => 'mimes:jpeg,jpg,png|max:5120|dimensions:max_width=1920,max_height=744'
                      
                 ];
                  // Merge base rules with GST rules
@@ -127,6 +135,14 @@ class OrganiserController extends Controller
                 'gst_number.regex' => 'The GST number format is invalid. It should match the GSTIN format.',
                 'contact_gst_percentage.required' => 'The GST percentage is required.',
                 'contact_gst_percentage.numeric' => 'The GST percentage must be a valid number.',
+                'organiser_logo_image.max' => 'The organiser logo image must be less than 5MB.',
+                'organiser_logo_image.dimensions' => 'The organiser image must have maximum dimensions of 1920px by 744px.',
+                'banner_image.max'=> 'The banner image must be less than 5MB.',
+                'banner_image.dimensions' => 'The banner image must have maximum dimensions of 1920px by 744px.',
+                'registered_pancard.max' =>  'The registered pancard  must be less than 5MB.',
+                'registered_pancard.dimensions' => 'The registered pancard must have maximum dimensions of 1920px by 744px.',
+                'registered_gst_certificate.max' => 'The registered gst certificate  must be less than 5MB.',
+                'registered_gst_certificate.dimensions' => 'The registered gst certificate must have maximum dimensions of 1920px by 744px.',
             ];
            
             $request->validate($rules,$customMessages);

@@ -121,7 +121,7 @@
                                                 <input type="file" id="testimonial_image" class="form-control"
                                                     name="testimonial_image"
                                                     accept="image/jpeg, image/png" 
-                                                    autocomplete="off" onchange="previewImage(this); validateSize(this);" />
+                                                    autocomplete="off" onchange="previewImage(this); " />
                                                 <span class="error" id="testimonial_image_err" style="color:red;"></span>
                                                 @error('testimonial_image')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
@@ -211,27 +211,5 @@
             reader.readAsDataURL(file);
         }
     } 
-    function validateSize(input) {
-        var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var testimonial_img = $('#testimonial_image').val().trim();
-      if(fileSize > 2) {
-        //  alert('File size exceeds 2 MB');
-         if (testimonial_img !== "") {
-            // alert("here");
-            $('#testimonial_image').parent().addClass('has-error');
-            $('#testimonial_image_err').html('The image must be 2MB or below.');
-            $('#testimonial_image').focus();
-            $('#testimonial_image').keyup(function() {
-                $('#testimonial_image').parent().removeClass('has-error');
-                $('#testimonial_image_err').html('');
-            });
-            isValid = false;
-        }
 
-        return isValid;
-      }else{
-        
-      }
-   }
 </script>

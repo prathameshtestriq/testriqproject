@@ -1232,26 +1232,41 @@ class EventDashboardController extends Controller
 
                     //----------- Final total amount
                     if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway)){
-                        $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) ? (($card_details_array[0]->BuyerPayment * $ticket_count) + $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) + ($card_details_array[0]->Extra_Amount_Payment_Gateway)  : '0.00';
+                     
+                        // dd($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst,$card_details_array[0]->Extra_Amount_Payment_Gateway_Gst,$card_details_array[0]->Extra_Amount_Payment_Gateway);
+
+                        $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) ? (($card_details_array[0]->BuyerPayment * $ticket_count) + $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) + ($card_details_array[0]->Extra_Amount_Payment_Gateway) + floatval($card_details_array[0]->Extra_Amount) : '0.00';
                     }else{
-                        $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) ? ($card_details_array[0]->BuyerPayment * $ticket_count)  : '0.00';
+
+                        $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) ? ($card_details_array[0]->BuyerPayment + floatval($card_details_array[0]->Extra_Amount) * $ticket_count)  : '0.00';
                     }   
 
                     // Extra Amount
                     
-                    $aTemp->Extra_amount = isset($card_details_array[0]->Extra_Amount) && !empty($card_details_array[0]->Extra_Amount) ? ($card_details_array[0]->Extra_Amount)  : '0.00'; 
+                    $aTemp->Extra_amount = isset($card_details_array[0]->Extra_Amount) && !empty($card_details_array[0]->Extra_Amount) ? ($card_details_array[0]->Extra_Amount)  : 0; 
 
-                    $aTemp->Extra_amount_pg_charges = isset($card_details_array[0]->Extra_Amount_Payment_Gateway) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway * $ticket_count)  : '0.00';  
-                   
-                    $aTemp->Extra_amount_pg_GST = isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : '0.00';  
+                    if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway) && isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst > 0 && $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst > 0){
 
+                        $aTemp->Extra_amount_pg_charges = !empty($card_details_array[0]->Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway * $ticket_count)  : '0.00';  
+                        $aTemp->Extra_amount_pg_GST = !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : '0.00'; 
+                    }else if(isset($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) && isset($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst)){
+                        $aTemp->Extra_amount_pg_charges = !empty($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway * $ticket_count)  : '0.00';  
+                        $aTemp->Extra_amount_pg_GST = !empty($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : '0.00'; 
+                    }
+                    
                     // Applied Coupon Amount
                     $aTemp->Applied_Coupon_Amount = isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount) ? ($card_details_array[0]->appliedCouponAmount * $ticket_count)  : '0.00';  
+              
+                    $to_organiser_amt = isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? ($card_details_array[0]->to_organiser + $aTemp->Extra_amount) : 0;
                     
-                    if(isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount)){
-                        $aTemp->Organiser_amount = isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? ($card_details_array[0]->to_organiser - $card_details_array[0]->appliedCouponAmount) : 0;
-                    }else{
-                        $aTemp->Organiser_amount = isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? $card_details_array[0]->to_organiser : 0;
+                    if(isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount) && $card_details_array[0]->appliedCouponAmount > 0){
+                        $aTemp->Organiser_amount = $to_organiser_amt ?  ($to_organiser_amt - $card_details_array[0]->appliedCouponAmount) : 0;
+                    }else if(isset($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) && isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst)){
+
+                        $aTemp->Organiser_amount = isset($to_organiser_amt) && !empty($to_organiser_amt) ? ($to_organiser_amt - $card_details_array[0]->Excel_Extra_Amount_Payment_Gateway - $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) : 0;
+                    }
+                    else{
+                        $aTemp->Organiser_amount = isset($to_organiser_amt) && !empty($to_organiser_amt) ? $to_organiser_amt : 0;
                     }
                 }
                

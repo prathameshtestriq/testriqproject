@@ -256,9 +256,10 @@
                                         <th>State</th>
                                         <th>City</th>
                                         <th>Event Image</th>
-                                        <th style="text-align: center;">View</th>
+                                        <th>Event Status</th>
                                         <th style="text-align: center;">Status</th>
-                                        <th style="text-align: center;">Action</th>
+                                        <th style="text-align: center; width: 150px">View</th>
+                                        <th style="text-align: center;width: 150px" >Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -289,16 +290,17 @@
                                                     <?php   echo '-'; ?>
                                                     @endif
                                                 </td>
-                                                <td style="text-align: center;">
-                                                    <a href={{ url('participants_event', $event->id) }}> 
-                                                        <i class="fa fa-users btn btn-success btn-sm "  title="Participants event"></i>
-                                                    </a>
-                                                    <a href={{ url('/registration_successful', $event->id) }}> 
-                                                        <i class="fa fa fa-user btn btn-success btn-sm "  title="Registration successful"></i>
-                                                    </a>
+                                                <td style="text-align:center;">
+                                                    <?php  
+                                                        if($event->event_info_status == 1) {
+                                                            echo '<span style="display: inline-block; padding: 5px 10px; border-radius: 15px; background-color: #b8ffc6; color: #07AE28;font-weight: 500;width: 100%;">Public</span>';
+                                                        } else if($event->event_info_status == 2) {
+                                                            echo '<span style="display: inline-block; padding: 5px 10px; border-radius: 15px; background-color: #c2e4ff; color: #1B6FB6;font-weight: 500;width: 100%;">Private</span>';
+                                                        } else if($event->event_info_status == 3) {
+                                                            echo '<span style="display: inline-block; padding: 5px 10px; border-radius: 15px; background-color: #ffe6bf; color: #E28A00;font-weight: 500;width: 100%;">Draft</span>';
+                                                        }
+                                                    ?>
                                                 </td>
-                                                <!-- <td>{{ ucfirst($event->state) }}</td>
-                                                <td style="text-align: center;">{{ strtoupper($event->country) }}</td> -->
                                                 <td class="text-center">
 
                                                     <div class="custom-control custom-switch custom-switch-success">
@@ -315,6 +317,17 @@
                                                         </label>
                                                     </div>
                                                 </td>
+                                                <td style="text-align: center;">
+                                                    <a href={{ url('participants_event', $event->id) }}> 
+                                                        <i class="fa fa-users btn btn-success btn-sm "  title="Participants event"></i>
+                                                    </a>
+                                                    <a href={{ url('/registration_successful', $event->id) }}> 
+                                                        <i class="fa fa fa-user btn btn-success btn-sm "  title="Registration successful"></i>
+                                                    </a>
+                                                </td>
+                                                <!-- <td>{{ ucfirst($event->state) }}</td>
+                                                <td style="text-align: center;">{{ strtoupper($event->country) }}</td> -->
+                                                
 
 
                                                 <!-- <td style="text-align: center;">

@@ -139,45 +139,47 @@ if (!empty($edit_data)) {
                                             </div>
                                         </div>
 
-                                        <div class="col-md-4 col-12">
-                                            <div class="form-group">
-                                                <label for="banner_image">Banner Image <span style="color:red;">*</span>
-                                                    <span style="color: #949090">(Allowed file formats: JPEG, JPG, or PNG. Maximum file size: 1400 x 360. )</span>  
-                                                </label>
-                                                <input type="file" id="banner_image" class="form-control"
-                                                    placeholder="Enter Banner Url" name="banner_image"
-                                                    value="{{ old('banner_image', $banner_image) }}"
-                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this);previewcropImage(this); validateSize(this);"  />
-                                                   
-                                                    <span class="error" id="banner_image_err" style="color:red;"></span>
-                                                    @error('banner_image')
-                                                        <span class="error" style="color:red;">{{ $message }}</span>
-                                                    @enderror 
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2 col-12">
-                                            <div class="form-group d-flex flex-column">
-                                               <label><span style="visibility: hidden;">*</span></label>
-                                               <!-- Image preview section -->
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div class="form-group mb-0">
-                                                        <button type="button" onclick="cropImage()" class="btn btn-warning mr-1">Crop</button>
+                                        <div class="col-md-6 col-12">
+                                            <label for="banner_image">Banner Image <span style="color:red;">* <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 10 MB 
+                                                Preferred Resolution: 1400 x 360. )</span>    
+                                            </label>
+                                            <div class="row w-100">
+                                                <div class="col-md-8 col-12">
+                                                    <div class="form-group ">
+                                                        <input type="file" id="banner_image_add" class="form-control"
+                                                            placeholder="Enter Banner Url" name="banner_image"
+                                                            value="{{ old('banner_image', $banner_image) }}"
+                                                            autocomplete="off" accept="image/jpeg, image/png, image/jpg, image/gif" onchange="previewImage(this);previewcropImage(this); "  />
+                                                        
+                                                            <span class="error" id="event_banner_image_err" style="color:red;"></span>
+                                                            @error('banner_image')
+                                                                <span class="error" style="color:red;">{{ $message }}</span>
+                                                            @enderror 
                                                     </div>
+                                                </div>
+                                                <div class="col-md-4 col-12">
+                                                    <div class="form-group d-flex flex-column">
+                                                    <!-- Image preview section -->
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div class="form-group ">
+                                                                <button type="button" onclick="cropImage()" class="btn btn-warning mr-1">Crop</button>
+                                                            </div>
 
-                                                    <div id="imagePreview">
-                                                        <?php if(!empty($banner_image)){ ?>
-                                                            <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
-                                                                <img id="preview" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;" >
-                                                            </a>
-                                                            <input type="hidden" name="hidden_banner_image" value="{{ old('banner_image', $banner_image) }}">
-                                                        <?php } else { ?>
-                                                            <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
-                                                        <?php } ?>
+                                                            <div id="imagePreview_banner">
+                                                                <?php if(!empty($banner_image)){ ?>
+                                                                    <a href="{{ asset('uploads/banner_image/' . $banner_image) }}" target="_blank">
+                                                                        <img id="preview_banner" src="{{ asset('uploads/banner_image/' . $banner_image) }}" alt="Current Image" style="width: 50px;" >
+                                                                    </a>
+                                                                    <input type="hidden" name="hidden_banner_image" value="{{ old('banner_image', $banner_image) }}">
+                                                                <?php } else { ?>
+                                                                    <img id="preview_banner" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
+                                                                <?php } ?>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
 
                                         <div class="col-md-6 col-12"> 
                                             <div class="form-group">
@@ -193,7 +195,7 @@ if (!empty($edit_data)) {
                                             </div>
                                         </div>
 
-                                        <div class="col-md-12 col-12">
+                                        <div class="col-md-12 col-12" id="crop_image_hide">
                                             <div class="py-2">
                                                 <input type="hidden" name="cropped_image_data" id="croppedImageInput">
                                                 <img id="imagePreview_crop" style="display:none; max-width:100%;" />
@@ -285,7 +287,7 @@ if (!empty($edit_data)) {
         if (file) {
             var reader = new FileReader();
             reader.onload = function(e) {
-                var preview = document.getElementById('preview');
+                var preview = document.getElementById('preview_banner');
                 preview.src = e.target.result;
                 preview.style.display = 'block';
             }
@@ -358,67 +360,13 @@ if (!empty($edit_data)) {
         const croppedImageDataUrl = canvas.toDataURL('image/jpeg');
 
         // Display the cropped image result in preview
-        document.getElementById('preview').src = croppedImageDataUrl;
+        document.getElementById('preview_banner').src = croppedImageDataUrl;
         document.getElementById('imagePreview_crop').src = croppedImageDataUrl;
 
         // Set the cropped image data to a hidden input field to send with form submission
         document.getElementById('croppedImageInput').value = croppedImageDataUrl;
     }
 
-
-
-
-    function validateSize(input) {
-        var isValid = true;
-        const fileSize = input.files[0].size / 1024 / 1024; // Convert size to MB
-
-        if (fileSize > 2) {
-            // Show error message
-            $('#banner_image').parent().addClass('has-error');
-            $('#banner_image').val("");
-            $('#banner_image_err').html('');
-
-            // Hide error message after 3 seconds
-            setTimeout(function() {
-                $('#banner_image_err').html('');
-                $('#banner_image').parent().removeClass('has-error');
-            }, 30000);
-
-            // Hide the image preview
-            $('#preview').attr('src', '').hide();
-            setTimeout(function() {
-                $('#preview').hide(); // Hide the image after 2 seconds (2000 milliseconds)
-            }, 500);
-            // Mark as invalid
-            isValid = false;
-        } else {
-            // If valid, show the image preview
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                $('#preview').attr('src', e.target.result).show();
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-
-        return isValid;
-    }
-    
-    function validation() { 
-        var isValid = true; // Default to true
-
-        // Check if the image file is selected and validate its size
-        if ($('#banner_image').val() !== '') {
-            isValid = validateSize(document.getElementById('banner_image'));
-        }
-
-        // If the validation fails, prevent form submission
-        if (!isValid) {
-            return false; // Prevent form submission
-        }
-
-        // If the validation passes, allow the form to submit
-        return true; // Proceed with form submission
-    }
     
 </script>
 

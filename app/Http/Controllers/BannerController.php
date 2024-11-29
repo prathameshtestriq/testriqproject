@@ -79,12 +79,6 @@ class BannerController extends Controller
         $aReturn["banner_array"] = Banner::get_all($Limit, $aReturn);
         //dd( $aReturn["banner_array"]);
 
-        // foreach ($aReturn["banner_array"] as $banner) {
-        //     // Assuming you have a field named 'banner_image' in your database table
-        //     // Construct the image URL
-        //     $banner->banner_image = asset('uploads/banner_image/' . $banner->banner_image);
-        // }
-
         $sSQL = 'SELECT id, name FROM countries WHERE 1=1';
         $aReturn["countries"] = DB::select($sSQL, array());
 
@@ -141,30 +135,30 @@ class BannerController extends Controller
                     'required',
                     'regex:/^(www\.|http:\/\/|https:\/\/).*/i', 
                 ],
-                'banner_image' => empty($edit_array) || $edit_array['banner_image'] === '' ? 'required|mimes:jpeg,jpg,png,gif|Max:2048' : 'mimes:jpeg,jpg,png,gif|Max:2048',
+                'banner_image' => empty($edit_array) || $edit_array['banner_image'] === '' ? 'required|mimes:jpeg,jpg,png,gif|max:10240' : 'mimes:jpeg,jpg,png,gif|max:10240',
                 'start_date' => 'required',
                 'end_date' => 'required',
                 // 'city' => 'required',
                 // 'state' => 'required',
                 // 'country' => 'required'
             ];
- 
+            
             
             $message = [ 
                 'banner_url.required' => 'The banner URL field is required.',
                 'banner_url.regex' => 'The banner URL must start with "www.", "http://", or "https://".',
-                'banner_image.required' => 'The banner image field is required .',
                 'banner_image.mimes' => 'The banner image must be a file of type: jpeg, jpg, png, gif.',
-                'banner_image.Max' => 'The banner image size must not exceed 2MB.', 
+                'banner_image.max' => 'The banner image must be less than 10MB.', 
             ];  
+         
 
             $validator = Validator::make($request->all(), $rules,$message);
-
+            // dd($validator);
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();
             }
 
-            //  dd($image_name);
+            //  dd($request->all());
             if ($iId > 0) {
                 $result = Banner::update_banner($iId, $request);
                 $successMessage = 'Banner updated successfully';

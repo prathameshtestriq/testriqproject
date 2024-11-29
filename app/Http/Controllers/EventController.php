@@ -154,7 +154,7 @@ class EventController extends Controller
         //  WHERE vm.deleted = 0 ' . $FiltersSql . ' 
         //  ORDER BY vm.id DESC';
 
-        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,vm.banner_image,
+        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,vm.banner_image,vm.event_info_status,
                 (SELECT name FROM cities WHERE 
                 Id = vm.city) AS city,(SELECT name FROM states WHERE Id = vm.state) AS state, 
                 (SELECT name FROM countries WHERE Id = vm.country) AS country, 
@@ -253,13 +253,14 @@ class EventController extends Controller
             'event_description' => 'required|string',
             'event_keywords' => 'required|string',
             'time_zone' => 'required|string',
-            'event_banner_image' => empty($id) || $aReturn[ "Banner_image"] === ''  ? 'required|mimes:jpeg,jpg,png' : 'mimes:jpeg,jpg,png',
+            'event_banner_image' => empty($id) || $aReturn[ "Banner_image"] === ''  ? 'required|mimes:jpeg,jpg,png|max:5120' : 'mimes:jpeg,jpg,png||max:5120',
 
         ];
 
         $message = [ 
             'event_url.required' => 'The Event URL field is required.',
             'event_url.regex' => 'The Event URL must start with "www.", "http://", or "https://".',
+            'event_banner_image.max' => 'The event banner image must be less than 5MB.',
         ]; 
 
         // if(!empty($request->event_communication_creatives)){

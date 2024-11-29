@@ -162,7 +162,7 @@ if (!empty($edit_data)) {
                                                 </label>
                                                 <input type="file" id="img" class="form-control"
                                                     placeholder="img" name="img"
-                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this); validateSize(this);" />
+                                                    autocomplete="off" accept="image/jpeg, image/png" onchange="previewImage(this);" />
                                                     
                                                  <span class="error" id="image_err" style="color:red;"></span>
 
@@ -171,7 +171,7 @@ if (!empty($edit_data)) {
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="col-md-2 mt-2">
+                                        <div class="col-md-2 col-12">
                                             <span><br /></span>
                                             <!-- Image preview section -->
                                             <div id="imagePreview">
@@ -249,29 +249,6 @@ if (!empty($edit_data)) {
             reader.readAsDataURL(file);
         }
     }
-    function validateSize(input) {
-        var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var img = $('#img').val().trim();
-      if(fileSize > 2) {
-        //  alert('File size exceeds 2 MB');
-         if (img !== "") {
-            // alert("here");
-            $('#img').parent().addClass('has-error');
-            $('#image_err').html('The image must be 2MB or below.');
-            $('#img').focus();
-            $('#img').keyup(function() {
-                $('#img').parent().removeClass('has-error');
-                $('#image_err').html('');
-            });
-            isValid = false;
-        }
-
-        return isValid;
-      }else{
-        
-      }
-   }
 </script>
 <script>
     function setEndDateMin() {

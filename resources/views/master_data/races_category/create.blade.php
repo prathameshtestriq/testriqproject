@@ -35,12 +35,12 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
                                         <li class="breadcrumb-item">Home</li>
-                                        <li class="breadcrumb-item">Type</li>
+                                        <li class="breadcrumb-item">Races Category </li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($id))
-                                            Edit Type Details
+                                            Edit Races Category Details
                                             @else
-                                            Add Type Details
+                                            Add Races Category Details
                                             @endif
                                         </li>
                                     </ol>
@@ -104,23 +104,23 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-4 col-12" id="races_logo_section" style="display: none;">
-                                            <div class="form-group">
-                                                <label for="races_logo">Races Logo <span style="color:red;">*</span>
-                                                    <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
-                                                </label>
-                                               
-                                                <input type="file" id="races_logo" class="form-control"
-                                                    placeholder="Logo Name" name="races_logo"
-                                                    style="text-transform: capitalize; display: block; width: 100%;"
-                                                    accept="image/jpeg, image/png"
-                                                    autocomplete="off"  onchange="previewImage(this); validateSize(this);" />
-                                                    <span class="error" id="races_logo_err" style="color:red;"></span>
-                                                @error('races_logo')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
+                                            <div class="col-md-4 col-12" id="races_logo_section" style="display: none;">
+                                                <div class="form-group">
+                                                    <label for="races_logo">Races Logo <span style="color:red;">*</span>
+                                                        <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
+                                                    </label>
+                                                
+                                                    <input type="file" id="races_logo" class="form-control"
+                                                        placeholder="Logo Name" name="races_logo"
+                                                        style="text-transform: capitalize; display: block; width: 100%;"
+                                                        accept="image/jpeg, image/png"
+                                                        autocomplete="off"  onchange="previewImage(this); " />
+                                                        <span class="error" id="races_logo_err" style="color:red;"></span>
+                                                    @error('races_logo')
+                                                        <span class="error" style="color:red;">{{ $message }}</span>
+                                                    @enderror
+                                                </div>
                                             </div>
-                                        </div>
 
                                         {{-- <div class="col-md-1">
                                             <span><br/></span>
@@ -134,7 +134,7 @@
                                             @endif
                                         </div> --}}
 
-                                        <div class="col-sm-2 mt-2">
+                                        <div class="col-sm-2 col-12">
                                             <span><br /></span>
                                             <!-- Image preview section -->
                                             <div id="imagePreview">
@@ -224,28 +224,7 @@
             reader.readAsDataURL(file);
         }
     }
-    function validateSize(input) {
-        var isValid = true;
-      const fileSize = input.files[0].size / 1024 / 1024; // in 2 MB
-      var races_logo = $('#races_logo').val().trim();
-      if(fileSize > 2) {
-        //  alert('File size exceeds 2 MB');
-         if (races_logo !== "") {
-            // alert("here");
-            $('#races_logo').parent().addClass('has-error');
-            $('#races_logo_err').html('The image must be 2MB or below.');
-            $('#races_logo').focus();
-            $('#races_logo').keyup(function() {
-                $('#races_logo').parent().removeClass('has-error');
-                $('#races_logo_err').html('');
-            });
-            isValid = false;
-        }
-
-        return isValid;
-      }else{
-        
-      }
-   }
+   
+   
 </script>
 
