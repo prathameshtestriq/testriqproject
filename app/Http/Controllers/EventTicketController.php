@@ -1513,7 +1513,7 @@ class EventTicketController extends Controller
         
         $attendee_id = !empty($tAttendeeResult) ? $tAttendeeResult[0]->id : 0;
         $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
-        // dd($attendee_details);
+        // dd($tAttendeeResult);
 
         $emailPlaceholders_array = $FinalEmailArray = []; 
         $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = $preferred_date = $run_category = ''; 
@@ -1679,7 +1679,7 @@ class EventTicketController extends Controller
 
         // dd($ConfirmationEmail); 
         $Subject = "";
-        //--------------- new added as per client requirement
+        //--------------- new added as per client requirement (pokemon event)
         if($ticket_id == 108 || $ticket_id == 109){
            
             $MessageContent = "<p>Dear {USERNAME},
@@ -2020,7 +2020,7 @@ class EventTicketController extends Controller
                                 
                                 $question_form_option = json_decode($detail->question_form_option, true);
                                 // dd($question_form_option);
-                                if($detail->question_form_type == 'radio' || $detail->question_form_type == 'select'){
+                                if(($detail->question_form_type == 'radio' || $detail->question_form_type == 'select') && !empty($detail->ActualValue)){
                     
                                     $label = '';
                                     foreach ($question_form_option as $option) {
@@ -2029,24 +2029,39 @@ class EventTicketController extends Controller
                                             break;
                                         }
                                     }
+                                   
+                                    $aTemp->id             = $detail->id;
+                                    $aTemp->question_label = $detail->question_label;
+                                    $aTemp->question_form_type = $detail->question_form_type;
                                     $aTemp->ActualValue    = $label;
-                                }else if($detail->question_form_type == 'checkbox'){
+                                    $extra_details[] = $aTemp;
+                                   
+                                }else if($detail->question_form_type == 'checkbox' && !empty($detail->ActualValue)){
                                     foreach ($question_form_option as $option) {
                                         if (in_array($option['id'], explode(',', $detail->ActualValue))) {
                                             $labels[] = $option['label'];
                                         }
                                     }
+                                    $aTemp->id             = $detail->id;
+                                    $aTemp->question_label = $detail->question_label;
+                                    $aTemp->question_form_type = $detail->question_form_type;
                                     $aTemp->ActualValue   = implode(', ', $labels);
+                                    $extra_details[] = $aTemp;
                                 }else{
-                                    $aTemp->ActualValue    = $detail->ActualValue;
+                                   if(!empty($detail->ActualValue)){
+                                        $aTemp->id             = $detail->id;
+                                        $aTemp->question_label = $detail->question_label;
+                                        $aTemp->question_form_type = $detail->question_form_type;
+                                        $aTemp->ActualValue    = $detail->ActualValue;
+                                        $extra_details[] = $aTemp;
+                                   }
                                 }
-                                $aTemp->id             = $detail->id;
-                                $aTemp->question_label = $detail->question_label;
-                                $aTemp->question_form_type = $detail->question_form_type;
-                                $extra_details[] = $aTemp;
+                                 
                             }
+
                         }
                     }
+                     // dd($extra_details);
                 }
             }
         }

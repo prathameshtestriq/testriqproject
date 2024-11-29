@@ -606,10 +606,6 @@ class ParticipantBulkController extends Controller
                             }
                             else{
                                 $label = ''; 
-                                // $question_form_name = str_replace("_/_", "_", strtolower(trim($res->question_form_name)));
-                                // $question_form_name = str_replace("(", "", strtolower(trim($question_form_name)));   
-                                // $question_form_name = str_replace(")", "", strtolower(trim($question_form_name))); 
-
                                 // echo $question_form_name.'----------'.$detail->question_form_name.'<br>';
 
                                 if($res->question_form_type == 'select' &&  !empty($detail->question_form_option) && $detail->question_form_type == 'select' && $detail->ActualValue !== ''){

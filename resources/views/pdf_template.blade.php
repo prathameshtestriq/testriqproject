@@ -272,7 +272,7 @@
                     <tr>
                         <td>Amount</td>
                         <td>
-                            <span style="font-family:dejavusans;">&#8377;</span>
+                            <!-- <span style="font-family:dejavusans;">&#8377;</span> -->
                             {{ isset($ticket_details['ticket_amount']) ? $ticket_details['ticket_amount'] : "" }}
                         </td>
                     </tr>
