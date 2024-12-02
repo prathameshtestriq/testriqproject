@@ -1513,7 +1513,7 @@ class EventTicketController extends Controller
         
         $attendee_id = !empty($tAttendeeResult) ? $tAttendeeResult[0]->id : 0;
         $attendee_details = !empty($tAttendeeResult[0]->attendee_details) ? json_decode(json_decode($tAttendeeResult[0]->attendee_details)) : '';
-        // dd($tAttendeeResult);
+        // dd($attendee_details);
 
         $emailPlaceholders_array = $FinalEmailArray = []; 
         $TeamName = $Participant_2_name = $Participant_3_name = $Participant_4_name = $preferred_date = $run_category = ''; 
@@ -1562,6 +1562,7 @@ class EventTicketController extends Controller
                 }
              
                 $emailPlaceHolderResult = DB::select($sql2, []);
+                // dd($emailPlaceHolderResult);
 
                 if(!empty($emailPlaceHolderResult) && $emailPlaceHolderResult[0]->question_form_type != "file"){
                     $question_form_option = !empty($emailPlaceHolderResult[0]->question_form_option) ? json_decode($emailPlaceHolderResult[0]->question_form_option, true) : [];
@@ -1579,7 +1580,7 @@ class EventTicketController extends Controller
                       
                         if(!empty($res->ActualValue) && !empty($question_form_option)){
                             foreach ($question_form_option as $option) {
-                                if ($option['id'] === (int) $res->ActualValue) {
+                                if ((int)$option['id'] === (int)$res->ActualValue) {
                                     $label = $option['label'];
                                     break;
                                 }
@@ -1677,16 +1678,19 @@ class EventTicketController extends Controller
         if(!empty($FinalEmailArray))
             $ConfirmationEmail = array_merge($ConfirmationEmail,$FinalEmailArray);
 
-        // dd($ConfirmationEmail); 
+        // dd($ticket_id); 
         $Subject = "";
-        //--------------- new added as per client requirement (pokemon event)
-        if($ticket_id == 108 || $ticket_id == 109){
+        //--------------- new added as per client requirement (pokemon event - Family Run then only)
+        if($ticket_id == 108 || $ticket_id == 109){ 
            
             $MessageContent = "<p>Dear {USERNAME},
                 <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2024</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
                 <br><br>Your details are:<br><br>
                 <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
                 <strong>Category : {RACECATEGORY}</strong><br>
+                <strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
+                <strong>Accompanying Sibling 1 Name (if selected) : {SIBLING_NAME_1}</strong><br>
+                <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>
                 <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
                 <strong>Registration ID : {REGISTRATIONID}</strong><br>
                 <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
@@ -1908,6 +1912,9 @@ class EventTicketController extends Controller
                         <br><br>Your details are:<br><br>
                         <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
                         <strong>Category : {RACECATEGORY}</strong><br>
+                        <strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
+                        <strong>Accompanying Sibling 1 Name (if selected) : {SIBLING_NAME_1}</strong><br>
+                        <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>
                         <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
                         <strong>Registration ID : {REGISTRATIONID}</strong><br>
                         <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
@@ -3032,6 +3039,9 @@ class EventTicketController extends Controller
                 <br><br>Your details are:<br><br>
                 <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
                 <strong>Category : {RACECATEGORY}</strong><br>
+                <strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
+                <strong>Accompanying Sibling 1 Name (if selected) : {SIBLING_NAME_1}</strong><br>
+                <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>
                 <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
                 <strong>Registration ID : {REGISTRATIONID}</strong><br>
                 <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
