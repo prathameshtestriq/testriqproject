@@ -1691,7 +1691,7 @@ class EventTicketController extends Controller
                 <strong>Registration ID : {REGISTRATIONID}</strong><br>
                 <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                 <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
-                <strong>Cost : {TICKETAMOUNT}</strong><br><br>
+                <strong>Cost : ₹ {TOTALAMOUNT}</strong><br><br>
                 If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
                 <p>Best regards,<br/>
                 <strong>Team Pokémon Carnival and Run</strong></p>";
@@ -1912,7 +1912,7 @@ class EventTicketController extends Controller
                         <strong>Registration ID : {REGISTRATIONID}</strong><br>
                         <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                         <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
-                        <strong>Cost : {TICKETAMOUNT}</strong><br><br>
+                        <strong>Cost : ₹ {TOTALAMOUNT}</strong><br><br>
                         If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
                         <p>Best regards,<br/>
                         <strong>Team Pokémon Carnival and Run</strong></p>";
@@ -1995,7 +1995,7 @@ class EventTicketController extends Controller
                 // dd($EventId);
                 $amount_details = $extra_details = [];
 
-                $sql1 = "SELECT question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0 AND question_form_name != 'sub_question' ";
+                $sql1 = "SELECT question_label,question_form_type,question_form_name,general_form_id FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0 ";   // AND question_form_name != 'sub_question'
                 $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
                 // dd($QuestionData);
 
@@ -2016,39 +2016,45 @@ class EventTicketController extends Controller
                         foreach ($attendee_details as $detail) {
                             $aTemp = new stdClass;
                             $labels = [];
+                            $question_form_option = json_decode($detail->question_form_option, true);
                             if ($detail->question_form_name == $res->question_form_name) {
                                 
-                                $question_form_option = json_decode($detail->question_form_option, true);
                                 // dd($question_form_option);
-                                if(($detail->question_form_type == 'radio' || $detail->question_form_type == 'select') && !empty($detail->ActualValue)){
-                    
-                                    $label = '';
-                                    foreach ($question_form_option as $option) {
-                                        if ($option['id'] === (int)$detail->ActualValue) {
-                                            $label = $option['label'];
-                                            break;
+                                if(($detail->question_form_type == 'radio' || $detail->question_form_type == 'select') && !empty($detail->ActualValue) && ($res->general_form_id == $res->general_form_id)){
+                                    
+                                    if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                        $label = '';
+                                        foreach ($question_form_option as $option) {
+                                            if ($option['id'] === (int)$detail->ActualValue) {
+                                                $label = $option['label'];
+                                                break;
+                                            }
                                         }
+                                       
+                                        $aTemp->id             = $detail->id;
+                                        $aTemp->question_label = $detail->question_label;
+                                        $aTemp->question_form_type = $detail->question_form_type;
+                                        $aTemp->ActualValue    = $label;
+                                        $extra_details[] = $aTemp;
+                                         break;
                                     }
                                    
-                                    $aTemp->id             = $detail->id;
-                                    $aTemp->question_label = $detail->question_label;
-                                    $aTemp->question_form_type = $detail->question_form_type;
-                                    $aTemp->ActualValue    = $label;
-                                    $extra_details[] = $aTemp;
-                                   
-                                }else if($detail->question_form_type == 'checkbox' && !empty($detail->ActualValue)){
-                                    foreach ($question_form_option as $option) {
-                                        if (in_array($option['id'], explode(',', $detail->ActualValue))) {
-                                            $labels[] = $option['label'];
+                                }else if($detail->question_form_type == 'checkbox' && !empty($detail->ActualValue) && ($res->general_form_id == $res->general_form_id)){
+                                    if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                        foreach ($question_form_option as $option) {
+                                            if (in_array($option['id'], explode(',', $detail->ActualValue))) {
+                                                $labels[] = $option['label'];
+                                            }
                                         }
+                                        $aTemp->id             = $detail->id;
+                                        $aTemp->question_label = $detail->question_label;
+                                        $aTemp->question_form_type = $detail->question_form_type;
+                                        $aTemp->ActualValue   = implode(', ', $labels);
+                                        $extra_details[] = $aTemp;
+                                         break;
                                     }
-                                    $aTemp->id             = $detail->id;
-                                    $aTemp->question_label = $detail->question_label;
-                                    $aTemp->question_form_type = $detail->question_form_type;
-                                    $aTemp->ActualValue   = implode(', ', $labels);
-                                    $extra_details[] = $aTemp;
                                 }else{
-                                   if(!empty($detail->ActualValue)){
+                                   if(!empty($detail->ActualValue) && !array_search($detail->id, array_column($extra_details, 'id'))){
                                         $aTemp->id             = $detail->id;
                                         $aTemp->question_label = $detail->question_label;
                                         $aTemp->question_form_type = $detail->question_form_type;
@@ -2058,6 +2064,7 @@ class EventTicketController extends Controller
                                 }
                                  
                             }
+                          
 
                         }
                     }
@@ -3029,7 +3036,7 @@ class EventTicketController extends Controller
                 <strong>Registration ID : {REGISTRATIONID}</strong><br>
                 <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                 <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
-                <strong>Cost : {TICKETAMOUNT}</strong><br><br>
+                <strong>Cost : ₹ {TOTALAMOUNT}</strong><br><br>
                 If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
                 <p>Best regards,<br/>
                 <strong>Team Pokémon Carnival and Run</strong></p>";
