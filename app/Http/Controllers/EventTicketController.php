@@ -1664,7 +1664,7 @@ class EventTicketController extends Controller
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
             "TOTALAMOUNT" => $TotalPrice,
-            "TICKETAMOUNT" => $TotalPrice,
+            "TICKETAMOUNT" => !empty($single_ticket_price) ? '₹ '.$single_ticket_price : $TotalPrice,
             "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
             "RACECATEGORY" => !empty($ticket_names) ? ucfirst($ticket_names) : ucfirst($loc_ticket_names), // !empty($ticket_names) ? $ticket_names : ''
             "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? ucfirst($TeamName) : '',
@@ -1678,7 +1678,7 @@ class EventTicketController extends Controller
         if(!empty($FinalEmailArray))
             $ConfirmationEmail = array_merge($ConfirmationEmail,$FinalEmailArray);
 
-        // dd($ticket_id); 
+        // dd($ConfirmationEmail); 
         $Subject = "";
         //--------------- new added as per client requirement (pokemon event - Family Run then only)
         if($ticket_id == 108 || $ticket_id == 109){ 
@@ -1695,7 +1695,7 @@ class EventTicketController extends Controller
                 <strong>Registration ID : {REGISTRATIONID}</strong><br>
                 <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                 <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
-                <strong>Cost : ₹ {TOTALAMOUNT}</strong><br><br>
+                <strong>Cost : {TOTALAMOUNT}</strong><br><br>
                 If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
                 <p>Best regards,<br/>
                 <strong>Team Pokémon Carnival and Run</strong></p>";
@@ -1889,7 +1889,7 @@ class EventTicketController extends Controller
                     "COMPANYNAME" => $OrgName,
                     "TOTALTICKETS" => 1,  //$TotalNoOfTickets, (because one attendee purchase on a single ticket)
                     "VENUE" => $Venue,
-                    "TOTALAMOUNT" => '₹ '.$TotalPrice,
+                    "TOTALAMOUNT" => $TotalPrice,
                     "TICKETAMOUNT" => !empty($single_ticket_price) ? '₹ '.$single_ticket_price : '₹ '.$TotalPrice,
                     "REGISTRATIONID" => !empty($res->registration_id) ? $res->registration_id : $registration_id,
                     "RACECATEGORY" => !empty($res->ticket_name) ? ucfirst($res->ticket_name) : ucfirst($ticket_names),
@@ -1919,7 +1919,7 @@ class EventTicketController extends Controller
                         <strong>Registration ID : {REGISTRATIONID}</strong><br>
                         <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                         <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
-                        <strong>Cost : ₹ {TOTALAMOUNT}</strong><br><br>
+                        <strong>Cost : {TOTALAMOUNT}</strong><br><br>
                         If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
                         <p>Best regards,<br/>
                         <strong>Team Pokémon Carnival and Run</strong></p>";
@@ -3046,7 +3046,7 @@ class EventTicketController extends Controller
                 <strong>Registration ID : {REGISTRATIONID}</strong><br>
                 <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                 <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
-                <strong>Cost : ₹ {TOTALAMOUNT}</strong><br><br>
+                <strong>Cost : {TOTALAMOUNT}</strong><br><br>
                 If you have any questions, feel free to reach out to us at support@youtoocanrun.com. We can’t wait to see you at the starting line!</p><br>
                 <p>Best regards,<br/>
                 <strong>Team Pokémon Carnival and Run</strong></p>";
