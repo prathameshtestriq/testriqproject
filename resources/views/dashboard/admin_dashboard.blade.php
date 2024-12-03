@@ -363,11 +363,8 @@
                                         <p class="text-primary canvas1 mt-2"
                                         style="font-weight:500; position: absolute; bottom: -45px;"><a
                                             href="{{ url('/registration_successful/'.$search_event_name.'/1') }}">View Details</a></p>
-                                    <?php }else{ ?>
-                                        <p class="text-primary canvas1 mt-2"
-                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
-                                            href="{{ url('/registration_successful/'.$search_event_name) }}">View Details</a></p>
-                                    <?php } ?>         
+                                    <?php }?>
+                                            
                             </div>
                             <div class="col-sm-6">
                                 <div class="d-flex align-items-center justify-content-center">
@@ -394,12 +391,8 @@
                                         <p class="text-primary canvas1 mt-2"
                                         style="font-weight:500; position: absolute; bottom: -45px;"><a
                                             href="{{ url('/participants_event/'.$search_event_name.'/1') }}">View Details</a></p>
-                                        <?php }else{ ?>
-                                            <p class="text-primary canvas1 mt-2"
-                                        style="font-weight:500; position: absolute; bottom: -45px;"><a
-                                            href="{{ url('/participants_event/'.$search_event_name) }}">View Details</a></p>  
-                                        <?php } ?>     
-
+                                        <?php }?>
+                                        
                                 </div>
                             </div>
                             <div class="col-sm-6">
