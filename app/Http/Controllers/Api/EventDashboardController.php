@@ -933,7 +933,7 @@ class EventDashboardController extends Controller
                                                 if(isset($val->ActualValue) && !empty($val->ActualValue)){
                                                     foreach ($question_form_option as $option) {
                                                         if ($option['id'] === (int) $val->ActualValue) {
-                                                            $label = $option['label'];
+                                                            $label = !empty($option['label']) ? str_replace("&#8377;", "₹", $option['label']) : '';
                                                             break;
                                                         }
                                                     }
@@ -1007,7 +1007,7 @@ class EventDashboardController extends Controller
                                     }
 
                                     if($val->question_label == 'Race Category'){
-                                        $aTemp->answer_value = !empty($res1->TicketName) ? $res1->TicketName : '';
+                                        $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
                                     }
 
                                     if($val->question_label == 'Bulk Upload Group Name'){
@@ -1242,16 +1242,18 @@ class EventDashboardController extends Controller
                     }   
 
                     // Extra Amount
-                    
                     $aTemp->Extra_amount = isset($card_details_array[0]->Extra_Amount) && !empty($card_details_array[0]->Extra_Amount) ? ($card_details_array[0]->Extra_Amount)  : 0; 
 
                     if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway) && isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst > 0 && $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst > 0){
 
-                        $aTemp->Extra_amount_pg_charges = !empty($card_details_array[0]->Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway * $ticket_count)  : '0.00';  
-                        $aTemp->Extra_amount_pg_GST = !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : '0.00'; 
+                        $aTemp->Extra_amount_pg_charges = !empty($card_details_array[0]->Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway * $ticket_count)  : 0;  
+                        $aTemp->Extra_amount_pg_GST = !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : 0; 
                     }else if(isset($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) && isset($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst)){
-                        $aTemp->Extra_amount_pg_charges = !empty($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway * $ticket_count)  : '0.00';  
-                        $aTemp->Extra_amount_pg_GST = !empty($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : '0.00'; 
+                        $aTemp->Extra_amount_pg_charges = !empty($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway * $ticket_count)  : 0;  
+                        $aTemp->Extra_amount_pg_GST = !empty($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : 0; 
+                    }else{
+                       $aTemp->Extra_amount_pg_charges = 0;
+                       $aTemp->Extra_amount_pg_GST = 0;  
                     }
                     
                     // Applied Coupon Amount

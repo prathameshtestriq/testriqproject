@@ -11,6 +11,7 @@ use App\Libraries\Emails;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\Libraries\Numberformate; 
 use \stdClass;
 
 class EventTicketController extends Controller
@@ -1986,7 +1987,7 @@ class EventTicketController extends Controller
 
     public function generateParticipantPDF($EventId,$UserId,$TicketId,$attendeeId,$EventUrl,$TotalPrice)
     {
-        // dd($EventId,$UserId,$TicketId,$attendeeId);
+        // dd($EventId,$UserId,$TicketId,$attendeeId,$TotalPrice);
         $master = new Master();
         $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username,email,mobile FROM users WHERE id=:user_id";
         $User = DB::select($sql1, ['user_id' => $UserId]);
@@ -2733,7 +2734,7 @@ class EventTicketController extends Controller
     }
 
     public function ResendEmailToAttendee(Request $request)
-    {
+    {   
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
@@ -2754,7 +2755,7 @@ class EventTicketController extends Controller
 
                 $SQL = "SELECT id,booking_details_id,email,CONCAT(firstname, ' ', lastname) AS username,firstname,lastname,registration_id,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,bulk_upload_flag,ticket_price,final_ticket_price FROM attendee_booking_details WHERE id =:id";
                 $attendeeResult = DB::select($SQL, array('id' => $attendee_id));
-                // dd($attendeeResult);
+                //dd($attendeeResult);
 
                 $SQL1 = "SELECT (select booking_pay_id from event_booking where id = booking_details.booking_id) as booking_pay_id FROM booking_details WHERE id =:id";
                 $bookingDetResult = DB::select($SQL1, array('id' => $attendeeResult[0]->booking_details_id));
@@ -2779,7 +2780,7 @@ class EventTicketController extends Controller
                 // dd($ticket_paid_amount);
 
                 $attendee_array = array("attendee_id" => $attendee_id, "firstname" => $attendee_firstname, "lastname" => $attendee_lastname, "username" => $attendee_username, "registration_id" => $attendee_registration_id, "ticket_name" => $attendee_ticket_name);
-
+                
                 if (!empty($attendee_email)) {
                     // $this->sendBookingMail($UserId, $attendee_email, $EventId, $EventUrl, 1); 
                     $this->ResendEmailDetails($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, $BookingPayId, $falg = 2, $attendee_array, $EmailType, $ticket_paid_amount, $final_ticket_price);
@@ -2811,8 +2812,9 @@ class EventTicketController extends Controller
 
     function ResendEmailDetails($UserId, $UserEmail, $EventId, $EventUrl, $TotalNoOfTickets, $TotalPrice, $BookingPayId, $flag, $attendee_array, $CommEmailType, $ticket_paid_amount, $final_ticket_price)
     {
-    
-        // dd($attendee_array);
+        
+        $numberFormate = new Numberformate();
+        // dd($attendee_array,$ticket_paid_amount, $final_ticket_price);
         $master = new Master();
         $sql1 = "SELECT * FROM users WHERE id=:user_id";
         $User = DB::select($sql1, ['user_id' => $UserId]);
@@ -2841,11 +2843,12 @@ class EventTicketController extends Controller
         }
 
         //------ ticket registration id and race category
-        $sql2 = "select bd.id,bd.ticket_id,eb.cart_details from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
+        $sql2 = "select bd.id,bd.ticket_id,eb.cart_details,eb.total_amount from event_booking as eb left join booking_details as bd on bd.booking_id = eb.id left join attendee_booking_details as abd on abd.booking_details_id = bd.id WHERE bd.event_id = :event_id AND eb.booking_pay_id =:booking_pay_id order by bd.booking_id asc limit 1"; // GROUP BY bd.booking_id
         $booking_detail_Result = DB::select($sql2, array('event_id' => $EventId, 'booking_pay_id' => $BookingPayId));
         // dd($booking_detail_Result);
         $booking_detail_id = !empty($booking_detail_Result) ? $booking_detail_Result[0]->id : 0;
         $ticket_id         = !empty($booking_detail_Result) ? $booking_detail_Result[0]->ticket_id : 0;
+        $total_ticket_amount  = !empty($booking_detail_Result) ? $booking_detail_Result[0]->total_amount : '0.00';
 
         $cart_details = !empty($booking_detail_Result[0]->cart_details) ? json_decode($booking_detail_Result[0]->cart_details) : [];
 
@@ -3012,8 +3015,8 @@ class EventTicketController extends Controller
             "COMPANYNAME" => $OrgName,
             "TOTALTICKETS" => $TotalNoOfTickets,
             "VENUE" => $Venue,
-            "TOTALAMOUNT" => '₹ '.(string)$ticket_total_amount,
-            "TICKETAMOUNT" => '₹ '.number_format($ticket_paid_amount,2), 
+            "TOTALAMOUNT" => !empty($total_ticket_amount) ? '₹ '.$numberFormate->formatInIndianCurrency($total_ticket_amount) : '0.00',
+            "TICKETAMOUNT" => !empty($ticket_paid_amount) ? '₹ '.$numberFormate->formatInIndianCurrency($ticket_paid_amount) : '0.00', 
             "REGISTRATIONID" => !empty($registration_id) ? $registration_id : $loc_registration_id, //!empty($registration_ids) ? $registration_ids : '', 
             "RACECATEGORY" => !empty($ticket_names) ? ucfirst($ticket_names) : ucfirst($loc_ticket_names), // !empty($ticket_names) ? $ticket_names : ''
             "TEAMNAME"       => isset($TeamName) && !empty($TeamName) ? ucfirst($TeamName) : '',
@@ -3101,6 +3104,7 @@ class EventTicketController extends Controller
             }
         }
        // dd($MessageContent);
+        // echo $MessageContent; die;
         // attach image
         if(!empty($Communications) && !empty($Communications[0]->content_image)){
 
@@ -3112,7 +3116,7 @@ class EventTicketController extends Controller
         // dd($MessageContent);
          //--------------- new added for generate pdf ----------------
         // dd($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,$ticket_paid_amount);
-        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,$ticket_paid_amount);
+        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,'₹ '.$total_ticket_amount);
          // dd($generatePdf);
 
         $Email = new Emails();
