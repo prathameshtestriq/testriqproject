@@ -411,18 +411,45 @@ class DashboardController extends Controller
         $BookingData = DB::select($SQL13, array());
 
         // dd($BookingData);
-        $net_earning_amt = 0;
+        // $net_earning_amt = 0;
         if(!empty($BookingData)) {
             foreach ($BookingData as $key => $value) {
                 $value->TicketCount = (int) $value->TicketCount;
                 $value->TotalTicketPrice = $value->TicketCount * $value->TicketPrice;
                 $value->PendingCount = ((int)$value->total_quantity-(int)$value->TicketCount);
                 $value->SingleTicketPrice = $value->TicketPrice;
-                $net_earning_amt += $value->TotalAmount;
+                // $net_earning_amt += $value->TotalAmount;
             }
         }
         
         $aReturn['BookingData'] = (count($BookingData) > 0) ? $BookingData : [];
+
+        $SQL2 = "SELECT DISTINCT(e.id) AS TotalRegistration ,e.total_amount AS TotalAmount,e.transaction_status FROM booking_details AS b LEFT JOIN event_booking AS e ON b.booking_id = e.id WHERE e.transaction_status IN (1,3)";
+
+         if ($aReturn['search_filter'] !== "") {
+            if (isset($StartDate) && isset($EndDate)) {
+                $SQL2 .= " AND b.booking_date BETWEEN " . $StartDate . " AND " . $EndDate;
+            }
+        }
+        if (!empty($aReturn['search_category'])) {
+            $SQL2 .= ' AND bd.ticket_id =' . $aReturn['search_category'];
+        }
+        if (!empty($aReturn['search_from_date']) && !empty($aReturn['search_to_date'])) {
+            $SQL2 .= ' AND e.booking_date BETWEEN ' . $aReturn['search_from_date'] . ' AND ' . $aReturn['search_to_date'];
+        }
+
+        if (!empty($aReturn['search_event_name'])) {
+            $SQL2 .= ' AND e.event_id =' . $aReturn['search_event_name'];
+        }
+
+        $TotalRegistration = DB::select($SQL2, array());
+        
+        $net_earning_amt = 0;
+        if(!empty($TotalRegistration)){
+            foreach($TotalRegistration as $res){
+                $net_earning_amt += !empty($res->TotalAmount) ? $res->TotalAmount : 0;
+            }
+        }
 
         $aReturn['NetEarningAmt'] = !empty($net_earning_amt) ? $numberFormate->formatInIndianCurrency($net_earning_amt) : 0;
         // dd( $aReturn['BookingData']);

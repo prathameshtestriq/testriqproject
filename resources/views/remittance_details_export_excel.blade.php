@@ -20,7 +20,8 @@
 
             <!-- <th style="text-align: center; font-weight: bold;">Registration Price</th> -->
             <th style="text-align: right; font-weight: bold;">Count</th>
-            <th style="text-align: right; font-weight: bold;">Registration Amount Paid</th>
+            <!-- <th style="text-align: right; font-weight: bold;">Registration Amount Paid</th> -->
+            <th style="text-align: right; font-weight: bold;">Ticket Amount</th>
             <th style="text-align: right; font-weight: bold;">Registration Fee GST</th>
 
             <th style="text-align: right; font-weight: bold;">Applied Coupon Amount</th>

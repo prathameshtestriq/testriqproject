@@ -12,12 +12,14 @@ use App\Exports\RemittanceDetailsDataExport;
 use Excel;
 use App\Models\Master;
 use DateTime;
+use App\Libraries\Numberformate; 
 
 
 class EventDashboardController extends Controller
 {
     function getInsights(Request $request)
     {
+        $numberFormate = new Numberformate();
         $ResponseData = [];
         $response['message'] = "";
         $ResposneCode = 400;
@@ -141,7 +143,7 @@ class EventDashboardController extends Controller
                     }
                 }
                 $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? count($TotalRegistration) : 0;
-                $ResponseData['TotalAmount'] = !empty($total_amount) ? $total_amount : 0;
+                $ResponseData['TotalAmount'] = !empty($total_amount) ? $numberFormate->formatInIndianCurrency($total_amount) : '0.00';
 
                 // -------------------------------------Event Capacity
                 // Total Tickets
@@ -213,7 +215,7 @@ class EventDashboardController extends Controller
                 // New added - Remittance Amount
                 $Sql9 = "SELECT gross_amount FROM remittance_management WHERE event_id = :event_id AND active = 1";
                 $RemittanceData = DB::select($Sql9, array('event_id' => $EventId));
-                $ResponseData['RemittanceAmount'] = !empty($RemittanceData) ? $RemittanceData[0]->gross_amount : 0;
+                $ResponseData['RemittanceAmount'] = !empty($RemittanceData) ? $numberFormate->formatInIndianCurrency($RemittanceData[0]->gross_amount) : '0.00';
                 // dd($ResponseData['RemittanceAmount']);
 
                 //------------
@@ -270,9 +272,9 @@ class EventDashboardController extends Controller
                 $total_convenience_fee = ($Platform_fee + $Platform_Fee_GST + $Convenience_fee + $Convenience_Fee_GST);
 
                 // dd($Organiser_amount);
-                $ResponseData['OrganiserAmount'] = !empty($Organiser_amount) ? number_format($Organiser_amount,2) : 0;
-                $ResponseData['TotalPaymentGateway'] = !empty($total_payment_gateway) ? number_format($total_payment_gateway,2) : 0;
-                $ResponseData['TotalConvenience'] = !empty($total_convenience_fee) ? number_format($total_convenience_fee,2) : 0;
+                $ResponseData['OrganiserAmount'] = !empty($Organiser_amount) ? $numberFormate->formatInIndianCurrency($Organiser_amount) : '0.00';
+                $ResponseData['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $numberFormate->formatInIndianCurrency($total_payment_gateway) : '0.00';
+                $ResponseData['TotalConvenience'] = !empty($total_convenience_fee) ? $numberFormate->formatInIndianCurrency($total_convenience_fee) : '0.00';
                 
 
                 $ResposneCode = 200;
@@ -1123,17 +1125,113 @@ class EventDashboardController extends Controller
                 
                 $cart_details_array = isset($res->cart_detail) && !empty($res->cart_detail) ? json_decode($res->cart_detail) : [];
                 // dd($cart_details_array);
-           
+               
+                $ticket_count = $ExcPriceTaxesStatus = $WhoPayYtcrFee = $WhoPayPaymentGatewayFee = 0;
+                if(!empty($card_details_array)){
+                    foreach($card_details_array as $details){
+
+                        if($res->ticket_id == $details->id){
+
+                            $ExcPriceTaxesStatus = isset($details->ExcPriceTaxesStatus) && !empty($details->ExcPriceTaxesStatus) ? $details->ExcPriceTaxesStatus : 0;
+                            $WhoPayYtcrFee = isset($details->player_of_fee) && !empty($details->player_of_fee) ? $details->player_of_fee : 0;
+                            $WhoPayPaymentGatewayFee = isset($details->player_of_gateway_fee) && !empty($details->player_of_gateway_fee) ? $details->player_of_gateway_fee : 0;
+
+                            //--------------
+                            $ticket_count = $details->count; 
+                            $aTemp->Ticket_count = isset($details->count) && !empty($details->count) ? $details->count : 0;
+
+                            //------------------
+                            $aTemp->Single_ticket_price = isset($details->Main_Price) && !empty($details->Main_Price) ? ($details->Main_Price * $ticket_count) : '0.00';
+                            $aTemp->Ticket_price = isset($details->ticket_price) && !empty($details->ticket_price) ? $details->ticket_price : '0.00';
+                            $aTemp->Convenience_fee = isset($details->Convenience_Fee) && !empty($details->Convenience_Fee) ? ($details->Convenience_Fee * $ticket_count)  : '0.00';
+                            $aTemp->Platform_fee = isset($details->Platform_Fee) && !empty($details->Platform_Fee) ? 
+                            ($details->Platform_Fee * $ticket_count)  : '0.00';
+                            $aTemp->Payment_gateway_charges = isset($details->Payment_Gateway_Charges) && !empty($details->Payment_Gateway_Charges) ? ($details->Payment_Gateway_Charges * $ticket_count)  : '0.00';
+
+                            //----------- total platform fee
+                            if(isset($details->Extra_Amount_Payment_Gateway) && !empty($details->Extra_Amount_Payment_Gateway)){
+                                $aTemp->Total_Platform_Fee = isset($details->Total_Platform_Fee) && !empty($details->Total_Platform_Fee) ? (($details->Total_Platform_Fee * $ticket_count) + $details->Extra_Amount_Payment_Gateway)  : '0.00';
+                            }else{
+                                $aTemp->Total_Platform_Fee = isset($details->Total_Platform_Fee) && !empty($details->Total_Platform_Fee) ? ($details->Total_Platform_Fee * $ticket_count)  : '0.00';
+                            }      
+                          
+                            $aTemp->Registration_Fee_GST = isset($details->Registration_Fee_GST) && !empty($details->Registration_Fee_GST) ? ($details->Registration_Fee_GST * $ticket_count)  : '0.00';
+                            $aTemp->Convenience_Fee_GST = isset($details->Convenience_Fee_GST_18) && !empty($details->Convenience_Fee_GST_18) ? ($details->Convenience_Fee_GST_18 * $ticket_count)  : '0.00';
+                            $aTemp->Platform_Fee_GST = isset($details->Platform_Fee_GST_18) && !empty($details->Platform_Fee_GST_18) ? ($details->Platform_Fee_GST_18 * $ticket_count)  : '0.00';
+                            $aTemp->Payment_Gateway_GST = isset($details->Payment_Gateway_GST_18) && !empty($details->Payment_Gateway_GST_18) ? ($details->Payment_Gateway_GST_18 * $ticket_count)  : '0.00';
+
+                             //----------- total taxes
+                            if(isset($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway_Gst)){
+                                $aTemp->Total_Platform_Fee = isset($details->Total_Taxes) && !empty($details->Total_Taxes) ? (($details->Total_Taxes * $ticket_count) + $details->Extra_Amount_Payment_Gateway_Gst)  : '0.00';
+                            }else{
+                                $aTemp->Total_Platform_Fee = isset($details->Total_Taxes) && !empty($details->Total_Taxes) ? ($details->Total_Taxes * $ticket_count)  : '0.00';
+                            }   
+
+                            //----------- Final total amount
+                            if(isset($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway) && !empty($details->Extra_Amount)){
+                                $aTemp->Final_total_amount = isset($details->BuyerPayment) && !empty($details->BuyerPayment) ? (($details->BuyerPayment * $ticket_count) + $details->Extra_Amount_Payment_Gateway_Gst) + ($details->Extra_Amount_Payment_Gateway) + floatval($details->Extra_Amount) : '0.00';
+                            }else{
+                                $aTemp->Final_total_amount = isset($details->BuyerPayment) && !empty($details->BuyerPayment) && !empty($details->Extra_Amount) ? ($details->BuyerPayment + floatval($details->Extra_Amount) * $ticket_count)  : '0.00';
+                            }   
+
+                            //---------- Extra Amount
+                            $aTemp->Extra_amount = isset($details->Extra_Amount) && !empty($details->Extra_Amount) ? ($details->Extra_Amount)  : 0; 
+                            if(isset($details->Extra_Amount_Payment_Gateway) && isset($details->Extra_Amount_Payment_Gateway_Gst) && $details->Extra_Amount_Payment_Gateway_Gst > 0 && $details->Extra_Amount_Payment_Gateway_Gst > 0){
+
+                                $aTemp->Extra_amount_pg_charges = !empty($details->Extra_Amount_Payment_Gateway) ? ($details->Extra_Amount_Payment_Gateway * $ticket_count)  : 0;  
+                                $aTemp->Extra_amount_pg_GST = !empty($details->Extra_Amount_Payment_Gateway_Gst) ? ($details->Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : 0; 
+                            }else if(isset($details->Excel_Extra_Amount_Payment_Gateway) && isset($details->Excel_Extra_Amount_Payment_Gateway_Gst)){
+                                $aTemp->Extra_amount_pg_charges = !empty($details->Excel_Extra_Amount_Payment_Gateway) ? ($details->Excel_Extra_Amount_Payment_Gateway * $ticket_count)  : 0;  
+                                $aTemp->Extra_amount_pg_GST = !empty($details->Excel_Extra_Amount_Payment_Gateway_Gst) ? ($details->Excel_Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : 0; 
+                            }else{
+                               $aTemp->Extra_amount_pg_charges = 0;
+                               $aTemp->Extra_amount_pg_GST = 0;  
+                            }
+                            
+                            // Applied Coupon Amount
+                            $aTemp->Applied_Coupon_Amount = isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount) ? ($details->appliedCouponAmount * $ticket_count)  : '0.00';  
+                            $to_organiser_amt = isset($details->to_organiser) && !empty($details->to_organiser) ? ($details->to_organiser + $aTemp->Extra_amount) : 0;
+                            
+                            if(isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount) && $details->appliedCouponAmount > 0){
+                                $aTemp->Organiser_amount = $to_organiser_amt ?  ($to_organiser_amt - $details->appliedCouponAmount) : 0;
+                            }else if(isset($details->Excel_Extra_Amount_Payment_Gateway) && isset($details->Extra_Amount_Payment_Gateway_Gst)){
+                                $aTemp->Organiser_amount = isset($to_organiser_amt) && !empty($to_organiser_amt) ? ($to_organiser_amt - $details->Excel_Extra_Amount_Payment_Gateway - $details->Extra_Amount_Payment_Gateway_Gst) : 0;
+                            }
+                            else{
+                                $aTemp->Organiser_amount = isset($to_organiser_amt) && !empty($to_organiser_amt) ? $to_organiser_amt : 0;
+                            }
+                        }
+
+
+                    }
+
+                }
+
                 if($res->bulk_upload_flag == 1){
                     $ExcPriceTaxesStatus = isset($cart_details_array->ExcPriceTaxesStatus) ? $cart_details_array->ExcPriceTaxesStatus : 0 ;
                     $WhoPayYtcrFee = isset($cart_details_array->Pass_Bare) ? $cart_details_array->Pass_Bare : 0 ;
                     $WhoPayPaymentGatewayFee = isset($cart_details_array->Pg_Bare) ? $cart_details_array->Pg_Bare : 0 ;
-                }else{
-                    $ExcPriceTaxesStatus = isset($card_details_array[0]->ExcPriceTaxesStatus) && !empty($card_details_array[0]->ExcPriceTaxesStatus) ? $card_details_array[0]->ExcPriceTaxesStatus : 0;
-                    $WhoPayYtcrFee = isset($card_details_array[0]->player_of_fee) && !empty($card_details_array[0]->player_of_fee) ? $card_details_array[0]->player_of_fee : 0;
-                    $WhoPayPaymentGatewayFee = isset($card_details_array[0]->player_of_gateway_fee) && !empty($card_details_array[0]->player_of_gateway_fee) ? $card_details_array[0]->player_of_gateway_fee : 0;
+
+                    $ticket_count = 1;
+                    $aTemp->Ticket_count = 1;
+
+                    $aTemp->Single_ticket_price = isset($cart_details_array->Ticket_price) ? floatval($cart_details_array->Ticket_price)  : 0;
+                    $aTemp->Ticket_price        = isset($cart_details_array->Ticket_price) ? floatval($cart_details_array->Ticket_price) : 0;
+                    $aTemp->Convenience_fee     = isset($cart_details_array->Convenience_fee) ? floatval($cart_details_array->Convenience_fee) : 0;
+                    $aTemp->Platform_fee        = isset($cart_details_array->Platform_fee) ? floatval($cart_details_array->Platform_fee) : 0;
+                    $aTemp->Payment_gateway_charges = isset($cart_details_array->Payment_gateway_charges) ? floatval($cart_details_array->Payment_gateway_charges) : 0;
+                    $aTemp->Registration_Fee_GST = isset($cart_details_array->Registration_Fee_GST) ? floatval($cart_details_array->Registration_Fee_GST) : 0;
+                    $aTemp->Convenience_Fee_GST = isset($cart_details_array->Convenience_Fee_GST) ? floatval($cart_details_array->Convenience_Fee_GST) : 0;
+                    $aTemp->Platform_Fee_GST = isset($cart_details_array->Platform_Fee_GST) ? floatval($cart_details_array->Platform_Fee_GST) : 0;
+                    $aTemp->Payment_Gateway_GST = isset($cart_details_array->Payment_Gateway_GST) ? floatval($cart_details_array->Payment_Gateway_GST) : 0;
+                    $aTemp->Final_total_amount = isset($cart_details_array->Final_total_amount) ? floatval($cart_details_array->Final_total_amount) : 0;
+                    $aTemp->Extra_amount = isset($cart_details_array->Extra_amount) ? floatval($cart_details_array->Extra_amount) : 0;
+                    $aTemp->Extra_amount_pg_charges = isset($cart_details_array->Extra_amount_pg_charges) ? floatval($cart_details_array->Extra_amount_pg_charges) : 0;
+                    $aTemp->Extra_amount_pg_GST = isset($cart_details_array->Extra_amount_pg_GST) ? floatval($cart_details_array->Extra_amount_pg_GST) : 0;
+                    $aTemp->Applied_Coupon_Amount = isset($cart_details_array->Applied_Coupon_Amount) ? floatval($cart_details_array->Applied_Coupon_Amount) : 0;
+                    $aTemp->Organiser_amount = isset($cart_details_array->Organiser_amount) ? floatval($cart_details_array->Organiser_amount) : 0;
                 }
-                
+
                 if($ExcPriceTaxesStatus == 1){
                     $aTemp->taxes_status = 'Inclusive';
                 }else if($ExcPriceTaxesStatus == 2){
@@ -1157,7 +1255,7 @@ class EventDashboardController extends Controller
                 }else{
                    $aTemp->Pg_Bare = ''; 
                 }
-                
+
                 //--------- pending
                 if($res->ticket_status == 1){
                    $aTemp->category_type = 'Paid';
@@ -1166,112 +1264,8 @@ class EventDashboardController extends Controller
                 }else{
                    $aTemp->category_type = '';
                 }
-
-                    if($bulk_upload_flag == 1){
-                        $ticket_count = 1;
-                        $aTemp->Ticket_count = 1;
-                    }else{
-                        $ticket_count = $card_details_array[0]->count; 
-                        $aTemp->Ticket_count = isset($card_details_array[0]->count) && !empty($card_details_array[0]->count) ? $card_details_array[0]->count : 0;
-                    }
-
-                if($res->bulk_upload_flag == 1){
-
-                    $aTemp->Single_ticket_price = isset($cart_details_array->Ticket_price) ? floatval($cart_details_array->Ticket_price)  : 0;
-                    $aTemp->Ticket_price        = isset($cart_details_array->Ticket_price) ? floatval($cart_details_array->Ticket_price) : 0;
-                    $aTemp->Convenience_fee     = isset($cart_details_array->Convenience_fee) ? floatval($cart_details_array->Convenience_fee) : 0;
-                    $aTemp->Platform_fee        = isset($cart_details_array->Platform_fee) ? floatval($cart_details_array->Platform_fee) : 0;
-                    $aTemp->Payment_gateway_charges = isset($cart_details_array->Payment_gateway_charges) ? floatval($cart_details_array->Payment_gateway_charges) : 0;
-                    $aTemp->Registration_Fee_GST = isset($cart_details_array->Registration_Fee_GST) ? floatval($cart_details_array->Registration_Fee_GST) : 0;
-                    $aTemp->Convenience_Fee_GST = isset($cart_details_array->Convenience_Fee_GST) ? floatval($cart_details_array->Convenience_Fee_GST) : 0;
-                    $aTemp->Platform_Fee_GST = isset($cart_details_array->Platform_Fee_GST) ? floatval($cart_details_array->Platform_Fee_GST) : 0;
-                    $aTemp->Payment_Gateway_GST = isset($cart_details_array->Payment_Gateway_GST) ? floatval($cart_details_array->Payment_Gateway_GST) : 0;
-                    $aTemp->Final_total_amount = isset($cart_details_array->Final_total_amount) ? floatval($cart_details_array->Final_total_amount) : 0;
-                    $aTemp->Extra_amount = isset($cart_details_array->Extra_amount) ? floatval($cart_details_array->Extra_amount) : 0;
-                    $aTemp->Extra_amount_pg_charges = isset($cart_details_array->Extra_amount_pg_charges) ? floatval($cart_details_array->Extra_amount_pg_charges) : 0;
-                    $aTemp->Extra_amount_pg_GST = isset($cart_details_array->Extra_amount_pg_GST) ? floatval($cart_details_array->Extra_amount_pg_GST) : 0;
-                    $aTemp->Applied_Coupon_Amount = isset($cart_details_array->Applied_Coupon_Amount) ? floatval($cart_details_array->Applied_Coupon_Amount) : 0;
-                    $aTemp->Organiser_amount = isset($cart_details_array->Organiser_amount) ? floatval($cart_details_array->Organiser_amount) : 0;
-
-                }else{
-
-                    $aTemp->Single_ticket_price = isset($card_details_array[0]->Main_Price) && !empty($card_details_array[0]->Main_Price) ? 
-                    ($card_details_array[0]->Main_Price * $ticket_count) : '0.00';
-                    
-                    $aTemp->Ticket_price = isset($card_details_array[0]->ticket_price) && !empty($card_details_array[0]->ticket_price) ? $card_details_array[0]->ticket_price : '0.00';
-                    // $aTemp->Ticket_price = isset($res->ticket_price) && !empty($res->ticket_price) ? $res->ticket_price : '0.00'; 
-                   
-                    $aTemp->Convenience_fee = isset($card_details_array[0]->Convenience_Fee) && !empty($card_details_array[0]->Convenience_Fee) ? 
-                    ($card_details_array[0]->Convenience_Fee * $ticket_count)  : '0.00';
-
-                    $aTemp->Platform_fee = isset($card_details_array[0]->Platform_Fee) && !empty($card_details_array[0]->Platform_Fee) ? 
-                    ($card_details_array[0]->Platform_Fee * $ticket_count)  : '0.00';
-
-                    $aTemp->Payment_gateway_charges = isset($card_details_array[0]->Payment_Gateway_Charges) && !empty($card_details_array[0]->Payment_Gateway_Charges) ? ($card_details_array[0]->Payment_Gateway_Charges * $ticket_count)  : '0.00';
-                    
-                    //----------- total platform fee
-                    if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway)){
-                        $aTemp->Total_Platform_Fee = isset($card_details_array[0]->Total_Platform_Fee) && !empty($card_details_array[0]->Total_Platform_Fee) ? (($card_details_array[0]->Total_Platform_Fee * $ticket_count) + $card_details_array[0]->Extra_Amount_Payment_Gateway)  : '0.00';
-                    }else{
-                        $aTemp->Total_Platform_Fee = isset($card_details_array[0]->Total_Platform_Fee) && !empty($card_details_array[0]->Total_Platform_Fee) ? ($card_details_array[0]->Total_Platform_Fee * $ticket_count)  : '0.00';
-                    }      
-                  
-                    $aTemp->Registration_Fee_GST = isset($card_details_array[0]->Registration_Fee_GST) && !empty($card_details_array[0]->Registration_Fee_GST) ? ($card_details_array[0]->Registration_Fee_GST * $ticket_count)  : '0.00';
-                   
-                    $aTemp->Convenience_Fee_GST = isset($card_details_array[0]->Convenience_Fee_GST_18) && !empty($card_details_array[0]->Convenience_Fee_GST_18) ? ($card_details_array[0]->Convenience_Fee_GST_18 * $ticket_count)  : '0.00';
-                 
-                    $aTemp->Platform_Fee_GST = isset($card_details_array[0]->Platform_Fee_GST_18) && !empty($card_details_array[0]->Platform_Fee_GST_18) ? ($card_details_array[0]->Platform_Fee_GST_18 * $ticket_count)  : '0.00';
-                   
-                    $aTemp->Payment_Gateway_GST = isset($card_details_array[0]->Payment_Gateway_GST_18) && !empty($card_details_array[0]->Payment_Gateway_GST_18) ? ($card_details_array[0]->Payment_Gateway_GST_18 * $ticket_count)  : '0.00';
-                    
-                    //----------- total taxes
-                    if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst)){
-                        $aTemp->Total_Platform_Fee = isset($card_details_array[0]->Total_Taxes) && !empty($card_details_array[0]->Total_Taxes) ? (($card_details_array[0]->Total_Taxes * $ticket_count) + $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst)  : '0.00';
-                    }else{
-                        $aTemp->Total_Platform_Fee = isset($card_details_array[0]->Total_Taxes) && !empty($card_details_array[0]->Total_Taxes) ? ($card_details_array[0]->Total_Taxes * $ticket_count)  : '0.00';
-                    }    
-
-                    //----------- Final total amount
-                    if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway) && !empty($card_details_array[0]->Extra_Amount)){
-                     
-                        // dd($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst,$card_details_array[0]->Extra_Amount_Payment_Gateway_Gst,$card_details_array[0]->Extra_Amount_Payment_Gateway);
-
-                        $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) ? (($card_details_array[0]->BuyerPayment * $ticket_count) + $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) + ($card_details_array[0]->Extra_Amount_Payment_Gateway) + floatval($card_details_array[0]->Extra_Amount) : '0.00';
-                    }else{
-
-                        $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->Extra_Amount) ? ($card_details_array[0]->BuyerPayment + floatval($card_details_array[0]->Extra_Amount) * $ticket_count)  : '0.00';
-                    }   
-
-                    // Extra Amount
-                    $aTemp->Extra_amount = isset($card_details_array[0]->Extra_Amount) && !empty($card_details_array[0]->Extra_Amount) ? ($card_details_array[0]->Extra_Amount)  : 0; 
-
-                    if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway) && isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst > 0 && $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst > 0){
-
-                        $aTemp->Extra_amount_pg_charges = !empty($card_details_array[0]->Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway * $ticket_count)  : 0;  
-                        $aTemp->Extra_amount_pg_GST = !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : 0; 
-                    }else if(isset($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) && isset($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst)){
-                        $aTemp->Extra_amount_pg_charges = !empty($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) ? ($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway * $ticket_count)  : 0;  
-                        $aTemp->Extra_amount_pg_GST = !empty($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst) ? ($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway_Gst * $ticket_count)  : 0; 
-                    }else{
-                       $aTemp->Extra_amount_pg_charges = 0;
-                       $aTemp->Extra_amount_pg_GST = 0;  
-                    }
-                    
-                    // Applied Coupon Amount
-                    $aTemp->Applied_Coupon_Amount = isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount) ? ($card_details_array[0]->appliedCouponAmount * $ticket_count)  : '0.00';  
-              
-                    $to_organiser_amt = isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? ($card_details_array[0]->to_organiser + $aTemp->Extra_amount) : 0;
-                    
-                    if(isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount) && $card_details_array[0]->appliedCouponAmount > 0){
-                        $aTemp->Organiser_amount = $to_organiser_amt ?  ($to_organiser_amt - $card_details_array[0]->appliedCouponAmount) : 0;
-                    }else if(isset($card_details_array[0]->Excel_Extra_Amount_Payment_Gateway) && isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst)){
-
-                        $aTemp->Organiser_amount = isset($to_organiser_amt) && !empty($to_organiser_amt) ? ($to_organiser_amt - $card_details_array[0]->Excel_Extra_Amount_Payment_Gateway - $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) : 0;
-                    }
-                    else{
-                        $aTemp->Organiser_amount = isset($to_organiser_amt) && !empty($to_organiser_amt) ? $to_organiser_amt : 0;
-                    }
-                }
+                
+                //-----------------------------------------------------
                
                 // free ticket
                 if(empty($res->total_amount)){

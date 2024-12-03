@@ -2398,16 +2398,31 @@ class EventTicketController extends Controller
                 $EventId = isset($TicketArr["event_id"]) ? $TicketArr["event_id"] : 0;
                 $TicketId = isset($TicketArr["ticket_id"]) ? $TicketArr["ticket_id"] : 0;
                 $attendeeId = isset($TicketArr["attendeeId"]) ? $TicketArr["attendeeId"] : 0;
-                // dd($TicketArr);
+                // dd($attendeeId);
                 // attendeeId
                 $AttenddeeName = isset($TicketArr["attendee_name"]) ? $TicketArr["attendee_name"] : "";
                 $BookingDetailId = isset($TicketArr["booking_detail_id"]) ? $TicketArr["booking_detail_id"] : 0;
+                
+                $bookingPayId = isset($TicketArr["booking_pay_id"]) ? $TicketArr["booking_pay_id"] : 0;
+                $sql2 = "SELECT amount FROM booking_payment_details WHERE id =:booking_pay_id";
+                $PaymentDetails = DB::select($sql2, ['booking_pay_id' => $bookingPayId]);
+               
+
                 $EventLink = isset($request->event_link) ? $request->event_link : "";
                 $AttendeeData = $AttenddeeDetails = [];
-                // dd($attendeeId);
+                // dd($final_paid_amount);
                 if (!empty($attendeeId)) {
-                    $sql = "SELECT attendee_details FROM attendee_booking_details WHERE id=:attendee_id";
+                    $sql = "SELECT attendee_details,final_ticket_price FROM attendee_booking_details WHERE id=:attendee_id";
                     $AttendeeData = DB::select($sql, ['attendee_id' => $attendeeId]);
+               
+                    $attendee_ticket_price = !empty($AttendeeData) ? $AttendeeData[0]->final_ticket_price : 0;
+                         // dd($attendee_ticket_price);
+                    if(!empty($attendee_ticket_price)){
+                        $TicketArr["ticket_amount"] = !empty($attendee_ticket_price) ? '₹ '.$attendee_ticket_price : '₹ 0.00';
+                    }else{
+                        $TicketArr["ticket_amount"] = !empty($PaymentDetails) ? '₹ '.$PaymentDetails[0]->amount : '₹ 0.00';
+                    }
+
                     if (count($AttendeeData) > 0) {
                         $AttenddeeDetails = $AttendeeData[0]->attendee_details;
                         $attendee_details = json_decode(json_decode($AttenddeeDetails));
@@ -2418,7 +2433,7 @@ class EventTicketController extends Controller
                         //--------------
                         $sql1 = "SELECT question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0";
                         $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
-                        // dd($QuestionData);
+                        // dd($QuestionData,$attendee_details);
 
                         // Iterate through attendee details to separate the amounts
                         if(!empty($QuestionData)){
@@ -2426,36 +2441,52 @@ class EventTicketController extends Controller
                                 foreach ($attendee_details as $detail) {
                                     $aTemp = new stdClass;
                                     $labels = [];
-                                    if ($detail->question_form_name == $res->question_form_name) {
+                                    if (($detail->question_form_name == $res->question_form_name) && !empty($detail->ActualValue)) {
                                         
                                         $question_form_option = json_decode($detail->question_form_option, true);
                                         if($detail->question_form_type == 'radio' || $detail->question_form_type == 'select'){
-                            
-                                            $label = null;
-                                            foreach ($question_form_option as $option) {
-                                                if ($option['id'] === (int)$detail->ActualValue) {
-                                                    $label = $option['label'];
-                                                    break;
+                                            if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                                $label = '';
+                                                foreach ($question_form_option as $option) {
+                                                    if ($option['id'] === (int)$detail->ActualValue) {
+                                                        $label = $option['label'];
+                                                        break;
+                                                    }
                                                 }
+                                                // dd($label);
+                                                //$detail->ActualValue = $label;
+                                                
+                                                $aTemp->id             = $detail->id;
+                                                $aTemp->question_label = $detail->question_label;
+                                                $aTemp->question_form_type = $detail->question_form_type;
+                                                $aTemp->ActualValue    = $label;
+                                                $extra_details[] = $aTemp;
                                             }
-                                            // dd($label);
-                                            //$detail->ActualValue = $label;
-                                            $aTemp->ActualValue    = $label;
                                         }else if($detail->question_form_type == 'checkbox'){
-                                            foreach ($question_form_option as $option) {
-                                                if (in_array($option['id'], explode(',', $detail->ActualValue))) {
-                                                    $labels[] = $option['label'];
+                                            if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                                foreach ($question_form_option as $option) {
+                                                    if (in_array($option['id'], explode(',', $detail->ActualValue))) {
+                                                        $labels[] = $option['label'];
+                                                    }
                                                 }
+                                                
+                                                $aTemp->id             = $detail->id;
+                                                $aTemp->question_label = $detail->question_label;
+                                                $aTemp->question_form_type = $detail->question_form_type;
+                                                $aTemp->ActualValue   = implode(', ', $labels);
+                                                $extra_details[] = $aTemp;
                                             }
-                                            $aTemp->ActualValue   = implode(', ', $labels);
                                         }else{
-                                            $aTemp->ActualValue    = $detail->ActualValue;
+                                            if(!array_search($detail->id, array_column($extra_details, 'id'))){
+                                                
+                                                $aTemp->id             = $detail->id;
+                                                $aTemp->question_label = $detail->question_label;
+                                                $aTemp->question_form_type = $detail->question_form_type;
+                                                $aTemp->ActualValue    = $detail->ActualValue;
+                                                $extra_details[] = $aTemp;
+                                            }
                                         }
-                                        $aTemp->id             = $detail->id;
-                                        $aTemp->question_label = $detail->question_label;
-                                        $aTemp->question_form_type = $detail->question_form_type;
-
-                                        $extra_details[] = $aTemp;
+                                        
                                     }
                                 }
                             }
@@ -2479,7 +2510,7 @@ class EventTicketController extends Controller
 
                     }
                 }
-             //dd($extra_details);
+             // dd($extra_details);
 
                 $created_by = 0;
                 if (!empty($EventId)) {
@@ -2523,7 +2554,7 @@ class EventTicketController extends Controller
                 // Generate QR code
                 $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($TicketArr['unique_ticket_id']));
                 // $qrCode = "";
-                // dd($TicketArr["booking_start_date"]);
+                // dd($TicketArr);
                 $data = [
                     'ticket_details' => $TicketArr,
                     'event_details' => (sizeof($Event) > 0) ? $Event[0] : [],

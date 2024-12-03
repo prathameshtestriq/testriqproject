@@ -122,21 +122,22 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match (['get'], ' /event/remove_event_image/{event_id}/{id}', [EventController::class, 'delete_event_image'])->name('delete_event_image');
     Route::match(['get', 'post'],'/ckeditor_event_description/upload', [EventController::class, 'upload'])->name('ckeditor_event_description.upload');
   
-    // EVENT Participants 
-    Route::match(['get', 'post'],'/participants_event/{event_id?}', [EventParticipantsController::class, 'index'])->name('participants_event_index');
+
+   //  EVENT Participants 
+    Route::match(['get', 'post'],'/participants_event/{event_id?}/{dashboard_id?}', [EventParticipantsController::class, 'index'])->name('participants_event_index');
     Route::match (['get'],'/participants_event/{event_id}/delete/{id}', [EventParticipantsController::class, 'delete_participants_event'])->name('delete_participants_event');
-    Route::get('/participants_event/{event_id}/clear_search', [EventParticipantsController::class, 'clear_search'])->name('clear_search_participants_event');
+    Route::get('/participants_event/{event_id}/{dashboard_id?}/clear_search', [EventParticipantsController::class, 'clear_search'])->name('clear_search_participants_event');
     Route::match(['get','post'],'participants_event/{event_id}/export_download',[EventParticipantsController::class,'export_event_participants'])->name('export_event_participants');
-    Route::match(['get','post'],'participants_event/{event_id}/export_revenue',[EventParticipantsController::class,'export_participants_revenue'])->name('export_participants_revenue');
+    Route::match(['get','post'],'participants_event/{event_id}/{dashboard_id?}/export_revenue',[EventParticipantsController::class,'export_participants_revenue'])->name('export_participants_revenue');
     Route::match(['get','post'],'participants_event/{event_id}/view/{id}',[EventParticipantsController::class,'view'])->name('question_participants_event');
     Route::match(['get','post'],'participants_event/{event_id}/edit/{id}',[EventParticipantsController::class,'Edit_question'])->name('participants_question_edit');
     Route::match (['get', 'post'], '/get_states/{country_id}', [EventParticipantsController::class, 'get_states'])->name('get_states')->name('get_states');
     Route::match (['get', 'post'], '/get_cities/{state_id}', [EventParticipantsController::class, 'get_cities'])->name('get_cities')->name('get_cities');
-
+ 
     // EVENT Registration
-    Route::match(['get', 'post'], '/registration_successful/{event_id?}', [RegistrationSuccessfulController::class, 'index'])->name('registration_successful_index');
-    Route::get('/registration_successful/{event_id}/clear_search', [RegistrationSuccessfulController::class, 'clear_search'])->name('clear_search_registration_successful');
-    Route::match(['get','post'],'/registration_successful/{event_id}/export_registration',[RegistrationSuccessfulController::class,'export_registration_successful'])->name('export_registration_successful');
+    Route::match(['get', 'post'], '/registration_successful/{event_id?}/{dashboard_id?}', [RegistrationSuccessfulController::class, 'index'])->name('registration_successful_index');
+    Route::get('/registration_successful/{event_id}/{dashboard_id?}/clear_search', [RegistrationSuccessfulController::class, 'clear_search'])->name('clear_search_registration_successful');
+    Route::match(['get','post'],'/registration_successful/{event_id}/{dashboard_id?}/export_registration',[RegistrationSuccessfulController::class,'export_registration_successful'])->name('export_registration_successful');
     
 
     //TESTIMONIAL ROUTE
