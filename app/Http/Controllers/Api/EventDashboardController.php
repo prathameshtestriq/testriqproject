@@ -1008,6 +1008,7 @@ class EventDashboardController extends Controller
 
                                     if($val->question_label == 'Race Category'){
                                         $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
+                                        // dd($aTemp->answer_value);
                                     }
 
                                     if($val->question_label == 'Bulk Upload Group Name'){
@@ -1231,14 +1232,14 @@ class EventDashboardController extends Controller
                     }    
 
                     //----------- Final total amount
-                    if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway)){
+                    if(isset($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) && !empty($card_details_array[0]->Extra_Amount_Payment_Gateway) && !empty($card_details_array[0]->Extra_Amount)){
                      
                         // dd($card_details_array[0]->Extra_Amount_Payment_Gateway_Gst,$card_details_array[0]->Extra_Amount_Payment_Gateway_Gst,$card_details_array[0]->Extra_Amount_Payment_Gateway);
 
                         $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) ? (($card_details_array[0]->BuyerPayment * $ticket_count) + $card_details_array[0]->Extra_Amount_Payment_Gateway_Gst) + ($card_details_array[0]->Extra_Amount_Payment_Gateway) + floatval($card_details_array[0]->Extra_Amount) : '0.00';
                     }else{
 
-                        $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) ? ($card_details_array[0]->BuyerPayment + floatval($card_details_array[0]->Extra_Amount) * $ticket_count)  : '0.00';
+                        $aTemp->Final_total_amount = isset($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->BuyerPayment) && !empty($card_details_array[0]->Extra_Amount) ? ($card_details_array[0]->BuyerPayment + floatval($card_details_array[0]->Extra_Amount) * $ticket_count)  : '0.00';
                     }   
 
                     // Extra Amount
