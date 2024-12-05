@@ -17,7 +17,7 @@ class EventController extends Controller
     //
     public function clear_search()
     {
-        session()->forget('name');
+        session()->forget('events_name');
         session()->forget('event_city');
         session()->forget('event_state');
         session()->forget('event_country');
@@ -49,7 +49,7 @@ class EventController extends Controller
 
 
         if (isset($request->form_type) && $request->form_type == 'search_event') {
-            session(['name' => $request->name]);
+            session(['events_name' => $request->name]);
             session(['event_city' => $request->event_city]);
             session(['event_state' => $request->event_state]);
             session(['event_country' => $request->event_country]);
@@ -61,7 +61,7 @@ class EventController extends Controller
             return redirect('/event');
         }
 
-        $aReturn['search_event_name'] = (!empty(session('name'))) ? session('name') : '';
+        $aReturn['search_event_name'] = (!empty(session('events_name'))) ? session('events_name') : '';
         $aReturn['search_event_city'] = (!empty(session('event_city'))) ? session('event_city') : '';
         $aReturn['search_event_state'] = (!empty(session('event_state'))) ? session('event_state') : '';
         $aReturn['search_event_country'] = (!empty(session('event_country'))) ? session('event_country') : '';
@@ -154,7 +154,7 @@ class EventController extends Controller
         //  WHERE vm.deleted = 0 ' . $FiltersSql . ' 
         //  ORDER BY vm.id DESC';
 
-        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,vm.banner_image,vm.event_info_status,
+        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,vm.banner_image,vm.event_info_status,vm.is_verify,
                 (SELECT name FROM cities WHERE 
                 Id = vm.city) AS city,(SELECT name FROM states WHERE Id = vm.state) AS state, 
                 (SELECT name FROM countries WHERE Id = vm.country) AS country, 
@@ -498,6 +498,29 @@ class EventController extends Controller
         $sSQL = 'UPDATE events SET active=:active WHERE id=:id';
         $Bindings = array(
             'active' => $request->active,
+            'id' => $request->id
+        );
+        $result = DB::update($sSQL, $Bindings);
+        $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $result = [];
+        $result['message'] =  $successMessage ;
+        $result['sucess'] = $sucess;
+        return $result;
+    }
+
+    public function change_verify_status(Request $request)
+    {
+        if ($request->is_verify == 'active') {
+            $active = 1;
+        }
+        if ($request->active == 'inactive') {
+            $active = 0;
+        }
+        //  dd('here');
+        $sSQL = 'UPDATE events SET is_verify=:is_verify WHERE id=:id';
+        $Bindings = array(
+            'is_verify' => $request->is_verify,
             'id' => $request->id
         );
         $result = DB::update($sSQL, $Bindings);

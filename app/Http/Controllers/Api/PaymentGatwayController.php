@@ -122,7 +122,8 @@ class PaymentGatwayController extends Controller
 
             $hashString = $Merchant_key . '|' . $txnid . '|' . $Amount . '|' . $ProductInfo . '|' . $FirstName . '|' . $Email . '|||||||||||' . $SALT;
             $hash = hash('sha512', $hashString);
-
+        
+        if($EventId != '' || $EventId != '0' || $EventId != 0 || $EventId != 'undefined'){
             $Bindings = array(
                 "event_id" => $EventId,
                 "txnid" => $txnid,
@@ -203,26 +204,7 @@ class PaymentGatwayController extends Controller
             $ParitcipantFiles = '';
             // $date = strtotime(date("Y-m-d H:i:s"));
             $date = time();
-            // if(!empty($request->file('fils_array'))){
-            //     $i = 1;
-            //     foreach ($request->file('fils_array') as $key => $uploadedFile) {
-                
-            //         $Path = public_path('uploads/attendee_documents/');
-            //         $max_size = 2 * 1024 * 1024; // 2MB
-            //         if ($uploadedFile->isValid()) {   //  && $uploadedFile->getSize() > $max_size
-
-            //             if($uploadedFile->getMimeType() == 'application/pdf' || $uploadedFile->getMimeType() == 'image/jpeg' || $uploadedFile->getMimeType() == 'image/png' || $uploadedFile->getMimeType() == 'image/jpg'){
-
-            //                 $originalName = $date.'_'.$i.'_'. $uploadedFile->getClientOriginalName();
-            //                 $participant_image = str_replace(" ","_",$originalName);
-            //                 $uploadedFile->move($Path, $participant_image);
-            //                 $i++;
-            //                 $new_document_array[] = array("id" => $i, "doc_name" => $uploadedFile->getClientOriginalName());
-            //             }
-            //         }
-            //     }
-            // }
-
+           
             if (!empty($BookTicketArray)) {
                 // return $BookTicketArray->total_attendees;
                 $total_attendees = !empty($BookTicketArray->total_attendees) ? $BookTicketArray->total_attendees : "";
@@ -333,6 +315,29 @@ class PaymentGatwayController extends Controller
             $ResposneCode = 200;
             $response['data'] = !empty($payment_details_array) ? $payment_details_array : [];
             $response['message'] = 'Request processed successfully';
+          }else{
+
+            $Bindings = array(
+                "event_id" => $EventId,
+                "amount" => $Amount,
+                "firstname" => $FirstName,
+                "lastname" => $LastName,
+                "email" => $Email,
+                "mobile_no" => $PhoneNo,
+                "FormQuestions" => 'Event id blank for insert record for api',
+                "payment_type" => !empty($Amount) && $Amount != '0.00' ? 'Paid' : 'Free',
+                "created_date" => time()
+            );
+            //dd($Bindings);
+            //-----------------
+            $insert_SQL = "INSERT INTO failed_booking_log (event_id,amount,firstname,lastname,email,mobile_no,FormQuestions,payment_type,created_date) VALUES(:event_id,:amount,:firstname,:lastname,:email,:mobile_no,:FormQuestions,:payment_type,:created_date)";
+            DB::insert($insert_SQL, $Bindings);
+
+            $ResposneCode = 201;
+            $response['data'] = [];
+            $response['message'] = 'Something went wrong';
+          }
+
 
         } else {
             $ResposneCode = $aToken['code'];

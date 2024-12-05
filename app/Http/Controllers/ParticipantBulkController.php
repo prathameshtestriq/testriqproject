@@ -511,7 +511,7 @@ class ParticipantBulkController extends Controller
                         $generatePdf = ParticipantBulkController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->attendee_id,$EventUrl,$final_ticket_price);
                         // dd($generatePdf);
                         $Email = new Emails();
-                        $Email->send_email_participant($UserId, $attendee_email, $MessageContent, $Subject, $generatePdf);
+                        $Email->send_email_participant($UserId, $attendee_email, $MessageContent, $Subject, $generatePdf, $EventId);
                 
                     }//die;
                 }

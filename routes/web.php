@@ -121,6 +121,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::get('/event/clear_search', [EventController::class, 'clear_search'])->name('clear_search_event');
     Route::match (['get'], ' /event/remove_event_image/{event_id}/{id}', [EventController::class, 'delete_event_image'])->name('delete_event_image');
     Route::match(['get', 'post'],'/ckeditor_event_description/upload', [EventController::class, 'upload'])->name('ckeditor_event_description.upload');
+    Route::match(['get', 'post'], 'event/change_verify_status', [EventController::class, 'change_verify_status'])->name('change_verify_status');
   
 
    //  EVENT Participants 
@@ -133,6 +134,8 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get','post'],'participants_event/{event_id}/edit/{id}',[EventParticipantsController::class,'Edit_question'])->name('participants_question_edit');
     Route::match (['get', 'post'], '/get_states/{country_id}', [EventParticipantsController::class, 'get_states'])->name('get_states')->name('get_states');
     Route::match (['get', 'post'], '/get_cities/{state_id}', [EventParticipantsController::class, 'get_cities'])->name('get_cities')->name('get_cities');
+    Route::match(['get','post'],'participants_event/{event_id}/change_category/{id}',[EventParticipantsController::class,'change_category'])->name('changes_category_event');
+    Route::match(['get','post'],'participants_event/{event_id}/edit_cat/{id}',[EventParticipantsController::class,'edit_races_category'])->name('edit_races_category');
  
     // EVENT Registration
     Route::match(['get', 'post'], '/registration_successful/{event_id?}/{dashboard_id?}', [RegistrationSuccessfulController::class, 'index'])->name('registration_successful_index');
@@ -257,6 +260,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'],'event_certificate/add_edit/{id?}', [EventCertificateController::class,'add_edit'])->name('add_event_certificate');
     Route::match (['get'], 'event_certificate/delete/{id}', [EventCertificateController::class, 'delete_event_certificate'])->name('delete_event_certificate');
     Route::match(['get', 'post'], 'event_certificate/change_status', [EventCertificateController::class, 'change_active_status'])->name('change_status_event_certificate');
+    Route::match(['get', 'post'], 'event_certificate/preview_data', [EventCertificateController::class, 'preview_data_certificate'])->name('preview_data_event_certificate');
     
 
 });

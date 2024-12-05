@@ -198,7 +198,7 @@
                                             </div>
                                             <div class="col-sm-3 col-12 mt-2">
                                                 <?php 
-                                                   $event_info_status = array(1=>'public',2=>'private',3=>'draft' );    
+                                                   $event_info_status = array(1=>'Public',2=>'Private',3=>'Draft' );    
                                                 ?> 
                                                 <label for="form-control"> Event Info Status</label>
                                                 <select id="event_info_status" name="event_info_status" class="form-control select2 form-control">
@@ -257,6 +257,7 @@
                                         <th>City</th>
                                         <th>Event Image</th>
                                         <th>Event Status</th>
+                                        <th>Verify Status</th>
                                         <th style="text-align: center;">Status</th>
                                         <th style="text-align: center; width: 150px">View</th>
                                         <th style="text-align: center;width: 150px" >Action</th>
@@ -300,6 +301,22 @@
                                                             echo '<span style="display: inline-block; padding: 5px 10px; border-radius: 15px; background-color: #ffe6bf; color: #E28A00;font-weight: 500;width: 100%;">Draft</span>';
                                                         }
                                                     ?>
+                                                </td>
+                                                <td class="text-center">
+
+                                                    <div class="custom-control custom-switch custom-switch-success">
+                                                        <input type="checkbox" class="custom-control-input"
+                                                            id="{{ $event->id }}"
+                                                            {{ $event->is_verify ? 'checked' : '' }}
+                                                            onclick="change_verify_status(event.target, {{ $event->id }});" />
+
+                                                        <label class="custom-control-label" style="cursor: pointer;"
+                                                            for="{{ $event->id }}">
+
+                                                            <span class="switch-icon-left"></span>
+                                                            <span class="switch-icon-right"></span>
+                                                        </label>
+                                                    </div>
                                                 </td>
                                                 <td class="text-center">
 
@@ -382,6 +399,47 @@
             }
         }
         // alert('here');
+        function change_verify_status(_this, id) {
+            var is_verify = $(_this).prop('checked') == true ? 1 : 0;
+
+            if (confirm("Are you sure you change this status?")) {
+                $.ajax({
+                    url: "<?php echo url('event/change_verify_status'); ?>",
+                    type: 'post',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: id,
+                        is_verify: is_verify
+                    },
+                    success: function(result) {
+                    if (result.sucess == 'true') {
+                        // console.log(result);
+                        // alert(result.message); 
+                        $("#success-message").text(result.message); // Update success message
+                        $("#success-alert").show(); // Show the success alert
+                        // Optionally hide the alert after a few seconds
+                        setTimeout(function() {
+                            $("#success-alert").fadeOut();
+                        }, 2000); // Adjust time (2000 = 2 seconds)
+
+                    }else{
+                        alert('Some error occured');
+                        if(status)
+                            $(_this).prop("checked" , false)
+                        else
+                            $(_this).prop("checked" , true)
+                            return false;
+                    }
+                },
+                    error: function() {
+                        alert('Some error occurred');
+                    }
+                });
+            } else {
+                $(_this).prop("checked", !active);
+            }
+        }
+
 
         function change_status(_this, id) {
             var active = $(_this).prop('checked') == true ? 1 : 0;
@@ -423,6 +481,7 @@
                 $(_this).prop("checked", !active);
             }
         }
+
 
 
 

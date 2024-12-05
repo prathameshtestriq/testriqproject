@@ -1126,7 +1126,9 @@ class EventTicketController extends Controller
 
                     #booking_details
                     $BookingDetailsIds = [];
-
+                    $BookingDetailsTicketPrice = [];
+                    $BookingDetailsTicketFinalPrice = [];
+                    //dd($AllTickets);
                     foreach ($AllTickets as $ticket) {
                         if (!empty($ticket->count)) {
                             $Binding2 = [];
@@ -1147,6 +1149,13 @@ class EventTicketController extends Controller
                             $BookingDetailsId = DB::getPdo()->lastInsertId();
 
                             $BookingDetailsIds[$ticket->id] = $BookingDetailsId;
+                            $BookingDetailsTicketPrice[$ticket->id] = $ticket->ticket_price;
+                            if(!empty($ticket->ticket_price)){
+
+                                $BookingDetailsTicketFinalPrice[$ticket->id] = (floatval($ticket->total_buyer) + floatval($ticket->Extra_Amount) + floatval($ticket->Extra_Amount_Payment_Gateway) + floatval($ticket->Extra_Amount_Payment_Gateway_Gst)) ; 
+                            }
+                           
+
                             $new_ticket_id = !empty($aResult[0]->ticket_id) ? $aResult[0]->ticket_id : $ticket->id;
 
                             // ADD IF COUPONS APPLY ON TICKET
@@ -1385,7 +1394,10 @@ class EventTicketController extends Controller
                         }
                         // die;
                         $IdBookingDetails = isset($BookingDetailsIds[$TicketId]) ? $BookingDetailsIds[$TicketId] : 0;
-                        $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,mobile,created_at) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:mobile,:created_at)";
+                        $SingleTicketAmount = isset($BookingDetailsTicketPrice[$TicketId]) ? $BookingDetailsTicketPrice[$TicketId] : 0;
+                        $FinalTicketAmount = isset($BookingDetailsTicketFinalPrice[$TicketId]) ? $BookingDetailsTicketFinalPrice[$TicketId] : 0;
+                        // echo $FinalTicketAmount.'<br>';
+                        $sql = "INSERT INTO attendee_booking_details (booking_details_id,ticket_id,attendee_details,email,firstname,lastname,mobile,created_at,ticket_price,final_ticket_price) VALUES (:booking_details_id,:ticket_id,:attendee_details,:email,:firstname,:lastname,:mobile,:created_at,:ticket_price,:final_ticket_price)";
                         $Bind1 = array(
                             "booking_details_id" => !empty($IdBookingDetails) ? $IdBookingDetails : $BookingDetailsId,
                             "ticket_id" => !empty($TicketId) ? $TicketId : $new_ticket_id,
@@ -1394,7 +1406,9 @@ class EventTicketController extends Controller
                             "firstname" => $first_name,
                             "lastname" => $last_name,
                             "mobile" => $mobile,
-                            "created_at" => strtotime("now")
+                            "created_at" => strtotime("now"),
+                            "ticket_price" => !empty($SingleTicketAmount) ? $SingleTicketAmount : 0,
+                            "final_ticket_price" => !empty($FinalTicketAmount) ? $FinalTicketAmount : 0
                         );
                         DB::insert($sql, $Bind1);
                         $attendeeId = DB::getPdo()->lastInsertId();
@@ -1409,14 +1423,14 @@ class EventTicketController extends Controller
                         }
                         // -------------
 
-                        $booking_date = 0;
+                        $booking_date = 0; $uniqueId = 0;
                         $bd_sql = "SELECT booking_date FROM booking_details WHERE id = :booking_details_id";
                         $bd_bind = DB::select($bd_sql, array("booking_details_id" => $BookingDetailsId));
                         if (count($bd_bind) > 0) {
                             $booking_date = $bd_bind[0]->booking_date;
+                            $uniqueId = $EventId . "-" . $attendeeId . "-" . $booking_date;
                         }
-                        $uniqueId = 0;
-                        $uniqueId = $EventId . "-" . $attendeeId . "-" . $booking_date;
+                        
                         // dd($uniqueId,$IdBookingDetails,$booking_date);
                         $u_sql = "UPDATE attendee_booking_details SET registration_id=:registration_id WHERE id=:id";
                         $u_bind = DB::update($u_sql, array("registration_id" => $uniqueId, 'id' => $attendeeId));
@@ -1427,7 +1441,7 @@ class EventTicketController extends Controller
                         $new_ticket_name_array = !empty($aResult1) ? array_column($aResult1,"ticket_name") : [];
                         $new_registration_id_array[] = $uniqueId;
                         
-                    }
+                    }//die;
 
                     //------- new added for update ticket_names, registration_ids on 25-06-24 (because send email to reg no, tick name issue)
                     $loc_ticket_names = !empty($new_ticket_name_array) ? implode(", ", array_unique($new_ticket_name_array)) : '';
@@ -1756,7 +1770,7 @@ class EventTicketController extends Controller
         // dd($generatePdf);
       
         $Email = new Emails();
-        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf);
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf, $EventId);
 
 
         //--------- Send emails to participants also along with registering person
@@ -1976,7 +1990,7 @@ class EventTicketController extends Controller
                     $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->id,$EventUrl,$TotalPrice);
                    
                     $Email = new Emails();
-                    $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf);
+                    $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf, $EventId);
                 }
 
             }//die;
@@ -3151,7 +3165,7 @@ class EventTicketController extends Controller
          // dd($generatePdf);
 
         $Email = new Emails();
-        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, 0, $generatePdf);
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, 0, $generatePdf, $EventId);
 
         return;
     }

@@ -133,8 +133,9 @@ Thank you for your attention to this matter.<br/>";
     }
 
 
-    public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0, $send_email_status=0, $generatePdf)
+    public function send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag=0, $send_email_status=0, $generatePdf, $EventId)
     {
+
         $email = new \SendGrid\Mail\Mail();
         $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
         $email->setSubject($Subject);
@@ -170,16 +171,17 @@ Thank you for your attention to this matter.<br/>";
             }else {
                 $type = "Ticket Booking";
             }
+            $response = '';
 
             $send_mail_to = $UserEmail;
-            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response, $send_email_status);
+            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response, $send_email_status, $EventId);
 
         } catch (Exception $e) {
             echo 'Caught exception: ' . $e->getMessage() . "\n";
         }
     }
     
-    public function send_email_participant($UserId, $UserEmail, $MessageContent, $Subject, $GeneratedPdfLink)
+    public function send_email_participant($UserId, $UserEmail, $MessageContent, $Subject, $GeneratedPdfLink, $EventId)
     {
         // dd($UserId, $UserEmail, $MessageContent, $Subject, $GeneratedPdfLink);
         $email = new \SendGrid\Mail\Mail();
@@ -212,7 +214,7 @@ Thank you for your attention to this matter.<br/>";
             // send mail
             $type = "Ticket Booking";
             $send_mail_to = $UserEmail;
-            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response, 1);
+            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response, 1, $EventId);
 
         } catch (Exception $e) {
             echo 'Caught exception: ' . $e->getMessage() . "\n";
@@ -334,7 +336,7 @@ Thank you for your attention to this matter.<br/>";
     }
 
 
-    public function save_email_log($type, $send_mail_to, $subject, $message, $response, $send_email_status=0)
+    public function save_email_log($type, $send_mail_to, $subject, $message, $response, $send_email_status=0, $EventId)
     {
         $responseData = [
             'statusCode' => $response->statusCode(),
@@ -344,6 +346,7 @@ Thank you for your attention to this matter.<br/>";
         // $responseData = [];
 
         $email_log = new EmailLog();
+        $email_log->event_id = $EventId;
         $email_log->type = $type;
         $email_log->send_mail_to = $send_mail_to;
         $email_log->subject = $subject;

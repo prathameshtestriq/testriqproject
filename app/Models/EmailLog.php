@@ -12,6 +12,7 @@ class EmailLog extends Model
     protected $table = 'email_log';
 
     protected $fillable = [
+        'event_id',
         'type',
         'send_mail_to',
         'subject',

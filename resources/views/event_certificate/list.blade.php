@@ -91,25 +91,6 @@
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-3 col-12 ">
-                                                <label for="form-control"> Events</label>
-                                                <select id="event_id_certificate" name="event_id_certificate" class="form-control select2 form-control">
-                                                    <option value="">Select  Event</option>
-                                                    <?php 
-                                                        foreach ($EventsData as $value)
-                                                        {
-                                                            $selected = '';
-                                                            if(old('event_id_certificate',$event_id_certificate) == $value->id){
-                                                                $selected = 'selected';
-                                                            }
-                                                            ?>
-                                                            <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo ucfirst($value->name); ?></option>
-                                                            <?php 
-                                                        }
-                                                    ?>
-                                                </select>
-                                            </div>
-
                                             <div class="col-sm-3 "> 
                                                 <?php 
                                                    $event_certificate_status = array(0=>'Inactive',1=>'Active' );    
@@ -161,14 +142,16 @@
                             <table class="table table-striped table-bordered mt-2">
                                 <thead>
                                     <tr>
-                                        <th class="text-center">Sr. No</th>    
-                                        <th class="text-left">Event Name</th>      
+                                        <th class="text-center">Sr. No</th>        
                                         <th class="text-left">Certificate Name</th>                                       
+                                        <th class="text-center">Send Date</th>
+                                        <th class="text-center">Csv Count</th>
+                                        <th class="text-center">Status Count</th>
                                         <th class="text-center">Image</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
-                                </thead>
+                                </thead> 
                                 <tbody class="text-center">
                                 
                                     <?php 
@@ -178,8 +161,10 @@
                                                 $i++;?>
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
-                                                <td class="text-left">{{ ucfirst($val->Event_Name) }}</td>
-                                                <td class="text-left">{{ ucfirst($val->certificate_name) }}</td>
+                                                <td>{{ ucfirst($val->certificate_name) }}</td>
+                                                <td>{{ date('d-m-Y h:i:A', $val->create_at) }}</td>
+                                                <td>{{ $val->csv_count }}</td>
+                                                <td>{{ $val->status_count }}</td>
                                                 <td class="t-center text-center">
                                                     @if (!empty($val->image))
                                                     <a target="_blank" title="View Image"
@@ -193,13 +178,12 @@
                                                     @endif
                                                 </td>
 
-
                                                 <td class="text-center">
                                                     <div class="custom-control custom-switch custom-switch-success">
                                                         <input type="checkbox" class="custom-control-input"
-                                                            id="{{ $val->event_id }}" {{ $val->status ? 'checked' : '' }}
-                                                            onclick="change_status(event.target, {{ $val->event_id }});" />
-                                                        <label class="custom-control-label" for="{{ $val->event_id }}">
+                                                            id="{{ $val->id }}" {{ $val->status ? 'checked' : '' }}
+                                                            onclick="change_status(event.target, {{ $val->id }});" />
+                                                        <label class="custom-control-label" for="{{ $val->id }}">
                                                             <span class="switch-icon-left"></span>
                                                             <span class="switch-icon-right"></span>
                                                         </label>
@@ -207,10 +191,10 @@
                                                 </td>
 
                                                 <td>
-                                                    <a href="{{ url('event_certificate/add_edit', $val->event_id) }}"><i
+                                                    <a href="{{ url('event_certificate/add_edit', $val->id) }}"><i
                                                             class="fa fa-edit btn btn-primary btn-sm" title="Edit"></i></a>
                                                     <i class="fa fa-trash-o btn btn-danger btn-sm"
-                                                        onclick="delcertificate({{ $val->event_id }})" title="Delete"></i>
+                                                        onclick="delcertificate({{ $val->id }})" title="Delete"></i>
                                                 </td>
                                             </tr>
                                       <?php }
@@ -268,7 +252,7 @@
                 type: 'post',
                 data: {
                     _token: "{{ csrf_token() }}",
-                    event_id: id,
+                    id: id,
                     status: status
                 },
                 success: function(result) {

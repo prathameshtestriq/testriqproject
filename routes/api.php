@@ -1,5 +1,5 @@
 <?php
-
+//----------- added by prathmesh
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\EventDashboardController;
 use App\Http\Controllers\Api\EventDetailsController;
@@ -15,10 +15,12 @@ use App\Http\Controllers\Api\MasterController;
 use App\Http\Controllers\EventTicketController;
 use App\Http\Controllers\UserEventDetailsController;
 use App\Http\Controllers\Api\GoogleLoginController;
-//----------- added by prathmesh
 use App\Http\Controllers\Api\FormQuestionsController;
 use App\Http\Controllers\Api\PaymentGatwayController;
 use App\Http\Controllers\Api\MaintanceController;
+
+//----------- added by neha
+use App\Http\Controllers\Api\AthleteIdCardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -247,6 +249,11 @@ Route::controller(EventDetailsController::class)->group(function () {
 
 Route::controller(MaintanceController::class)->group(function () {
     Route::get('/get_maintancemode', 'Getmaintancemode');
+});
+
+//-------------- create by neha
+Route::controller(AthleteIdCardController::class)->group(function () {
+    Route::post('/athleteCard', 'athleteCardPreview');
 });
 
 

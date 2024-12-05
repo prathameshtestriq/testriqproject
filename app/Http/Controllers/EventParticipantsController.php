@@ -233,6 +233,7 @@ class EventParticipantsController extends Controller
                 e.booking_pay_id, 
                 e.transaction_status, 
                 b.event_id, 
+                a.ticket_id,
                 a.id AS aId, 
                 CONCAT(a.firstname, " ", a.lastname) AS user_name,
                 et.ticket_name AS category_name,
@@ -264,18 +265,17 @@ class EventParticipantsController extends Controller
         }
        
         $event_participants  = DB::select($sSQL, array());
+        $final_ticket_amount = 0;
         foreach( $event_participants  as $value){
             if($value->bulk_upload_flag == 0 && !empty($value->cart_details)){
                 // dd(json_decode($value->cart_details));
                 foreach(json_decode($value->cart_details) as $res){
-                    if(!empty($res->ticket_price)){
+                    if(!empty($res->ticket_price) && $value->ticket_id == $res->id){
                         $Extra_Amount = isset($res->Extra_Amount) && !empty($res->Extra_Amount) ? floatval($res->Extra_Amount) : 0;
                         $Extra_Amount_Payment_Gateway = isset($res->Extra_Amount_Payment_Gateway) && !empty($res->Extra_Amount_Payment_Gateway) ? floatval($res->Extra_Amount_Payment_Gateway) : 0;
                         $Extra_Amount_Payment_Gateway_Gst = isset($res->Extra_Amount_Payment_Gateway_Gst) && !empty($res->Extra_Amount_Payment_Gateway_Gst) ? floatval($res->Extra_Amount_Payment_Gateway_Gst) : 0;
 
                         $final_ticket_amount = (floatval($res->BuyerPayment) + $Extra_Amount + $Extra_Amount_Payment_Gateway + $Extra_Amount_Payment_Gateway_Gst);
-                    }else{
-                        $final_ticket_amount = 0;
                     }
                 }
                 $value->total_amount =  number_format($final_ticket_amount,2);
@@ -372,21 +372,19 @@ class EventParticipantsController extends Controller
                 }
                 $value->mobile = $new_mobile_no;
             }
-
+          
             if($value->bulk_upload_flag == 0 && !empty($value->cart_details)){
-              
-                foreach(json_decode($value->cart_details) as $res){
-                    if(!empty($res->ticket_price)){
-                        $Extra_Amount = isset($res->Extra_Amount) && !empty($res->Extra_Amount) ? floatval($res->Extra_Amount) : 0;
-                        $Extra_Amount_Payment_Gateway = isset($res->Extra_Amount_Payment_Gateway) && !empty($res->Extra_Amount_Payment_Gateway) ? floatval($res->Extra_Amount_Payment_Gateway) : 0;
-                        $Extra_Amount_Payment_Gateway_Gst = isset($res->Extra_Amount_Payment_Gateway_Gst) && !empty($res->Extra_Amount_Payment_Gateway_Gst) ? floatval($res->Extra_Amount_Payment_Gateway_Gst) : 0;
+                        // dd(json_decode($value->cart_details));
+                        foreach(json_decode($value->cart_details) as $res){
+                            if(!empty($res->ticket_price) && $value->ticket_id == $res->id){
+                                $Extra_Amount = isset($res->Extra_Amount) && !empty($res->Extra_Amount) ? floatval($res->Extra_Amount) : 0;
+                                $Extra_Amount_Payment_Gateway = isset($res->Extra_Amount_Payment_Gateway) && !empty($res->Extra_Amount_Payment_Gateway) ? floatval($res->Extra_Amount_Payment_Gateway) : 0;
+                                $Extra_Amount_Payment_Gateway_Gst = isset($res->Extra_Amount_Payment_Gateway_Gst) && !empty($res->Extra_Amount_Payment_Gateway_Gst) ? floatval($res->Extra_Amount_Payment_Gateway_Gst) : 0;
 
-                        $final_ticket_amount = (floatval($res->BuyerPayment) + $Extra_Amount + $Extra_Amount_Payment_Gateway + $Extra_Amount_Payment_Gateway_Gst);
-                    }else{
-                        $final_ticket_amount = 0;
-                    }
-                }
-                $value->total_amount =  $final_ticket_amount;
+                                $final_ticket_amount = (floatval($res->BuyerPayment) + $Extra_Amount + $Extra_Amount_Payment_Gateway + $Extra_Amount_Payment_Gateway_Gst);
+                            }
+                        }
+                $value->total_amount = $final_ticket_amount;
             }else{
                 $value->total_amount = $value->final_ticket_price;
             }
@@ -434,13 +432,15 @@ class EventParticipantsController extends Controller
     {         
        // dd($Return['search_participant_name']);
         $master = new Master();
-       
+        
+        ini_set('max_execution_time', '-1');
+
         // dd($AttendeeData);
 
         if (!empty($AttendeeData)) {
 
             $ExcellDataArray = [];
-            $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE question_status = 1 ";
+            $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE question_status = 1";
            
             if(!empty($event_id)){
                 $sql .= " AND event_id = ".$event_id." ";
@@ -455,21 +455,23 @@ class EventParticipantsController extends Controller
             // dd($EventQuestionData);
 
             $card_array = array(
-                array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101193, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101194, "question_label" => "Free/Paid", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101187, "question_label" => "Coupon Code", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101195, "question_label" => "Total Amount", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101196, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> ""),
-                array("id" => 101197, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101198, "question_label" => "Race Category", "question_form_type" => "text", "ActualValue" => ""),
-                array("id" => 101199, "question_label" => "Bulk Upload Group Name", "question_form_type" => "text", "ActualValue" => "")
-            );
+                    array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),
+                    array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
+                    array("id" => 101193, "question_label" => "Payu ID", "question_form_type" => "text", "ActualValue" => ""),
+                    array("id" => 101194, "question_label" => "Free/Paid", "question_form_type" => "text", "ActualValue"=> ""),
+                    array("id" => 101187, "question_label" => "Coupon Code", "question_form_type" => "text", "ActualValue" => ""),
+                    array("id" => 101195, "question_label" => "Total Amount", "question_form_type" => "text", "ActualValue"=> ""),
+                    array("id" => 101196, "question_label" => "Payment Status", "question_form_type" => "text", "ActualValue"=> ""),
+                    array("id" => 101197, "question_label" => "Booking Date/Time", "question_form_type" => "text", "ActualValue" => ""),
+                    array("id" => 101198, "question_label" => "Race Category", "question_form_type" => "text", "ActualValue" => ""),
+                    array("id" => 101241, "question_label" => "Bulk Upload Group Name", "question_form_type" => "text", "ActualValue" => "")
+                );
             $ageCategory_array  = array( array("id" => 101199, "question_label" => "Age Category", "question_form_type" => "age_category", "ActualValue" => ""));
             $utmCapning_array  = array( array("id" => 101186, "question_label" => "UTM Campaign", "question_form_type" => "text", "ActualValue" => ""));
+           
             $main_array = array_merge($card_array, $EventQuestionData);
-            
+            // dd($main_array);
+
             $event_name = !empty($EventQuestionData) ? $EventQuestionData[0]->event_name : '';
             $label = '';
             $show_age_category = $show_coupon_code = $show_utm = 0;
@@ -478,10 +480,8 @@ class EventParticipantsController extends Controller
 
                 //----------- get coupon code
                 $sql = "SELECT id,(select ed.discount_code from event_coupon as ec left join event_coupon_details as ed on ed.event_coupon_id = ec.id where ec.id = applied_coupons.coupon_id) as coupon_name FROM applied_coupons WHERE event_id = :event_id AND booking_detail_id=:booking_detail_id ";
-
                 $aCouponResult = DB::select($sql, array('event_id' => $res1->event_id, 'booking_detail_id' => $res1->booking_details_id));
                 // dd($aCouponResult); 
-
                
                 $attendee_details_array = json_decode(json_decode($res1->attendee_details), true);
                 // $attendee_details_array = $res1->attendee_details;
@@ -511,17 +511,16 @@ class EventParticipantsController extends Controller
                         if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
                             if (!empty($val->question_form_option)) {
                                 $question_form_option = json_decode($val->question_form_option, true);
-                               
+                                $label = '';
                                 if($val->question_form_type == "radio" || $val->question_form_type == "select"){
                                     if(isset($val->ActualValue) && !empty($val->ActualValue)){
                                         foreach ($question_form_option as $option) {
                                             if ($option['id'] === (int) $val->ActualValue) {
-                                                $label = $option['label'];
+                                                $label = !empty($option['label']) ? str_replace("&#8377;", "₹", $option['label']) : '';
                                                 break;
                                             }
                                         }
                                     }
-                                    
                                 }else if($val->question_form_type == "checkbox"){
                                     if(isset($val->ActualValue) && !empty($val->ActualValue)){
                                         foreach ($question_form_option as $option) {
@@ -533,9 +532,6 @@ class EventParticipantsController extends Controller
                                     }
                                   
                                 }
-                                
-                               
-                                
                                 
                                 $aTemp->answer_value = $label;
                             } else {
@@ -555,9 +551,9 @@ class EventParticipantsController extends Controller
                                             $aTemp->answer_value = htmlspecialchars($val->data[0]->age_category);
                                         }else{ $aTemp->answer_value = ''; }
                                     }else if($val->question_form_type == "date"){
-                                        $aTemp->answer_value = date('d-m-Y',strtotime($val->ActualValue));
+                                        $aTemp->answer_value = isset($val->ActualValue) && !empty($val->ActualValue) ? date('d-m-Y',strtotime($val->ActualValue)) : '';
                                     }else{
-                                        $aTemp->answer_value = isset($val->ActualValue) ? htmlspecialchars($val->ActualValue) : '';
+                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue);
                                     }
                                    
                                 }
@@ -594,7 +590,8 @@ class EventParticipantsController extends Controller
                         }
 
                         if($val->question_label == 'Race Category'){
-                            $aTemp->answer_value = !empty($res1->TicketName) ? $res1->TicketName : '';
+                            $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
+                            // dd($aTemp->answer_value);
                         }
 
                         if($val->question_label == 'Bulk Upload Group Name'){
@@ -623,6 +620,7 @@ class EventParticipantsController extends Controller
                       }
                     }
                 }
+                // dd($ExcellDataArray);
 
                 if($show_age_category == 1){
                     $main_array = array_merge($main_array, $ageCategory_array);
@@ -635,6 +633,7 @@ class EventParticipantsController extends Controller
                 } else{
                     $main_array = array_merge($main_array);
                 }
+                 // dd($main_array);
                 $header_data_array = json_decode(json_encode($main_array));
 
                 // dd($ExcellDataArray);
@@ -677,6 +676,7 @@ class EventParticipantsController extends Controller
 
         return view('participants_event.participant_question',$Return);
     }
+
     public function get_states(Request $request,$country_id){
         $sSQL = 'SELECT id, name,country_id FROM states WHERE country_id ='. $country_id;
         $Return["states"] = DB::select($sSQL, array());
@@ -780,6 +780,324 @@ class EventParticipantsController extends Controller
      
         return redirect(url('participants_event/'.$event_id));
         // ->with('success', 'Participants event user deleted successfully');
+    }
+
+    //-------------- new added changes races category
+    public function change_category(Request $request,$event_id,$attendance_id){
+
+        $sSQL = 'SELECT abd.attendee_details FROM attendee_booking_details as abd where id=:id';
+        $aResult = DB::select($sSQL, array('id'=>$attendance_id));
+       
+        $Return['attendance_booking_details'] = !empty($aResult) ? $aResult : [];
+        $Return['event_id'] = $event_id;
+        $Return['attendance_id'] = $attendance_id;
+
+        $sSQL = 'SELECT id, ticket_name FROM event_tickets WHERE active = 1 AND event_id=:event_id';
+        $Return["races_category"] = DB::select($sSQL, array('event_id' => $event_id));
+
+        return view('participants_event.participant_change_races_category',$Return);
+    }
+    
+    public function edit_races_category(Request $request,$event_id,$attendance_id){
+        // dd($request->all());
+
+        if (isset($request->form_type) && $request->form_type == 'edit_category') {
+
+            $eventId = !empty($request->event_id) ? $request->event_id : 0;
+            $attendanceId = !empty($request->attendance_id) ? $request->attendance_id : 0;
+            $ticketId = !empty($request->sel_ticket_id) ? $request->sel_ticket_id : 0;
+
+            // dd($eventId,$attendanceId,$ticketId);
+            $sSQL = 'SELECT abd.booking_details_id,(select booking_id from booking_details where id = abd.booking_details_id) as event_booking_id,ticket_id FROM attendee_booking_details as abd where id =:id';
+            $aResult = DB::select($sSQL, array('id'=> $attendanceId));
+         
+            $event_booking_id = !empty($aResult) ? $aResult[0]->event_booking_id : 0;
+            $booking_details_id = !empty($aResult) ? $aResult[0]->booking_details_id : 0;
+            $previous_ticket_id = !empty($aResult) ? $aResult[0]->ticket_id : 0;
+            // dd($event_booking_id,$booking_details_id,$previous_ticket_id);
+
+            $sSQL = 'SELECT * FROM event_tickets WHERE active = 1 AND event_id=:event_id AND id=:ticketId';
+            $aNewTicketResult = DB::select($sSQL, array('event_id' => $event_id, "ticketId" => $ticketId));
+            // dd($aNewTicketResult);
+            $new_ticket_price = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_price : 0;
+            $new_ticket_calculation_details = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_calculation_details : 0;
+            
+            //----------Event Booking table update entry
+            $event_booking_sql = 'SELECT id,booking_pay_id,total_amount,cart_details,(select amount from booking_payment_details where id = event_booking.booking_pay_id) as booking_payment_amount FROM event_booking WHERE event_id=:event_id AND id=:bookId';
+            $aEventBookingResult = DB::select($event_booking_sql, array('event_id' => $event_id, "bookId" => $event_booking_id));
+            $booking_pay_id = !empty($aEventBookingResult) ? $aEventBookingResult[0]->booking_pay_id : 0;
+            $cart_details = !empty($aEventBookingResult) ? json_decode($aEventBookingResult[0]->cart_details) : 0;
+
+            $booking_payment_amount = !empty($aEventBookingResult) ? $aEventBookingResult[0]->booking_payment_amount : 0;
+            $event_booking_amount   = !empty($aEventBookingResult) ? $aEventBookingResult[0]->total_amount : 0;
+            // dd($aEventBookingResult);
+
+            $Convenience_Fees_Gst_Percentage = 18;
+            $GST_On_Platform_Fees = 18;
+            $Payment_Gateway_Gst = 18;
+
+            $ConvenienceFeeBase = $NewPlatformFee = $NewPaymentGatewayFee = $Convenience_Fee_Amount = $GstPercentage = $BasePriceGst = $Basic_Amount_Gst = $Convenience_Fees_Gst_Percentage = $GST_On_Platform_Fees = $Payment_Gateway_Gst = 0;
+            $GST_On_Convenience_Fees = $Total_Convenience_Fees = $GST_On_Platform_Fees_Amount = $Total_Platform_Fees = $Net_Registration_Amount = $Payment_Gateway_Buyer = $Payment_Gateway_gst_amount = $Total_Payment_Gateway = $BuyerPayment = $totalPlatformFee = $totalTaxes = $Excel_Extra_Amount_Payment_Gateway = $Excel_Extra_Amount_Payment_Gateway_Gst = $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = $previous_final_ticket_amount = $new_ticket_amount  =  0;
+
+            if(!empty($cart_details)){
+                foreach($cart_details as $res){
+                    if($res->id == $previous_ticket_id){
+
+                        $previous_final_ticket_amount = $res->BuyerPayment;
+                      
+                        $sql = "SELECT COUNT(a.id) AS TotalBookedTickets
+                        FROM attendee_booking_details AS a 
+                        LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                        LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                        WHERE b.event_id =:event_id AND b.ticket_id=:ticket_id AND e.transaction_status IN (1,3)";
+                        $TotalTicketsResult = DB::select($sql, array("event_id" => $eventId, "ticket_id" => $ticketId));
+                        // dd($TotalTicketsResult);
+
+                        $res->id = (int)$ticketId;
+                        $res->age_end = !empty($aNewTicketResult) ? $aNewTicketResult[0]->age_end : 0;
+                        $res->category = !empty($aNewTicketResult) ? $aNewTicketResult[0]->category : 0;
+                        $res->discount = !empty($aNewTicketResult) ? $aNewTicketResult[0]->discount : 0;
+                        $res->end_time = !empty($aNewTicketResult) ? $aNewTicketResult[0]->discount : 0;
+                        $res->age_start = !empty($aNewTicketResult) ? $aNewTicketResult[0]->age_start : 0;
+                        $res->Main_Price = !empty($aNewTicketResult) ? $new_ticket_price : 0;
+                        $res->early_bird = !empty($aNewTicketResult) ? $aNewTicketResult[0]->early_bird : 0;
+                     
+                        $res->sort_order = !empty($aNewTicketResult) ? $aNewTicketResult[0]->sort_order : 0;
+                        $res->start_time = !empty($aNewTicketResult) ? $aNewTicketResult[0]->start_time : 0;
+                        $res->max_booking = !empty($aNewTicketResult) ? $aNewTicketResult[0]->max_booking : 0;
+                        $res->min_booking = !empty($aNewTicketResult) ? $aNewTicketResult[0]->min_booking : 0;
+                        $res->ticket_name = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_name : '';
+
+                        $Sql1 = 'SELECT id,registration_amount,convenience_fee,platform_fee,payment_gateway_fee FROM race_category_charges WHERE event_id =:event_id';
+                        $aCatChargesResult = DB::select($Sql1, array('event_id' => $eventId));
+
+                        if(!empty($aCatChargesResult)){
+                            for ($i=0; $i < count($aCatChargesResult); $i++) { 
+                                // dd($aCatChargesResult[$i]->convenience_fee);
+                                if ($aCatChargesResult[$i]->registration_amount >= floatval($new_ticket_price)){
+                                    //console.log($aCatChargesResultDetails[i]['convenience_fee']);
+                                    $ConvenienceFeeBase = ($aCatChargesResult[$i]->convenience_fee);
+                                    $NewPlatformFee = ($aCatChargesResult[$i]->platform_fee);       // 5 Rs
+                                    $NewPaymentGatewayFee = ($aCatChargesResult[$i]->payment_gateway_fee); // 1.85 %
+                                    break;
+                                }else if($i == (count($aCatChargesResult)-1) && $aCatChargesResult[$i]->registration_amount <= floatval($new_ticket_price)){
+                                    //console.log($aCatChargesResult[i]['convenience_fee']);
+                                    $ConvenienceFeeBase = ($aCatChargesResult[$i]->convenience_fee);
+                                    $NewPlatformFee = ($aCatChargesResult[$i]->platform_fee);       // 5 Rs
+                                    $NewPaymentGatewayFee = ($aCatChargesResult[$i]->payment_gateway_fee); // 1.85 %
+                                    break;
+                                }
+                            }
+                        }
+
+                        $Sql1 = 'SELECT name,collect_gst,prices_taxes_status FROM events WHERE active = 1 and id = ' . $eventId . ' ';
+                        $event_Result = DB::select($Sql1);
+
+                        $NewPlatformFee = ($NewPlatformFee * $res->count);
+
+                        if ($event_Result[0]->collect_gst == 1 && $event_Result[0]->prices_taxes_status == 2) {
+                            $BasePriceGst = floatval($new_ticket_price) != 0 ? floatval($new_ticket_price) * ($GstPercentage / 100) : 0; // GST %
+                            $Basic_Amount_Gst = (floatval($BasePriceGst) + floatval($new_ticket_price));
+                        } else {
+                            $BasePriceGst = '0.00';
+                            $Basic_Amount_Gst = floatval($new_ticket_price); // registration amt
+                        }
+                        // dd($Basic_Amount_Gst);
+                        if((int)$ConvenienceFeeBase == 30 || (int)$ConvenienceFeeBase == 40 || (int)$ConvenienceFeeBase == 10){
+                            $Convenience_Fee_Amount = (int)$ConvenienceFeeBase;
+                        }else{
+                            $Convenience_Fee_Amount = $Basic_Amount_Gst * ((int)$ConvenienceFeeBase / 100);  
+                        }
+
+                        $GST_On_Convenience_Fees = floatval($Convenience_Fee_Amount) * ($Convenience_Fees_Gst_Percentage / 100); // GST 18%
+                        $Total_Convenience_Fees = (floatval($Convenience_Fee_Amount) + $GST_On_Convenience_Fees);
+                        $GST_On_Platform_Fees_Amount = $NewPlatformFee * ($GST_On_Platform_Fees / 100); // GST 18%
+                        $Total_Platform_Fees = (floatval($NewPlatformFee) + floatval($GST_On_Platform_Fees_Amount));
+                        $Net_Registration_Amount = (floatval($Basic_Amount_Gst) + floatval($Total_Convenience_Fees) + floatval($Total_Platform_Fees));
+
+                        // dd($Convenience_Fee_Amount,$GST_On_Convenience_Fees,$Basic_Amount_Gst);
+                        if((int)$aNewTicketResult[0]->player_of_fee == 1 && (int)$aNewTicketResult[0]->player_of_gateway_fee == 1) {  //Organiser + Organiser
+        
+                            $Payment_Gateway_Buyer = $Basic_Amount_Gst * ($NewPaymentGatewayFee / 100); // 1.85%
+                            $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
+                            $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
+                            $BuyerPayment = $Basic_Amount_Gst;  // yes
+                            $totalPlatformFee = 0;
+                            $totalTaxes = floatval($BasePriceGst);
+                            
+                            //------------- additional amt calculation 
+                            $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
+
+                            //-------------- for revenue excel report
+                            if(!empty($additional_amount)){
+                                $Excel_Extra_Amount_Payment_Gateway = $additional_amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                                $Excel_Extra_Amount_Payment_Gateway_Gst = $Excel_Extra_Amount_Payment_Gateway * ($Payment_Gateway_Gst / 100); //18%
+                            }
+                           
+
+                        }else if((int)$aNewTicketResult[0]->player_of_fee == 2 && (int)$aNewTicketResult[0]->player_of_gateway_fee == 2) {  // Participant + Participant
+                            
+                            $Payment_Gateway_Buyer = $Net_Registration_Amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                            $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
+                            $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
+                            $BuyerPayment = (floatval($Total_Payment_Gateway) + floatval($Net_Registration_Amount));
+                            // dd($Convenience_Fee_Amount, $NewPlatformFee, $Payment_Gateway_Buyer);
+                            $totalPlatformFee = floatval($Convenience_Fee_Amount) + floatval($NewPlatformFee) + floatval($Payment_Gateway_Buyer);
+                            $totalTaxes = floatval($BasePriceGst) + floatval($GST_On_Convenience_Fees) + floatval($GST_On_Platform_Fees_Amount) + floatval($Payment_Gateway_gst_amount);
+                            // dd($Convenience_Fee_Amount,$NewPlatformFee,$Payment_Gateway_Buyer);
+                            
+                            //--------------- additional amt calculation
+                            if(!empty($total_extra_amount)){
+                                $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
+                                $Extra_Amount_Payment_Gateway = $total_extra_amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                                $Extra_Amount_Payment_Gateway_Gst = $Extra_Amount_Payment_Gateway * ($Payment_Gateway_Gst / 100); //18%
+                                
+                                //-------------- for revenue excel report
+                                $Excel_Extra_Amount_Payment_Gateway = $additional_amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                                $Excel_Extra_Amount_Payment_Gateway_Gst = $Excel_Extra_Amount_Payment_Gateway * ($Payment_Gateway_Gst / 100); //18%
+                            }
+
+                        }else if((int)$aNewTicketResult[0]->player_of_fee == 1 && (int)$aNewTicketResult[0]->player_of_gateway_fee == 2) { // Organiser + Participant
+                            
+                            $Payment_Gateway_Buyer = $Basic_Amount_Gst * ($NewPaymentGatewayFee / 100); // 1.85%
+                            $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
+                            $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
+                            $BuyerPayment = (floatval($Basic_Amount_Gst) + floatval($Total_Payment_Gateway));
+                            $totalPlatformFee = floatval($Payment_Gateway_Buyer);
+                            $totalTaxes = floatval($BasePriceGst) + floatval($Payment_Gateway_gst_amount);
+
+                            //------------- additional amt calculation
+                            $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
+
+                            //-------------- for revenue excel report
+                            if(!empty($additional_amount)){
+                                $Excel_Extra_Amount_Payment_Gateway = $additional_amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                                $Excel_Extra_Amount_Payment_Gateway_Gst = $Excel_Extra_Amount_Payment_Gateway * ($Payment_Gateway_Gst / 100); //18%
+                            }
+
+                        }else if((int)$aNewTicketResult[0]->player_of_fee == 2 && (int)$aNewTicketResult[0]->player_of_gateway_fee == 1) { // Participant + Organiser
+                            
+                            //--------------- additional amt calculation
+                            if(!empty($total_extra_amount)){
+                                $additional_amount = !empty($total_extra_amount) ? $total_extra_amount : 0; 
+                                $Payment_Gateway_Buyer = ($additional_amount + $Net_Registration_Amount) * ($NewPaymentGatewayFee / 100); // 1.85%
+
+                                //-------------- for revenue excel report
+                                $Excel_Extra_Amount_Payment_Gateway = $additional_amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                                $Excel_Extra_Amount_Payment_Gateway_Gst = $Excel_Extra_Amount_Payment_Gateway * ($Payment_Gateway_Gst / 100); //18%
+                            }else{
+                                $Payment_Gateway_Buyer = $Net_Registration_Amount * ($NewPaymentGatewayFee / 100); // 1.85%
+                            }
+
+                            $Payment_Gateway_gst_amount = $Payment_Gateway_Buyer * ($Payment_Gateway_Gst / 100); //18%
+                            $Total_Payment_Gateway = (floatval($Payment_Gateway_Buyer) + floatval($Payment_Gateway_gst_amount));
+                            $BuyerPayment = (floatval($Basic_Amount_Gst) + floatval($Total_Convenience_Fees) + floatval($Total_Platform_Fees) );
+                            $totalPlatformFee = floatval($Convenience_Fee_Amount) + floatval($NewPlatformFee);
+                            $totalTaxes = floatval($BasePriceGst) + floatval($GST_On_Convenience_Fees) + floatval($GST_On_Platform_Fees_Amount);
+                        }
+                        
+                        $loc_ticket_calculation_details = !empty($new_ticket_calculation_details) ? json_decode($new_ticket_calculation_details) : '';
+
+                        $new_ticket_amount  = $BuyerPayment;
+                        //---------
+                        $res->total_buyer = $BuyerPayment;
+                        $res->BuyerPayment = $BuyerPayment;
+                        $res->Extra_Amount = $additional_amount;
+                        $res->Extra_Amount = $additional_amount;
+                        $res->Platform_Fee = $NewPlatformFee;
+                        $res->ticket_price = !empty($aNewTicketResult) ? $new_ticket_price : 0;
+                        $res->to_organiser = !empty($loc_ticket_calculation_details) ? $loc_ticket_calculation_details->to_organiser : 0;
+                        $res->no_of_tickets = !empty($aNewTicketResult) ? $aNewTicketResult[0]->no_of_tickets : 0;
+                        $res->player_of_fee = !empty($aNewTicketResult) ? $aNewTicketResult[0]->player_of_fee : 0;
+                        $res->ticket_status = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_status : 0;
+                        $res->discount_value = !empty($aNewTicketResult) ? $aNewTicketResult[0]->discount_value : 0;
+                        $res->msg_attendance = !empty($aNewTicketResult) ? $aNewTicketResult[0]->msg_attendance : 0;
+                        $res->payment_to_you = !empty($aNewTicketResult) ? $aNewTicketResult[0]->payment_to_you : 0;
+                        $res->total_discount = !empty($aNewTicketResult) ? $aNewTicketResult[0]->discount : 0;
+                        $res->total_quantity = !empty($aNewTicketResult) ? $aNewTicketResult[0]->total_quantity : 0;
+                        $res->Convenience_Fee = $ConvenienceFeeBase;
+                        $res->RegistrationFee = $BasePriceGst;
+                        $res->apply_age_limit = !empty($aNewTicketResult) ? $aNewTicketResult[0]->apply_age_limit : 0;
+                        $res->show_early_bird = !empty($aNewTicketResult) ? $aNewTicketResult[0]->early_bird : 0;
+                        $res->ticket_discount = !empty($aNewTicketResult) ? $aNewTicketResult[0]->discount : 0;
+                        $res->advanced_settings = !empty($aNewTicketResult) ? $aNewTicketResult[0]->advanced_settings : 0;
+                        $res->ticket_show_price = !empty($aNewTicketResult) ? $new_ticket_price : 0;
+                        $res->TotalBookedTickets = !empty($TotalTicketsResult) ? $TotalTicketsResult[0]->TotalBookedTickets : 0;
+                        $res->ticket_description = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_description : 0;
+                        $res->Payment_Gateway_Fee  = $NewPaymentGatewayFee;
+                        $res->Platform_Fee_GST_18  = $GST_On_Platform_Fees_Amount;
+                        $res->TicketYtcrBasePrice  = $ConvenienceFeeBase;
+                        $res->display_ticket_name = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_name : 0;
+                        $res->PLATFORM_FEE_PERCENT  = $res->PLATFORM_FEE_PERCENT;
+                        $res->PaymentGatewayAmount  = 0;
+                        $res->ticket_sale_end_date = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_sale_end_date : 0;
+                        $res->PaymentGatewayWithGst  = 0;
+                        $res->player_of_gateway_fee = !empty($aNewTicketResult) ? $aNewTicketResult[0]->player_of_gateway_fee : 0;
+                        $res->Convenience_Fee_GST_18  = $GST_On_Convenience_Fees;
+                        $res->Payment_Gateway_GST_18  = $Payment_Gateway_gst_amount;
+                        $res->ticket_sale_start_date = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_sale_start_date : 0;
+                        $res->Payment_Gateway_Charges  = round($Payment_Gateway_Buyer,2) ;
+                        $res->minimum_donation_amount = !empty($aNewTicketResult) ? $aNewTicketResult[0]->minimum_donation_amount : 0;
+                        $res->Extra_Amount_Payment_Gateway  = $Extra_Amount_Payment_Gateway;
+                        $res->BuyerAmtWithoutPaymentGateway  = '0.00';
+                        $res->Extra_Amount_Payment_Gateway_Gst  = $Extra_Amount_Payment_Gateway_Gst;
+
+                        $res->Excel_Extra_Amount_Payment_Gateway = $Excel_Extra_Amount_Payment_Gateway;
+                        $res->Excel_Extra_Amount_Payment_Gateway_Gst = $Excel_Extra_Amount_Payment_Gateway_Gst;
+                        
+                        $res->ticket_calculation_details = json_decode($new_ticket_calculation_details);
+                    }
+               
+                }
+            }
+            // dd($new_ticket_amount);
+            // dd(json_encode($cart_details)); 
+
+            //---------- Main amount update
+            $new_final_ticket_amount = (floatval($booking_payment_amount) + floatval($new_ticket_amount)) - floatval($previous_final_ticket_amount);
+            // dd($new_final_ticket_amount);
+            
+            // ---------- Event Booking table update entry
+            $payment_booking_sql = 'UPDATE booking_payment_details SET amount =:amount WHERE id=:id';
+            $bindings = array(
+                'amount' =>  $new_final_ticket_amount,
+                'id'     =>   $booking_pay_id
+            );
+            DB::update($payment_booking_sql, $bindings);  
+            
+            // ---------- Event Booking table update entry
+            $event_booking_sql = 'UPDATE event_booking SET total_amount =:total_amount, cart_details =:cart_details WHERE id=:id';
+            $bindings1 = array(
+                'total_amount' =>  $new_final_ticket_amount,
+                'cart_details' =>  json_encode($cart_details),
+                'id'           =>   $event_booking_id
+            );
+            DB::update($event_booking_sql, $bindings1);  
+
+            //---------- Booking details table update entry
+            $booking_sql = 'UPDATE booking_details SET ticket_id =:new_ticket_id, ticket_amount =:ticket_amount WHERE id=:id';
+            $bindings2 = array(
+                'new_ticket_id' =>  $ticketId,
+                'ticket_amount' =>  $new_ticket_price,
+                'id' =>   $booking_details_id
+            );
+            DB::update($booking_sql, $bindings2);
+
+            //---------- Attendee Booking details table update entry
+            $attendee_booking_sql = 'UPDATE attendee_booking_details SET ticket_id =:new_ticket_id, ticket_price =:ticket_price, final_ticket_price =:final_ticket_price WHERE id=:id';
+            $bindings3 = array(
+                'new_ticket_id' =>  $ticketId,
+                'ticket_price'  =>  floatval($new_ticket_price),
+                'final_ticket_price'  =>  floatval($BuyerPayment),
+                'id' =>   $attendanceId
+            );
+            // dd($bindings1);
+            DB::update($attendee_booking_sql, $bindings3);
+
+        }
+        $successMessage = 'Races Category Update Successfully';
+        return redirect('/participants_event/'.$event_id)->with('success', $successMessage);
+        
     }
     
     

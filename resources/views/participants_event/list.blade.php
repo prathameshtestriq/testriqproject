@@ -259,11 +259,12 @@
                                         <th class="text-center">Transaction/Order Id</th>
                                         <th class="text-center">Registration Id</th>
                                         <th class="text-center">Payu Id</th>
-                                        <th class="text-center">Transaction/Payment Status</th>
+                                        <th class="text-center">Payment Status</th>
                                         <th class="text-center">Email/Mobile Number</th>
                                         {{-- <th class="text-center">Mobile Number</th> --}}
                                         <th class="text-center">Category Name</th>
-                                        <th class="text-center">Amount</th>
+                                        <th class="text-center">Ticket Amount</th>
+                                        <th class="text-center">Final Amount</th>
                                         <th class="text-center">View</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -283,7 +284,7 @@
                                             <tr>
                                                 <td class="text-center">{{ $i }}</td>
                                                 <td class="text-left">{{ ucfirst($val->user_name) }}</td>
-                                                <td class="text-left">{{ date('d-m-Y ', $val->booking_date) }}</td>
+                                                <td class="text-left" style="min-width: 100px">{{ date('d-m-Y ', $val->booking_date) }}</td>
                                                 <td class="text-left">{{ $val->Transaction_order_id }}</td>
                                                 <td class="text-left">{{ $val->registration_id }}</td>
                                                 <td class="text-left">{{ $val->payu_id }}</td>
@@ -319,11 +320,21 @@
                                                 <td class="text-center">
                                                  {{ ucfirst($val->category_name) }}
                                                 </td>
+
                                                 <td class="text-center">{{ $val->total_amount }}</td>
-                                                 <td>
-                                                    <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showDetails({{ $val->id }},{{$val->event_id}})" title="show" data-bs-toggle="modal" data-bs-target="#exampleModallaptop1">
+                                                <td class="text-center">{{ number_format($val->amount,2) }}</td>
+                                               
+                                                <td>
+                                                    <div class="d-flex" style="gap: 5px;">
+                                                           <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showDetails({{ $val->id }},{{$val->event_id}})" title="show" data-bs-toggle="modal" data-bs-target="#exampleModallaptop1">
                                                         <i class="fa fa-eye btn btn-success btn-sm "></i>
                                                     </a>
+
+                                                     <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showCategoryDetails({{ $val->id }},{{$val->event_id}})" title="Change Races Category" data-bs-toggle="modal" data-bs-target="#exampleModallaptop2">
+                                                        <i class="fa fa-ticket btn btn-warning btn-sm "></i>
+                                                    </a>
+                                                    </div>
+                                                 
                                                 </td>                                               
                                                 <td>
                                                     {{-- <a href=""><i
@@ -345,6 +356,7 @@
                                 </div>
                             </div>
                         </div>
+                       
                         <div class="modal fade" id="participant_details_modal" tabindex="-1" role="dialog" aria-labelledby="participant_details_modal" aria-hidden="true" >
                             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                               <div class="modal-content">
@@ -355,6 +367,28 @@
                                         <form class="form" id="model" action="" method="post">
                                             @csrf
                                             <div class="card-body" id="participant_details_body">
+                                            
+                                            </div> 
+                                        </form>
+                                    </div> 
+                                    <br>
+                                  </div>
+                                </div>  
+                              </div>
+                            </div>
+                        </div>
+
+                        <!-- Changes Races Category -->
+                         <div class="modal fade" id="change_category_modal" tabindex="-1" role="dialog" aria-labelledby="change_category_modal" aria-hidden="true" >
+                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                              <div class="modal-content">
+                                <div class="col-xl-12">
+                                  <div class="card social-profile mb-0">
+                      
+                                    <div class="card-body" >
+                                        <form class="form" id="model" action="" method="post">
+                                            @csrf
+                                            <div class="card-body" id="change_category_body">
                                             
                                             </div> 
                                         </form>
@@ -410,6 +444,37 @@
 
                         $('#participant_details_body').html(result);
                         $('#participant_details_modal').modal("show");
+                    }
+                    , complete: function() {
+                        $('#loader').hide();
+                    }
+                    , error: function(jqXHR, testStatus, error) {
+                        console.log(error);
+                        alert("Page " + url + " cannot open. Error:" + error);
+                        $('#loader').hide();
+                    }
+                    , timeout: 8000
+                })
+            }
+
+            function showCategoryDetails(attendance_booking_id,event_id) {
+               
+                var Url= '<?php echo url('participants_event') ?>';
+                url = Url + '/'+ event_id + '/change_category/' + attendance_booking_id;
+                // alert(url);
+                // var url;
+                $.ajax({
+                    url:  url ,
+                    //  alert(url);
+                    beforeSend: function() {
+                        $('#loader').show();
+                    },
+                    // return the result
+                    success: function(result) {
+                        // console.log(result);
+
+                        $('#change_category_body').html(result);
+                        $('#change_category_modal').modal("show");
                     }
                     , complete: function() {
                         $('#loader').hide();
