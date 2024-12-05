@@ -1139,8 +1139,8 @@ class EventDashboardController extends Controller
 
                             //--------------
                             $ticket_count = $details->count; 
-                            $aTemp->Ticket_count = isset($details->count) && !empty($details->count) ? $details->count : 0;
-
+                            // $aTemp->Ticket_count = isset($details->count) && !empty($details->count) ? $details->count : 0;
+                            $aTemp->Ticket_count = 1;
                             //------------------
                             $aTemp->Single_ticket_price = isset($details->Main_Price) && !empty($details->Main_Price) ? $details->Main_Price : '0.00';
 

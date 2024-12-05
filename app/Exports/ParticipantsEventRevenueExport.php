@@ -147,10 +147,9 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
 
                             //--------------
                             $ticket_count = $details->count; 
-                            $aTemp->Ticket_count = isset($details->count) && !empty($details->count) ? $details->count : 0;
-
-                            $aTemp->Single_ticket_price = 
-                            isset($details->Main_Price) && is_numeric($details->Main_Price) && is_numeric($ticket_count) 
+                            // $aTemp->Ticket_count = isset($details->count) && !empty($details->count) ? $details->count : 0;
+                            $aTemp->Ticket_count = 1;
+                            $aTemp->Single_ticket_price = isset($details->Main_Price) && is_numeric($details->Main_Price) && is_numeric($ticket_count) 
                             ? ($details->Main_Price) 
                             : '0.00';
 
