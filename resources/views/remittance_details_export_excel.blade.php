@@ -58,7 +58,7 @@
                     foreach ($AttendeeDataArray as $res){ 
 
                         // $total_Single_ticket_price += $res->Single_ticket_price;
-                        $total_Ticket_count += $res->Ticket_count;
+                        $total_Ticket_count += isset($res->Ticket_count) && !empty($res->Ticket_count) ? $res->Ticket_count : 0;
                         $total_Ticket_price += $res->Ticket_price;
                         $total_Registration_Fee_GST += $res->Registration_Fee_GST;
                         $total_Applied_Coupon_Amount += $res->Applied_Coupon_Amount;
