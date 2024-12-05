@@ -1090,6 +1090,7 @@ class EventDashboardController extends Controller
     function remittanceDetailsExcellData($AttendeeData, $EventId)
     {
          // dd($AttendeeData);
+        
         $excel_url = '';
         $AttendeeDataArray = [];
 
