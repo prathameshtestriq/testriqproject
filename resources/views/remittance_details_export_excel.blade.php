@@ -59,20 +59,20 @@
 
                         // $total_Single_ticket_price += $res->Single_ticket_price;
                         $total_Ticket_count += isset($res->Ticket_count) && !empty($res->Ticket_count) ? $res->Ticket_count : 0;
-                        $total_Ticket_price += $res->Ticket_price;
-                        $total_Registration_Fee_GST += $res->Registration_Fee_GST;
-                        $total_Applied_Coupon_Amount += $res->Applied_Coupon_Amount;
-                        $total_Extra_amount += $res->Extra_amount;
-                        $total_Extra_amount_pg_charges += $res->Extra_amount_pg_charges;
-                        $total_Extra_amount_pg_GST += $res->Extra_amount_pg_GST;
-                        $total_Convenience_fee += $res->Convenience_fee;
-                        $total_Convenience_Fee_GST += $res->Convenience_Fee_GST;
-                        $total_Platform_fee += $res->Platform_fee;
-                        $total_Platform_Fee_GST += $res->Platform_Fee_GST;
-                        $total_Payment_gateway_charges += $res->Payment_gateway_charges;
-                        $total_Payment_Gateway_GST += $res->Payment_Gateway_GST;
-                        $total_Organiser_amount += $res->Organiser_amount;
-                        $total_Final_total_amount += $res->Final_total_amount;
+                        $total_Ticket_price += isset($res->Ticket_price) && !empty($res->Ticket_price) ? $res->Ticket_price : 0;
+                        $total_Registration_Fee_GST += isset($res->Registration_Fee_GST) && !empty($res->Registration_Fee_GST) ? $res->Registration_Fee_GST : 0;
+                        $total_Applied_Coupon_Amount += isset($res->Applied_Coupon_Amount) && !empty($res->Applied_Coupon_Amount) ? $res->Applied_Coupon_Amount : 0;
+                        $total_Extra_amount += isset($res->Extra_amount) && !empty($res->Extra_amount) ? $res->Extra_amount : 0;
+                        $total_Extra_amount_pg_charges += isset($res->Extra_amount_pg_charges) && !empty($res->Extra_amount_pg_charges) ? $res->Extra_amount_pg_charges : 0;
+                        $total_Extra_amount_pg_GST += isset($res->Extra_amount_pg_GST) && !empty($res->Extra_amount_pg_GST) ? $res->Extra_amount_pg_GST : 0;
+                        $total_Convenience_fee += isset($res->Convenience_fee) && !empty($res->Convenience_fee) ? $res->Convenience_fee : 0;
+                        $total_Convenience_Fee_GST += isset($res->Convenience_Fee_GST) && !empty($res->Convenience_Fee_GST) ? $res->Convenience_Fee_GST : 0;
+                        $total_Platform_fee += isset($res->Platform_fee) && !empty($res->Platform_fee) ? $res->Platform_fee : 0;
+                        $total_Platform_Fee_GST += isset($res->Platform_Fee_GST) && !empty($res->Platform_Fee_GST) ? $res->Platform_Fee_GST : 0;
+                        $total_Payment_gateway_charges += isset($res->Payment_gateway_charges) && !empty($res->Payment_gateway_charges) ? $res->Payment_gateway_charges : 0;
+                        $total_Payment_Gateway_GST += isset($res->Payment_Gateway_GST) && !empty($res->Payment_Gateway_GST) ? $res->Payment_Gateway_GST : 0;
+                        $total_Organiser_amount += isset($res->Organiser_amount) && !empty($res->Organiser_amount) ? $res->Organiser_amount : 0;
+                        $total_Final_total_amount += isset($res->Final_total_amount) && !empty($res->Final_total_amount) ? $res->Final_total_amount : 0;
  
             ?>
                 
@@ -92,30 +92,29 @@
                    <td style="text-align: left;"><?php echo $res->payment_status; ?></td>
                    <td style="text-align: left;"><?php echo $res->taxes_status; ?></td>
 
-                   <!-- <td style="text-align: right;"><?php //echo $res->Single_ticket_price; ?></td> -->
-                   <td style="text-align: right;"><?php echo $res->Ticket_count; ?></td>
-                   <td style="text-align: right;"><?php echo number_format($res->Ticket_price,2); ?></td>
-                   <td style="text-align: right;"><?php echo $res->Registration_Fee_GST; ?></td>
-                   <td style="text-align: right;"><?php echo number_format($res->Applied_Coupon_Amount,2); ?></td>
-
-                   <td style="text-align: right;"><?php echo number_format($res->Extra_amount,2); ?></td>
-                   <td style="text-align: right;"><?php echo $res->Extra_amount_pg_charges; ?></td>
-                   <td style="text-align: right;"><?php echo $res->Extra_amount_pg_GST; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Ticket_count) && !empty($res->Ticket_count) ? $res->Ticket_count : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Ticket_price) && !empty($res->Ticket_price) ? number_format($res->Ticket_price,2) : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Registration_Fee_GST) && !empty($res->Registration_Fee_GST) ? $res->Registration_Fee_GST : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Applied_Coupon_Amount) && !empty($res->Applied_Coupon_Amount) ? number_format($res->Applied_Coupon_Amount,2) : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Extra_amount) && !empty($res->Extra_amount) ? number_format($res->Extra_amount,2) : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Extra_amount_pg_charges) && !empty($res->Extra_amount_pg_charges) ? $res->Extra_amount_pg_charges : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Extra_amount_pg_GST) && !empty($res->Extra_amount_pg_GST) ? $res->Extra_amount_pg_GST : 0 ; ?></td>
 
                    <td style="text-align: left;"><?php echo $res->Pass_Bare; ?></td>
                    <td style="text-align: left;"><?php echo $res->Pg_Bare; ?></td>
 
-                   <td style="text-align: right;"><?php echo number_format($res->Convenience_fee,2); ?></td>
-                   <td style="text-align: right;"><?php echo number_format($res->Convenience_Fee_GST,2); ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Convenience_fee) && !empty($res->Convenience_fee) ? number_format($res->Convenience_fee,2) : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Convenience_Fee_GST) && !empty($res->Convenience_Fee_GST) ? number_format($res->Convenience_Fee_GST,2) : 0 ; ?></td>
 
-                   <td style="text-align: right;"><?php echo number_format($res->Platform_fee,2); ?></td>
-                   <td style="text-align: right;"><?php echo number_format($res->Platform_Fee_GST,2); ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Platform_fee) && !empty($res->Platform_fee) ? number_format($res->Platform_fee,2) : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Platform_Fee_GST) && !empty($res->Platform_Fee_GST) ? number_format($res->Platform_Fee_GST,2) : 0 ; ?></td>
 
-                   <td style="text-align: right;"><?php echo number_format($res->Payment_gateway_charges,2); ?></td>
-                   <td style="text-align: right;"><?php echo number_format($res->Payment_Gateway_GST,2); ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Payment_gateway_charges) && !empty($res->Payment_gateway_charges) ? number_format($res->Payment_gateway_charges,2) : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Payment_Gateway_GST) && !empty($res->Payment_Gateway_GST) ? number_format($res->Payment_Gateway_GST,2) : 0 ; ?></td>
 
-                   <td style="text-align: right;"><?php echo number_format($res->Organiser_amount,2); ?></td>
-                   <td style="text-align: right;"><?php echo number_format($res->Final_total_amount,2); ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Organiser_amount) && !empty($res->Organiser_amount) ? number_format($res->Organiser_amount,2) : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Final_total_amount) && !empty($res->Final_total_amount) ? number_format($res->Final_total_amount,2) : 0 ; ?></td>
+
                 </tr>
             <?php $i++; }} ?>
 
