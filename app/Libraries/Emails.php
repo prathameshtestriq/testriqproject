@@ -336,7 +336,7 @@ Thank you for your attention to this matter.<br/>";
     }
 
 
-    public function save_email_log($type, $send_mail_to, $subject, $message, $response, $send_email_status=0, $EventId)
+    public function save_email_log($type, $send_mail_to, $subject, $message, $response, $send_email_status=0, $EventId=0)
     {
         $responseData = [
             'statusCode' => $response->statusCode(),
