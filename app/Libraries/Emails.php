@@ -171,7 +171,7 @@ Thank you for your attention to this matter.<br/>";
             }else {
                 $type = "Ticket Booking";
             }
-            $response = '';
+            // $response = '';
 
             $send_mail_to = $UserEmail;
             $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response, $send_email_status, $EventId);

@@ -263,7 +263,7 @@
                                         <th class="text-center">Email/Mobile Number</th>
                                         {{-- <th class="text-center">Mobile Number</th> --}}
                                         <th class="text-center">Category Name</th>
-                                        <th class="text-center">Total Ticket Amount</th>
+                                        <th class="text-center">Ticket Amount</th>
                                         <th class="text-center">Final Amount</th>
                                         <th class="text-center">View</th>
                                         <th class="text-center">Actions</th>
@@ -321,8 +321,8 @@
                                                  {{ ucfirst($val->category_name) }}
                                                 </td>
 
-                                                <td class="text-center">{{ $val->total_amount }}</td>
-                                                <td class="text-center">{{ number_format($val->amount,2) }}</td>
+                                                <td class="text-center">{{ $val->ticket_amount }}</td>
+                                                <td class="text-center">{{ $val->amount }}</td>
                                                
                                                 <td>
                                                     <div class="d-flex" style="gap: 5px;">

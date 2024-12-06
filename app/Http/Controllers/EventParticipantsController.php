@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Master;
 use \stdClass;
+use App\Libraries\Numberformate;
 
 class EventParticipantsController extends Controller
 {
@@ -43,7 +44,8 @@ class EventParticipantsController extends Controller
     }
     public function index(Request $request, $event_id=0,$dashboard_id = 0)
     {
-       
+        
+        $numberFormate = new Numberformate();
         ini_set('max_execution_time', 1000);
         // dd($event_id);
         $Return = array();
@@ -140,7 +142,7 @@ class EventParticipantsController extends Controller
             $FiltersSql .= ' AND (LOWER((CONCAT(a.firstname, " ", a.lastname))) LIKE \'%' . strtolower($Return['search_participant_name']) . '%\')';
         } 
 
-        if(isset( $Return['search_transaction_status'])){
+        if(!empty( $Return['search_transaction_status'])){
             $FiltersSql .= ' AND (LOWER(e.transaction_status) LIKE \'%' . strtolower($Return['search_transaction_status']) . '%\')';
         } 
 
@@ -177,7 +179,7 @@ class EventParticipantsController extends Controller
             // dd($sSQL);
         }
 
-        if(!empty( $Return['search_transaction_order_id'])){
+        if(!empty($Return['search_transaction_order_id'])){
             $FiltersSql .= ' AND (LOWER((SELECT bpd.txnid FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id)) LIKE \'%' . strtolower($Return['search_transaction_order_id']) . '%\')';
         } 
         $PageNo = request()->input('page', 1);
@@ -212,7 +214,7 @@ class EventParticipantsController extends Controller
         if (!empty($CountsResult)) {
             $CountRows = $CountsResult[0]->count;
         }
-        // dd($count);
+        // dd($CountRows);
     
         // $sSQL = 'SELECT a.*,e.booking_date,e.booking_pay_id, e.transaction_status, b.event_id,a.id AS aId, CONCAT(a.firstname, " ", a.lastname) AS user_name,
         //     (SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name,
@@ -234,6 +236,7 @@ class EventParticipantsController extends Controller
                 e.transaction_status, 
                 b.event_id, 
                 a.ticket_id,
+                b.ticket_amount,
                 a.id AS aId, 
                 CONCAT(a.firstname, " ", a.lastname) AS user_name,
                 et.ticket_name AS category_name,
@@ -263,8 +266,9 @@ class EventParticipantsController extends Controller
         if ($Limit > 0) {
             $sSQL .= ' LIMIT ' . $Return['Offset'] . ',' . $Limit;
         }
-       
+       // dd($sSQL);
         $event_participants  = DB::select($sSQL, array());
+        // dd($event_participants);
         $final_ticket_amount = 0;
         foreach( $event_participants  as $value){
             if($value->bulk_upload_flag == 0 && !empty($value->cart_details)){
@@ -278,10 +282,12 @@ class EventParticipantsController extends Controller
                         $final_ticket_amount = (floatval($res->BuyerPayment) + $Extra_Amount + $Extra_Amount_Payment_Gateway + $Extra_Amount_Payment_Gateway_Gst);
                     }
                 }
-                $value->total_amount =  number_format($final_ticket_amount,2);
+                $value->total_amount = $numberFormate->formatInIndianCurrency($final_ticket_amount);
             }else{
-                $value->total_amount = number_format($value->final_ticket_price,2);
+                $value->total_amount = $numberFormate->formatInIndianCurrency($value->final_ticket_price);
             }
+            $value->amount = $numberFormate->formatInIndianCurrency($value->amount);
+            $value->ticket_amount = $numberFormate->formatInIndianCurrency($value->ticket_amount);
         }    
          
         $Return['event_participants'] = (count($event_participants) > 0) ? $event_participants : [];
@@ -390,12 +396,8 @@ class EventParticipantsController extends Controller
             }
               
         }
-        
-        if((!empty($serach_event_id) || !empty($event_id)) && $dashboard_id == 0){
-            $Return['ParticipantsExcelLink'] = EventParticipantsController::participants_excel_export($AttendeeData, $event_id, $serach_event_id);
-        }else{
-            $Return['ParticipantsExcelLink'] = EventParticipantsController::participants_excel_export($AttendeeData, $event_id, $serach_event_id);
-        }
+        // $AttendeeData = [];
+        $Return['ParticipantsExcelLink'] = EventParticipantsController::participants_excel_export($AttendeeData, $event_id, $serach_event_id);
         
         // $Return['ParticipantsExcelLink'] = '';
         // dd($Return['ParticipantsExcelLink']);
@@ -553,7 +555,13 @@ class EventParticipantsController extends Controller
                                     }else if($val->question_form_type == "date"){
                                         $aTemp->answer_value = isset($val->ActualValue) && !empty($val->ActualValue) ? date('d-m-Y',strtotime($val->ActualValue)) : '';
                                     }else{
-                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                        
+                                        if ($val->question_form_type == "textarea") {
+                                            $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $val->ActualValue);
+                                        }else{
+                                            $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                        }
+                                       
                                     }
                                    
                                 }

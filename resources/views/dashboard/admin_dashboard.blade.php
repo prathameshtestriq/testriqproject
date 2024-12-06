@@ -326,11 +326,11 @@
                 </div>
             </div>
 
-            {{-- <!-- Total Registrations -->
+          
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Total Registrations </h5>
+                        <h5 class="text-primary mb-0 text-dark">Total Registration</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
@@ -347,7 +347,7 @@
                         </div>
                     </div>
                 </div>
-            </div> --}}
+            </div>
 
             <!-- Registrations Successful  -->
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
@@ -479,7 +479,7 @@
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Net Earnings</h5>
+                        <h5 class="text-primary mb-0 text-dark">Total Amount Collected</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
@@ -526,7 +526,7 @@
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Remitted Amount </h5>
+                        <h5 class="text-primary mb-0 text-dark">Remitted Amount</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>
@@ -550,7 +550,7 @@
             <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3 my-1">
                 <div class="card m-0 custom-highlight-bg">
                     <div class="card-body ">
-                        <h5 class="text-primary mb-0 text-dark">Total Payment Gateway Charges</h5>
+                        <h5 class="text-primary mb-0 text-dark">Total Payment Gateway</h5>
                         <div class="row align-items-center mb-0">
                             <div class="col-sm-6">
                                 <div>

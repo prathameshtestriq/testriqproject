@@ -246,25 +246,29 @@ class EventDashboardController extends Controller
                     foreach($AttendeeData as $res){
                         $card_details_array = json_decode($res->cart_details);
 
-                        // Applied Coupon Amount
-                        $Applied_Coupon_Amount = isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount) ? ($card_details_array[0]->appliedCouponAmount * $card_details_array[0]->count)  : 0;  
-                        
-                        if(isset($card_details_array[0]->appliedCouponAmount) && !empty($card_details_array[0]->appliedCouponAmount)){
-                            $Organiser_amount += isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? ($card_details_array[0]->to_organiser - $card_details_array[0]->appliedCouponAmount) : 0;
-                        }else{
-                            $Organiser_amount += isset($card_details_array[0]->to_organiser) && !empty($card_details_array[0]->to_organiser) ? $card_details_array[0]->to_organiser : 0;
+                        if(!empty($card_details_array)){
+                            foreach($card_details_array as $details){
+
+                                // Applied Coupon Amount
+                                $Applied_Coupon_Amount = isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount) ? ($details->appliedCouponAmount)  : 0;  
+                       
+                                if(isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount)){
+                                    $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? ($details->to_organiser - $details->appliedCouponAmount) : 0;
+                                }else{
+                                    $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? $details->to_organiser : 0;
+                                }
+
+                                $Payment_Gateway_GST += isset($details->Payment_Gateway_GST_18) && !empty($details->Payment_Gateway_GST_18) ? ($details->Payment_Gateway_GST_18)  : 0;
+                                $Payment_gateway_charges += isset($details->Payment_Gateway_Charges) && !empty($details->Payment_Gateway_Charges) ? floatval($details->Payment_Gateway_Charges)  : 0;
+                               
+                                $Platform_fee += isset($details->Platform_Fee) && !empty($details->Platform_Fee) ? ($details->Platform_Fee)  : 0;
+                                $Platform_Fee_GST += isset($details->Platform_Fee_GST_18) && !empty($details->Platform_Fee_GST_18) ? floatval($details->Platform_Fee_GST_18)  : 0;
+
+                                $Convenience_fee += isset($details->Convenience_Fee) && !empty($details->Convenience_Fee) ? floatval($details->Convenience_Fee) : 0;
+                                $Convenience_Fee_GST += isset($details->Convenience_Fee_GST_18) && !empty($details->Convenience_Fee_GST_18) ? floatval($details->Convenience_Fee_GST_18)  : 0;
+                            }
                         }
 
-                        $Payment_Gateway_GST += isset($card_details_array[0]->Payment_Gateway_GST_18) && !empty($card_details_array[0]->Payment_Gateway_GST_18) ? ($card_details_array[0]->Payment_Gateway_GST_18 * $card_details_array[0]->count)  : 0;
-                        $Payment_gateway_charges += isset($card_details_array[0]->Payment_Gateway_Charges) && !empty($card_details_array[0]->Payment_Gateway_Charges) ? ($card_details_array[0]->Payment_Gateway_Charges * $card_details_array[0]->count)  : 0;
-
-                       
-                        $Platform_fee += isset($card_details_array[0]->Platform_Fee) && !empty($card_details_array[0]->Platform_Fee) ? ($card_details_array[0]->Platform_Fee * $card_details_array[0]->count)  : 0;
-                        $Platform_Fee_GST += isset($card_details_array[0]->Platform_Fee_GST_18) && !empty($card_details_array[0]->Platform_Fee_GST_18) ? ($card_details_array[0]->Platform_Fee_GST_18 * $card_details_array[0]->count)  : 0;
-
-                        $Convenience_fee += isset($card_details_array[0]->Convenience_Fee) && !empty($card_details_array[0]->Convenience_Fee) ? 
-                                        ($card_details_array[0]->Convenience_Fee * $card_details_array[0]->count)  : 0;
-                        $Convenience_Fee_GST += isset($card_details_array[0]->Convenience_Fee_GST_18) && !empty($card_details_array[0]->Convenience_Fee_GST_18) ? ($card_details_array[0]->Convenience_Fee_GST_18 * $card_details_array[0]->count)  : 0;
                     }
                 }
 

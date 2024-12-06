@@ -86,8 +86,9 @@ class PaymentGatwayController extends Controller
                 $UserId = $aToken['data']->ID;
             }
 
-            $EventId = !empty($request->event_id) ? $request->event_id : 0;
-            $Amount = !empty($request->amount) ? $request->amount : '';
+            $EventId = !empty($request->event_id) && $request->event_id != NULL ? $request->event_id : 0;
+            $Amount = !empty($request->amount) && $request->amount != NULL ? $request->amount : '';
+            // $Amount = '';
             $TicketType = !empty($request->ticket_type) ? $request->ticket_type : 'free';
             $Datetime = time();
             $request_datetime = date('Y-m-d H:i:s');
@@ -104,26 +105,28 @@ class PaymentGatwayController extends Controller
             $Email = !empty($aResult[0]->email) ? $aResult[0]->email : '';
             $PhoneNo = !empty($aResult[0]->mobile) ? $aResult[0]->mobile : '';
             $ProductInfo = !empty($event_Result) ? $event_Result[0]->name : '';
-
-            // $Merchant_key = !empty($request->merchant_key) ? $request->merchant_key : ''; 
-            $Merchant_key = config('custom.merchant_key'); // set on custom file
-            $SALT = config('custom.salt'); // set on custom file
-
-            $Sql = 'SELECT counter FROM booking_payment_details WHERE 1=1 order by id desc limit 1';
-            $aResult = DB::select($Sql);
-
-            $last_count = !empty($aResult) && !empty($aResult[0]->counter) ? $aResult[0]->counter + 1 : 1;
-            $txnid = !empty($last_count) ? 'YTCR-' . date('dmy') . '-' . $last_count : 'YTCR-' . date('dmy') . '-1';
-
-            // $hash = hash('sha512', $Merchant_key . '|' . $txnid . '|' . $Amount . '|' . $ProductInfo . '|' . $FirstName . '|' . $Email . '|' . '||||||vvHOCdxxbkTXYASLCevSJ7iDkE8DRBT4');
-
-            // $hashstring = $Merchant_key . '|' . $txnid . '|' . $Amount . '|' . $ProductInfo . '|' . $FirstName . '|' . $Email . '| udf1 | udf2 | udf3 | udf4 | udf5 |' . '||||||' . $SALT;
-            // $hash = strtolower(hash('sha512', $hashstring)); |||||||||||
-
-            $hashString = $Merchant_key . '|' . $txnid . '|' . $Amount . '|' . $ProductInfo . '|' . $FirstName . '|' . $Email . '|||||||||||' . $SALT;
-            $hash = hash('sha512', $hashString);
         
-        if($EventId != '' || $EventId != '0' || $EventId != 0 || $EventId != 'undefined'){
+            if($Amount != '' && $EventId > 0){
+
+                // $Merchant_key = !empty($request->merchant_key) ? $request->merchant_key : ''; 
+                $Merchant_key = config('custom.merchant_key'); // set on custom file
+                $SALT = config('custom.salt'); // set on custom file
+
+                $Sql = 'SELECT counter FROM booking_payment_details WHERE 1=1 order by id desc limit 1';
+                $aResult = DB::select($Sql);
+
+                $last_count = !empty($aResult) && !empty($aResult[0]->counter) ? $aResult[0]->counter + 1 : 1;
+                $txnid = !empty($last_count) ? 'YTCR-' . date('dmy') . '-' . $last_count : 'YTCR-' . date('dmy') . '-1';
+
+                // $hash = hash('sha512', $Merchant_key . '|' . $txnid . '|' . $Amount . '|' . $ProductInfo . '|' . $FirstName . '|' . $Email . '|' . '||||||vvHOCdxxbkTXYASLCevSJ7iDkE8DRBT4');
+
+                // $hashstring = $Merchant_key . '|' . $txnid . '|' . $Amount . '|' . $ProductInfo . '|' . $FirstName . '|' . $Email . '| udf1 | udf2 | udf3 | udf4 | udf5 |' . '||||||' . $SALT;
+                // $hash = strtolower(hash('sha512', $hashstring)); |||||||||||
+
+                $hashString = $Merchant_key . '|' . $txnid . '|' . $Amount . '|' . $ProductInfo . '|' . $FirstName . '|' . $Email . '|||||||||||' . $SALT;
+                $hash = hash('sha512', $hashString);
+        
+        
             $Bindings = array(
                 "event_id" => $EventId,
                 "txnid" => $txnid,
@@ -324,7 +327,7 @@ class PaymentGatwayController extends Controller
                 "lastname" => $LastName,
                 "email" => $Email,
                 "mobile_no" => $PhoneNo,
-                "FormQuestions" => 'Event id blank for insert record for api',
+                "FormQuestions" => 'Event id or amount is blank for insert record for api',
                 "payment_type" => !empty($Amount) && $Amount != '0.00' ? 'Paid' : 'Free',
                 "created_date" => time()
             );
