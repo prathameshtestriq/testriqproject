@@ -792,7 +792,7 @@ class EventParticipantsController extends Controller
         $Return['event_id'] = $event_id;
         $Return['attendance_id'] = $attendance_id;
 
-        $sSQL = 'SELECT id, ticket_name FROM event_tickets WHERE active = 1 AND event_id=:event_id';
+        $sSQL = 'SELECT id, ticket_name, ticket_price FROM event_tickets WHERE active = 1 AND is_deleted = 0 AND event_id=:event_id';
         $Return["races_category"] = DB::select($sSQL, array('event_id' => $event_id));
 
         return view('participants_event.participant_change_races_category',$Return);
@@ -830,15 +830,16 @@ class EventParticipantsController extends Controller
 
             $booking_payment_amount = !empty($aEventBookingResult) ? $aEventBookingResult[0]->booking_payment_amount : 0;
             $event_booking_amount   = !empty($aEventBookingResult) ? $aEventBookingResult[0]->total_amount : 0;
-            // dd($aEventBookingResult);
+            // dd($booking_payment_amount);
 
             $Convenience_Fees_Gst_Percentage = 18;
             $GST_On_Platform_Fees = 18;
             $Payment_Gateway_Gst = 18;
+            $GstPercentage = 0;
 
-            $ConvenienceFeeBase = $NewPlatformFee = $NewPaymentGatewayFee = $Convenience_Fee_Amount = $GstPercentage = $BasePriceGst = $Basic_Amount_Gst = $Convenience_Fees_Gst_Percentage = $GST_On_Platform_Fees = $Payment_Gateway_Gst = 0;
-            $GST_On_Convenience_Fees = $Total_Convenience_Fees = $GST_On_Platform_Fees_Amount = $Total_Platform_Fees = $Net_Registration_Amount = $Payment_Gateway_Buyer = $Payment_Gateway_gst_amount = $Total_Payment_Gateway = $BuyerPayment = $totalPlatformFee = $totalTaxes = $Excel_Extra_Amount_Payment_Gateway = $Excel_Extra_Amount_Payment_Gateway_Gst = $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = $previous_final_ticket_amount = $new_ticket_amount  =  0;
-
+            $ConvenienceFeeBase = $NewPlatformFee = $NewPaymentGatewayFee = $Convenience_Fee_Amount = $BasePriceGst = $Basic_Amount_Gst = 0;
+            $GST_On_Convenience_Fees = $Total_Convenience_Fees = $GST_On_Platform_Fees_Amount = $Total_Platform_Fees = $Net_Registration_Amount = $Payment_Gateway_Buyer = $Payment_Gateway_gst_amount = $Total_Payment_Gateway = $BuyerPayment = $totalPlatformFee = $totalTaxes = $Excel_Extra_Amount_Payment_Gateway = $Excel_Extra_Amount_Payment_Gateway_Gst = $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = $previous_final_ticket_amount = $new_ticket_amount  = $new_final_ticket_amount = 0;
+            $flag = 0;
             if(!empty($cart_details)){
                 foreach($cart_details as $res){
                     if($res->id == $previous_ticket_id){
@@ -892,12 +893,19 @@ class EventParticipantsController extends Controller
 
                         $Sql1 = 'SELECT name,collect_gst,prices_taxes_status FROM events WHERE active = 1 and id = ' . $eventId . ' ';
                         $event_Result = DB::select($Sql1);
-
+                        // dd($event_Result);
                         $NewPlatformFee = ($NewPlatformFee * $res->count);
+
+                        if ($event_Result[0]->collect_gst == 1 && $event_Result[0]->prices_taxes_status == 2) {  // get for organization page
+                            $GstPercentage = 18;
+                        }else{
+                            $GstPercentage = 0;
+                        }
 
                         if ($event_Result[0]->collect_gst == 1 && $event_Result[0]->prices_taxes_status == 2) {
                             $BasePriceGst = floatval($new_ticket_price) != 0 ? floatval($new_ticket_price) * ($GstPercentage / 100) : 0; // GST %
                             $Basic_Amount_Gst = (floatval($BasePriceGst) + floatval($new_ticket_price));
+                            // dd($BasePriceGst,$Basic_Amount_Gst,$new_ticket_price,$GstPercentage);
                         } else {
                             $BasePriceGst = '0.00';
                             $Basic_Amount_Gst = floatval($new_ticket_price); // registration amt
@@ -997,13 +1005,13 @@ class EventParticipantsController extends Controller
                         }
                         
                         $loc_ticket_calculation_details = !empty($new_ticket_calculation_details) ? json_decode($new_ticket_calculation_details) : '';
+                        // dd($loc_ticket_calculation_details);
 
                         $new_ticket_amount  = $BuyerPayment;
                         //---------
                         $res->total_buyer = $BuyerPayment;
                         $res->BuyerPayment = $BuyerPayment;
-                        $res->Extra_Amount = $additional_amount;
-                        $res->Extra_Amount = $additional_amount;
+                        // $res->Extra_Amount = $additional_amount;
                         $res->Platform_Fee = $NewPlatformFee;
                         $res->ticket_price = !empty($aNewTicketResult) ? $new_ticket_price : 0;
                         $res->to_organiser = !empty($loc_ticket_calculation_details) ? $loc_ticket_calculation_details->to_organiser : 0;
@@ -1015,7 +1023,7 @@ class EventParticipantsController extends Controller
                         $res->payment_to_you = !empty($aNewTicketResult) ? $aNewTicketResult[0]->payment_to_you : 0;
                         $res->total_discount = !empty($aNewTicketResult) ? $aNewTicketResult[0]->discount : 0;
                         $res->total_quantity = !empty($aNewTicketResult) ? $aNewTicketResult[0]->total_quantity : 0;
-                        $res->Convenience_Fee = $ConvenienceFeeBase;
+                        $res->Convenience_Fee = $Convenience_Fee_Amount;
                         $res->RegistrationFee = $BasePriceGst;
                         $res->apply_age_limit = !empty($aNewTicketResult) ? $aNewTicketResult[0]->apply_age_limit : 0;
                         $res->show_early_bird = !empty($aNewTicketResult) ? $aNewTicketResult[0]->early_bird : 0;
@@ -1024,6 +1032,7 @@ class EventParticipantsController extends Controller
                         $res->ticket_show_price = !empty($aNewTicketResult) ? $new_ticket_price : 0;
                         $res->TotalBookedTickets = !empty($TotalTicketsResult) ? $TotalTicketsResult[0]->TotalBookedTickets : 0;
                         $res->ticket_description = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_description : 0;
+                        $res->ExcPriceTaxesStatus  = $event_Result[0]->prices_taxes_status;
                         $res->Payment_Gateway_Fee  = $NewPaymentGatewayFee;
                         $res->Platform_Fee_GST_18  = $GST_On_Platform_Fees_Amount;
                         $res->TicketYtcrBasePrice  = $ConvenienceFeeBase;
@@ -1038,30 +1047,44 @@ class EventParticipantsController extends Controller
                         $res->ticket_sale_start_date = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_sale_start_date : 0;
                         $res->Payment_Gateway_Charges  = round($Payment_Gateway_Buyer,2) ;
                         $res->minimum_donation_amount = !empty($aNewTicketResult) ? $aNewTicketResult[0]->minimum_donation_amount : 0;
-                        $res->Extra_Amount_Payment_Gateway  = $Extra_Amount_Payment_Gateway;
+                        //$res->Extra_Amount_Payment_Gateway  = $Extra_Amount_Payment_Gateway;
                         $res->BuyerAmtWithoutPaymentGateway  = '0.00';
-                        $res->Extra_Amount_Payment_Gateway_Gst  = $Extra_Amount_Payment_Gateway_Gst;
+                        $res->appliedCouponAmount  = 0;
+                        $res->Registration_Fee_GST = !empty($loc_ticket_calculation_details) ? $loc_ticket_calculation_details->registration_18_percent_GST : 0;
 
-                        $res->Excel_Extra_Amount_Payment_Gateway = $Excel_Extra_Amount_Payment_Gateway;
-                        $res->Excel_Extra_Amount_Payment_Gateway_Gst = $Excel_Extra_Amount_Payment_Gateway_Gst;
+                        //$res->Extra_Amount_Payment_Gateway_Gst  = $Extra_Amount_Payment_Gateway_Gst;
+
+                        // $res->Excel_Extra_Amount_Payment_Gateway = $Excel_Extra_Amount_Payment_Gateway;
+                        // $res->Excel_Extra_Amount_Payment_Gateway_Gst = $Excel_Extra_Amount_Payment_Gateway_Gst;
                         
                         $res->ticket_calculation_details = json_decode($new_ticket_calculation_details);
-                    }
-               
-                }
-            }
-            // dd($new_ticket_amount);
-            // dd(json_encode($cart_details)); 
+                      
+                        //---------- Main amount update
+                        $new_final_ticket_amount = (floatval($booking_payment_amount) + floatval($new_ticket_amount)) - floatval($previous_final_ticket_amount);
 
-            //---------- Main amount update
-            $new_final_ticket_amount = (floatval($booking_payment_amount) + floatval($new_ticket_amount)) - floatval($previous_final_ticket_amount);
-            // dd($new_final_ticket_amount);
+                    }else{
+                    //---------- Main amount update
+                       $new_final_ticket_amount = (floatval($booking_payment_amount) + floatval($new_ticket_amount)) - floatval($previous_final_ticket_amount);
+
+                    }
+                    
+                    //---------- Main amount update
+                    // echo $res->id.'-------'.$ticketId;
+                    // if($res->id == $ticketId){
+                    //     $new_final_ticket_amount = $booking_payment_amount;
+                    //     $flag = 1;
+                    // }
+
+                }//die;
+            }
+            // dd($cart_details);
+            // dd($booking_payment_amount,$new_ticket_amount,$previous_final_ticket_amount);
             
             // ---------- Event Booking table update entry
             $payment_booking_sql = 'UPDATE booking_payment_details SET amount =:amount WHERE id=:id';
             $bindings = array(
                 'amount' =>  $new_final_ticket_amount,
-                'id'     =>   $booking_pay_id
+                'id'     =>  $booking_pay_id
             );
             DB::update($payment_booking_sql, $bindings);  
             
@@ -1084,11 +1107,13 @@ class EventParticipantsController extends Controller
             DB::update($booking_sql, $bindings2);
 
             //---------- Attendee Booking details table update entry
-            $attendee_booking_sql = 'UPDATE attendee_booking_details SET ticket_id =:new_ticket_id, ticket_price =:ticket_price, final_ticket_price =:final_ticket_price WHERE id=:id';
+            $attendee_booking_sql = 'UPDATE attendee_booking_details SET ticket_id =:new_ticket_id, ticket_price =:ticket_price, final_ticket_price =:final_ticket_price, category_change_flag =:category_change_flag, category_change_date =:category_change_date WHERE id=:id';
             $bindings3 = array(
                 'new_ticket_id' =>  $ticketId,
                 'ticket_price'  =>  floatval($new_ticket_price),
                 'final_ticket_price'  =>  floatval($BuyerPayment),
+                'category_change_flag' => 1,
+                'category_change_date' => time(),
                 'id' =>   $attendanceId
             );
             // dd($bindings1);

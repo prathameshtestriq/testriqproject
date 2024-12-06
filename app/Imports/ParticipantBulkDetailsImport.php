@@ -387,7 +387,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
             $ConvenienceFeeBase = $NewPlatformFee = $NewPaymentGatewayFee = $Convenience_Fee_Amount = $GstPercentage = $BasePriceGst = $Basic_Amount_Gst = $Convenience_Fees_Gst_Percentage = $GST_On_Platform_Fees = $Payment_Gateway_Gst = 0;
             $GST_On_Convenience_Fees = $Total_Convenience_Fees = $GST_On_Platform_Fees_Amount = $Total_Platform_Fees = $Net_Registration_Amount = $Payment_Gateway_Buyer = $Payment_Gateway_gst_amount = $Total_Payment_Gateway = $BuyerPayment = $totalPlatformFee = $totalTaxes = 0;
 
-            if ($event_Result[0]->collect_gst === 1 && $event_Result[0]->prices_taxes_status === 2) {  // get for organization page
+            if ($event_Result[0]->collect_gst == 1 && $event_Result[0]->prices_taxes_status == 2) {  // get for organization page
                 $GstPercentage = 18;
             }else{
                 $GstPercentage = 0;

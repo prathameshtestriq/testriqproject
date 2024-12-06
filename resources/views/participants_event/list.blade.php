@@ -263,7 +263,7 @@
                                         <th class="text-center">Email/Mobile Number</th>
                                         {{-- <th class="text-center">Mobile Number</th> --}}
                                         <th class="text-center">Category Name</th>
-                                        <th class="text-center">Ticket Amount</th>
+                                        <th class="text-center">Total Ticket Amount</th>
                                         <th class="text-center">Final Amount</th>
                                         <th class="text-center">View</th>
                                         <th class="text-center">Actions</th>

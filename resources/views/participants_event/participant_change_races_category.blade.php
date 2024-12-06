@@ -56,7 +56,7 @@
                                     //     $selected = 'selected';
                                     // }
                                     ?>
-                                    <option value="<?php echo $value->id; ?>"><?php echo $value->ticket_name; ?></option>
+                                    <option value="<?php echo $value->id; ?>"><?php echo $value->ticket_name.' (₹ '.number_format($value->ticket_price,2).')'; ?></option>
                                     <?php 
                                 }
                                 ?>
