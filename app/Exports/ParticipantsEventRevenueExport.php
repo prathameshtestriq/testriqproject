@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use \stdClass;
+use App\Libraries\Numberformate;
 
 class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadings, ShouldAutoSize, WithEvents
 {
@@ -24,6 +25,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
 
     public function array(): array
     {
+        $numberFormate = new Numberformate();
         $eventId = $this->eventId;
         //dd($eventId);
         $participant_name = Session::has('participant_name') ? Session::get('participant_name') : '';
@@ -324,59 +326,59 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
             $totalFinalAmount = 0;
             foreach ($AttendeeDataArray as $val) {
                
-                 $excelData[] = array(
+                $excelData[] = array(
                     'Sr.No' =>  $counter,
-                    'Firstname' => !empty($val->firstname) ? $val->firstname : '',
-                    'Lastname' => !empty($val->lastname) ? $val->lastname : '',
-                    'Email' =>!empty($val->email) ? $val->email : '',
-                    'Mobile' => !empty($val->mobile) ? $val->mobile : '',
-                    'bulk_upload_group_name' => !empty($val->bulk_upload_group_name) ? $val->bulk_upload_group_name : '', 
-                    'Event Category' => !empty($val->category_name) ? $val->category_name : '',
-                    'Type or Registration'=> !empty($val->category_type) ? $val->category_type : '',
-                    'Transaction/Order ID'=> !empty($val->transaction_id) ? $val->transaction_id : '',
-                    'Registration ID'=> !empty($val->registration_id) ? $val->registration_id : '',
-                    'Payu ID'=> !empty($val->payu_id) ? $val->payu_id : '',
-                    'Booking Date' => !empty($val->booking_date) ? date('d-m-Y H:i:s',$val->booking_date) : '',
-                    'Payment Status' => !empty($val->payment_status) ? $val->payment_status : '',
-                    'Inclusive/Exclusive' => !empty($val->taxes_status) ? $val->taxes_status : '',  
+                    'Firstname' => (!empty($val->firstname) && isset($val->firstname)) ? $val->firstname : '',
+                    'Lastname' => (!empty($val->lastname) && isset($val->lastname)) ? $val->lastname : '',
+                    'Email' =>(!empty($val->email) && isset($val->email))? $val->email : '',
+                    'Mobile' => (!empty($val->mobile) && isset($val->mobile)) ? $val->mobile : '',
+                    'bulk_upload_group_name' => (!empty($val->bulk_upload_group_name) && isset($val->bulk_upload_group_name)) ? $val->bulk_upload_group_name : '', 
+                    'Event Category' => (!empty($val->category_name) && isset($val->category_name)) ? $val->category_name : '',
+                    'Type or Registration'=> (!empty($val->category_type) && isset($val->category_type)) ? $val->category_type : '',
+                    'Transaction/Order ID'=> (!empty($val->transaction_id) && isset($val->transaction_id)) ? $val->transaction_id : '',
+                    'Registration ID'=> (!empty($val->registration_id) && isset($val->registration_id)) ? $val->registration_id : '',
+                    'Payu ID'=> (!empty($val->payu_id) && isset($val->payu_id)) ? $val->payu_id : '',
+                    'Booking Date' => (!empty($val->booking_date) && isset($val->booking_date)) ? date('d-m-Y H:i:s',$val->booking_date) : '',
+                    'Payment Status' => (!empty($val->payment_status) && isset($val->payment_status)) ? $val->payment_status : '',
+                    'Inclusive/Exclusive' => (!empty($val->taxes_status) && isset($val->taxes_status)) ? $val->taxes_status : '',  
                     // 'Registration Price' => $val->Single_ticket_price,
-                    'Count' => !empty($val->Ticket_count) ? $val->Ticket_count : '0',
+                    'Count' => (!empty($val->Ticket_count) && isset($val->Ticket_count)) ? $val->Ticket_count : '0',
                     // 'Registration Amount' => $val->Ticket_price,
-                    'Ticket Amount' => !empty($val->Ticket_price) ? number_format($val->Ticket_price,2) : '0',
-                    'Registration Fee GST' => !empty($val->Registration_Fee_GST) ? number_format($val->Registration_Fee_GST,2) : '0',
-                    'Applied Coupon Amount' => !empty($val->Applied_Coupon_Amount) ? number_format($val->Applied_Coupon_Amount,2) : '0',
-                    'Additional Amount' => !empty($val->Extra_amount) ? number_format($val->Extra_amount,2) : '0',
-                    'Additional Amount Payment Gateway Charges' => !empty($val->Extra_amount_pg_charges) ? number_format($val->Extra_amount_pg_charges,2) : '0',
-                    'Additional Amount Payment Gateway GST (18%)' => !empty($val->Extra_amount_pg_GST) ? number_format($val->Extra_amount_pg_GST,2) : '0',
+                    'Ticket Amount' => (!empty($val->Ticket_price) && isset($val->Ticket_price)) ? $numberFormate->formatInIndianCurrency($val->Ticket_price) : '0',
+                    'Registration Fee GST' => (!empty($val->Registration_Fee_GST) && isset($val->Registration_Fee_GST)) ? $numberFormate->formatInIndianCurrency($val->Registration_Fee_GST) : '0',
+                    'Applied Coupon Amount' => (!empty($val->Applied_Coupon_Amount) && isset($val->Applied_Coupon_Amount)) ? $numberFormate->formatInIndianCurrency($val->Applied_Coupon_Amount) : '0',
+                    'Additional Amount' => (!empty($val->Extra_amount) && isset($val->Extra_amount)) ? $numberFormate->formatInIndianCurrency($val->Extra_amount) : '0',
+                    'Additional Amount Payment Gateway Charges' => (!empty($val->Extra_amount_pg_charges) && isset($val->Extra_amount_pg_charges)) ? $numberFormate->formatInIndianCurrency($val->Extra_amount_pg_charges) : '0',
+                    'Additional Amount Payment Gateway GST (18%)' => (!empty($val->Extra_amount_pg_GST) && isset($val->Extra_amount_pg_GST)) ? $numberFormate->formatInIndianCurrency($val->Extra_amount_pg_GST) : '0',
                     // 'Passed on/Bare by' => $val->Pass_Bare,
-                    'Convenience Fee - Paid By'=> !empty($val->Pass_Bare) ? $val->Pass_Bare : '',
-                    'Payment Gateway - Paid By'=> !empty($val->Pg_Bare) ? $val->Pg_Bare : '',
-                    'Convenience Fee' => !empty($val->Convenience_fee) ? number_format($val->Convenience_fee,2) : '0',
-                    'Convenience Fee GST (18%)' => !empty($val->Convenience_Fee_GST) ? number_format($val->Convenience_Fee_GST,2) : '0',
-                    'Platform Fee' => !empty($val->Platform_fee) ? $val->Platform_fee : '0',
-                    'Platform Fee GST (18%)' => !empty($val->Platform_Fee_GST) ? number_format($val->Platform_Fee_GST,2) : '0',
-                    'Payment Gateway Charges (1.85%)' => !empty($val->Payment_gateway_charges) ? number_format($val->Payment_gateway_charges,2) : '0',
-                    'Payment Gateway GST (18%)' => !empty($val->Payment_Gateway_GST) ? number_format($val->Payment_Gateway_GST,2) : '0',
-                    'Organiser Amount' => !empty($val->Organiser_amount) ? number_format($val->Organiser_amount,2) : '0',
-                    'Final Amount' => !empty($val->Final_total_amount) ? number_format($val->Final_total_amount,2) : '0'
+                    'Convenience Fee - Paid By'=> (!empty($val->Pass_Bare) && isset($val->Pass_Bare)) ? $val->Pass_Bare : '',
+                    'Payment Gateway - Paid By'=> (!empty($val->Pg_Bare) && isset($val->Pg_Bare)) ? $val->Pg_Bare : '',
+                    'Convenience Fee' => (!empty($val->Convenience_fee) && isset($val->Convenience_fee)) ? $numberFormate->formatInIndianCurrency($val->Convenience_fee) : '0',
+                    'Convenience Fee GST (18%)' => (!empty($val->Convenience_Fee_GST) && isset($val->Convenience_Fee_GST)) ? $numberFormate->formatInIndianCurrency($val->Convenience_Fee_GST) : '0',
+                    'Platform Fee' => (!empty($val->Platform_fee) && isset($val->Platform_fee)) ? $val->Platform_fee : '0',
+                    'Platform Fee GST (18%)' => (!empty($val->Platform_Fee_GST) && isset($val->Platform_Fee_GST)) ? $numberFormate->formatInIndianCurrency($val->Platform_Fee_GST) : '0',
+                    'Payment Gateway Charges (1.85%)' => (!empty($val->Payment_gateway_charges) && isset($val->Payment_gateway_charges)) ? $numberFormate->formatInIndianCurrency($val->Payment_gateway_charges) : '0',
+                    'Payment Gateway GST (18%)' => (!empty($val->Payment_Gateway_GST) && isset($val->Payment_Gateway_GST)) ? $numberFormate->formatInIndianCurrency($val->Payment_Gateway_GST) : '0',
+                    'Organiser Amount' => (!empty($val->Organiser_amount) && isset($val->Organiser_amount)) ? $numberFormate->formatInIndianCurrency($val->Organiser_amount) : '0',
+                    'Final Amount' => (!empty($val->Final_total_amount) && isset($val->Final_total_amount)) ? $numberFormate->formatInIndianCurrency($val->Final_total_amount) : '0'
                 );
     
                 // $totalSingleTicketPrice += $val->Single_ticket_price;
-                $totalTicketCount += $val->Ticket_count;
-                $totalTicketPrice += $val->Ticket_price;
-                $totalRegistrationFeeGST += $val->Registration_Fee_GST;
-                $totalAppliedCouponAmount += $val->Applied_Coupon_Amount;
-                $totalExtraAmount += $val->Extra_amount;
-                $totalExtraAmountPGCharges += $val->Extra_amount_pg_charges;
-                $totalExtraAmountPGGST += $val->Extra_amount_pg_GST;
-                $totalConvenienceFee += $val->Convenience_fee;
-                $totalConvenienceFeeGST += $val->Convenience_Fee_GST;
-                $totalPlatformFee += $val->Platform_fee;
-                $totalPlatformFeeGST += $val->Platform_Fee_GST;
-                $totalPaymentGatewayCharges += $val->Payment_gateway_charges;
-                $totalPaymentGatewayGST += $val->Payment_Gateway_GST;
-                $totalOrganiserAmount += $val->Organiser_amount;
-                $totalFinalAmount += $val->Final_total_amount;
+                $totalTicketCount += (isset($val->Ticket_count) && !empty($val->Ticket_count)  ) ? $val->Ticket_count : '0';
+                $totalTicketPrice += (isset($val->Ticket_price) && !empty($val->Ticket_price)  ) ? $val->Ticket_price : '0';
+                $totalRegistrationFeeGST += (isset($val->Registration_Fee_GST) && !empty($val->Registration_Fee_GST)  ) ? $val->Registration_Fee_GST : '0';
+                $totalAppliedCouponAmount += (isset($val->Applied_Coupon_Amount) && !empty($val->Applied_Coupon_Amount)  ) ? $val->Applied_Coupon_Amount : '0';
+                $totalExtraAmount +=  (isset($val->Extra_amount) && !empty($val->Extra_amount)  ) ? $val->Extra_amount : '0';
+                $totalExtraAmountPGCharges +=  (isset($val->Extra_amount_pg_charges) && !empty($val->Extra_amount_pg_charges)  ) ? $val->Extra_amount_pg_charges : '0';
+                $totalExtraAmountPGGST +=  (isset($val->Extra_amount_pg_GST) && !empty($val->Extra_amount_pg_GST)  ) ? $val->Extra_amount_pg_GST : '0';
+                $totalConvenienceFee +=  (isset($val->Convenience_fee) && !empty($val->Convenience_fee)  ) ? $val->Convenience_fee : '0';
+                $totalConvenienceFeeGST += (isset($val->Convenience_Fee_GST) && !empty($val->Convenience_Fee_GST)  ) ? $val->Convenience_Fee_GST : '0';
+                $totalPlatformFee +=  (isset($val->Platform_fee) && !empty($val->Platform_fee)  ) ? $val->Platform_fee : '0';
+                $totalPlatformFeeGST += (isset($val->Platform_Fee_GST) && !empty($val->Platform_Fee_GST)  ) ? $val->Platform_Fee_GST : '0';
+                $totalPaymentGatewayCharges += (isset($val->Payment_gateway_charges) && !empty($val->Payment_gateway_charges)  ) ? $val->Payment_gateway_charges : '0';
+                $totalPaymentGatewayGST +=  (isset($val->Payment_Gateway_GST) && !empty($val->Payment_Gateway_GST)  ) ? $val->Payment_Gateway_GST : '0';
+                $totalOrganiserAmount +=  (isset($val->Organiser_amount) && !empty($val->Organiser_amount)  ) ? $val->Organiser_amount : '0';
+                $totalFinalAmount +=  (isset($val->Final_total_amount) && !empty($val->Final_total_amount)  ) ? $val->Final_total_amount : '0';
                 $counter++;
                 
             }
@@ -397,24 +399,24 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
                 '',
                 'Inclusive/Exclusive' =>'Total' ,
                 // 'Registration Price' => !empty( $totalSingleTicketPrice)? $totalSingleTicketPrice :'0.00',
-                'Count' => !empty($totalTicketCount)? number_format($totalTicketCount,2) :'0.00',
-                'Registration Amount' => !empty($totalTicketPrice)? number_format($totalTicketPrice,2) :'0.00',
-                'Registration Fee GST' =>!empty($totalRegistrationFeeGST)? number_format($totalRegistrationFeeGST,2) :'0.00',
-                'Applied Coupon Amount' =>!empty($totalAppliedCouponAmount)? number_format($totalAppliedCouponAmount,2) :'0.00',
-                'Additional Amount' => !empty($totalExtraAmount)? number_format($totalExtraAmount,2) :'0.00',
-                'Additional Amount Payment Gateway Charges' => !empty($totalExtraAmountPGCharges)? number_format($totalExtraAmountPGCharges,2) :'0.00',
-                'Additional Amount Payment Gateway GST (18%)' =>!empty($totalExtraAmountPGGST)? number_format($totalExtraAmountPGGST,2) :'0.00',
+                'Count' => !empty($totalTicketCount)? $numberFormate->formatInIndianCurrency($totalTicketCount) :'0.00',
+                'Registration Amount' => !empty($totalTicketPrice)? $numberFormate->formatInIndianCurrency($totalTicketPrice) :'0.00',
+                'Registration Fee GST' =>!empty($totalRegistrationFeeGST)? $numberFormate->formatInIndianCurrency($totalRegistrationFeeGST) :'0.00',
+                'Applied Coupon Amount' =>!empty($totalAppliedCouponAmount)? $numberFormate->formatInIndianCurrency($totalAppliedCouponAmount) :'0.00',
+                'Additional Amount' => !empty($totalExtraAmount)? $numberFormate->formatInIndianCurrency($totalExtraAmount) :'0.00',
+                'Additional Amount Payment Gateway Charges' => !empty($totalExtraAmountPGCharges)? $numberFormate->formatInIndianCurrency($totalExtraAmountPGCharges) :'0.00',
+                'Additional Amount Payment Gateway GST (18%)' =>!empty($totalExtraAmountPGGST)? $numberFormate->formatInIndianCurrency($totalExtraAmountPGGST) :'0.00',
                 // 'Passed on/Bare by' =>'',
                 'Convenience Fee - Paid By' => '',
                 'Payment Gateway - Paid By' =>'',
-                'Convenience Fee' =>!empty($totalConvenienceFee)? number_format($totalConvenienceFee,2) :'0.00',
-                'Convenience Fee GST (18%)' =>!empty($totalConvenienceFeeGST)? number_format($totalConvenienceFeeGST,2) :'0.00',
-                'Platform Fee' =>!empty($totalPlatformFee)? number_format($totalPlatformFee,2) :'0.00',
-                'Payment Gateway Charges' =>!empty($totalPlatformFeeGST)? number_format($totalPlatformFeeGST,2) :'0.00',
-                'Payment Gateway Charges (1.85%)' =>!empty($totalPaymentGatewayCharges)? number_format($totalPaymentGatewayCharges,2) :'0.00',
-                'Payment Gateway GST (18%)' =>!empty($totalPaymentGatewayGST)? number_format($totalPaymentGatewayGST,2) :'0.00',
-                'Organiser Amount'=> !empty($totalOrganiserAmount)? number_format($totalOrganiserAmount,2) :'0.00',
-                'Final Amount'=> !empty($totalFinalAmount)? number_format($totalFinalAmount,2) :'0.00'
+                'Convenience Fee' =>!empty($totalConvenienceFee)? $numberFormate->formatInIndianCurrency($totalConvenienceFee) :'0.00',
+                'Convenience Fee GST (18%)' =>!empty($totalConvenienceFeeGST)? $numberFormate->formatInIndianCurrency($totalConvenienceFeeGST) :'0.00',
+                'Platform Fee' =>!empty($totalPlatformFee)? $numberFormate->formatInIndianCurrency($totalPlatformFee) :'0.00',
+                'Payment Gateway Charges' =>!empty($totalPlatformFeeGST)? $numberFormate->formatInIndianCurrency($totalPlatformFeeGST) :'0.00',
+                'Payment Gateway Charges (1.85%)' =>!empty($totalPaymentGatewayCharges)? $numberFormate->formatInIndianCurrency($totalPaymentGatewayCharges) :'0.00',
+                'Payment Gateway GST (18%)' =>!empty($totalPaymentGatewayGST)? $numberFormate->formatInIndianCurrency($totalPaymentGatewayGST) :'0.00',
+                'Organiser Amount'=> !empty($totalOrganiserAmount)? $numberFormate->formatInIndianCurrency($totalOrganiserAmount) :'0.00',
+                'Final Amount'=> !empty($totalFinalAmount)? $numberFormate->formatInIndianCurrency($totalFinalAmount) :'0.00'
             );        
           
             return $excelData;
