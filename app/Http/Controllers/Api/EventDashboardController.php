@@ -1173,9 +1173,9 @@ class EventDashboardController extends Controller
 
                             //----------- Final total amount
                             if(isset($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway) && !empty($details->Extra_Amount)){
-                                $aTemp->Final_total_amount = isset($details->BuyerPayment) && !empty($details->BuyerPayment) ? (($details->BuyerPayment) + $details->Extra_Amount_Payment_Gateway_Gst) + ($details->Extra_Amount_Payment_Gateway) + floatval($details->Extra_Amount) : '0.00';
+                                $aTemp->Final_total_amount = isset($details->BuyerPayment) && !empty($details->BuyerPayment) ? (floatval($details->BuyerPayment) + floatval($details->Extra_Amount_Payment_Gateway_Gst)) + floatval($details->Extra_Amount_Payment_Gateway) + floatval($details->Extra_Amount) : '0.00';
                             }else{
-                                $aTemp->Final_total_amount = isset($details->BuyerPayment) && !empty($details->BuyerPayment) && !empty($details->Extra_Amount) ? ($details->BuyerPayment + floatval($details->Extra_Amount))  : '0.00';
+                                $aTemp->Final_total_amount = isset($details->BuyerPayment) && !empty($details->BuyerPayment) && !empty($details->Extra_Amount) ? (floatval($details->BuyerPayment) + floatval($details->Extra_Amount))  : '0.00';
                             }   
 
                             //---------- Extra Amount
