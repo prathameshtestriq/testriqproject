@@ -592,9 +592,7 @@ class EventParticipantsController extends Controller
                                         if ($val->question_form_type == "textarea") {
                                             $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $val->ActualValue);
                                         }else{ // text
-
                                             $aTemp->answer_value = htmlspecialchars($val->ActualValue);
-                                            $aTemp->answer_value = str_replace("&#233;", "-------", $aTemp->answer_value);
                                         }
                                        
                                     }
@@ -633,7 +631,7 @@ class EventParticipantsController extends Controller
                         }
 
                         if($val->question_label == 'Race Category'){
-                            $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
+                            $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "----", $res1->TicketName) : '';
                             // dd($aTemp->answer_value);
                         }
 
