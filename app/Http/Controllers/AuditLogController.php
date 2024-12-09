@@ -157,6 +157,27 @@ class AuditLogController extends Controller
             }
             $aReturn["email_log"] = $email_log;
 
+
+            // Booking Details
+            $event_bid = [];
+            foreach ($event_booking_array as $eventBooking) {
+                $event_bid[] = $eventBooking->id;
+            }
+            if (!empty($eventBookingIds)) {
+                $event_booking_ids = implode(',', $event_bid); // Convert array to comma-separated string
+            
+                // Second query to fetch booking_details
+                $sql3 = "SELECT ac.*, (SELECT name FROM events AS e WHERE e.id = ac.event_id) AS event_name,(SELECT discount_code FROM event_coupon WHERE id=ac.coupon_id) AS DiscountCode   
+                        FROM applied_coupons ac 
+                        WHERE ac.booking_id IN ($event_booking_ids)";
+            
+                $applied_coupon_array = DB::select($sql3);
+            } else {
+                $applied_coupon_array = []; // Handle case where there are no event bookings
+            } 
+            $aReturn["applied_coupon_array"] = $applied_coupon_array;
+           
+
         }else{
             // Attendance Booking Details
             if (!empty( $aReturn['search_email_address_audit'])) {
@@ -247,6 +268,10 @@ class AuditLogController extends Controller
              
                 $ad_log_array = DB::select($sql);
 
+
+                $aReturn["event_name"] =  !empty($ad_log_array[0]) ? $ad_log_array[0]->event_name : '';
+                $aReturn["user_name"] =  !empty($ad_log_array[0]) ? $ad_log_array[0]->firstname.' '. $ad_log_array[0]->lastname : '' ;
+
                 $booking_Ids = [];
                 foreach ($ad_log_array as $booking) {
                     $booking_Ids[] = $booking->id;
@@ -272,6 +297,28 @@ class AuditLogController extends Controller
                 $tem_booking_ticket_array = []; // Handle case where there are no bookings
             }
             $aReturn["tem_booking_ticket_array"] = $tem_booking_ticket_array;
+
+
+             // Applied coupons
+             $eventbooking_ids = [];
+            foreach ($event_booking_array as $eventBooking) {
+                $eventbooking_ids[] = $eventBooking->id;
+            }
+             if (!empty($eventbooking_ids)) {
+                $esb_ids = implode(',', $eventbooking_ids); // Convert array to comma-separated string
+            // dd($esb_ids);
+                $sql2 = "SELECT ac.*, (SELECT name FROM events AS e WHERE e.id = ac.event_id) AS event_name,(SELECT discount_code FROM event_coupon WHERE id=ac.coupon_id) AS DiscountCode 
+                        FROM applied_coupons ac 
+                        WHERE ac.booking_id IN ($esb_ids)"; // Apply the WHERE condition
+            
+                $applied_coupon_array = DB::select($sql2);
+            
+            } else {
+                $applied_coupon_array = []; // Handle case where there are no bookings
+            }
+            $aReturn["applied_coupon_array"] = $applied_coupon_array;
+
+            
 
     
         } 

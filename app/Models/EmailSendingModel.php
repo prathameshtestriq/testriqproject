@@ -154,6 +154,8 @@ class EmailSendingModel extends Model
         }else{
             $eventIds = '0';
         } 
+      
+        
 
         $bindings = [
             'event_id' => $eventIds,
@@ -164,20 +166,24 @@ class EmailSendingModel extends Model
             'send_date_type' => !empty($sendEmailDateType)?$sendEmailDateType:'0',
             'sent_date_time' => !empty($sentDateTime)?$sentDateTime:'0',
             'email_type' => !empty($request->email_type) ? $request->email_type : 0,
-            'email'=> !empty($email) ? $email : ''
+            'email'=> !empty($email) ? $email : '',
+            'email_sent' =>  0
         ];
+      
+        
 
         // dd($bindings);
 
         $ssql = 'INSERT INTO send_email_log (
                     event_id, subject, message,
-                    recipient_type, recipient_count, send_date_type, sent_date_time,email_type,email
+                    recipient_type, recipient_count, send_date_type, sent_date_time,email_type,email,email_sent
                 ) VALUES (
                     :event_id, :subject, :message,
-                    :recipient_type, :recipient_count, :send_date_type, :sent_date_time, :email_type, :email
+                    :recipient_type, :recipient_count, :send_date_type, :sent_date_time, :email_type, :email,:email_sent
                 )';
 
         $Result = DB::insert($ssql, $bindings);
+    //    dd($Result);
     }
 
     public static function change_status_email($request)

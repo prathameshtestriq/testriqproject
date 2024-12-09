@@ -65,7 +65,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
         1=1";
 
        
-        // dd($eventId);
+        // dd($transaction_status);
         if(isset($eventId) && !empty($eventId)){
             $sSQL .= ' AND b.event_id = '.$eventId;
         }
@@ -74,9 +74,15 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
         if (!empty($participant_name)) {
             $sSQL .= ' AND (LOWER((CONCAT(a.firstname, " ", a.lastname))) LIKE \'%' . strtolower($participant_name) . '%\')';
         }
+
         if ($transaction_status !== '') {
-            $sSQL .= ' AND e.transaction_status = '.$transaction_status;
+            if($transaction_status == 1){
+               $sSQL .= ' AND e.transaction_status IN(1,3)';  
+            }else{
+                $sSQL .= ' AND e.transaction_status IN('.$transaction_status.')';
+            }
         }
+
         if (!empty($registration_id)) {
             $sSQL .= ' AND a.registration_id LIKE \'%' . strtolower($registration_id) . '%\'';
         }

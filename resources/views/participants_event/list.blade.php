@@ -90,7 +90,7 @@
 
                                             <div class="col-sm-2 col-12">
                                                     <?php 
-                                                       $Transaction_Status = array(0=>'Inprocess',1=>'Success', 2=>'Fail', 3=>'Free' );    
+                                                        $Transaction_Status = array(0=>'Inprocess',1=>'Success/Free',2=>'Success', 3=>'Fail', 4=>'Free',5=>'Refund' );
                                                        // $Transaction_Status = array('initiate'=>'Inprocess','success'=>'Success', 'failure'=>'Fail', 'ree'=>'Free' );    
                                                     ?>
                                                     <label for="form-control">Payment Status</label>
@@ -297,7 +297,7 @@
                                                         <input type="hidden" name="booking_payment_details_id[{{ $val->event_booking_id }}]" value="{{ $val->booking_payment_details_id }}">
         
                                                         <?php 
-                                                        $Transaction_Status = array(0=>'Inprocess', 1=>'Success', 2=>'Failure', 3=>'Free');    
+                                                        $Transaction_Status = array(0=>'Inprocess', 1=>'Success', 2=>'Failure', 3=>'Free' ,4=>'Refund');    
                                                         ?>
                                                         <select id="list_transaction_status_{{ $val->event_booking_id }}" name="list_transaction_status[{{ $val->event_booking_id }}]" class="form-control select2 form-control" onchange="this.form.submit()">
                                                             <option value="">Select Payment Status</option>

@@ -88,6 +88,8 @@ class EventParticipantsController extends Controller
                     $booking_status = "Failure";
                 }elseif ($status == 3) {
                     $booking_status = "Free";
+                }elseif ($status == 4) {
+                    $booking_status = "Refund";
                 }
                 // dd($booking_status);
                 $ssql = 'UPDATE booking_payment_details SET payment_status = :payment_status WHERE id=:id';
@@ -142,9 +144,16 @@ class EventParticipantsController extends Controller
             $FiltersSql .= ' AND (LOWER((CONCAT(a.firstname, " ", a.lastname))) LIKE \'%' . strtolower($Return['search_participant_name']) . '%\')';
         } 
 
-        if(!empty( $Return['search_transaction_status'])){
-            $FiltersSql .= ' AND (LOWER(e.transaction_status) LIKE \'%' . strtolower($Return['search_transaction_status']) . '%\')';
-        } 
+        // if(!empty( $Return['search_transaction_status'])){
+        //     $FiltersSql .= ' AND (LOWER(e.transaction_status) LIKE \'%' . strtolower($Return['search_transaction_status']) . '%\')';
+        // } 
+        if (isset($Return['search_transaction_status']) && $Return['search_transaction_status'] !== '') {
+            if ($Return['search_transaction_status'] == 1) { // Special case for Success/Free
+                $FiltersSql .= ' AND (e.transaction_status IN (1, 3))'; // Success = 1, Free = 3
+            } else {
+                $FiltersSql .= ' AND e.transaction_status = ' . intval($Return['search_transaction_status']);
+            }
+        }
 
         if(!empty( $Return['search_registration_id'])){
             $FiltersSql .= ' AND (LOWER(a.registration_id) LIKE \'%' . strtolower($Return['search_registration_id']) . '%\')';

@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\Authenticate;
-use Barryvdh\DomPDF\Facade\Pdf;
+// use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Libraries\Emails;
 
@@ -34,7 +35,7 @@ class AthleteIdCardController extends Controller
           
             if(count($res) >= 3){
                     $SQL = 'SELECT * FROM users WHERE id=:id';
-                    $oAthlete = DB::select(DB::raw($SQL), array('id' => $aPost['user_id']));
+                    $oAthlete = DB::select($SQL, array('id' => $aPost['user_id']));
                     // dd($oAthlete);
                     if (sizeof($oAthlete) > 0) {
                             if ($oAthlete[0]->barcode_number == '') {
@@ -65,7 +66,7 @@ class AthleteIdCardController extends Controller
                                 DB::update($sql, array('barcode_number' => $final_barcode_number, 'user_id' => $aPost['user_id']));
 
                                 $SQL = 'SELECT * FROM users WHERE id=:id';
-                                $oAthlete = DB::select(DB::raw($SQL), array('id' => $aPost['user_id']));
+                                $oAthlete = DB::select($SQL, array('id' => $aPost['user_id']));
                             } else {
                                 $final_barcode_number = $oAthlete[0]->barcode_number;
                             }
@@ -73,24 +74,31 @@ class AthleteIdCardController extends Controller
                             foreach ($oAthlete as $value) { 
                                 $value->blood_group = isset($value->blood_group) ? $value->blood_group : "";
                                 $value->name = (!empty($value->firstname)) ? $value->firstname . " " . $value->lastname : "";
-                                $value->barcode_image = base64_encode(QrCode::format('svg')->size(300)->errorCorrection('H')->generate($final_barcode_number));
+                                // $value->barcode_image = base64_encode(QrCode::format('svg')->size(300)->errorCorrection('H')->generate($final_barcode_number));
+                                $value->barcode_image = base64_encode(QrCode::format('png')->size(300)->generate($final_barcode_number));
                                 // dd( $value->barcode_image ); 
                                 $value->profile_pic = (!empty($value->profile_pic)) ? 'uploads/profile_images/' . $value->profile_pic . '' : '';
                                 $value->b_number = isset($value->barcode_number) ? $value->barcode_number : '';
                             }
                         //   dd($oAthlete);
+                    }else{
+                        $message = 'No Data Found';
+                        $ResposneCode = 200;
                     }
 
-                    $pdf = PDF::loadView('Api.athlete_card', compact('oAthlete'));
+                    $pdf = PDF::loadView('pdf_athlete_card', compact('oAthlete'));
                     $pdf->setPaper('L', 'landscape');
-                    $pdf->save(public_path('uploads/pdfs/AthleteCard' . $aPost['user_id'] . '.pdf'));
+                    $pdf->save(public_path('uploads/Athlete_pdfs/AthleteCard' . $aPost['user_id'] . '.pdf'));
                     $content = $pdf->download('AthleteCard' . $aPost['user_id'] . '.pdf')->getOriginalContent();
-                    $path = env('ATHLETE_CARD_PATH') . 'AthleteCard' . $aPost['user_id'] . '.pdf';
+                    $path = public_path('uploads/Athlete_pdfs/AthleteCard' . $aPost['user_id'] . '.pdf');
                     // $path = public_path('uploads/pdfs/AthleteCard' . $AthleteId . '.pdf');
 
                     $ResponseData['path'] = $path;
                     $message = 'Athlete Card downloaded successfully';
 
+            }else{
+                $message = 'Less than 3 events are available.';
+                $ResposneCode = 200;
             }
 
                 

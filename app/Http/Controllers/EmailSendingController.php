@@ -77,6 +77,7 @@ class EmailSendingController extends Controller
 
         return view('email.list', $a_return);
     }
+
     public function add_edit(Request $request, $iId = 0)
     {
         // dd("here");
@@ -130,7 +131,8 @@ class EmailSendingController extends Controller
                     }
                 }];
             } elseif ($request->email_type == 3) {
-                $rules['email_file'] = 'required|file|mimes:csv,txt';
+                // $rules['email_file'] = 'required|file|mimes:csv|mimetypes:text/csv';
+                $rules['email_file'] = 'required';
             }
             //dd($request->all());
            
@@ -138,20 +140,38 @@ class EmailSendingController extends Controller
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();
             }
-          
+            
             $email = '';
-            if ($request->email_type == 3 && $request->hasFile('email_file')) {
+           if ($request->email_type == 3 && $request->hasFile('email_file')) {
+               
                 $file = $request->file('email_file');
+
+                if ( $file->getClientOriginalExtension() !== 'csv') {
+                    return redirect()->back()->with('error', 'The file must be a CSV file.')->withInput();
+                }
                 // Open and read the CSV file
                 if (($handle = fopen($file->getRealPath(), 'r')) !== FALSE) {
-                    // Get the header row (assuming the first row contains column headers)
+                    // Check if the file has any content
+                    if (filesize($file->getRealPath()) === 0) {
+                        return redirect('/email_sending/add')->with('error', 'The uploaded file is empty.')->withInput();
+                    }
+
+                    // Read the header row (assuming the first row is the header)
                     $header = fgetcsv($handle, 1000, ',');
-                   
-                    // Find the index of the 'email' column
-                    $emailIndex = array_search('Email', $header);
+
+                    // Ensure the header is valid
+                    if (!$header || !is_array($header)) {
+                        return redirect('/email_sending/add')->with('error', 'The file does not contain a valid header row.')->withInput();
+                    }
+
+                    // Clean and search for the 'email' column
+                    $header = array_map(function ($value) {
+                        return strtolower(trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $value)));
+                    }, $header);
+                    $emailIndex = array_search('email', $header);
 
                     if ($emailIndex === false) {
-                        dd("file not get");
+                        return redirect('/email_sending/add')->with('error', 'The "Email" column is not found in the provided file.')->withInput();
                     }
 
                     $emails = [];
@@ -159,9 +179,15 @@ class EmailSendingController extends Controller
                     while (($row = fgetcsv($handle, 1000, ',')) !== FALSE) {
                         $emails[] = $row[$emailIndex];
                     }
+
+                    fclose($handle);
+                    // Check if no emails were found
+                    if (empty($emails)) {
+                        return redirect('/email_sending/add')->with('error', 'There is no data in provided file.')->withInput();
+                    }
                             
                     $email = implode(',', $emails);
-                    fclose($handle); 
+                    // fclose($handle); 
                 }
 
                 $rules = [
@@ -200,6 +226,7 @@ class EmailSendingController extends Controller
         return view('email.create', $a_return);
 
     }
+    
     public function change_active_status(Request $request)
     {
 
@@ -211,6 +238,7 @@ class EmailSendingController extends Controller
         $aReturn['sucess'] = $sucess;
         return $aReturn;
     }
+    
     public function upload(Request $request)
     {
         if ($request->hasFile('upload')) {
