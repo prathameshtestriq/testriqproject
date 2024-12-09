@@ -263,6 +263,7 @@
                                         <th class="text-center">Email/Mobile Number</th>
                                         {{-- <th class="text-center">Mobile Number</th> --}}
                                         <th class="text-center">Category Name</th>
+                                        <th class="text-center">Early Bird Discount</th>
                                         <th class="text-center">Ticket Amount</th>
                                         <th class="text-center">Final Amount</th>
                                         <th class="text-center">View</th>
@@ -321,6 +322,7 @@
                                                  {{ ucfirst($val->category_name) }}
                                                 </td>
 
+                                                <td class="text-center">{{ $val->total_discount }}</td>
                                                 <td class="text-center">{{ $val->ticket_amount }}</td>
                                                 <td class="text-center">{{ $val->amount }}</td>
                                                

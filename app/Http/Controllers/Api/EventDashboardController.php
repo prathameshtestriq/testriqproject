@@ -137,13 +137,13 @@ class EventDashboardController extends Controller
                 $TotalRegistration = DB::select($SQL2, array('event_id' => $EventId));
                 
                 $total_amount = 0;
-                if(!empty($TotalRegistration)){
-                    foreach($TotalRegistration as $res){
-                        $total_amount += !empty($res->TotalAmount) ? $res->TotalAmount : 0;
-                    }
-                }
+                // if(!empty($TotalRegistration)){
+                //     foreach($TotalRegistration as $res){
+                //         $total_amount += !empty($res->TotalAmount) ? $res->TotalAmount : 0;
+                //     }
+                // }
                 $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? count($TotalRegistration) : 0;
-                $ResponseData['TotalAmount'] = !empty($total_amount) ? $numberFormate->formatInIndianCurrency($total_amount) : '0.00';
+                
 
                 // -------------------------------------Event Capacity
                 // Total Tickets
@@ -249,7 +249,7 @@ class EventDashboardController extends Controller
                 $AttendeeData = DB::select($sql, array('event_id' => $EventId));
                 // dd($AttendeeData);
                 
-                $Applied_Coupon_Amount = $Organiser_amount = $Payment_Gateway_GST = $Payment_gateway_charges = $total_payment_gateway = $Platform_fee = $Platform_Fee_GST = $Convenience_fee = $Convenience_Fee_GST = 0;
+                $Applied_Coupon_Amount = $Organiser_amount = $Payment_Gateway_GST = $Payment_gateway_charges = $total_payment_gateway = $Platform_fee = $Platform_Fee_GST = $Convenience_fee = $Convenience_Fee_GST = $Final_total_amount = 0;
 
                 $card_details_array = []; $cart_details_array = [];
                 if(!empty($AttendeeData)){
@@ -280,6 +280,19 @@ class EventDashboardController extends Controller
                                     $Convenience_fee += isset($details->Convenience_Fee) && !empty($details->Convenience_Fee) ? floatval($details->Convenience_Fee)  : 0;
                                     $Convenience_Fee_GST += isset($details->Convenience_Fee_GST_18) && !empty($details->Convenience_Fee_GST_18) ? floatval($details->Convenience_Fee_GST_18)  : 0;
 
+                                    //----------- Final total amount
+                                    if(isset($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway) && !empty($details->Extra_Amount) && !empty($res->total_amount)){
+                                       
+                                        $Final_total_amount += isset($details->BuyerPayment) && !empty($details->BuyerPayment)
+                                            ? (floatval($details->BuyerPayment)) +
+                                              floatval($details->Extra_Amount_Payment_Gateway_Gst) +
+                                              floatval($details->Extra_Amount_Payment_Gateway) +
+                                              floatval($details->Extra_Amount)
+                                            : '0.00';
+                                    }else{
+                                        $Final_total_amount += isset($details->BuyerPayment) && !empty($details->BuyerPayment) && !empty($details->Extra_Amount) && !empty($res->total_amount) ? ($details->BuyerPayment + floatval($details->Extra_Amount))  : '0.00';
+                                    }   
+
                                 }
                             }
                         }
@@ -297,7 +310,8 @@ class EventDashboardController extends Controller
 
                             $Convenience_fee     += isset($cart_details_array->Convenience_fee) ? floatval($cart_details_array->Convenience_fee) : 0;
                             $Convenience_Fee_GST += isset($cart_details_array->Convenience_Fee_GST) ? floatval($cart_details_array->Convenience_Fee_GST) : 0;
-                            $Organiser_amount += isset($cart_details_array->Organiser_amount) ? floatval($cart_details_array->Organiser_amount) : 0;        
+                            $Organiser_amount += isset($cart_details_array->Organiser_amount) ? floatval($cart_details_array->Organiser_amount) : 0;    
+                            $Final_total_amount += isset($cart_details_array->Final_total_amount) && !empty($cart_details_array->Final_total_amount) ? floatval($cart_details_array->Final_total_amount)  : 0;      
                         }
                     }
                 }
@@ -309,6 +323,8 @@ class EventDashboardController extends Controller
                 $ResponseData['OrganiserAmount'] = !empty($Organiser_amount) ? $numberFormate->formatInIndianCurrency($Organiser_amount) : '0.00';
                 $ResponseData['TotalPaymentGateway'] = !empty($total_payment_gateway) ? $numberFormate->formatInIndianCurrency($total_payment_gateway) : '0.00';
                 $ResponseData['TotalConvenience'] = !empty($total_convenience_fee) ? $numberFormate->formatInIndianCurrency($total_convenience_fee) : '0.00';
+
+                $ResponseData['TotalAmount'] = !empty($Final_total_amount) ? $numberFormate->formatInIndianCurrency($Final_total_amount) : '0.00';
                 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';

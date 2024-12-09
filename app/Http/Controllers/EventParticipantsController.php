@@ -252,7 +252,8 @@ class EventParticipantsController extends Controller
                 bpd.txnid AS Transaction_order_id,
                 bpd.amount AS amount,
                 bpd.id As booking_payment_details_id,
-                bpt.mihpayid AS payu_id
+                bpt.mihpayid AS payu_id,
+                et.early_bird,et.no_of_tickets,et.start_time,et.end_time,et.discount,et.discount_value
             FROM attendee_booking_details a
             LEFT JOIN booking_details b ON a.booking_details_id = b.id
             INNER JOIN event_booking e ON b.booking_id = e.id
@@ -278,8 +279,8 @@ class EventParticipantsController extends Controller
        // dd($sSQL);
         $event_participants  = DB::select($sSQL, array());
         // dd($event_participants);
-        $final_ticket_amount = 0;
-        foreach( $event_participants  as $value){
+        $final_ticket_amount = $TotalBookedTickets1 = $early_bird_total_discount = 0;
+        foreach($event_participants  as $value){
             if($value->bulk_upload_flag == 0 && !empty($value->cart_details)){
                 // dd(json_decode($value->cart_details));
                 foreach(json_decode($value->cart_details) as $res){
@@ -297,6 +298,29 @@ class EventParticipantsController extends Controller
             }
             $value->amount = $numberFormate->formatInIndianCurrency($value->amount);
             $value->ticket_amount = $numberFormate->formatInIndianCurrency($value->ticket_amount);
+
+            //-------------------
+            $now = strtotime("now");
+
+            $sql10 = "SELECT COUNT(a.id) AS TotalBookedTickets
+                    FROM attendee_booking_details AS a 
+                    LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                    LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                    WHERE b.event_id =:event_id AND b.ticket_id=:ticket_id AND e.transaction_status IN (1,3)";
+            $TotalTickets1 = DB::select($sql10, array("event_id" => $event_id, "ticket_id" => $value->ticket_id));
+            $TotalBookedTickets1 = !empty($TotalTickets1) ? $TotalTickets1[0]->TotalBookedTickets : 0;
+            // dd($TotalBookedTickets1);
+       
+            if ($value->early_bird == 1 && $TotalBookedTickets1 <= $value->no_of_tickets && $value->start_time <= $now && $value->end_time >= $now) {
+                if ($value->discount == 1) { //percentage
+                    $value->total_discount = ($value->ticket_price * ($value->discount_value / 100));
+                } else if ($value->discount == 2) { //amount
+                    $value->total_discount = $value->discount_value;
+                }
+            }else{
+               $value->total_discount = 0; 
+            }
+
         }    
          
         $Return['event_participants'] = (count($event_participants) > 0) ? $event_participants : [];
@@ -567,8 +591,10 @@ class EventParticipantsController extends Controller
                                         
                                         if ($val->question_form_type == "textarea") {
                                             $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $val->ActualValue);
-                                        }else{
+                                        }else{ // text
+
                                             $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                            $aTemp->answer_value = str_replace("&#233;", "é", $aTemp->answer_value);
                                         }
                                        
                                     }
@@ -835,10 +861,40 @@ class EventParticipantsController extends Controller
 
             $sSQL = 'SELECT * FROM event_tickets WHERE active = 1 AND event_id=:event_id AND id=:ticketId';
             $aNewTicketResult = DB::select($sSQL, array('event_id' => $event_id, "ticketId" => $ticketId));
-            // dd($aNewTicketResult);
+           
             $new_ticket_price = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_price : 0;
             $new_ticket_calculation_details = !empty($aNewTicketResult) ? $aNewTicketResult[0]->ticket_calculation_details : 0;
             
+            //----------------- new added for early bird discount apply
+            $new_early_bird    = !empty($aNewTicketResult) ? $aNewTicketResult[0]->early_bird : 0;
+            $new_no_of_tickets = !empty($aNewTicketResult) ? $aNewTicketResult[0]->no_of_tickets : 0;
+            $new_start_time    = !empty($aNewTicketResult) ? $aNewTicketResult[0]->start_time : 0;
+            $new_end_time      = !empty($aNewTicketResult) ? $aNewTicketResult[0]->end_time : 0;
+            // dd($new_early_bird,$new_no_of_tickets,$new_start_time,$new_end_time);
+            $now = strtotime("now");
+
+            $sql10 = "SELECT COUNT(a.id) AS TotalBookedTickets
+                    FROM attendee_booking_details AS a 
+                    LEFT JOIN booking_details AS b ON b.id=a.booking_details_id
+                    LEFT JOIN event_booking AS e ON b.booking_id = e.id
+                    WHERE b.event_id =:event_id AND b.ticket_id=:ticket_id AND e.transaction_status IN (1,3)";
+            $TotalTickets1 = DB::select($sql10, array("event_id" => $event_id, "ticket_id" => $ticketId));
+
+            $TotalBookedTickets1 = !empty($TotalTickets1) ? $TotalTickets1[0]->TotalBookedTickets : 0;
+           
+            $early_bird_total_discount = 0;
+            if ($new_early_bird == 1 && $TotalBookedTickets1 <= $new_no_of_tickets && $new_start_time <= $now && $new_end_time >= $now) {
+              
+                if ($aNewTicketResult[0]->discount == 1) { //percentage
+                    $early_bird_total_discount = ($value->ticket_price * ($aNewTicketResult[0]->discount_value / 100));
+                    $new_ticket_price          = ($new_ticket_price - $early_bird_total_discount);
+                } else if ($aNewTicketResult[0]->discount == 2) { //amount
+                    $early_bird_total_discount = $aNewTicketResult[0]->discount_value; 
+                    $new_ticket_price         = ($new_ticket_price - $early_bird_total_discount);
+                }
+            }
+            // dd($new_ticket_price);
+
             //----------Event Booking table update entry
             $event_booking_sql = 'SELECT id,booking_pay_id,total_amount,cart_details,(select amount from booking_payment_details where id = event_booking.booking_pay_id) as booking_payment_amount FROM event_booking WHERE event_id=:event_id AND id=:bookId';
             $aEventBookingResult = DB::select($event_booking_sql, array('event_id' => $event_id, "bookId" => $event_booking_id));
