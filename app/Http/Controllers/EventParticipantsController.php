@@ -594,7 +594,7 @@ class EventParticipantsController extends Controller
                                         }else{ // text
 
                                             $aTemp->answer_value = htmlspecialchars($val->ActualValue);
-                                            $aTemp->answer_value = str_replace("&#233;", "é", $aTemp->answer_value);
+                                            $aTemp->answer_value = str_replace("&#233;", "-------", $aTemp->answer_value);
                                         }
                                        
                                     }
