@@ -152,9 +152,9 @@ class EventController extends Controller
         $HomeFlag = isset($request->home_flag) ? $request->home_flag : 0;
 
         #GET EVENTS COUNTRY WISE
-        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
-        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.event_info_status=1 AND u.start_time >=:start_time";
-        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time";
+        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1";
+        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.event_info_status=1 AND u.start_time >=:start_time AND u.is_verify = 1";
+        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time AND r.is_verify = 1";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
 
         $CountryCode = $request->country_code;
@@ -225,7 +225,7 @@ class EventController extends Controller
             // $message = 'Few Suggestions';
             $FewSuggestionFlag = 1;
 
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
                 $EventSql .= ' ORDER BY e.id DESC';
@@ -245,7 +245,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND u.is_verify = 1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
 
@@ -257,7 +257,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($RegistrationEvents) == 0) {
-            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
+            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1 AND r.is_verify = 1";
             if (!empty($NewState_id)) {
                 $RegistrationSql .= ' AND r.state=' . $NewState_id;
 
@@ -273,7 +273,7 @@ class EventController extends Controller
         // dd($EventSql,$BannerSql,$Banners);
         $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
         if (Sizeof($Events) == 0) {
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
                 $EventSql .= ' ORDER BY e.id DESC';
@@ -292,7 +292,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND u.is_verify = 1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
                 $UpcomingEventsql .= ' ORDER BY u.id DESC';
@@ -304,7 +304,7 @@ class EventController extends Controller
         }
 
         if (Sizeof($RegistrationEvents) == 0) {
-            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
+            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1 AND r.is_verify = 1";
             if (!empty($NewState_id)) {
                 $RegistrationSql .= ' AND r.country=' . $NewCountry_id;
                 $RegistrationSql .= ' ORDER BY r.id DESC';
@@ -389,10 +389,10 @@ class EventController extends Controller
         $HomeFlag = isset($request->home_flag) ? $request->home_flag : 0;
 
         #GET EVENTS COUNTRY WISE
-        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 0";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
-        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
-        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time";
+        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND .is_verify = 1";
+        $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time AND r.is_verify = 1";
         // $CountryCode = $request->country_code;
         $City = isset($request->city) ? $request->city : '';
         // $State = isset($request->state) ? $request->state : '';
@@ -440,7 +440,7 @@ class EventController extends Controller
 
         if (Sizeof($Events) == 0) {
             $FewSuggestionFlag = 1;
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
                 $EventSql .= ' ORDER BY e.id DESC';
@@ -464,7 +464,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND u.is_verify = 1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
                 $UpcomingEventsql .= ' ORDER BY u.id DESC';
@@ -475,7 +475,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($RegistrationEvents) == 0) {
-            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
+            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1 AND r.is_verify = 1";
             if (!empty($NewState_id)) {
                 $RegistrationSql .= ' AND r.state=' . $NewState_id;
                 $RegistrationSql .= ' ORDER BY r.id DESC';
@@ -489,7 +489,7 @@ class EventController extends Controller
         $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
         // dd($ResponseData['CountryId'],$NewCountry_id,$Events);
         if (Sizeof($Events) == 0) {
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
                 $EventSql .= ' ORDER BY e.id DESC';
@@ -510,7 +510,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND u.is_verify = 1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
                 $UpcomingEventsql .= ' ORDER BY u.id DESC';
@@ -521,7 +521,7 @@ class EventController extends Controller
             }
         }
         if (Sizeof($RegistrationEvents) == 0) {
-            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1";
+            $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.registration_start_time >=:registration_start_time AND r.event_info_status=1 AND r.is_verify = 1";
             if (!empty($NewState_id)) {
                 $RegistrationSql .= ' AND r.country=' . $NewCountry_id;
                 $RegistrationSql .= ' ORDER BY r.id DESC';
@@ -639,7 +639,7 @@ class EventController extends Controller
         // dd($StartDateTime,$EndDateTime);
         $event_ids = '';
         if (!empty($Category)) {
-            $aSql = "SELECT e.id FROM events as e LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category = ".$Category." ";
+            $aSql = "SELECT e.id FROM events as e LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category = ".$Category." AND e.is_verify = 1";
             $aResult = DB::select($aSql);
             // dd($aResult);
             $event_array = !empty($aResult) ? array_column($aResult,'id') : [];
@@ -647,7 +647,7 @@ class EventController extends Controller
         }
         // dd($event_ids);
 
-        $EventSql = "SELECT * FROM events AS e WHERE 1=1 ";
+        $EventSql = "SELECT * FROM events AS e WHERE 1=1 AND e.is_verify = 1";
         if (!empty($EventId)) {
             $EventSql .= " AND e.id=" . $EventId;
         }
