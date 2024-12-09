@@ -568,7 +568,7 @@ class EventParticipantsController extends Controller
                                   
                                 }
                                 
-                                $aTemp->answer_value = $label;
+                                $aTemp->answer_value = $label.' ₹';
                             } else {
                                 if ($val->question_form_type == "countries") {
                                     $aTemp->answer_value = !empty($val->ActualValue) ? $master->getCountryName($val->ActualValue) : "";
@@ -631,8 +631,8 @@ class EventParticipantsController extends Controller
                         }
 
                         if($val->question_label == 'Race Category'){
-                            $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "----", $res1->TicketName) : '';
-                            // dd($aTemp->answer_value);
+                            // $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
+                            $aTemp->answer_value = !empty($res1->TicketName) ? "é" : '';
                         }
 
                         if($val->question_label == 'Bulk Upload Group Name'){
