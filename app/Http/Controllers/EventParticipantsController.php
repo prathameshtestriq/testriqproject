@@ -632,7 +632,7 @@ class EventParticipantsController extends Controller
 
                         if($val->question_label == 'Race Category'){
                             // $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
-                            $aTemp->answer_value = !empty($res1->TicketName) ? utf8_encode($res1->TicketName) : '';
+                            $aTemp->answer_value = !empty($res1->TicketName) ? html_entity_decode($res1->TicketName) : '';
                         }
 
                         if($val->question_label == 'Bulk Upload Group Name'){
