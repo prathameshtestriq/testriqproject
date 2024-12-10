@@ -203,7 +203,7 @@ class EventController extends Controller
         }
         $EventSql .= ' ORDER BY e.start_time ASC';
         $RegistrationSql .= ' ORDER BY r.id DESC';
-        $UpcomingSql .= ' ORDER BY u.start_time DESC';
+        $UpcomingSql .= ' ORDER BY u.start_time ASC';
 
         // dd($EventSql,$BannerSql);
         if (!empty($HomeFlag)) {
@@ -250,7 +250,7 @@ class EventController extends Controller
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
 
-                $UpcomingSql .= ' ORDER BY u.start_time DESC';
+                $UpcomingSql .= ' ORDER BY u.start_time ASC';
                 if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
@@ -297,7 +297,7 @@ class EventController extends Controller
             $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.end_time >=:end_time AND u.event_info_status=1 AND u.is_verify = 1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
-                $UpcomingEventsql .= ' ORDER BY u.start_time DESC';
+                $UpcomingEventsql .= ' ORDER BY u.start_time ASC';
                 if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
