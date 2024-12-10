@@ -56,8 +56,10 @@
                         </td>
                         <td></td>
                         <td style="width: 20%;">
-                            <?php $imagePath = 'uploads/Athlete_pdfs/' . ($oAthlete[0]->profile_pic ?? ''); ?>
-                            <img src="{{ (!empty($oAthlete[0]->profile_pic) && file_exists(public_path($imagePath))) ? $oAthlete[0]->profile_pic :  "uploads/images/customer.png" }}" alt=""
+                            <?php $imagePath = !empty($oAthlete[0]->profile_pic) ? 'uploads/profile_images/'.$oAthlete[0]->profile_pic : 'uploads/images/customer.png'; 
+                                    // dd($imagePath);
+                            ?>
+                            <img src="{{ $imagePath }}" alt=""
                                 style="width: 260px; height: 260px; object-fit: cover; border-radius: 0px; margin-top: 0px; float: right;" />
                         </td>
                     </tr>

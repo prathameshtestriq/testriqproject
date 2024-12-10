@@ -73,10 +73,11 @@ class AthleteIdCardController extends Controller
                             foreach ($oAthlete as $value) { 
                                 $value->blood_group = isset($value->blood_group) ? $value->blood_group : "";
                                 $value->name = (!empty($value->firstname)) ? $value->firstname . " " . $value->lastname : "";
-                                // $value->barcode_image = base64_encode(QrCode::format('svg')->size(300)->errorCorrection('H')->generate($final_barcode_number));
+                               
                                 $value->barcode_image = base64_encode(QrCode::format('png')->size(300)->generate($final_barcode_number));
                                 // dd( $value->barcode_image ); 
-                                $value->profile_pic = (!empty($value->profile_pic)) ? url('/').'/uploads/profile_images/' . $value->profile_pic . '' : url('/').'uploads/images/customer.png';
+                                // $value->profile_pic = (!empty($value->profile_pic)) ? url('/').'/uploads/profile_images/' . $value->profile_pic : url('/').'uploads/images/customer.png';
+                                $value->profile_pic = $value->profile_pic;
                                 $value->b_number = isset($value->barcode_number) ? $value->barcode_number : '';
                             }
                         // dd($oAthlete);
