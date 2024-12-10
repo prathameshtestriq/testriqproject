@@ -201,7 +201,7 @@ class EventController extends Controller
                 $ResponseData['StateId'] = $StateId[0]->id;
             }
         }
-        $EventSql .= ' ORDER BY e.start_time ASC';
+        $EventSql .= ' ORDER BY e.id DESC';
         $RegistrationSql .= ' ORDER BY r.id DESC';
         $UpcomingSql .= ' ORDER BY u.start_time ASC';
 
@@ -229,7 +229,7 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1 AND e.registration_end_time >=:registration_end_time";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
-                $EventSql .= ' ORDER BY e.start_time ASC';
+                $EventSql .= ' ORDER BY e.id DESC';
 
                 if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
@@ -277,7 +277,7 @@ class EventController extends Controller
             $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1 AND e.registration_end_time >=:registration_end_time";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
-                $EventSql .= ' ORDER BY e.start_time ASC';
+                $EventSql .= ' ORDER BY e.id DESC';
 
                 if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
