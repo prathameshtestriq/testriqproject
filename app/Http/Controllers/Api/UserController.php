@@ -73,6 +73,12 @@ class UserController extends Controller
 
             $ResponseData['ProfileCompletionPercentage'] = $this->profileCompletionPercentage($aToken['data']->ID);
 
+            //---------- 
+            $sql = "SELECT id FROM booking_payment_details Where created_by=:created_by AND payment_status IN('success','free') GROUP BY event_id";
+            $aAthletCardResult = DB::select($sql,array("created_by" => $UserId));
+      
+            $ResponseData['EventAthletData'] = !empty($aAthletCardResult) ? count($aAthletCardResult) : 0;
+           
             $ResposneCode = 200;
             $message = 'Request processed successfully';
 

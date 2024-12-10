@@ -152,8 +152,8 @@ class EventController extends Controller
         $HomeFlag = isset($request->home_flag) ? $request->home_flag : 0;
 
         #GET EVENTS COUNTRY WISE
-        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1";
-        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.event_info_status=1 AND u.start_time >=:start_time AND u.is_verify = 1";
+        $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1 AND e.registration_end_time >=:registration_end_time";
+        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.event_info_status=1 AND u.end_time >=:end_time AND u.is_verify = 1";
         $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time AND r.is_verify = 1";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
 
@@ -201,22 +201,23 @@ class EventController extends Controller
                 $ResponseData['StateId'] = $StateId[0]->id;
             }
         }
-        $EventSql .= ' ORDER BY e.id DESC';
+        $EventSql .= ' ORDER BY e.start_time ASC';
         $RegistrationSql .= ' ORDER BY r.id DESC';
-        $UpcomingSql .= ' ORDER BY u.id DESC';
+        $UpcomingSql .= ' ORDER BY u.start_time DESC';
 
         // dd($EventSql,$BannerSql);
         if (!empty($HomeFlag)) {
             $EventSql .= ' Limit 8';
             $RegistrationSql .= ' Limit 8';
         }
-        $Events = DB::select($EventSql);
+      
+        $Events = DB::select($EventSql, array('registration_end_time' => $NowTime));
         $Banners = DB::select($BannerSql);
         $RegistrationEvents = DB::select($RegistrationSql, array('registration_start_time' => $NowTime));
         if (!empty($HomeFlag)) {
             $UpcomingSql .= ' Limit 8';
         }
-        $UpcomingEvents = DB::select($UpcomingSql, array('start_time' => $NowTime));
+        $UpcomingEvents = DB::select($UpcomingSql, array('end_time' => $NowTime));
 
         #NEW SECTION STARTS IF EVENTS AND BANNERS GETTINGS EMPTY
         ##IF NO EVENTS OR BANNERS ARE FOUND FOR THE GIVEN TIME FRAME, THEN WE SHOW ALL AVAILABLE ON
@@ -225,15 +226,15 @@ class EventController extends Controller
             // $message = 'Few Suggestions';
             $FewSuggestionFlag = 1;
 
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1 AND e.registration_end_time >=:registration_end_time";
             if (!empty($NewState_id)) {
                 $EventSql .= ' AND e.state=' . $NewState_id;
-                $EventSql .= ' ORDER BY e.id DESC';
+                $EventSql .= ' ORDER BY e.start_time ASC';
 
                 if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
                 }
-                $Events = DB::select($EventSql);
+                $Events = DB::select($EventSql, array('registration_end_time' => $NowTime));
             }
         }
 
@@ -245,15 +246,15 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND u.is_verify = 1";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.end_time >=:end_time AND u.event_info_status=1 AND u.is_verify = 1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.state=' . $NewState_id;
 
-                $UpcomingSql .= ' ORDER BY u.id DESC';
+                $UpcomingSql .= ' ORDER BY u.start_time DESC';
                 if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
-                $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+                $UpcomingEvents = DB::select($UpcomingEventsql, array('end_time' => $NowTime));
             }
         }
         if (Sizeof($RegistrationEvents) == 0) {
@@ -273,15 +274,16 @@ class EventController extends Controller
         // dd($EventSql,$BannerSql,$Banners);
         $NewCountry_id = (!empty($country_id)) ? $country_id : $ResponseData['CountryId'];
         if (Sizeof($Events) == 0) {
-            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1";
+            $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1 AND e.registration_end_time >=:registration_end_time";
             if (!empty($NewCountry_id) && $NewCountry_id > 0) {
                 $EventSql .= ' AND e.country=' . $NewCountry_id;
-                $EventSql .= ' ORDER BY e.id DESC';
+                $EventSql .= ' ORDER BY e.start_time ASC';
 
                 if (!empty($HomeFlag)) {
                     $EventSql .= ' Limit 8';
                 }
-                $Events = DB::select($EventSql);
+                $Events = DB::select($EventSql, array('registration_end_time' => $NowTime));
+
             }
         }
         if (Sizeof($Banners) == 0) {
@@ -292,14 +294,14 @@ class EventController extends Controller
             }
         }
         if (Sizeof($UpcomingEvents) == 0) {
-            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND u.is_verify = 1";
+            $UpcomingEventsql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.end_time >=:end_time AND u.event_info_status=1 AND u.is_verify = 1";
             if (!empty($NewState_id)) {
                 $UpcomingEventsql .= ' AND u.country=' . $NewCountry_id;
-                $UpcomingEventsql .= ' ORDER BY u.id DESC';
+                $UpcomingEventsql .= ' ORDER BY u.start_time DESC';
                 if (!empty($HomeFlag)) {
                     $UpcomingEventsql .= ' Limit 8';
                 }
-                $UpcomingEvents = DB::select($UpcomingEventsql, array('start_time' => $NowTime));
+                $UpcomingEvents = DB::select($UpcomingEventsql, array('end_time' => $NowTime));
             }
         }
 

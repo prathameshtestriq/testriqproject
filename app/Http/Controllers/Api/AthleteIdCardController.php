@@ -15,7 +15,6 @@ class AthleteIdCardController extends Controller
 {
     public function athleteCardPreview(Request $request)
     {
-        
         $ResponseData = [];
         $ResposneCode = 200;
         $empty = false;
@@ -77,10 +76,10 @@ class AthleteIdCardController extends Controller
                                 // $value->barcode_image = base64_encode(QrCode::format('svg')->size(300)->errorCorrection('H')->generate($final_barcode_number));
                                 $value->barcode_image = base64_encode(QrCode::format('png')->size(300)->generate($final_barcode_number));
                                 // dd( $value->barcode_image ); 
-                                $value->profile_pic = (!empty($value->profile_pic)) ? 'uploads/profile_images/' . $value->profile_pic . '' : '';
+                                $value->profile_pic = (!empty($value->profile_pic)) ? url('/').'/uploads/profile_images/' . $value->profile_pic . '' : url('/').'uploads/images/customer.png';
                                 $value->b_number = isset($value->barcode_number) ? $value->barcode_number : '';
                             }
-                        //   dd($oAthlete);
+                        // dd($oAthlete);
                     }else{
                         $message = 'No Data Found';
                         $ResposneCode = 200;
@@ -90,18 +89,16 @@ class AthleteIdCardController extends Controller
                     $pdf->setPaper('L', 'landscape');
                     $pdf->save(public_path('uploads/Athlete_pdfs/AthleteCard' . $aPost['user_id'] . '.pdf'));
                     $content = $pdf->download('AthleteCard' . $aPost['user_id'] . '.pdf')->getOriginalContent();
-                    $path = public_path('uploads/Athlete_pdfs/AthleteCard' . $aPost['user_id'] . '.pdf');
-                    // $path = public_path('uploads/pdfs/AthleteCard' . $AthleteId . '.pdf');
+                    // $path = public_path('uploads/Athlete_pdfs/AthleteCard' . $aPost['user_id'] . '.pdf');
+                    $path = url('/')."/uploads/Athlete_pdfs/AthleteCard".$aPost['user_id'].'.pdf';
 
-                    $ResponseData['path'] = $path;
+                    $ResponseData['pdf_path'] = $path;
                     $message = 'Athlete Card downloaded successfully';
 
             }else{
                 $message = 'Less than 3 events are available.';
                 $ResposneCode = 200;
             }
-
-                
 
         } else {
             $ResposneCode = $aToken['code'];
