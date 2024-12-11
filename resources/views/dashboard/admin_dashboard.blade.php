@@ -973,6 +973,125 @@
                   </div>
                 </div>
             </div>
+            
+            <!------------------------------------ Remittance Details -------------------------------------------------->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+                <div class="card">
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                            <h4 class="text-dark m-0">Remittance Details</h4>
+                            </div>
+                        </div>
+                    
+                        <div class="card-min-height d-flex justify-content-center py-2">
+                            <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        {{-- <th class="text-center">Sr. No</th> --}}
+                                        <th class="text-left">Remittance Name</th>
+                                        <th class="text-left">Remittance Date</th>
+                                        <th class="text-center">Gross Amount</th>
+                                        <th class="text-center">SGST</th>
+                                        <th class="text-center">CGST</th>
+                                        <th class="text-center">IGST</th>
+                                        <th class="text-center">Deductions</th>
+                                        <th class="text-center">TDS</th>
+                                        <th class="text-center">Amount Remitted</th>
+                                    </tr>
+                                </thead>
+                               
+                                <tbody>
+                                    <?php 
+                                    if (!empty($Remittance_details)){
+                                        $i = 0;?>
+                                    <?php foreach ($Remittance_details as $val){
+                                        
+                                                $i++;
+                                    ?>
+                                        <tr>
+                                            {{-- <td class="text-center">{{ $i }}</td> --}}
+                                            <td class="text-left">{{ ucfirst($val->remittance_name) }}</td>
+                                            <td class="text-left">{{  date('d-m-Y',$val->remittance_date) }}</td>
+                                            <td class="text-center">{{ number_format($val->gross_amount, 2)  }}</td>
+                                            <td class="text-center">{{ number_format($val->Sgst,2) }}</td>
+                                            <td class="text-center">{{ number_format($val->Cgst,2) }}</td>
+                                            <td class="text-center">{{ number_format($val->Igst,2) }}</td>
+                                            <td class="text-center">{{ number_format($val->deductions,2) }}</td>
+                                            <td class="text-center">{{ number_format($val->Tds,2) }}</td>
+                                            <td class="text-center">{{ number_format($val->amount_remitted,2) }}</td>
+                                        </tr>
+                                        <?php }
+                                    }else{?>
+                                        <tr>
+                                            <td colspan="17" class="text-center" style="color: red">No Record Found</td>
+                                        </tr>
+                                    <?php }?>
+                                </tbody>
+                                
+                            </table>
+                            
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!------------------------------------ Marketing Details -------------------------------------------------->
+            <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+                <div class="card">
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                            <h4 class="text-dark m-0">Marketing Details</h4>
+                            </div>
+                        </div>
+                    
+                        <div class="card-min-height d-flex justify-content-center py-2">
+                            <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        {{-- <th class="text-center">Sr. No</th> --}}
+                                        <th class="text-left">Campaign Name</th>
+                                        <th class="text-left">Campaign Type</th>
+                                        <th class="text-center">Count</th>
+                                        <th class="text-left">Start Date</th>
+                                        <th class="text-left">End Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                    if (!empty($Marketing_details)){
+                                        $i = 0;?>
+                                    <?php foreach ($Marketing_details as $val){
+                                            $i++;
+                                    ?>
+                                        <tr>
+                                            {{-- <td class="text-center">{{ $i }}</td> --}}
+                                            <td class="text-left">{{ ucfirst($val->campaign_name) }}</td>
+                                            <td class="text-left">{{ $val->campaign_type }}</td>
+                                            <td class="text-center">{{ $val->count }}</td>
+                                            <td class="text-left">{{  date('d-m-Y ',$val->start_date) }}</td>
+                                            <td class="text-left">{{  date('d-m-Y ',$val->end_date) }}</td>
+                                        </tr>
+                                        <?php }
+                                    }else{?>
+                                        <tr>
+                                            <td colspan="13" class="text-center" style="color: red">No Record Found</td>
+                                        </tr>
+                                    <?php }?>
+                                </tbody>
+                            </table>
+                            
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         
         <!------------------------------------ Dnyanamic Quetion wise table data -------------------------------------------------->

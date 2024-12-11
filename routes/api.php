@@ -77,7 +77,7 @@ Route::controller(LoginController::class)->group(function () {
     Route::post('update_password', 'update_password');
     Route::post('validate_otp', 'validateOtp');
     Route::post('resend_otp', 'resendOtp');
-
+    Route::post('country_phonecode', 'countryPhoneCode');
 });
 
 Route::controller(EventController::class)->group(function () {
@@ -160,7 +160,7 @@ Route::controller(EventTicketController::class)->group(function () {
     Route::post('get_event_term_and_conditions','GetEventTermsConditions');
     Route::post('send_email_organiser_confirmation','SendEmailOrganiserOnboardingConfirmation');
     Route::post('send_email_contact_us','SendEmailContactUs');
-    
+    Route::post('participant_send_multiple_email','ParticipantSendMultipleEmail');
 });
 
 Route::controller(UserEventDetailsController::class)->group(function () {
@@ -226,6 +226,7 @@ Route::controller(FormQuestionsController::class)->group(function () {
     Route::post('ViewSubquestionsTree', 'view_sub_question_tree');
     Route::post('EventFormQuestionsSorting', 'event_form_question_sorting');
     Route::post('FormCommonDetails', 'form_common_details');
+    Route::post('removeAddQuestionTicketPdf', 'remove_add_question_ticket_pdf');
 });
 
 Route::controller(PaymentGatwayController::class)->group(function () {

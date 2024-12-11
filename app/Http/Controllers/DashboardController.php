@@ -914,6 +914,28 @@ class DashboardController extends Controller
 
                 $aReturn['CountArray'] = $CountArray;
                // dd($aReturn['CountArray']);
+
+                // Remittance Details
+                $s_sql15 = 'SELECT remittance_name,remittance_date,gross_amount,Sgst,Cgst,Igst,deductions,Tds,amount_remitted,event_id,(SELECT name FROM events as e where e.id =rm.event_id ) AS event_name FROM remittance_management rm where 1=1';
+
+                if (!empty($aReturn['search_event_name'])) {
+                    $s_sql15 .= ' AND rm.event_id =' . $aReturn['search_event_name'];
+                }else{
+                    $s_sql15 .= ' AND 1=2';
+                }
+
+                $aReturn['Remittance_details'] = DB::select($s_sql15);
+ 
+                // Marketing Details    
+                $s_sql16 = 'SELECT campaign_name,campaign_type,count,start_date,end_date,event_id,(SELECT name FROM events e WHERE m.event_id = e.id) As event_name FROM marketing m where 1=1';
+
+                if (!empty($aReturn['search_event_name'])) {
+                    $s_sql16 .= ' AND m.event_id =' . $aReturn['search_event_name'];
+                }else{
+                    $s_sql16 .= ' AND 1=2';
+                }
+
+                $aReturn['Marketing_details'] = DB::select($s_sql16);
  
         return view('dashboard.admin_dashboard', $aReturn);
     }

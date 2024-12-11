@@ -2777,6 +2777,97 @@ class EventTicketController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+    
+    //-------------- participant_send_multiple_email
+    public function ParticipantSendMultipleEmail(Request $request)
+    {   
+        // dd($request);
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $field = '';
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken);
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+         
+            $EventId   = !empty($request->event_id) ? $request->event_id : 0;
+            $UserId    = $aToken['data']->ID;
+            $EventUrl  = !empty($request->event_url) ? $request->event_url : '';
+            $EmailType = !empty($request->email_type) ? $request->email_type : 1;
+            $SubjectName = !empty($request->subject_name) ? $request->subject_name : '';
+            $MessageContent   = !empty($request->message_content) ? $request->message_content : '';
+            $ParticipantData = !empty($request->participant_data) ? json_decode($request->participant_data) : '';
+            $participant_ids = !empty($ParticipantData) ? implode(",", $ParticipantData) : '';
+          
+            if(!empty($participant_ids)){
+
+                $SQL = "SELECT id,booking_details_id,email,CONCAT(firstname, ' ', lastname) AS username,firstname,lastname,registration_id,(select ticket_amount from booking_details where id = attendee_booking_details.booking_details_id) as ticket_amount,(select ticket_name from event_tickets where id = attendee_booking_details.ticket_id) as ticket_name,bulk_upload_flag,ticket_price,final_ticket_price FROM attendee_booking_details WHERE id IN(".$participant_ids.") order by id desc";
+                $attendeeResult = DB::select($SQL, array());
+                // dd($attendeeResult);
+
+                foreach($attendeeResult as $res){
+                    
+                    $attendee_email = !empty($res->email) ? $res->email : '';
+
+                    if($EmailType != 5 || $EmailType != "5"){
+
+                        $SQL1 = "SELECT (select booking_pay_id from event_booking where id = booking_details.booking_id) as booking_pay_id FROM booking_details WHERE id =:id";
+                        $bookingDetResult = DB::select($SQL1, array('id' => $res->booking_details_id));
+                         // dd($bookingDetResult);
+                        $BookingPayId =  !empty($bookingDetResult) && $bookingDetResult[0]->booking_pay_id ? $bookingDetResult[0]->booking_pay_id : 0;
+                        $attendee_id = !empty($res->id) ? $res->id : '';
+                        $attendee_username = !empty($res->username) ? str_replace("\u{A0}", "", $res->username)  : '';
+                        $ticket_amount = !empty($res->ticket_amount) ? '₹ '.$res->ticket_amount : '';
+                        $attendee_firstname = !empty($res->firstname) ? str_replace("\u{A0}", "", $res->firstname) : '';
+                        $attendee_lastname = !empty($res->lastname) ? str_replace("\u{A0}", "", $res->lastname) : '';
+                        $attendee_registration_id = !empty($res->registration_id) ? $res->registration_id : '';
+                        $attendee_ticket_name = !empty($res->ticket_name) ? $res->ticket_name : '';
+                        
+                        if($res->bulk_upload_flag == 0)
+                            $ticket_paid_amount = !empty($res->ticket_amount) ? $res->ticket_amount : '0.00';
+                        else
+                            $ticket_paid_amount = !empty($attendeeResult) ? $attendeeResult[0]->ticket_price : '0.00';
+
+                        $final_ticket_price = !empty($res->final_ticket_price) ? $res->final_ticket_price : 0;
+                       
+                        // dd($BookingPayId,$attendee_id ,$attendee_email,$attendee_username,$ticket_amount,$attendee_firstname,$attendee_lastname,$attendee_registration_id,$attendee_ticket_name,$ticket_paid_amount,$final_ticket_price);
+
+                        $attendee_array = array("attendee_id" => $attendee_id, "firstname" => $attendee_firstname, "lastname" => $attendee_lastname, "username" => $attendee_username, "registration_id" => $attendee_registration_id, "ticket_name" => $attendee_ticket_name);
+
+                        $this->ResendEmailDetails($UserId, $attendee_email, $EventId, $EventUrl, 1, $ticket_amount, $BookingPayId, $falg = 2, $attendee_array, $EmailType, $ticket_paid_amount, $final_ticket_price);
+                 
+                    }else if($EmailType == 5 || $EmailType == "5"){
+                        // dd($UserId, $attendee_email, $MessageContent, $SubjectName, $falg = 2, 0, $EventId);    
+                        $Email = new Emails();
+                        $Email->send_participant_custom_mail($UserId, $attendee_email, $MessageContent, $SubjectName, $falg = 2, $EventId);
+                    }
+
+                    $ResponseData['data'] = 1;
+                    $message = "Email send successfully";
+                    $ResposneCode = 200;
+                }
+
+            } else {
+                $ResponseData['data'] = 0;
+                $message = "Email Not Found";
+                $ResposneCode = 401;
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
 
     public function ResendEmailToAttendee(Request $request)
     {   

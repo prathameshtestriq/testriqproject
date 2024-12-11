@@ -220,23 +220,42 @@ Thank you for your attention to this matter.<br/>";
             echo 'Caught exception: ' . $e->getMessage() . "\n";
         }
     }
+    
+    //--------------- new added for 
+    public function send_participant_custom_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $EventId)
+    {
+        // dd($UserId, $UserEmail, $MessageContent, $Subject, $flag, $EventId);
+        $email = new \SendGrid\Mail\Mail();
+        $email->setFrom("support@youtoocanrun.com", "RACES Registrations ");
+        $email->setSubject($Subject);
+        $email->addTo($UserEmail, $Subject);
+        $email->addContent("text/plain", "Dear, ");
+        $email->addContent(
+            "text/html",
+            "" . $MessageContent
+        );
+
+        $sendgrid = new \SendGrid(env('SEND_GRID_KEY'));
+        try {
+            $response = $sendgrid->send($email);
+            // send mail
+            
+            if($flag == 2){
+               $type  = "Manual Attendee Custom Email";
+            }else{
+                $type = "Manual Attendee Email";
+            }
+            $send_mail_to = $UserEmail;
+            $this->save_email_log($type, $send_mail_to, $Subject, $MessageContent, $response, 0, $EventId);
+
+        } catch (Exception $e) {
+            echo 'Caught exception: ' . $e->getMessage() . "\n";
+        }
+    }
 
     public function registered_email($mail, $firstname, $lastname)
     {
-        // $message = "Dear " . $firstname . " " . $lastname . ",
-        //  <br/><br/>
-        // Thank you for registering with RACES! We are excited to have you join our community.
-        //  <br/><br/>
-        // If you have any questions or need assistance, feel free to reach out to our support team.
-        //  <br/><br/>
-        //  Email: support@youtoocanrun.com<br/>
-        // Phone Number:+91 9920142195
-        //  <br/><br/>
-        // Welcome aboard!
-        //  <br/><br/>
-        // <p>Best regards,<br>(For RACES)<br>Team YouTooCanRun</p>";
-
-         $message = "Dear " . $firstname . " " . $lastname . ",
+        $message = "Dear " . $firstname . " " . $lastname . ",
          <br/><br/>
             Welcome to RACES!
          <br/><br/>

@@ -110,10 +110,11 @@ class LoginController extends Controller
                                             'gender' => $aPost['gender'],
                                             'password' => md5($aPost['password']),
                                             'created_at' => strtotime('now'),
-                                            'organizer_user' => $organising_user_id
+                                            'organizer_user' => $organising_user_id,
+                                            'phone_code' => $aPost['phone_code']
                                         );
 
-                                        $SQL2 = 'INSERT INTO users (firstname,lastname,mobile,email,dob,gender,password,created_at,organizer_user) VALUES(:firstname,:lastname,:mobile,:email,:dob,:gender,:password,:created_at,:organizer_user)';
+                                        $SQL2 = 'INSERT INTO users (firstname,lastname,mobile,email,dob,gender,password,created_at,organizer_user,phone_code) VALUES(:firstname,:lastname,:mobile,:email,:dob,:gender,:password,:created_at,:organizer_user,:phone_code)';
                                         DB::select($SQL2, $Binding);
 
                                         $lastInsertedId = DB::getPdo()->lastInsertId();
@@ -222,6 +223,28 @@ class LoginController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+
+    public function countryPhoneCode(Request $request)
+    {
+        // dd('signup');
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        
+        $SQL1 = 'SELECT id,phonecode FROM countries WHERE flag=:flag order by phonecode asc';
+        $aResult = DB::select($SQL1, array('flag' => 1));
+
+        $response = [
+            'status' => $ResposneCode,
+            'data' => $aResult,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
+
+
 
     public function validateOtp(Request $request)
     {

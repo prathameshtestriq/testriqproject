@@ -41,7 +41,7 @@ class FormQuestionsController extends Controller
             
             //$Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
 
-            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
+            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id,show_on_ticket_pdf FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
             $aResult = DB::select($Sql);
              
             $customFormArray = array("Personal Information", "Address Details", "Medical Information", "Documentation", "Emergency Contact", "Additional Information", "Professional Information", "Social Media Links");
@@ -772,51 +772,57 @@ class FormQuestionsController extends Controller
             $ResposneCode = $aToken['code'];
             $response['message'] = $aToken['message'];
         }
-
         return response()->json($response, $ResposneCode);
     }
 
-    // Add Manual Event Form Questions
-    // public function add_manual_event_form_questions(Request $request)
-    // {
-    //     $response['data'] = [];
-    //     $response['message'] = '';
-    //     $ResposneCode = 400;
-    //     $empty = false;
+    // Remove question for ticket pdf
+    public function remove_add_question_ticket_pdf(Request $request)
+    {
+        $response['data'] = [];
+        $response['message'] = '';
+        $ResposneCode = 400;
+        $empty = false;
 
-    //     $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-    //     //dd($aToken);
-    //     if ($aToken['code'] == 200) {
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        // dd($aToken);
+        if ($aToken['code'] == 200) {
 
-    //         $EventId = !empty($request->event_id) ? $request->event_id : 0;
+            $EventId = !empty($request->event_id) ? $request->event_id : 0;
+            $GeneralFormId = !empty($request->general_form_id) ? $request->general_form_id : 0;
+            $TicketPdfShowFlag = isset($request->ticket_pdf_show_flag) ? $request->ticket_pdf_show_flag : 0;
+            $SubQuestionFlag = isset($request->child_question_ids) ? $request->child_question_ids : 0;
 
-    //         $sel_sSQL = 'SELECT id,event_id FROM event_form_question WHERE `event_id` =:eventId limit 1';
-    //         $aResult =  DB::select($sel_sSQL,array('eventId' => $EventId));
-    //         //dd($aResult);
+            $up_sSQL = 'UPDATE event_form_question SET `show_on_ticket_pdf` =:show_on_ticket_pdf WHERE `general_form_id`=:generalFormId AND `event_id`=:eventId ';
+            DB::update($up_sSQL,array(
+                'show_on_ticket_pdf' => $TicketPdfShowFlag,
+                'generalFormId' => $GeneralFormId,
+                'eventId' => $EventId
+            )); 
 
-    //         if(empty($aResult)){
-    //             $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_compulsory)';
+            if(!empty($SubQuestionFlag)){
+                $up_sSQL = 'UPDATE event_form_question SET `show_on_ticket_pdf` =:show_on_ticket_pdf WHERE `event_id`=:eventId AND general_form_id IN('.$SubQuestionFlag.')';
+                DB::update($up_sSQL,array(
+                    'show_on_ticket_pdf' => $TicketPdfShowFlag,
+                    'eventId' => $EventId
+                )); 
+            }
 
-    //             $sSQL .= 'SELECT :eventId, id, question_label, form_id, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, sort_order, is_compulsory
-    //                 FROM general_form_question
-    //                 WHERE question_status = 1 AND is_compulsory = 1';
+            $response['data'] = [];
+            if($TicketPdfShowFlag == 0){
+                $response['message'] = 'Question removed on ticket pdf successfully';
+            }else{
+                $response['message'] = 'Question added on ticket pdf successfully';
+            }
+           
+            $ResposneCode = 200;
 
-    //             DB::insert($sSQL,array(
-    //                 'eventId' => $EventId,
-    //             ));
-    //         }
+        }else{
+            $ResposneCode = $aToken['code'];
+            $response['message'] = $aToken['message'];
+        }
+        return response()->json($response, $ResposneCode);
+    }
 
-    //         $response['data'] = [];
-    //         $response['message'] = 'Question added successfully';
-    //         $ResposneCode = 200;
-
-    //     }else{
-    //         $ResposneCode = $aToken['code'];
-    //         $response['message'] = $aToken['message'];
-    //     }
-
-    //     return response()->json($response, $ResposneCode);
-    // }
 
     // Add Custom Form Questions
     public function add_custom_form_questions(Request $request)
