@@ -617,6 +617,10 @@ class EventDashboardController extends Controller
                  // dd($AttendeeData);
                  $final_ticket_amount = $Extra_Amount = $Extra_Amount_Payment_Gateway = $Extra_Amount_Payment_Gateway_Gst = 0;
                 foreach ($AttendeeData as $key => $value) {
+           
+                    $value->firstname = !empty($value->firstname) ? ucfirst($value->firstname) : '';
+                    $value->lastname  = !empty($value->lastname) ? ucfirst($value->lastname) : '';
+
                     $value->booking_date = !empty($value->created_at) ? date("d-m-Y H:i A", ($value->created_at)) : '';
 
                     if(!empty($value->attendee_details)){
@@ -1057,6 +1061,7 @@ class EventDashboardController extends Controller
                                                         $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $val->ActualValue);
                                                     }else{ // text
                                                         $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                                        $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $aTemp->answer_value);
                                                     }
                                                 }
                                                
@@ -1096,6 +1101,8 @@ class EventDashboardController extends Controller
                                     if($val->question_label == 'Race Category'){
                                         $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
                                         // dd($aTemp->answer_value);
+                                        // $aTemp->answer_value = str_replace("&", "&#38;", $aTemp->answer_value);
+                                        $aTemp->answer_value = htmlspecialchars($aTemp->answer_value, ENT_QUOTES, 'UTF-8');
                                     }
 
                                     if($val->question_label == 'Bulk Upload Group Name'){
@@ -1207,7 +1214,8 @@ class EventDashboardController extends Controller
                 $aTemp->bulk_upload_group_name = $bulk_upload_group_name;
 
                 $aTemp->mobile = $res->mobile;
-                $aTemp->category_name = $res->category_name; 
+                // $aTemp->category_name = $res->category_name; 
+                $aTemp->category_name = htmlspecialchars($res->category_name, ENT_QUOTES, 'UTF-8');
                 
                 $cart_details_array = isset($res->cart_detail) && !empty($res->cart_detail) ? json_decode($res->cart_detail) : [];
                 // dd($cart_details_array);
