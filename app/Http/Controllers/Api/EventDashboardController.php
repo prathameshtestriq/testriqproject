@@ -325,6 +325,38 @@ class EventDashboardController extends Controller
                 $ResponseData['TotalConvenience'] = !empty($total_convenience_fee) ? $numberFormate->formatInIndianCurrency($total_convenience_fee) : '0.00';
 
                 $ResponseData['TotalAmount'] = !empty($Final_total_amount) ? $numberFormate->formatInIndianCurrency($Final_total_amount) : '0.00';
+
+                // create by neha on 10-12-24
+               
+                // Remittance details
+                $s_sql = 'SELECT remittance_name,remittance_date,gross_amount,Sgst,Cgst,Igst,deductions,Tds,amount_remitted,event_id,(SELECT name FROM events as e where e.id =rm.event_id ) AS event_name FROM remittance_management rm where 1=1';
+                if (!empty($EventId)) {
+                    $s_sql .= ' AND rm.event_id =' . $EventId;
+                }else{
+                    $s_sql .= ' AND 1=2';
+                }
+                $Remittance_details = DB::select($s_sql);
+                foreach ($Remittance_details as &$remittance) {
+                    $remittance->remittance_date = date('d-m-Y', $remittance->remittance_date);
+               
+                }
+                $ResponseData['RemittanceDetails'] = (count($Remittance_details) > 0) ? $Remittance_details : [];
+               
+                // Marketing details
+                $s_sql = 'SELECT campaign_name,campaign_type,count,start_date,end_date,event_id,(SELECT name FROM events e WHERE m.event_id = e.id) As event_name FROM marketing m where 1=1';
+
+                if (!empty($EventId)) {
+                    $s_sql .= ' AND m.event_id =' . $EventId;
+                }else{
+                    $s_sql .= ' AND 1=2';
+                }
+            
+                $Marketing_details = DB::select($s_sql);
+                foreach ($Marketing_details as &$marketing) {
+                    $marketing->start_date = date('d-m-Y', $marketing->start_date);
+                    $marketing->end_date = date('d-m-Y', $marketing->end_date);
+                }
+                $ResponseData['MarketingDetails'] = (count($Marketing_details) > 0) ? $Marketing_details : [];
                 
                 $ResposneCode = 200;
                 $message = 'Request processed successfully';
@@ -1021,7 +1053,11 @@ class EventDashboardController extends Controller
                                                 }else if($val->question_form_type == "date"){
                                                     $aTemp->answer_value = isset($val->ActualValue) && !empty($val->ActualValue) ? date('d-m-Y',strtotime($val->ActualValue)) : '';
                                                 }else{
-                                                    $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                                    if ($val->question_form_type == "textarea") {
+                                                        $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $val->ActualValue);
+                                                    }else{ // text
+                                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue);
+                                                    }
                                                 }
                                                
                                             }
