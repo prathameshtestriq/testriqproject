@@ -809,9 +809,9 @@ class FormQuestionsController extends Controller
 
             $response['data'] = [];
             if($TicketPdfShowFlag == 0){
-                $response['message'] = 'Question removed on ticket pdf successfully';
+                $response['message'] = 'Question will be hidden on registration pdf';
             }else{
-                $response['message'] = 'Question added on ticket pdf successfully';
+                $response['message'] = 'Question will be displayed on registration pdf';
             }
            
             $ResposneCode = 200;
