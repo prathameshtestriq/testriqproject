@@ -789,16 +789,39 @@ class EventController extends Controller
 
         $EventId = isset($request->event_id) ? $request->event_id : 0;//for view event (Event Details page)
         $EventName = isset($request->event_name) ? str_replace("_", " ", $request->event_name) : '';//for share event link
-        // dd($EventName);
+        $NewEventName = isset($request->event_name) ? $request->event_name : '';
+        $UrlLink = isset($request->url_link) ? $request->url_link : '';
+          
         if (!empty($EventId)) {
             $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id";
             $Events = DB::select($EventSql, array('event_id' => $EventId));
             // dd($Events);
         }
-        if ($EventName !== "") {
-            $EventSql = "SELECT * FROM events AS e WHERE e.name=:event_name";
-            $Events = DB::select($EventSql, array('event_name' => $EventName));
-            $EventId = sizeof($Events) > 0 ? $Events[0]->id : 0;
+        
+        if(!empty($NewEventName)){
+            $eventName = $UrlLink.''.$NewEventName;     // str_replace($UrlLink,"", $NewEventName);
+            $SharedEventSql = "SELECT event_id FROM event_share_url WHERE event_url =:event_url";
+            $SharedEventResult = DB::select($SharedEventSql, array('event_url' => $eventName));
+            
+            if(!empty($SharedEventResult)){
+               $EventId = !empty($SharedEventResult) ? $SharedEventResult[0]->event_id : 0;
+            }else{
+               $EventNameSql = "SELECT id FROM events AS e WHERE e.name=:event_name";
+               $EventNameResult = DB::select($EventNameSql, array('event_name' => $EventName));
+               $EventId = !empty($EventNameResult) ? $EventNameResult[0]->id : 0;
+            }
+        }
+
+        // if ($EventName !== "") {
+        //     $EventSql = "SELECT * FROM events AS e WHERE e.name=:event_name";
+        //     $Events = DB::select($EventSql, array('event_name' => $EventName));
+        //     $EventId = sizeof($Events) > 0 ? $Events[0]->id : 0;
+        // }
+
+        if(!empty($EventId)){
+            $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id";
+            $Events = DB::select($EventSql, array('event_id' => $EventId));
+            $EventId = !empty($Events) ? $Events[0]->id : 0;
         }
 
         // Get Event Tickets 
@@ -870,13 +893,11 @@ class EventController extends Controller
                 $Category = isset($request->category_id) ? $request->category_id : [];
                 $EventTypes = isset($request->event_types) ? $request->event_types : [];
 
-                $EventUrl = isset($request->event_url) ? $request->event_url : "";
+                // $EventUrl = isset($request->event_url) ? $request->event_url : "";
                 $EventType = isset($request->event_type) ? $request->event_type : 0;
-
                 $EventId = (isset($request->event_id) && !empty($request->event_id)) ? $request->event_id : 0;
-
                 $ByAdmin = (isset($request->by_admin) && !empty($request->by_admin)) ? $request->by_admin : 0;
-
+               
                 if (empty($EventId)) {
 
                     #CHECK SAME EVENT NAME EXIST OR NOT
@@ -892,14 +913,14 @@ class EventController extends Controller
                             "event_name" => $EventName,
                             "display_name_status" => $EventDisplayStatus,
                             "display_name" => $EventDisplayName,
-                            "event_url" => $EventUrl,
+                            // "event_url" => $EventUrl,
                             "event_type" => $EventType,
                             "created_by" => $UserId,
                             "created_date" => time(),
                             "ytcr_base_price" => 40,
                             "by_admin" => $ByAdmin
                         );
-                        $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_url,event_type,created_by,created_date,ytcr_base_price,by_admin) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_url,:event_type,:created_by,:created_date,:ytcr_base_price,:by_admin)";
+                        $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_type,created_by,created_date,ytcr_base_price,by_admin) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_type,:created_by,:created_date,:ytcr_base_price,:by_admin)";
                         DB::insert($SQL, $Bindings);
                         $EventId = DB::getPdo()->lastInsertId();
 
@@ -1003,6 +1024,16 @@ class EventController extends Controller
                                     DB::insert($sql1, $Bind1);
                             }
                         }
+                        
+                        //-------------- new added for edit url
+                        $EventUrl = !empty($EventName) ? $request->url_link.'/e/'.str_replace(" ", "_", $EventName)  : '';
+                         // dd($EventUrl);
+                        $sql11 = "INSERT INTO event_share_url(event_id, event_url) VALUES(:event_id,:event_url)";
+                        $Bind1 = array(
+                            "event_id" => $EventId,
+                            "event_url" => $EventUrl
+                        );
+                        DB::insert($sql11, $Bind1);
 
                         $message = "Basic inforamtion of event added successfully";
                     }
@@ -1021,12 +1052,11 @@ class EventController extends Controller
                             "event_name" => $EventName,
                             "display_name_status" => $EventDisplayStatus,
                             "display_name" => $EventDisplayName,
-                            "event_url" => $EventUrl,
                             "event_type" => $EventType,
                             "id" => $EventId
                         );
 
-                        $SQL = "UPDATE events SET event_info_status=:event_info_status,name=:event_name,event_visibilty=:display_name_status,event_display_name=:display_name,event_url=:event_url,event_type=:event_type WHERE id=:id";
+                        $SQL = "UPDATE events SET event_info_status=:event_info_status,name=:event_name,event_visibilty=:display_name_status,event_display_name=:display_name,event_type=:event_type WHERE id=:id";
                         DB::update($SQL, $Bindings);
 
                         #DELETE ALL CATEGORY AND TYPES OF EVENT
@@ -1161,7 +1191,17 @@ class EventController extends Controller
                 }else{
                     $event->content_image   = '';
                 }
-
+                
+                //-------------- new added for edit url
+                $sql1 = "SELECT id,event_id,event_url FROM event_share_url WHERE event_id=:event_id AND status = 1 order by id desc limit 1";
+                $aResult = DB::select($sql1, array('event_id' => $EventId));
+                // dd($aResult);
+                if(!empty($aResult)){
+                    $event->new_event_url = !empty($aResult) && !empty($aResult[0]->event_url) ? $aResult[0]->event_url : '';
+                }else{
+                    $event->new_event_url = !empty($event->name) ? $request->url_link.'/e/'.str_replace(" ", "_", $event->name)  : '';
+                }
+               
             }
             // dd($Events);
             $ResponseData['EventData'] = $Events;
@@ -1650,7 +1690,8 @@ class EventController extends Controller
                 $event_keywords = !empty($request->event_keywords) ? $request->event_keywords : '';
                 $background_color = !empty($request->background_color) ? $request->background_color : '';
                 $background_status = !empty($request->background_status) ? $request->background_status : 0;
-               
+                $EventUrl = isset($request->event_url) && !empty($request->event_url) ? $request->event_url : "";
+
                 // if (preg_match("/^[a-zA-Z-']*$/", $Description)) {
                 $banner_image = '';
                 $event_image = '';
@@ -1732,11 +1773,6 @@ class EventController extends Controller
                             $event_image = $originalName;
                             $uploadedFile->move($Path, $event_image);
 
-                            // $originalName = $uploadedFile->getClientOriginalName(); // Get the original file name
-                            // $extension = $uploadedFile->getClientOriginalExtension(); // Get the file extension
-                            // $uniqueFileName = time() . '_' . uniqid() . '.' . $extension;
-                            // $uploadedFile->move($Path, $uniqueFileName);
-
                             $sSQL = 'INSERT INTO event_images (event_id, image, created_by) VALUES(:event_id, :image, :created_by)';
                             $bindings = array(
                                 'event_id' => $EventId,
@@ -1747,6 +1783,21 @@ class EventController extends Controller
                         }
                     }
                 }
+
+
+                //-------------- new added for edit url
+                $sSQL = 'SELECT event_url FROM event_share_url WHERE LOWER(event_url) = :event_url';
+                $aResult = DB::select($sSQL, ['event_url' => strtolower($EventUrl)]);
+
+                if(empty($aResult)){
+                    $sql11 = "INSERT INTO event_share_url(event_id, event_url) VALUES(:event_id,:event_url)";
+                    $Bind1 = array(
+                        "event_id" => $EventId,
+                        "event_url" => str_replace(" ", "_", $EventUrl) 
+                    );
+                    DB::insert($sql11, $Bind1);
+                }
+
                 $message = 'Event Details updated successfully';
                 $ResposneCode = 200;
             } else {
@@ -3271,6 +3322,54 @@ class EventController extends Controller
             $response['message'] = $aToken['message'];
         }
 
+        return response()->json($response, $ResposneCode);
+    }
+
+    //---------- Added by prathmesh on 12-11-24
+    public function shareEventLink(Request $request)
+    {
+        $ResponseData = [];
+        $response['message'] = "";
+        $ResposneCode = 400;
+        $empty = false;
+        $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+        //dd($aToken['data']->ID);
+
+        if ($aToken['code'] == 200) {
+            $aPost = $request->all();
+            $Auth = new Authenticate();
+            $Auth->apiLog($request);
+            $UserId = $aToken['data']->ID;
+
+            if (empty($aPost['event_id'])) {
+                $empty = true;
+                $field = 'Event Id';
+            }
+
+            if (!$empty) {
+                $EventId = $aPost['event_id'];
+               
+                $SQL = "SELECT id, event_id, event_url FROM event_share_url WHERE event_id = :event_id AND status = 1 order by id desc limit 1";
+                $aResult = DB::select($SQL, array("event_id" => $EventId));
+                $ResponseData = !empty($aResult) ? $aResult : [];
+
+                $ResposneCode = 200;
+                $message = "Request processed successfully";
+
+            } else {
+                $ResposneCode = 400;
+                $message = $field . ' is empty';
+            }
+
+        } else {
+            $ResposneCode = $aToken['code'];
+            $message = $aToken['message'];
+        }
+        $response = [
+            'success' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
         return response()->json($response, $ResposneCode);
     }
 

@@ -107,7 +107,7 @@ Route::controller(EventController::class)->group(function () {
     Route::post('delete_event_images', 'deleteEventImages');
     Route::post('event_integration', 'eventIntegration');
     Route::post('communication_message_image', 'communicationMessageImage');
-    
+    Route::post('share_event_link', 'shareEventLink');
 });
 
 Route::controller(UserController::class)->group(function () {
