@@ -39,6 +39,7 @@ return [
     'payment_gateway_gst_percent' => 18,  // new added
 
     'max_size' => 2097152,
+    'booking_form_file_max_upload_size' => 5242880, // used on ticket booking form only for (5 MB)
     'page_title' => 'Races2.0 - ',
     'base_url' => env('APP_URL'),
     'show_banner_limit' => 10, // races front showing banner slider set limit

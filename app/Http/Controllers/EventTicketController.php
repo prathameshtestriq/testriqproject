@@ -944,7 +944,7 @@ class EventTicketController extends Controller
                 $ResponseData['PAYMENT_GATEWAY_FEE_PERCENT'] = config('custom.payment_gateway_fee_percent');
                 $ResponseData['PAYMENT_GATEWAY_GST_PERCENT'] = config('custom.payment_gateway_gst_percent');
 
-                $ResponseData['MAX_UPLOAD_FILE_SIZE'] = config('custom.max_size');
+                $ResponseData['MAX_UPLOAD_FILE_SIZE'] = config('custom.booking_form_file_max_upload_size');
 
                 // $sql = "SELECT COUNT(id) FROM ticket_booking WHERE event_id=:event_id AND ticket_id=:ticket_id";
                 // $ResponseData['TotalBookedTickets'] = $TotalBookedTickets;
