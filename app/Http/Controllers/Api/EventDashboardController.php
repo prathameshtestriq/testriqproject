@@ -1065,7 +1065,7 @@ class EventDashboardController extends Controller
                                                     //     $aTemp->answer_value = htmlspecialchars($val->ActualValue);
                                                     //     $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $aTemp->answer_value);
                                                     // }
-                                                    $aTemp->answer_value = htmlspecialchars($aTemp->answer_value, ENT_QUOTES, 'UTF-8');
+                                                    $aTemp->answer_value = htmlspecialchars($val->ActualValue, ENT_QUOTES, 'UTF-8');
 
                                                 }
                                                
