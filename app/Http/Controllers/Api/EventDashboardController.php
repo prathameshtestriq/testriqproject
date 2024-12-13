@@ -1059,6 +1059,8 @@ class EventDashboardController extends Controller
                                                 }else{
                                                     if ($val->question_form_type == "textarea") {
                                                         $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $val->ActualValue);
+                                                    }else if($val->question_form_type == "file"){
+                                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue);  
                                                     }else{ // text
                                                         $aTemp->answer_value = htmlspecialchars($val->ActualValue);
                                                         $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $aTemp->answer_value);
