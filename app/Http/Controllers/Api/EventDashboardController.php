@@ -1057,15 +1057,12 @@ class EventDashboardController extends Controller
                                                 }else if($val->question_form_type == "date"){
                                                     $aTemp->answer_value = isset($val->ActualValue) && !empty($val->ActualValue) ? date('d-m-Y',strtotime($val->ActualValue)) : '';
                                                 }else{
-                                                    // if ($val->question_form_type == "textarea") {
-                                                    //     $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $val->ActualValue);
-                                                    // }else if($val->question_form_type == "file"){
-                                                    //     $aTemp->answer_value = htmlspecialchars($val->ActualValue);  
-                                                    // }else{ // text
-                                                    //     $aTemp->answer_value = htmlspecialchars($val->ActualValue);
-                                                    //     $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $aTemp->answer_value);
-                                                    // }
-                                                    $aTemp->answer_value = htmlspecialchars($val->ActualValue, ENT_QUOTES, 'UTF-8');
+                                                    if ($val->question_form_type == "textarea") {
+                                                        $aTemp->answer_value = preg_replace('/[^A-Za-z0-9 \-]/', '', $val->ActualValue);
+                                                    }else{ // text
+                                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue, ENT_QUOTES, 'UTF-8');
+                                                    }
+
 
                                                 }
                                                
