@@ -1699,14 +1699,22 @@ class EventTicketController extends Controller
         if($ticket_id == 108 || $ticket_id == 109){ 
            
             $MessageContent = "<p>Dear {USERNAME},
-                <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2024</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
+                <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2025</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
                 <br><br>Your details are:<br><br>
                 <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
-                <strong>Category : {RACECATEGORY}</strong><br>
-                <strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
+                <strong>Category : {RACECATEGORY}</strong><br>";
+                
+            if($ticket_id == 109){
+                $MessageContent .= "<strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
                 <strong>Accompanying Sibling 1 Name (if selected) : {SIBLING_NAME_1}</strong><br>
-                <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>
-                <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
+                <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>";
+            }else{
+                $MessageContent .= "<strong>Accompanying Parent Name : </strong><br>
+                <strong>Accompanying Sibling 1 Name (if selected) : </strong><br>
+                <strong>Accompanying Sibling 2 Name (if selected) : </strong><br>"; 
+            }
+
+            $MessageContent .= "<strong>Timing : 3:00 pm to 10:00 pm</strong><br>
                 <strong>Registration ID : {REGISTRATIONID}</strong><br>
                 <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                 <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
@@ -1715,7 +1723,7 @@ class EventTicketController extends Controller
                 <p>Best regards,<br/>
                 <strong>Team Pokémon Carnival and Run</strong></p>";
 
-            $Subject = "Your Pokémon Carnival 2024 Entry is Confirmed!";
+            $Subject = "Your Pokémon Carnival 2025 Entry is Confirmed!";
         }else{
             $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
             $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
@@ -1744,7 +1752,8 @@ class EventTicketController extends Controller
                 $Subject = "Event Registration Confirmation - " . ucfirst($Event[0]->name) . "";
             }
         }
-
+        
+        // dd($ConfirmationEmail);
         foreach ($ConfirmationEmail as $key => $value) {
             if (isset($key)) {
                 $placeholder = '{' . $key . '}';
@@ -1923,14 +1932,22 @@ class EventTicketController extends Controller
                 //--------------- new added as per client requirement
                 if($ticket_id == 108 || $ticket_id == 109){
                     $MessageContent = "<p>Dear {USERNAME},
-                        <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2024</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
-                        <br><br>Your details are:<br><br>
-                        <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
-                        <strong>Category : {RACECATEGORY}</strong><br>
-                        <strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
+                    <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2025</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
+                    <br><br>Your details are:<br><br>
+                    <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
+                    <strong>Category : {RACECATEGORY}</strong><br>";
+                    
+                    if($ticket_id == 109){
+                        $MessageContent .= "<strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
                         <strong>Accompanying Sibling 1 Name (if selected) : {SIBLING_NAME_1}</strong><br>
-                        <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>
-                        <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
+                        <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>";
+                    }else{
+                        $MessageContent .= "<strong>Accompanying Parent Name : </strong><br>
+                        <strong>Accompanying Sibling 1 Name (if selected) : </strong><br>
+                        <strong>Accompanying Sibling 2 Name (if selected) : </strong><br>"; 
+                    }
+
+                    $MessageContent .= "<strong>Timing : 3:00 pm to 10:00 pm</strong><br>
                         <strong>Registration ID : {REGISTRATIONID}</strong><br>
                         <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                         <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
@@ -1939,7 +1956,7 @@ class EventTicketController extends Controller
                         <p>Best regards,<br/>
                         <strong>Team Pokémon Carnival and Run</strong></p>";
 
-                    $Subject = "Your Pokémon Carnival 2024 Entry is Confirmed!";
+                    $Subject = "Your Pokémon Carnival 2025 Entry is Confirmed!";
                 }else{
                     $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND email_type = 1";
                     $Communications = DB::select($sql, ["event_id" => $EventId]); // "subject_name" => strtoupper("Registration Confirmation")
@@ -2017,7 +2034,7 @@ class EventTicketController extends Controller
                 // dd($EventId);
                 $amount_details = $extra_details = [];
 
-                $sql1 = "SELECT question_label,question_form_type,question_form_name,general_form_id FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0 ";   // AND question_form_name != 'sub_question'
+                $sql1 = "SELECT question_label,question_form_type,question_form_name,general_form_id FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0 AND show_on_ticket_pdf = 1";   // AND question_form_name != 'sub_question'
                 $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
                 // dd($QuestionData);
 
@@ -2445,7 +2462,7 @@ class EventTicketController extends Controller
                         $extra_details = [];
 
                         //--------------
-                        $sql1 = "SELECT question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0";
+                        $sql1 = "SELECT question_label,question_form_type,question_form_name FROM event_form_question WHERE event_id =:event_id AND is_custom_form = 0 AND show_on_ticket_pdf = 1";
                         $QuestionData = DB::select($sql1, ['event_id' => $EventId]);
                         // dd($QuestionData,$attendee_details);
 
@@ -3174,14 +3191,22 @@ class EventTicketController extends Controller
         if($ticket_id == 108 || $ticket_id == 109){
            
             $MessageContent = "<p>Dear {USERNAME},
-                <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2024</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
+                <br><br>Congratulations! Your registration for the <strong>Pokémon Carnival 2025</strong> is confirmed. We’re excited to welcome you to a world of Pokémon-themed activities, games, and unforgettable experiences.
                 <br><br>Your details are:<br><br>
                 <strong>Name : {FIRSTNAME} {LASTNAME}</strong><br>
-                <strong>Category : {RACECATEGORY}</strong><br>
-                <strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
+                <strong>Category : {RACECATEGORY}</strong><br>";
+                
+            if($ticket_id == 109){
+                $MessageContent .= "<strong>Accompanying Parent Name : {ACCOMPANY_PARENT_NAME}</strong><br>
                 <strong>Accompanying Sibling 1 Name (if selected) : {SIBLING_NAME_1}</strong><br>
-                <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>
-                <strong>Timing : 3:00 pm to 10:00 pm</strong><br>
+                <strong>Accompanying Sibling 2 Name (if selected) : {SIBLING_NAME_2}</strong><br>";
+            }else{
+                $MessageContent .= "<strong>Accompanying Parent Name : </strong><br>
+                <strong>Accompanying Sibling 1 Name (if selected) : </strong><br>
+                <strong>Accompanying Sibling 2 Name (if selected) : </strong><br>"; 
+            }
+
+            $MessageContent .= "<strong>Timing : 3:00 pm to 10:00 pm</strong><br>
                 <strong>Registration ID : {REGISTRATIONID}</strong><br>
                 <strong>Location : Jio World Garden, Bandra Kurla Complex, Mumbai</strong><br>
                 <strong>Preferred Date for attending Pokémon Carnival : {PREFERREDDATE}</strong><br>
@@ -3190,7 +3215,7 @@ class EventTicketController extends Controller
                 <p>Best regards,<br/>
                 <strong>Team Pokémon Carnival and Run</strong></p>";
 
-            $Subject = "Your Pokémon Carnival 2024 Entry is Confirmed!";
+            $Subject = "Your Pokémon Carnival 2025 Entry is Confirmed!";
         }else{
 
             $sql = "SELECT * FROM `event_communication` WHERE `event_id`=:event_id AND status = 1";
