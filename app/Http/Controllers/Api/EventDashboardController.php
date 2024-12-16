@@ -1298,6 +1298,10 @@ class EventDashboardController extends Controller
                             else{
                                 $aTemp->Organiser_amount = isset($to_organiser_amt) && !empty($to_organiser_amt) ? $to_organiser_amt : 0;
                             }
+
+                            if($details->early_bird == 1 && !empty($details->discount_value)){
+                                $aTemp->Organiser_amount = (floatval($aTemp->Organiser_amount) - $details->discount_value);
+                            }
                         }
 
 
