@@ -78,6 +78,7 @@ class RemittanceManagementController extends Controller
         $a_return['Cgst'] = '';
         $a_return['Igst'] = '';
         $a_return['deductions'] = '';
+        $a_return['Tcs'] = '';
         $a_return['Tds'] = '';
         $a_return['amount_remitted'] = '';
         $a_return['bank_reference'] = '';
@@ -87,26 +88,25 @@ class RemittanceManagementController extends Controller
 
         if (isset($request->form_type) && $request->form_type == 'add_edit_remittance_management') {
             $rules = [
-                // 'remittance_name' => 'required|unique:remittance_management,remittance_name,' . $iId . 'id',
                 'remittance_name' => 'required|unique:remittance_management,remittance_name,'.$iId.',id',
                 'remittance_date' => 'required',
+                'event'=> 'required',
                 'gross_amount' => 'required|numeric',
-                'service_charge' => 'required|numeric',
-                'Sgst' => 'required|numeric',
-                'Cgst' => 'required|numeric',
-                'Igst' => 'required|numeric',
-                'deductions' => 'required|numeric',
-                'Tds' => 'required|numeric',
-                'amount_remitted' => 'required|numeric',
-                'bank_reference' => 'required|regex:/^[a-zA-Z\s]+$/',
-                'event'=> 'required'
+                // 'service_charge' => 'numeric',
+                // 'Sgst' => 'numeric',
+                // 'Cgst' => 'numeric',
+                // 'Igst' => 'numeric',
+                // 'deductions' => 'numeric',
+                // 'Tcs' => 'numeric',
+                // 'Tds' => 'numeric',
+                // 'amount_remitted' => 'numeric',
+                // 'bank_reference' => 'regex:/^[a-zA-Z\s]+$/',
             ];
 
             $message = [
                 'bank_reference.regex' => 'The bank reference must contain only letters.',
             ]; 
             $request->validate($rules,$message);
-
 
             if ($iId > 0) {
                 RemittanceManagement::update_remittance_management($iId, $request);
@@ -121,7 +121,7 @@ class RemittanceManagementController extends Controller
         }else{
             if($iId > 0){
             //   #SHOW EXISTING DETAILS ON EDIT
-              $sSQL = 'SELECT id,remittance_name,remittance_date,gross_amount,service_charge,Sgst,Cgst,Igst,deductions,Tds, amount_remitted, bank_reference,event_id FROM remittance_management WHERE id=:id';
+              $sSQL = 'SELECT id,remittance_name,remittance_date,gross_amount,service_charge,Sgst,Cgst,Igst,deductions,Tds, amount_remitted, bank_reference,event_id,Tcs FROM remittance_management WHERE id=:id';
               $remittance_management_details = DB::select($sSQL, array( 'id' => $iId));
               $a_return = (array)$remittance_management_details[0];
             //   dd(  $remittance_management_details);

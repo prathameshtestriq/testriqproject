@@ -116,6 +116,7 @@ class RemittanceManagement extends Model
         Cgst = :Cgst,
         Igst = :Igst,
         deductions = :deductions,
+        Tcs = :Tcs,
         Tds = :Tds,
         amount_remitted = :amount_remitted,
         bank_reference = :bank_reference
@@ -131,6 +132,7 @@ class RemittanceManagement extends Model
             'Cgst' => $request->Cgst,
             'Igst' => $request->Igst,
             'deductions' => $request->deductions,
+            'Tcs' => $request->Tcs,
             'Tds' => $request->Tds,
             'amount_remitted' => $request->amount_remitted,
             'bank_reference' => $request->bank_reference,
@@ -145,10 +147,10 @@ class RemittanceManagement extends Model
        
         $ssql = 'INSERT INTO remittance_management(
             remittance_name,remittance_date,event_id,gross_amount,service_charge,
-            Sgst,Cgst,Igst,deductions,Tds,amount_remitted,bank_reference)
+            Sgst,Cgst,Igst,deductions,Tcs,Tds,amount_remitted,bank_reference)
                 VALUES (
             :remittance_name,:remittance_date,:event_id,:gross_amount,:service_charge,
-            :Sgst,:Cgst,:Igst,:deductions,:Tds,:amount_remitted,:bank_reference
+            :Sgst,:Cgst,:Igst,:deductions,:Tcs,:Tds,:amount_remitted,:bank_reference
             )';
         
         $bindings = array(
@@ -161,6 +163,7 @@ class RemittanceManagement extends Model
             'Cgst' => $request->Cgst,
             'Igst' => $request->Igst,
             'deductions' => $request->deductions,
+            'Tcs' => $request->Tcs,
             'Tds' => $request->Tds,
             'amount_remitted' => $request->amount_remitted,
             'bank_reference' => $request->bank_reference

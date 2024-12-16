@@ -61,16 +61,16 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
                 'REMITTANCE NAME' => $val->remittance_name ,
                 'REMITTANCE DATE' => date('d-m-Y H:i:s', $val->remittance_date),
                 'EVENT NAME' => $val->event_name,
+                'BANK REFERENCE' => $val->bank_reference,
                 'GROSS AMOUNT' => $val->gross_amount,
                 'SERVICE CHARGE' => $val->service_charge,
                 'SGST' => $val->Sgst,
                 'CGST' => $val->Cgst ,
                 'IGST' => $val->Igst, 
                 'DEDUCTIONS' => $val->deductions,
+                'TCS' => $val->Tcs,
                 'TDS' => $val->Tds,
-                'AMOUNT REMITTED' => $val->amount_remitted,
-                'BANK REFERENCE' => $val->bank_reference,
-               
+                'AMOUNT REMITTED' => $val->amount_remitted
             );
             // dd($excelData);
         }
@@ -86,15 +86,16 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
                 'Remittance Name',
                 'Remittance Date',
                 'Event Name',
+                'Bank Reference',
                 'Gross Amount',
                 'Service Charge',
                 'Sgst',
                 'Cgst',
                 'Igst',
                 'Deductions',
-                'Tds ',
-                'Amount Remitted',
-                'Bank Reference'
+                'TCS ',
+                'TDS ',
+                'Amount Remitted'
             ]
         ];
     }
@@ -106,7 +107,8 @@ class RemittanceManagementExport implements FromArray, WithHeadings, ShouldAutoS
                 $sheet = $event->sheet->getDelegate();
 
                 // Set horizontal alignment for all cells
-                $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal('left');
+                $sheet->getStyle('A1:D1')->getAlignment()->setHorizontal('left');
+                $sheet->getStyle('E1:M1')->getAlignment()->setHorizontal('right');
 
                 // Merge cells in the header
                 // $headerMergeRanges = ['A1:L1', 'A2:L2', 'A3:L3'];

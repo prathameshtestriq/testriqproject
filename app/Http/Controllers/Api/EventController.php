@@ -3062,6 +3062,18 @@ class EventController extends Controller
                 );
                 $msg = 'Terms & conditions status changed successfully';
 
+            } else if ($ActionFlag == 'event_form_changes_status') {
+             
+                $status_sSQL = 'UPDATE event_form_question SET `question_status` =:question_status WHERE `id`=:event_form_id ';
+                DB::update(
+                    $status_sSQL,
+                    array(
+                        'question_status' => $request->event_form_status == "true" ? 2 : 1, // 1 - active / 2 - deactive
+                        'event_form_id' => $CouponId
+                    )
+                );
+                $msg = 'Event form question status changed successfully';
+
             } else {
                 $status_sSQL = 'UPDATE event_coupon SET `coupon_status` =:coupon_status WHERE `id`=:coupon_id ';
                 DB::update(

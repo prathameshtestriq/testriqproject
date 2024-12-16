@@ -209,7 +209,7 @@
                                 <div class="col-sm-5">
                                     <div class="form-group m-0 d-flex align-items-center">
                                         <button type="submit" class="btn btn-primary mr-2">Submit</button>
-                                        <a href="{{ asset('sample_remittance_excel/remittance_sample_report_1725434917.xlsx') }}" 
+                                        <a href="{{ asset('sample_remittance_excel/remittance_sample_report.xlsx') }}" 
                                            class="btn btn-danger text-white" title="Download" download>
                                            Sample Excel Download
                                         </a>
@@ -232,6 +232,7 @@
                                         <th class="text-center">CGST</th>
                                         <th class="text-center">IGST</th>
                                         <th class="text-center">Deductions</th>
+                                        <th class="text-center">TcS</th>
                                         <th class="text-center">TDS</th>
                                         <th class="text-center">Amount Remitted</th>
                                         <th class="text-left">Bank Reference</th>
@@ -258,6 +259,7 @@
                                             <td class="text-center">{{ number_format($val->Cgst,2) }}</td>
                                             <td class="text-center">{{ number_format($val->Igst,2) }}</td>
                                             <td class="text-center">{{ number_format($val->deductions,2) }}</td>
+                                            <td class="text-center">{{ number_format($val->Tcs,2) }}</td>
                                             <td class="text-center">{{ number_format($val->Tds,2) }}</td>
                                             <td class="text-center">{{ number_format($val->amount_remitted,2) }}</td>
                                             <td class="text-left">{{ ucfirst($val->bank_reference) }}</td>

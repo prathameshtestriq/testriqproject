@@ -142,7 +142,7 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="service_charge">Service Charge <span style="color:red;">*</span></label>
+                                                <label for="service_charge">Service Charge</label>
                                                 <input type="text" id="service_charge" class="form-control"
                                                     placeholder="Service Charge" name="service_charge"  oninput="validateNumberInput(this)"   value="{{ old('service_charge', $service_charge) }}" autocomplete="off" />
                                                 <h5><small class="text-danger" id="service_charge_err"></small></h5>
@@ -154,7 +154,7 @@
                                 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="Sgst">SGST <span style="color:red;">*</span></label>
+                                                <label for="Sgst">SGST</label>
                                                 <input type="text" id="Sgst" class="form-control"
                                                     placeholder="Sgst" name="Sgst"  value="{{ old('Sgst', $Sgst) }}"   oninput="validateNumberInput(this)"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="Sgst_err"></small></h5>
@@ -166,7 +166,7 @@
                                      
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="Cgst">CGST <span style="color:red;">*</span></label>
+                                                <label for="Cgst">CGST</label>
                                                 <input type="text" id="Cgst" class="form-control"
                                                     placeholder="Cgst" name="Cgst"  value="{{ old('Cgst', $Cgst) }}"  oninput="validateNumberInput(this)"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="Cgst_err"></small></h5>
@@ -178,7 +178,7 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="Igst">IGST <span style="color:red;">*</span></label>
+                                                <label for="Igst">IGST</label>
                                                 <input type="text" id="Igst" class="form-control"
                                                     placeholder="Igst" name="Igst"  value="{{ old('Igst', $Igst) }}"  oninput="validateNumberInput(this)"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="Igst_err"></small></h5>
@@ -190,7 +190,7 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="deductions">Deductions <span style="color:red;">*</span></label>
+                                                <label for="deductions">Deductions</label>
                                                 <input type="text" id="deductions" class="form-control"
                                                     placeholder="Deductions" name="deductions"  value="{{ old('deductions', $deductions) }}"  oninput="validateNumberInput(this)"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="deductions_err"></small></h5>
@@ -199,10 +199,34 @@
                                                 @enderror
                                             </div>
                                         </div>
+
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="bank_reference">Bank Reference</label>
+                                                <input type="text" id="bank_reference" class="form-control"
+                                                    placeholder="Bank Reference" name="bank_reference"  value="{{ old('bank_reference', $bank_reference) }}" autocomplete="off" />
+                                                <h5><small class="text-danger" id="bank_reference_err"></small></h5>
+                                                @error('bank_reference')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="Tcs">TCS</label>
+                                                <input type="text" id="Tcs" class="form-control"
+                                                    placeholder="Tcs" name="Tcs"  value="{{ old('Tcs', $Tcs) }}"   oninput="validateNumberInput(this)"  autocomplete="off" />
+                                                <h5><small class="text-danger" id="Tcs_err"></small></h5>
+                                                @error('Tcs')
+                                                    <span class="error" style="color:red;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
  
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="Tds">Tds <span style="color:red;">*</span></label>
+                                                <label for="Tds">TDS</label>
                                                 <input type="text" id="Tds" class="form-control"
                                                     placeholder="Tds" name="Tds"  value="{{ old('Tds', $Tds) }}"   oninput="validateNumberInput(this)"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="Tds_err"></small></h5>
@@ -214,23 +238,11 @@
 
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="amount_remitted">Amount Remitted <span style="color:red;">*</span></label>
+                                                <label for="amount_remitted">Amount Remitted</label>
                                                 <input type="text" id="amount_remitted" class="form-control"
                                                     placeholder="Amount Remitted" name="amount_remitted"  oninput="validateNumberInput(this)"   value="{{ old('amount_remitted', $amount_remitted) }}" autocomplete="off" />
                                                 <h5><small class="text-danger" id="amount_remitted_err"></small></h5>
                                                 @error('amount_remitted')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6 col-12">
-                                            <div class="form-group">
-                                                <label for="bank_reference">Bank Reference <span style="color:red;">*</span></label>
-                                                <input type="text" id="bank_reference" class="form-control"
-                                                    placeholder="Bank Reference" name="bank_reference"  value="{{ old('bank_reference', $bank_reference) }}" autocomplete="off" />
-                                                <h5><small class="text-danger" id="bank_reference_err"></small></h5>
-                                                @error('bank_reference')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
                                                 @enderror
                                             </div>

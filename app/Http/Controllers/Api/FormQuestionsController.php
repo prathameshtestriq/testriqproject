@@ -41,8 +41,8 @@ class FormQuestionsController extends Controller
             
             //$Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
 
-            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id,show_on_ticket_pdf FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
-            $aResult = DB::select($Sql);
+            $Sql = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,(select form_name from form_master where form_master.id = event_form_question.form_id) as form_name,form_id,show_on_ticket_pdf,question_status FROM event_form_question WHERE event_id = '.$EventId.' and is_subquestion = 0 order by sort_order asc';
+            $aResult = DB::select($Sql);  // question_status = 1 and
              
             $customFormArray = array("Personal Information", "Address Details", "Medical Information", "Documentation", "Emergency Contact", "Additional Information", "Professional Information", "Social Media Links");
             // dd($customFormArray);
@@ -55,9 +55,9 @@ class FormQuestionsController extends Controller
                     }
 
                     if($res->child_question_ids !== ''){
-                        $Sql1 = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids FROM event_form_question WHERE question_status = 1 and event_id = '.$EventId.' and is_subquestion = 1 and general_form_id IN('.$res->child_question_ids.')  order by general_form_id asc';
+                        $Sql1 = 'SELECT id,event_id,general_form_id,question_label,question_form_type,question_form_name,is_manadatory,question_form_option,is_compulsory,is_subquestion,sort_order,child_question_ids,question_status FROM event_form_question WHERE event_id = '.$EventId.' and is_subquestion = 1 and general_form_id IN('.$res->child_question_ids.')  order by general_form_id asc';
                         $sub_questions_aResult = DB::select($Sql1);
-                        //dd($sub_questions_aResult);
+                        //dd($sub_questions_aResult); // question_status = 1 and
                         $res->sub_questions_array = !empty($sub_questions_aResult) ? $sub_questions_aResult : [];
                     }
                     $res->common_index = $i;
@@ -82,7 +82,9 @@ class FormQuestionsController extends Controller
                     // }
                   
                    //$new_array[$res->form_name][] = $res;
-                   $i++;
+                    
+                    $res->question_status = $res->question_status == 1 ? true : false;
+                    $i++;
                 }
 
                 $response['data']['form_question'] = $new_array;
@@ -274,6 +276,13 @@ class FormQuestionsController extends Controller
             $questionHint = !empty($request->question_hint) ? $request->question_hint : '';
             $SubHintUploadedImage = !empty($request->upload_sub_hint_file) ? $request->file('upload_sub_hint_file') : '';
             
+            $DateRange      = !empty($request->date_range) ? $request->date_range : 0;
+            $RangeStartDate = !empty($request->range_start_date) ? strtotime($request->range_start_date) : '';
+            $RangeEndDate   = !empty($request->range_end_date) ? strtotime($request->range_end_date) : '';
+
+            $SpecificDomain  = !empty($request->specific_domain) ? $request->specific_domain : 0;
+            $DomainName      = !empty($request->domain_name) ? $request->domain_name : '';
+
             //---------- all ticket apply -----------
             $ticket_ids = '';
             if ($ApplyTicket == 1) {
@@ -360,9 +369,9 @@ class FormQuestionsController extends Controller
                     $MainQuestionHint = !empty($MainQuestionHint) ? $MainQuestionHint: $upload_file_name;
                 }
 
-                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, form_id, sort_order, apply_ticket, ticket_details, created_by, question_hint, hint_type)';
+                $sSQL = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, user_field_mapping, limit_length, child_question_ids, form_id, sort_order, apply_ticket, ticket_details, created_by, question_hint, hint_type, date_range, range_start_date, range_end_date, specific_domain, domain_name)';
 
-                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, :formId, :sortOrder, :applyTicket, :ticketDetails, :createdBy, :questionHint, :HintType
+                $sSQL .= 'SELECT :eventId, id, :questionLabel, question_form_type, question_form_name, question_form_option, :isManadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form,:limitCheck, :userFieldMapping, :limitLength, child_question_ids, :formId, :sortOrder, :applyTicket, :ticketDetails, :createdBy, :questionHint, :HintType, :date_range, :range_start_date, :range_end_date, :specific_domain, :domain_name
                     FROM general_form_question
                     WHERE `id`=:generalFormId AND question_status = 1 ';
                 //dd($sSQL);
@@ -380,8 +389,13 @@ class FormQuestionsController extends Controller
                     'ticketDetails'    => $ticket_ids,
                     'createdBy'        => $userId,
                     'questionHint'     => $MainQuestionHint,
-                    'HintType'         => $HintType
-                ));
+                    'HintType'         => $HintType,
+                    'date_range'       => $DateRange,
+                    'range_start_date' => $RangeStartDate,
+                    'range_end_date'   => $RangeEndDate,
+                    'specific_domain'  => $SpecificDomain,
+                    'domain_name'      => $DomainName
+                )); 
                 $last_eventFormQue_id = DB::getPdo()->lastInsertId();
 
                 //-------------- child ids update
@@ -580,7 +594,7 @@ class FormQuestionsController extends Controller
                         $event_sort_order = !empty($aResultSortOrder1) && !empty($aResultSortOrder1[0]->last_sort_order) ? $aResultSortOrder1[0]->last_sort_order : 1; 
                         
 
-                        $sSQL1 = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, limit_length, child_question_ids, form_id, apply_ticket, ticket_details, created_by, question_hint, sort_order, hint_type) VALUES (:eventId, :general_form_id, :questionLabel, :questionFormType, :questionFormName, :questionFormOption, :isManadatory, :questionStatus, :isCustomForm, :parentQusId, :is_compulsory, :is_custom_form, :limit_check, :limit_length, :child_question_ids, :form_id, :applyTicket, :ticketDetails, :createdBy, :questionHint, :sort_order, :hintType)';
+                        $sSQL1 = 'INSERT INTO event_form_question (event_id, general_form_id, question_label, question_form_type, question_form_name, question_form_option, is_manadatory, question_status, is_subquestion, parent_question_id, is_compulsory, is_custom_form, limit_check, limit_length, child_question_ids, form_id, apply_ticket, ticket_details, created_by, question_hint, sort_order, hint_type, date_range, range_start_date, range_end_date, specific_domain,domain_name) VALUES (:eventId, :general_form_id, :questionLabel, :questionFormType, :questionFormName, :questionFormOption, :isManadatory, :questionStatus, :isCustomForm, :parentQusId, :is_compulsory, :is_custom_form, :limit_check, :limit_length, :child_question_ids, :form_id, :applyTicket, :ticketDetails, :createdBy, :questionHint, :sort_order, :hintType, :date_range, :range_start_date, :range_end_date, :specific_domain, :domain_name)';
 
                         DB::insert($sSQL1,array(
                             'eventId'           => $EventId,
@@ -604,7 +618,12 @@ class FormQuestionsController extends Controller
                             'createdBy'         => $userId,
                             'questionHint'      => $questionHint,
                             'sort_order'        => $event_sort_order,
-                            'hintType'          => $SubQueHintType
+                            'hintType'          => $SubQueHintType,
+                            'date_range'       => $DateRange,
+                            'range_start_date' => $RangeStartDate,
+                            'range_end_date'   => $RangeEndDate,
+                            'specific_domain'  => $SpecificDomain,
+                            'domain_name'      => $DomainName
                         ));
 
                         //------------ add general form entry for check other amount
