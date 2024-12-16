@@ -265,7 +265,7 @@ class EventDashboardController extends Controller
                                     $Applied_Coupon_Amount = isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount) ? ($details->appliedCouponAmount)  : 0;  
 
                                     if($details->early_bird == 1 && !empty($details->discount_value)){
-                                        $details->to_organiser += (floatval($details->to_organiser) - $details->discount_value);
+                                        $details->to_organiser = (floatval($details->to_organiser) - $details->discount_value);
                                     }
                            
                                     if(isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount)){
