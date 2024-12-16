@@ -3258,6 +3258,7 @@ class EventTicketController extends Controller
             }
         }
 
+ echo $MessageContent; die;
         foreach ($ConfirmationEmail as $key => $value) {
             if (isset($key)) {
                 $placeholder = '{' . $key . '}';
@@ -3265,7 +3266,7 @@ class EventTicketController extends Controller
             }
         }
        // dd($MessageContent);
-        echo $MessageContent; die;
+       
         // attach image
         if(!empty($Communications) && !empty($Communications[0]->content_image)){
 
