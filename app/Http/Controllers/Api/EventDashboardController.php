@@ -270,6 +270,10 @@ class EventDashboardController extends Controller
                                         $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? $details->to_organiser : 0;
                                     }
 
+                                    if($details->early_bird == 1 && !empty($details->discount_value)){
+                                        $Organiser_amount += (floatval($Organiser_amount) - $details->discount_value);
+                                    }
+
                                     $Payment_Gateway_GST += isset($details->Payment_Gateway_GST_18) && !empty($details->Payment_Gateway_GST_18) && !empty($res->total_amount) ? floatval($details->Payment_Gateway_GST_18)  : 0;
                                     
                                     $Payment_gateway_charges += isset($details->Payment_Gateway_Charges) && !empty($details->Payment_Gateway_Charges) && !empty($res->total_amount) ? floatval($details->Payment_Gateway_Charges)  : 0;
