@@ -3258,7 +3258,6 @@ class EventTicketController extends Controller
             }
         }
 
- echo $MessageContent; die;
         foreach ($ConfirmationEmail as $key => $value) {
             if (isset($key)) {
                 $placeholder = '{' . $key . '}';
@@ -3266,7 +3265,7 @@ class EventTicketController extends Controller
             }
         }
        // dd($MessageContent);
-       
+        // echo $MessageContent; die;
         // attach image
         if(!empty($Communications) && !empty($Communications[0]->content_image)){
 
@@ -3281,8 +3280,8 @@ class EventTicketController extends Controller
         $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,'₹ '.$total_ticket_amount);
          // dd($generatePdf);
 
-        // $Email = new Emails();
-        // $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, 0, $generatePdf, $EventId);
+        $Email = new Emails();
+        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, 0, $generatePdf, $EventId);
 
         return;
     }
