@@ -263,6 +263,10 @@ class EventDashboardController extends Controller
                                 if($res->ticket_id == $details->id){
                                     // Applied Coupon Amount
                                     $Applied_Coupon_Amount = isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount) ? ($details->appliedCouponAmount)  : 0;  
+
+                                    if($details->early_bird == 1 && !empty($details->discount_value)){
+                                        $details->to_organiser += (floatval($details->to_organiser) - $details->discount_value);
+                                    }
                            
                                     if(isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount)){
                                         $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? ($details->to_organiser - $details->appliedCouponAmount) : 0;
@@ -270,9 +274,7 @@ class EventDashboardController extends Controller
                                         $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? $details->to_organiser : 0;
                                     }
 
-                                    if($details->early_bird == 1 && !empty($details->discount_value)){
-                                        $Organiser_amount += (floatval($Organiser_amount) - $details->discount_value);
-                                    }
+
 
                                     $Payment_Gateway_GST += isset($details->Payment_Gateway_GST_18) && !empty($details->Payment_Gateway_GST_18) && !empty($res->total_amount) ? floatval($details->Payment_Gateway_GST_18)  : 0;
                                     
