@@ -22,6 +22,7 @@
             <th style="text-align: right; font-weight: bold;">Count</th>
             <!-- <th style="text-align: right; font-weight: bold;">Registration Amount Paid</th> -->
             <th style="text-align: right; font-weight: bold;">Ticket Amount</th>
+            <th style="text-align: right; font-weight: bold;">Total Discount</th>
             <th style="text-align: right; font-weight: bold;">Registration Fee GST</th>
 
             <th style="text-align: right; font-weight: bold;">Applied Coupon Amount</th>
@@ -52,7 +53,7 @@
             <?php
                 $i=1;
 
-                $total_Single_ticket_price = $total_Ticket_count = $total_Ticket_price = $total_Registration_Fee_GST = $total_Applied_Coupon_Amount = $total_Extra_amount = $total_Extra_amount_pg_charges = $total_Extra_amount_pg_GST = $total_Convenience_fee = $total_Convenience_Fee_GST = $total_Platform_fee = $total_Platform_Fee_GST = $total_Payment_gateway_charges = $total_Payment_Gateway_GST = $total_Organiser_amount = $total_Final_total_amount = 0;
+                $total_Single_ticket_price = $total_Ticket_count = $total_Ticket_price = $total_Registration_Fee_GST = $total_Applied_Coupon_Amount = $total_Extra_amount = $total_Extra_amount_pg_charges = $total_Extra_amount_pg_GST = $total_Convenience_fee = $total_Convenience_Fee_GST = $total_Platform_fee = $total_Platform_Fee_GST = $total_Payment_gateway_charges = $total_Payment_Gateway_GST = $total_Organiser_amount = $total_Final_total_amount = $total_discount_amount = 0;
 
                 if(!empty($AttendeeDataArray)){
                     foreach ($AttendeeDataArray as $res){ 
@@ -73,6 +74,7 @@
                         $total_Payment_Gateway_GST += isset($res->Payment_Gateway_GST) && !empty($res->Payment_Gateway_GST) ? $res->Payment_Gateway_GST : 0;
                         $total_Organiser_amount += isset($res->Organiser_amount) && !empty($res->Organiser_amount) ? $res->Organiser_amount : 0;
                         $total_Final_total_amount += isset($res->Final_total_amount) && !empty($res->Final_total_amount) ? $res->Final_total_amount : 0;
+                        $total_discount_amount += isset($res->Discount_value) && !empty($res->Discount_value) ? $res->Discount_value : 0;
  
             ?>
                 
@@ -94,6 +96,7 @@
 
                    <td style="text-align: right;"><?php echo isset($res->Ticket_count) && !empty($res->Ticket_count) ? $res->Ticket_count : 0 ; ?></td>
                    <td style="text-align: right;"><?php echo isset($res->Ticket_price) && !empty($res->Ticket_price) ? number_format($res->Ticket_price,2) : 0 ; ?></td>
+                   <td style="text-align: right;"><?php echo isset($res->Discount_value) && !empty($res->Discount_value) ? number_format($res->Discount_value,2) : 0 ; ?></td>
                    <td style="text-align: right;"><?php echo isset($res->Registration_Fee_GST) && !empty($res->Registration_Fee_GST) ? $res->Registration_Fee_GST : 0 ; ?></td>
                    <td style="text-align: right;"><?php echo isset($res->Applied_Coupon_Amount) && !empty($res->Applied_Coupon_Amount) ? number_format($res->Applied_Coupon_Amount,2) : 0 ; ?></td>
                    <td style="text-align: right;"><?php echo isset($res->Extra_amount) && !empty($res->Extra_amount) ? number_format($res->Extra_amount,2) : 0 ; ?></td>
@@ -137,6 +140,7 @@
                    <!-- <td style="text-align: right;"><strong><?php //echo $total_Single_ticket_price; ?></strong></td> -->
                    <td style="text-align: right;"><strong><?php echo $total_Ticket_count; ?></strong></td>
                    <td style="text-align: right;"><strong><?php echo number_format($total_Ticket_price,2); ?></strong></td>
+                   <td style="text-align: right;"><strong><?php echo number_format($total_discount_amount,2); ?></strong></td>
                    <td style="text-align: right;"><strong><?php echo $total_Registration_Fee_GST; ?></strong></td>
                    <td style="text-align: right;"><strong><?php echo number_format($total_Applied_Coupon_Amount,2); ?></strong></td>
 
