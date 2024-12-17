@@ -255,34 +255,43 @@ class EventDashboardController extends Controller
                 if(!empty($AttendeeData)){
                     foreach($AttendeeData as $res){
                         //----- simple booking
+
                         $card_details_array = isset($res->cart_details) && !empty($res->cart_details) ? json_decode($res->cart_details) : [];
 
                         if(!empty($card_details_array) && $res->bulk_upload_flag == 0){
                             foreach($card_details_array as $details){
                                 
                                 if($res->ticket_id == $details->id){
+                               
                                     // Applied Coupon Amount
                                     $Applied_Coupon_Amount = isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount) ? ($details->appliedCouponAmount)  : 0;  
 
-                                    if($details->early_bird == 1 && !empty($details->discount_value)){
-                                        $details->to_organiser = (floatval($details->to_organiser) - $details->discount_value);
+                                  
+                                    if(!empty($details->OrgPayment) && $details->OrgPayment != "NaN"){
+                                        $details->to_organiser = isset($details->OrgPayment) && !empty($details->OrgPayment) && $res->transaction_status == 1 ? floatval($details->OrgPayment) : 0;
+                                    }else{
+                                        if($details->early_bird == 1 && !empty($details->discount_value) && $res->transaction_status == 1){
+                                            $details->to_organiser = (floatval($details->to_organiser) - $details->discount_value);
+                                        } 
                                     }
-                           
+
                                     if(isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount)){
                                         $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? ($details->to_organiser - $details->appliedCouponAmount) : 0;
                                     }else{
                                         $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? $details->to_organiser : 0;
                                     }
 
-                                    $Payment_Gateway_GST += isset($details->Payment_Gateway_GST_18) && !empty($details->Payment_Gateway_GST_18) && !empty($res->total_amount) ? floatval($details->Payment_Gateway_GST_18)  : 0;
+                                    $Payment_Gateway_GST += isset($details->Payment_Gateway_GST_18) && !empty($details->Payment_Gateway_GST_18) && !empty($res->total_amount) && $res->transaction_status == 1 ? floatval($details->Payment_Gateway_GST_18)  : 0;
                                     
-                                    $Payment_gateway_charges += isset($details->Payment_Gateway_Charges) && !empty($details->Payment_Gateway_Charges) && !empty($res->total_amount) ? floatval($details->Payment_Gateway_Charges)  : 0;
+                                    $Payment_gateway_charges += isset($details->Payment_Gateway_Charges) && !empty($details->Payment_Gateway_Charges) && !empty($res->total_amount) && $res->transaction_status == 1 ? floatval($details->Payment_Gateway_Charges)  : 0;
                                    
-                                    $Platform_fee += isset($details->Platform_Fee) && !empty($details->Platform_Fee) ? ($details->Platform_Fee)  : 0;
-                                    $Platform_Fee_GST += isset($details->Platform_Fee_GST_18) && !empty($details->Platform_Fee_GST_18) ? floatval($details->Platform_Fee_GST_18)  : 0;
+                                    $Platform_fee += isset($details->Platform_Fee) && !empty($details->Platform_Fee) && $res->transaction_status == 1 ? ($details->Platform_Fee)  : 0;
 
-                                    $Convenience_fee += isset($details->Convenience_Fee) && !empty($details->Convenience_Fee) ? floatval($details->Convenience_Fee)  : 0;
-                                    $Convenience_Fee_GST += isset($details->Convenience_Fee_GST_18) && !empty($details->Convenience_Fee_GST_18) ? floatval($details->Convenience_Fee_GST_18)  : 0;
+                                    $Platform_Fee_GST += isset($details->Platform_Fee_GST_18) && !empty($details->Platform_Fee_GST_18) && $res->transaction_status == 1 ? floatval($details->Platform_Fee_GST_18)  : 0;
+
+                                    $Convenience_fee += isset($details->Convenience_Fee) && !empty($details->Convenience_Fee) && $res->transaction_status == 1 ? floatval($details->Convenience_Fee)  : 0;
+
+                                    $Convenience_Fee_GST += isset($details->Convenience_Fee_GST_18) && !empty($details->Convenience_Fee_GST_18) && $res->transaction_status == 1 ? floatval($details->Convenience_Fee_GST_18)  : 0;
 
                                     //----------- Final total amount
                                     if(isset($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway) && !empty($details->Extra_Amount) && !empty($res->total_amount)){
@@ -1186,7 +1195,7 @@ class EventDashboardController extends Controller
 
     function remittanceDetailsExcellData($AttendeeData, $EventId)
     {
-         // dd($AttendeeData);
+        // dd($AttendeeData);
 
         $excel_url = '';
         $AttendeeDataArray = [];
