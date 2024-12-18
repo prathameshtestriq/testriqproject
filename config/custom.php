@@ -1,7 +1,7 @@
 <?php
 
 
-$flag = 3;  // 1 - Local / 2 - Prime / 3 - Live 
+$flag = 2;  // 1 - Local / 2 - Prime / 3 - Live 
 
 if($flag == 1){
     $url1 = 'http://localhost:3000/in/Nashik/1/';
@@ -18,7 +18,7 @@ if($flag == 1){
 }
 
 //----------------- admin panel used (state/city onchange api)
-$url_flag = 3;  // 1 - Local / 2 - Prime / 3 - Live 
+$url_flag = 2;  // 1 - Local / 2 - Prime / 3 - Live 
 
 if($url_flag == 1){
     $base_url1 = 'http://127.0.0.1:8000';
