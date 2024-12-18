@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\GoogleLoginController;
 use App\Http\Controllers\Api\FormQuestionsController;
 use App\Http\Controllers\Api\PaymentGatwayController;
 use App\Http\Controllers\Api\MaintanceController;
+use App\Http\Controllers\Api\TestCronController;
 
 //----------- added by neha
 use App\Http\Controllers\Api\AthleteIdCardController;
@@ -189,6 +190,10 @@ Route::controller(OrganizerController::class)->group(function () {
 
 Route::controller(EventDetailsController::class)->group(function () {
     Route::post('/get_event_faq', 'getEventFaq');
+});
+
+Route::controller(TestCronController::class)->group(function () {
+    Route::post('/shedule_email_cron', 'sheduleEmailCron');
 });
 
 

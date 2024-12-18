@@ -24,7 +24,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
 
     public function collection(Collection $collection)
     {
-       
+       // dd($collection);
         foreach($collection as  $row){
             if($row->filter()->isNotEmpty()){
                 $validator = Validator::make($row->toArray(), [
@@ -72,7 +72,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     // Combine headers and values into key-value pairs
                     $HeaderData = [];
                     foreach ($headers as $index => $header) {
-                        $HeaderData[$header] = $values[$index];
+                        $HeaderData[$header] = trim($values[$index]);
                     }
 
                     $FinalHeaderData = array_filter($HeaderData, function($value) {
@@ -81,8 +81,8 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                     // dd($FinalHeaderData);
                     //--------------------------
 
-                    $exSheetTicketName  = isset($row['ticket_name']) ? $row['ticket_name']: '';
-                    $exSheetTicketPrice = isset($row['ticket_price']) ? $row['ticket_price']: '';
+                    $exSheetTicketName  = isset($row['ticket_name']) ? trim($row['ticket_name']) : '';
+                    $exSheetTicketPrice = isset($row['ticket_price']) ? trim($row['ticket_price']) : '';
 
                     $sSQL = 'SELECT id,ticket_name,player_of_fee,player_of_gateway_fee FROM event_tickets WHERE event_id =:event_id AND LOWER(ticket_name) =:ticket_name';
                     $AllTickets = DB::select($sSQL, array('event_id' => $event_id, 'ticket_name' => strtolower($exSheetTicketName)));
@@ -138,7 +138,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                     }else if($value->question_form_type == "countries"){ 
                                         $selectedCountry = (isset($FinalHeaderData[$value->user_field_mapping])) ? $FinalHeaderData[$value->user_field_mapping] : "";
                                         if(empty($selectedCountry))
-                                            $selectedCountry = (isset($FinalHeaderData[strtolower($value->question_form_name)])) ? $FinalHeaderData[strtolower($value->question_form_name)] : "";
+                                            $selectedCountry = (isset($FinalHeaderData[strtolower($value->question_form_name)])) ? trim($FinalHeaderData[strtolower($value->question_form_name)]) : "";
                                         
                                         // dd($value->user_field_mapping);
                                         $sql = "SELECT id,name AS label FROM countries WHERE flag=1 AND name = '".$selectedCountry."' order by name asc";
@@ -150,7 +150,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                            $value->ActualValue = '';  
 
                                     }else if($value->question_form_type == "states"){
-                                        $selectedState = (isset($FinalHeaderData[$value->user_field_mapping])) ? $FinalHeaderData[$value->user_field_mapping] : "";
+                                        $selectedState = (isset($FinalHeaderData[$value->user_field_mapping])) ? trim($FinalHeaderData[$value->user_field_mapping]) : "";
                                         $sql = "SELECT id,name FROM states WHERE country_id = 101 AND name = '".$selectedState."' order by name asc";
                                         $states = DB::select($sql);
                                         
@@ -160,7 +160,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                            $value->ActualValue = '';  
                                         
                                     }else if($value->question_form_type == "cities"){
-                                        $selectedCity = (isset($FinalHeaderData[$value->user_field_mapping])) ? $FinalHeaderData[$value->user_field_mapping] : "";
+                                        $selectedCity = (isset($FinalHeaderData[$value->user_field_mapping])) ? trim($FinalHeaderData[$value->user_field_mapping]) : "";
                                         $sql = "SELECT id,name FROM cities WHERE country_id = 101 AND name = '".$selectedCity."' order by name asc";
                                         $cities = DB::select($sql);
                                         
@@ -172,7 +172,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                     }else if($value->question_form_type == "date"){
                                         
                                         if(isset($FinalHeaderData[$value->question_form_name]) && !empty($FinalHeaderData[$value->question_form_name])){
-                                            $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject( (isset($FinalHeaderData[$value->question_form_name])) ? $FinalHeaderData[$value->question_form_name] : "");
+                                            $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((isset($FinalHeaderData[$value->question_form_name])) ? trim($FinalHeaderData[$value->question_form_name]) : "");
                                             $value->ActualValue = $date->format('Y-m-d');
                                         }else{
                                             $value->ActualValue = ''; 
@@ -180,7 +180,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                         
                                     }else if($value->question_form_type == "amount"){
                                         $question_label_name = str_replace(" ", "_", strtolower(trim($value->question_label)));
-                                        $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
+                                        $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? trim($FinalHeaderData[$question_label_name]) : "";
                                         $value->ActualValue = !empty($selectedValue) ? $selectedValue : 0;
                                     }
                                     else if($value->question_form_type == "text"){
@@ -228,9 +228,9 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                            
                             //----- new added
                             if(isset($excel_ticket_price_array[$ticket->id])){
-                                $excel_ticket_price_array[$ticket->id] += $exSheetTicketPrice;
+                                $excel_ticket_price_array[$ticket->id] += floatval($exSheetTicketPrice);
                             }else{
-                                $excel_ticket_price_array[$ticket->id] = $exSheetTicketPrice;
+                                $excel_ticket_price_array[$ticket->id] = floatval($exSheetTicketPrice);
                             }
 
                             // $excel_single_ticket_price[] = ["ticket_id" => $ticket->id, "ticket_amount" => !empty($exSheetTicketPrice) ? $exSheetTicketPrice : 0 ];
