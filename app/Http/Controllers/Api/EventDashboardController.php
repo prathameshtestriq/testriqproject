@@ -114,6 +114,7 @@ class EventDashboardController extends Controller
                 $TotalParticipantData = DB::select($SQL6, array('event_id' => $EventId));
                 $ResponseData['TotalParticipant'] = !empty($TotalParticipantData) ? $TotalParticipantData[0]->TotalParticipant : 0;
                 $ResponseData['NetSales'] = !empty($TotalParticipantData) ? $TotalParticipantData[0]->TotalParticipant : 0;
+                $Total_success_free_participant = !empty($TotalParticipantData) ? $TotalParticipantData[0]->TotalParticipant : 0;
 
                 // 79,105,110 DISTINCT(user_id) replace it with id
                 // -------------------------------------Registration && Net Earnings
@@ -143,14 +144,12 @@ class EventDashboardController extends Controller
                 //     }
                 // }
                 $ResponseData['TotalRegistration'] = (count($TotalRegistration) > 0) ? count($TotalRegistration) : 0;
-                
 
                 // -------------------------------------Event Capacity
                 // Total Tickets
                 $SQL3 = "SELECT IFNULL(SUM(total_quantity), 0) AS TotalTickets FROM event_tickets WHERE event_id =:event_id AND is_deleted=0";
                 $TotalTickets = DB::select($SQL3, array('event_id' => $EventId));
                 $ResponseData['TotalTickets'] = (count($TotalTickets) > 0) ? $TotalTickets[0]->TotalTickets : 0;
-
 
                 // Sold Tickets
                 $SQL4 = "SELECT IFNULL(SUM(quantity),0) AS TotalBookedTickets FROM booking_details AS bd
@@ -182,10 +181,11 @@ class EventDashboardController extends Controller
                 }
                 $TotalRegistrationUsersWithSuccess = DB::select($SQL6, array('event_id' => $EventId));
                 $TotalRegistrationUsersWithSuccessCount = (count($TotalRegistrationUsersWithSuccess) > 0) ? $TotalRegistrationUsersWithSuccess[0]->TotalRegistrationUsersWithSuccess : 0;
+                // dd($TotalRegistrationUsersWithSuccessCount);
 
                 // Calculate percentage
-                $percentage = ($TotalRegistrationUsersWithSuccessCount > 0 && $TotalRegistrationCount > 0) ?
-                    round(($TotalRegistrationUsersWithSuccessCount / $TotalRegistrationCount) * 100, 2) : 0;
+                $percentage = ($Total_success_free_participant > 0 && $TotalRegistrationCount > 0) ?
+                    round(($Total_success_free_participant / $TotalRegistrationCount) * 100, 2) : 0;
 
                 $ResponseData['TotalRegistrationCount'] = $TotalRegistrationCount;
                 $ResponseData['TotalRegistrationUsersWithSuccess'] = $TotalRegistrationUsersWithSuccessCount;
