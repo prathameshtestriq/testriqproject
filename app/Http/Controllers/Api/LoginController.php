@@ -232,7 +232,7 @@ class LoginController extends Controller
         $empty = false;
         $message = 'Success';
         
-        $SQL1 = 'SELECT id,phonecode,emoji FROM countries WHERE flag=:flag order by phonecode asc';
+        $SQL1 = 'SELECT id,phonecode,emoji,flag_code FROM countries WHERE flag=:flag order by phonecode asc';
         $aResult = DB::select($SQL1, array('flag' => 1));
 
         $response = [
