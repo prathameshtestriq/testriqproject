@@ -924,10 +924,13 @@ class EventTicketController extends Controller
                         }
 
                         // dd($FormQuestions);
-                        for ($i = 0; $i < $ticket['count']; $i++) {
-                            if (count($FormQuestions) > 0)
+                        if(isset($ticket['count'])){
+                           for ($i = 0; $i < $ticket['count']; $i++) {
+                             if (count($FormQuestions) > 0)
                                 $FinalFormQuestions[$ticket['id']][$i] = $FormQuestions;
+                           } 
                         }
+                        
                     }
                 }
                 // dd($FinalFormQuestions);
@@ -2702,6 +2705,7 @@ class EventTicketController extends Controller
                     foreach ($CouponsArr as $coupon) {
                         $coupon->discount_from_datetime = (!empty($coupon->discount_from_datetime)) ? date("d F Y", $coupon->discount_from_datetime) : 0;
                         $coupon->discount_to_datetime = (!empty($coupon->discount_to_datetime)) ? date("d F Y", $coupon->discount_to_datetime) : 0;
+                        $coupon->pending_coupon_count = ($coupon->no_of_discount - $coupon->coupon_count);
                     }
                 }
 
