@@ -659,6 +659,7 @@ class EventTicketController extends Controller
                 $AllTickets = isset($request->AllTickets) && !empty($request->AllTickets) ? $request->AllTickets : [];
                 // dd($AllTickets);
                 $ResponseData['FormQuestions'] = $FinalFormQuestions;
+                // $ResponseData['FormQuestions'] = $AllTickets;
                 // -------------------------------------------------
                 $OrgGstPercentage = 0;
                 $sql1 = "SELECT gst_percentage FROM organizer WHERE user_id=:user_id";
@@ -746,6 +747,7 @@ class EventTicketController extends Controller
                         ]);
 
                         if (count($FormQuestions) > 0) {
+                            // dd('sdsd');
                         } else {   // get all questions data
                             $sSQL = 'SELECT * FROM event_form_question WHERE event_id =:event_id AND question_status = 1 ORDER BY sort_order,parent_question_id';
                             $FormQuestions = DB::select($sSQL, array('event_id' => $aPost['event_id']));
@@ -1571,7 +1573,7 @@ class EventTicketController extends Controller
                 }
 
                 //------------------ new added on 15-11-24  (Email Placeholder Replace)
-                $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 ";
+                $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 AND event_id = ".$EventId." ";
 
                 if(empty($res->parent_question_id)){
                     $sql2 .= " AND question_form_name = '".$res->question_form_name."' ";
@@ -1832,7 +1834,7 @@ class EventTicketController extends Controller
                         }
 
                         //------------------ new added on 15-11-24  (Email Placeholder Replace)
-                        $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 AND question_form_name =:question_form_name";
+                        $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 AND question_form_name =:question_form_name AND event_id = ".$EventId." ";
 
                         // if(empty($res1->parent_question_id)){
                         //     $sql2 .= " AND question_form_name = '".$res1->question_form_name."' ";
@@ -3062,7 +3064,7 @@ class EventTicketController extends Controller
                 }
 
                 //------------------ new added on 15-11-24  (Email Placeholder Replace)
-                $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 AND question_form_name =:question_form_name";
+                $sql2 = "SELECT question_form_name,placeholder_name,(select question_form_type from event_form_question where id = email_placeholders.question_id) as question_form_type,(select question_form_option from event_form_question where id = email_placeholders.question_id) as question_form_option FROM email_placeholders WHERE status = 1 AND question_form_name =:question_form_name AND event_id = ".$EventId." ";
 
                 // if(empty($res->parent_question_id)){
                 //     $sql2 .= " AND question_form_name = '".$res->question_form_name."' ";

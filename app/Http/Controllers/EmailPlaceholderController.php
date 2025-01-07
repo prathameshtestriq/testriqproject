@@ -27,8 +27,6 @@ class EmailPlaceholderController extends Controller
         $a_return = array();
         $a_return['search_placeholder_name'] = '';
        
-        
-
         if (isset($request->form_type) && $request->form_type == 'search_email_placeholder') {
             session(['search_Name' => $request->search_Name]);
             session(['event_placeholder' => $request->event]);
@@ -65,7 +63,7 @@ class EmailPlaceholderController extends Controller
         $a_return['placeholder_name'] = '';
         $a_return['question_form_name'] = '';
        
-     
+       // dd($iId);
         //  dd($request->all());
         if (isset($request->form_type) && $request->form_type == 'add_edit_email_placeholder') {
             $question_id = isset($request->question) ? $request->question : 0;
@@ -79,50 +77,71 @@ class EmailPlaceholderController extends Controller
             $is_name_unique = true;
             $is_unique = true;
            
-
+           // dd($email_placeholders);
             foreach ($email_placeholders as $val) {   
                 if ($event_form_question_name === $val->question_form_name && $val->id != $iId) {
                     if ($val->placeholder_name == $request->placeholder_name ) {
                         $is_name_unique = false;
                         break;
                     }
-                }
-               
+                } 
             }
 
-            // Validation rules and messages
             $rules = [
                 'event' => 'required',
                 'question' => 'required',
-                'placeholder_name' => 'required|unique:email_placeholders,placeholder_name,' . $iId . ',id',
+                'placeholder_name' => 'required',
+                // 'placeholder_name' => 'required|unique:email_placeholders,placeholder_name,' . $iId . ',id',
                 // 'question_form_name' => 'unique:email_placeholders,question_form_name,' . $iId . ',id'
             ];
-            if(!empty($request->question)){
-                $rules = [
-                    'question_form_name' => 'unique:email_placeholders,question_form_name,' . $iId . ',id'
-                ];
-            }
+
             $messages = [
                 'placeholder_name.unique' => 'The placeholder name must be unique for the selected question.',
                 // 'question_form_name' => 'The question name must be unique for the selected event .',
             ];
 
+            $vari = $request->validate($rules,$messages);
+            
+            // dd($request->event,$request->question,$request->placeholder_name);
+            //------------- new added
+            $s_sql = 'SELECT count(id) as duplicate_count FROM email_placeholders WHERE 1=1';
+            $s_sql .= ' AND event_id = '.$request->event.' AND question_id = '.$request->question.' AND placeholder_name = "'.$request->placeholder_name.'" ';
+            if(!empty($iId)){
+               $s_sql .= ' AND id !='.$iId;  
+            }
+            $aResults = DB::select($s_sql);
+              // dd($aResults);
+            if(!empty($aResults) && $aResults[0]->duplicate_count == 1){
+                $successMessage = 'This Record Already Exists! Please Select Another Record.';
+                return redirect('/email_placeholder_management/add')->with('error', $successMessage);
+            }else{
+                if ($iId > 0) {
+                    EmailPlaceholderManagement::update_email_placeholder($iId, $request);
+                    $successMessage = 'Email Placeholders Updated Successfully';
+                } else {
+                    EmailPlaceholderManagement::add_email_placeholder($request);
+                    $successMessage = 'Email Placeholders  Details Added Successfully';
+                }
+                // Redirect with success message
+                return redirect('/email_placeholder_management')->with('success', $successMessage);
+            }
+            
+           
+            // Validation rules and messages
+            
+            // if(!empty($request->question)){
+            //     $rules = [
+            //         'question_form_name' => 'unique:email_placeholders,question_form_name,' . $iId . ',id'
+            //     ];
+            // }
+           
             // dd($messages );
             // Validate the request with custom validation logic
-            $vari = $request->validate($rules,$messages);
+           
            
 
             // Perform update or add based on ID
-            if ($iId > 0) {
-                EmailPlaceholderManagement::update_email_placeholder($iId, $request);
-                $successMessage = 'Email Placeholders Updated Successfully';
-            } else {
-                EmailPlaceholderManagement::add_email_placeholder($request);
-                $successMessage = 'Email Placeholders  Details Added Successfully';
-            }
-
-            // Redirect with success message
-            return redirect('/email_placeholder_management')->with('success', $successMessage);
+            
 
         }else{
             if($iId > 0){
