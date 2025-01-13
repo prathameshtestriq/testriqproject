@@ -393,7 +393,7 @@ class EventController extends Controller
         #GET EVENTS COUNTRY WISE
         $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 0";
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
-        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND .is_verify = 1";
+        $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.start_time >=:start_time AND u.event_info_status=1 AND u.is_verify = 1";
         $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time AND r.is_verify = 1";
         // $CountryCode = $request->country_code;
         $City = isset($request->city) ? $request->city : '';

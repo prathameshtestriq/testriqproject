@@ -647,43 +647,60 @@ class DashboardController extends Controller
                 
                 //----- simple booking
                 $card_details_array = isset($res->cart_details) && !empty($res->cart_details) ? json_decode($res->cart_details) : [];
-             // dd($card_details_array);
+                // dd($card_details_array);
                 if(!empty($card_details_array) && $res->bulk_upload_flag == 0){
                     foreach($card_details_array as $details){
-                        
+                        if (!isset($details->to_organiser)) {
+                            $details->to_organiser = 0; // Initialize it with a default value
+                        }
+                        if (!isset($details->early_bird)) {
+                            $details->early_bird = 0; // Initialize it with a default value
+                        }
+
                         if($res->ticket_id == $details->id){
+                    
                             // Applied Coupon Amount
                             $Applied_Coupon_Amount = isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount) ? ($details->appliedCouponAmount)  : 0;  
-                   
+
+                        
+                            if(!empty($details->OrgPayment) && $details->OrgPayment != "NaN"){
+                                $details->to_organiser = isset($details->OrgPayment) && !empty($details->OrgPayment) && $res->transaction_status == 1 ? floatval($details->OrgPayment) : 0;
+                            }else{
+                                if($details->early_bird == 1 && !empty($details->discount_value) && $res->transaction_status == 1){
+                                    $details->to_organiser = (floatval($details->to_organiser) - $details->discount_value);
+                                } 
+                            }
+
                             if(isset($details->appliedCouponAmount) && !empty($details->appliedCouponAmount)){
                                 $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? ($details->to_organiser - $details->appliedCouponAmount) : 0;
                             }else{
                                 $Organiser_amount += isset($details->to_organiser) && !empty($details->to_organiser) ? $details->to_organiser : 0;
                             }
 
-                            $Payment_Gateway_GST += isset($details->Payment_Gateway_GST_18) && !empty($details->Payment_Gateway_GST_18) && !empty($res->total_amount) ? floatval($details->Payment_Gateway_GST_18)  : 0;
+                            $Payment_Gateway_GST += isset($details->Payment_Gateway_GST_18) && !empty($details->Payment_Gateway_GST_18) && !empty($res->total_amount) && $res->transaction_status == 1 ? floatval($details->Payment_Gateway_GST_18)  : 0;
                             
-                            $Payment_gateway_charges += isset($details->Payment_Gateway_Charges) && !empty($details->Payment_Gateway_Charges) && !empty($res->total_amount) ? floatval($details->Payment_Gateway_Charges)  : 0;
-                           
-                            $Platform_fee += isset($details->Platform_Fee) && !empty($details->Platform_Fee) ? ($details->Platform_Fee)  : 0;
-                            $Platform_Fee_GST += isset($details->Platform_Fee_GST_18) && !empty($details->Platform_Fee_GST_18) ? floatval($details->Platform_Fee_GST_18)  : 0;
+                            $Payment_gateway_charges += isset($details->Payment_Gateway_Charges) && !empty($details->Payment_Gateway_Charges) && !empty($res->total_amount) && $res->transaction_status == 1 ? floatval($details->Payment_Gateway_Charges)  : 0;
+                        
+                            $Platform_fee += isset($details->Platform_Fee) && !empty($details->Platform_Fee) && $res->transaction_status == 1 ? ($details->Platform_Fee)  : 0;
 
-                            $Convenience_fee += isset($details->Convenience_Fee) && !empty($details->Convenience_Fee) ? floatval($details->Convenience_Fee)  : 0;
-                            $Convenience_Fee_GST += isset($details->Convenience_Fee_GST_18) && !empty($details->Convenience_Fee_GST_18) ? floatval($details->Convenience_Fee_GST_18)  : 0;
+                            $Platform_Fee_GST += isset($details->Platform_Fee_GST_18) && !empty($details->Platform_Fee_GST_18) && $res->transaction_status == 1 ? floatval($details->Platform_Fee_GST_18)  : 0;
+
+                            $Convenience_fee += isset($details->Convenience_Fee) && !empty($details->Convenience_Fee) && $res->transaction_status == 1 ? floatval($details->Convenience_Fee)  : 0;
+
+                            $Convenience_Fee_GST += isset($details->Convenience_Fee_GST_18) && !empty($details->Convenience_Fee_GST_18) && $res->transaction_status == 1 ? floatval($details->Convenience_Fee_GST_18)  : 0;
 
                             //----------- Final total amount
                             if(isset($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway_Gst) && !empty($details->Extra_Amount_Payment_Gateway) && !empty($details->Extra_Amount) && !empty($res->total_amount)){
-                               
+                            
                                 $Final_total_amount += isset($details->BuyerPayment) && !empty($details->BuyerPayment)
                                     ? (floatval($details->BuyerPayment)) +
-                                      floatval($details->Extra_Amount_Payment_Gateway_Gst) +
-                                      floatval($details->Extra_Amount_Payment_Gateway) +
-                                      floatval($details->Extra_Amount)
+                                    floatval($details->Extra_Amount_Payment_Gateway_Gst) +
+                                    floatval($details->Extra_Amount_Payment_Gateway) +
+                                    floatval($details->Extra_Amount)
                                     : '0.00';
                             }else{
                                 $Final_total_amount += isset($details->BuyerPayment) && !empty($details->BuyerPayment) && !empty($details->Extra_Amount) && !empty($res->total_amount) ? ($details->BuyerPayment + floatval($details->Extra_Amount))  : '0.00';
                             }   
-
 
                         }
                     }
@@ -692,7 +709,7 @@ class DashboardController extends Controller
                 //----- bulk upload
                 $cart_details_array = isset($res->cart_detail) && !empty($res->cart_detail) ? json_decode($res->cart_detail) : [];
                  // dd($cart_details_array);
-                if(!empty($cart_details_array) && $res->bulk_upload_flag == 1 && !empty($res->total_amount)){
+                 if(!empty($cart_details_array) && $res->bulk_upload_flag == 1 && !empty($res->total_amount)){
                     $Payment_Gateway_GST += isset($cart_details_array->Payment_Gateway_GST) && !empty($cart_details_array->Payment_Gateway_GST) ? floatval($cart_details_array->Payment_Gateway_GST)  : 0;
                             
                     $Payment_gateway_charges += isset($cart_details_array->Payment_gateway_charges) && !empty($cart_details_array->Payment_gateway_charges) ? floatval($cart_details_array->Payment_gateway_charges)  : 0;
@@ -702,9 +719,8 @@ class DashboardController extends Controller
 
                     $Convenience_fee     += isset($cart_details_array->Convenience_fee) ? floatval($cart_details_array->Convenience_fee) : 0;
                     $Convenience_Fee_GST += isset($cart_details_array->Convenience_Fee_GST) ? floatval($cart_details_array->Convenience_Fee_GST) : 0;
-                    $Organiser_amount += isset($cart_details_array->Organiser_amount) ? floatval($cart_details_array->Organiser_amount) : 0;
-
-                    $Final_total_amount += isset($cart_details_array->Final_total_amount) && !empty($cart_details_array->Final_total_amount) ? floatval($cart_details_array->Final_total_amount)  : 0;        
+                    $Organiser_amount += isset($cart_details_array->Organiser_amount) ? floatval($cart_details_array->Organiser_amount) : 0;    
+                    $Final_total_amount += isset($cart_details_array->Final_total_amount) && !empty($cart_details_array->Final_total_amount) ? floatval($cart_details_array->Final_total_amount)  : 0;      
                 }
                 // dd($TotalBuyerAmount);
             }
