@@ -75,7 +75,7 @@
                                                     {{$item['question_label']}}<span style="color:red;">*</span> :
                                                 </label>
                                             @endif --}}
-                                            @if(!in_array($item['question_form_type'], ['date','time','amount','email']))
+                                            @if(!in_array($item['question_form_type'], ['time','amount']))
                                                 <label for="question_label">
                                                     {{$item['question_label']}}<span style="color:red;"></span> :
                                                 </label>
@@ -89,7 +89,11 @@
                                                     placeholder=" Question Answer" name="text[{{$item['question_label']}}]"
                                                     value="{{ old('question_answer',  $ActualValue) }}"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="text_err"></small></h5>
-                                            <?php } else if($item['question_form_type'] == 'checkbox'){ ?>
+                                            <?php  } else if(($item['question_form_type'] == 'email')){ ?>
+                                                <input type="text" id="question_answer" class="form-control"
+                                                    placeholder=" Question Answer" name="text[{{$item['question_label']}}]"
+                                                    value="{{ old('question_answer',  strtolower($ActualValue)) }}"  autocomplete="off" readonly/>
+                                                <h5><small class="text-danger" id="text_err"></small></h5><?php } else if($item['question_form_type'] == 'checkbox'){ ?>
                                                 <?php  
                                                     $optionsJson = $item['question_form_option']; 
                                                     $optionsArray = json_decode($optionsJson, true); 
@@ -136,7 +140,14 @@
                                             <?php }else if($item['question_form_type'] == 'textarea'){ ?>
                                                 <textarea name="textarea[{{$item['question_label']}}]" id="address" class="form-control" cols="1" rows="1" placeholder="Enter Address">{{ old('address.' . $item['question_label'], $ActualValue) }}</textarea>
                                                 <h5><small class="text-danger" id="address_err"></small></h5>
-                                            <?php }else if($item['question_form_type'] == 'select'){ ?>
+                                            <?php }else if($item['question_form_type'] == 'date'){
+                                                ?>
+
+                                                <input type="date" id="date" class="form-control"
+                                                    placeholder=" Question Answer" name="date"
+                                                    value="{{ old('date',  $ActualValue) }}"  autocomplete="off" />
+                                                <h5><small class="text-danger" id="question_answer_err"></small></h5>
+												<?php }else if($item['question_form_type'] == 'select'){ ?>
                                                 <?php  
                                                     $optionsJson = $item['question_form_option']; 
                                                     $optionsArray = json_decode($optionsJson, true); 

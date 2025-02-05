@@ -583,7 +583,7 @@ class EventParticipantsController extends Controller
                                         $aTemp->question_label = 'Age Category';
                                         if(!empty($val->data)){
                                             $show_age_category = 1;
-                                            $aTemp->answer_value = htmlspecialchars($val->data[0]->age_category);
+                                            $aTemp->answer_value = htmlspecialchars($val->data[0]->age_category, ENT_QUOTES, 'UTF-8');
                                         }else{ $aTemp->answer_value = ''; }
                                     }else if($val->question_form_type == "date"){
                                         $aTemp->answer_value = isset($val->ActualValue) && !empty($val->ActualValue) ? date('d-m-Y',strtotime($val->ActualValue)) : '';
@@ -594,10 +594,8 @@ class EventParticipantsController extends Controller
                                         // }else{ // text
                                         //     $aTemp->answer_value = htmlspecialchars($val->ActualValue);
                                         // }
-                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue, ENT_QUOTES, 'UTF-8');
-                                       
-                                    }
-                                   
+                                        $aTemp->answer_value = htmlspecialchars($val->ActualValue, ENT_QUOTES, 'UTF-8');                                       
+                                    }                                   
                                 }
                             }
                         }
@@ -634,7 +632,7 @@ class EventParticipantsController extends Controller
                         if($val->question_label == 'Race Category'){
                             // $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
                             // $aTemp->answer_value = !empty($res1->TicketName) ? html_entity_decode($res1->TicketName) : '';
-                            $aTemp->answer_value = htmlspecialchars($aTemp->answer_value, ENT_QUOTES, 'UTF-8');
+                            $aTemp->answer_value = !empty($aTemp->answer_value) ? htmlspecialchars($aTemp->answer_value, ENT_QUOTES, 'UTF-8') : '';
                         }
 
                         if($val->question_label == 'Bulk Upload Group Name'){
