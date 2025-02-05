@@ -249,110 +249,115 @@
                                 </div>
                             </div>
                         </form>
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th class="text-center">Sr. No</th>
-                                        <th class="text-left">Participant Name</th>  
-                                        <th class="text-center">Booking Date</th>
-                                        <th class="text-center">Transaction/Order Id</th>
-                                        <th class="text-center">Registration Id</th>
-                                        <th class="text-center">Payu Id</th>
-                                        <th class="text-center">Payment Status</th>
-                                        <th class="text-center">Email/Mobile Number</th>
-                                        {{-- <th class="text-center">Mobile Number</th> --}}
-                                        <th class="text-center">Category Name</th>
-                                        <th class="text-center">Early Bird Discount</th>
-                                        <th class="text-center">Ticket Amount</th>
-                                        <th class="text-center">Final Amount</th>
-                                        <th class="text-center">View</th>
-                                        <th class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="text-center">
-                                <br/><br/><br/>
-                                    <?php 
-                                    if (!empty($event_participants)){
-                                        $i = $Offset;
-                                        // $i = 0;
-                                        ?>
+                       
+                           
+
+                        <div class="card-body">
+                             <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Sr. No</th>
+                                            <th class="text-left">Participant Name</th>  
+                                            <th class="text-center">Booking Date</th>
+                                            <th class="text-center">Transaction/Order Id</th>
+                                            <th class="text-center">Registration Id</th>
+                                            <th class="text-center">Payu Id</th>
+                                            <th class="text-center">Payment Status</th>
+                                            <th class="text-center">Email/Mobile Number</th>
+                                            {{-- <th class="text-center">Mobile Number</th> --}}
+                                            <th class="text-center">Category Name</th>
+                                            <th class="text-center">Early Bird Discount</th>
+                                            <th class="text-center">Ticket Amount</th>
+                                            <th class="text-center">Final Amount</th>
+                                            <th class="text-center">View</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-center">
+                                   
                                         <?php 
-                                       
-                                        foreach ($event_participants as $val){
-                                        
-                                                $i++;?>
-                                            <tr>
-                                                <td class="text-center">{{ $i }}</td>
-                                                <td class="text-left">{{ ucfirst($val->user_name) }}</td>
-                                                <td class="text-left" style="min-width: 100px">{{ date('d-m-Y ', $val->booking_date) }}</td>
-                                                <td class="text-left">{{ $val->Transaction_order_id }}</td>
-                                                <td class="text-left">{{ $val->registration_id }}</td>
-                                                <td class="text-left">{{ $val->payu_id }}</td>
-                                                <td class="text-left">
-                                                    <!-- Form for each row -->
-                                                    <form class="dt_adv_search" method="POST" id="transactionForm_{{ $val->event_booking_id }}">
-                                                        @csrf
-                                                        <input type="hidden" name="form_type" value="transaction_status_add">
-                                                        <input type="hidden" name="event_booking_id[{{ $val->event_booking_id }}]" value="{{ $val->event_booking_id }}">
-                                                        <input type="hidden" name="booking_payment_details_id[{{ $val->event_booking_id }}]" value="{{ $val->booking_payment_details_id }}">
-        
-                                                        <?php 
-                                                        $Transaction_Status = array(0=>'Inprocess', 1=>'Success', 2=>'Failure', 3=>'Free' ,4=>'Refund');    
-                                                        ?>
-                                                        <select id="list_transaction_status_{{ $val->event_booking_id }}" name="list_transaction_status[{{ $val->event_booking_id }}]" class="form-control select2 form-control" onchange="this.form.submit()">
-                                                            <option value="">Select Payment Status</option>
+                                        if (!empty($event_participants)){
+                                            $i = $Offset;
+                                            // $i = 0;
+                                            ?>
+                                            <?php 
+                                           
+                                            foreach ($event_participants as $val){
+                                            
+                                                    $i++;?>
+                                                <tr>
+                                                    <td class="text-center">{{ $i }}</td>
+                                                    <td class="text-left">{{ ucfirst($val->user_name) }}</td>
+                                                    <td class="text-left" style="min-width: 100px">{{ date('d-m-Y ', $val->booking_date) }}</td>
+                                                    <td class="text-left">{{ $val->Transaction_order_id }}</td>
+                                                    <td class="text-left">{{ $val->registration_id }}</td>
+                                                    <td class="text-left">{{ $val->payu_id }}</td>
+                                                    
+                                                    <td class="text-left">
+                                                        <!-- Form for each row -->
+                                                        <form class="dt_adv_search" method="POST" id="transactionForm_{{ $val->event_booking_id }}">
+                                                            @csrf
+                                                            <input type="hidden" name="form_type" value="transaction_status_add">
+                                                            <input type="hidden" name="event_booking_id[{{ $val->event_booking_id }}]" value="{{ $val->event_booking_id }}">
+                                                            <input type="hidden" name="booking_payment_details_id[{{ $val->event_booking_id }}]" value="{{ $val->booking_payment_details_id }}">
+            
                                                             <?php 
-                                                            foreach ($Transaction_Status as $key => $value) {
-                                                                $selected = '';
-                                                                if (old('list_transaction_status.' . $val->event_booking_id, $val->transaction_status) == $key) {
-                                                                    $selected = 'selected';
+                                                            $Transaction_Status = array(0=>'Inprocess', 1=>'Success', 2=>'Failure', 3=>'Free' ,4=>'Refund');    
+                                                            ?>
+                                                            <select id="list_transaction_status_{{ $val->event_booking_id }}" name="list_transaction_status[{{ $val->event_booking_id }}]" class="form-control form-control" onchange="this.form.submit()" style="min-width: 120px;">
+                                                                <!-- <option value="">Select Payment Status</option> -->
+                                                                <?php 
+                                                                foreach ($Transaction_Status as $key => $value) {
+                                                                    $selected = '';
+                                                                    if (old('list_transaction_status.' . $val->event_booking_id, $val->transaction_status) == $key) {
+                                                                        $selected = 'selected';
+                                                                    }
+                                                                    ?>
+                                                                    <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
+                                                                    <?php 
                                                                 }
                                                                 ?>
-                                                                <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
-                                                                <?php 
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </form>
-                                                </td>
-                                                <td class="text-left">{!! $val->email . '<br>' . $val->mobile !!}</td>
-                                                {{-- <td class="text-left">{{ $val->mobile }}</td> --}}
-                                                <td class="text-center">
-                                                 {{ ucfirst($val->category_name) }}
-                                                </td>
+                                                            </select>
+                                                        </form>
+                                                    </td>
 
-                                                <td class="text-center">{{ $val->total_discount }}</td>
-                                                <td class="text-center">{{ $val->ticket_amount }}</td>
-                                                <td class="text-center">{{ $val->amount }}</td>
-                                               
-                                                <td>
-                                                    <div class="d-flex" style="gap: 5px;">
-                                                           <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showDetails({{ $val->id }},{{$val->event_id}})" title="show" data-bs-toggle="modal" data-bs-target="#exampleModallaptop1">
-                                                        <i class="fa fa-eye btn btn-success btn-sm "></i>
-                                                    </a>
+                                                    <td class="text-left">{!! $val->email . '<br>' . $val->mobile !!}</td>
+                                                    {{-- <td class="text-left">{{ $val->mobile }}</td> --}}
+                                                    <td class="text-center">
+                                                     {{ ucfirst($val->category_name) }}
+                                                    </td>
 
-                                                     <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showCategoryDetails({{ $val->id }},{{$val->event_id}})" title="Change Races Category" data-bs-toggle="modal" data-bs-target="#exampleModallaptop2">
-                                                        <i class="fa fa-ticket btn btn-warning btn-sm "></i>
-                                                    </a>
-                                                    </div>
-                                                 
-                                                </td>                                               
-                                                <td>
-                                                    {{-- <a href=""><i
-                                                            class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a> --}}
-                                                    <i class="fa fa-trash-o btn btn-danger btn-sm" onclick="remove_type({{ $val->id }},{{$val->event_id}})" title="Delete"></i>
-                                                </td>
+                                                    <td class="text-center">{{ $val->total_discount }}</td>
+                                                    <td class="text-center">{{ $val->ticket_amount }}</td>
+                                                    <td class="text-center">{{ $val->amount }}</td>
+                                                   
+                                                    <td>
+                                                        <div class="d-flex" style="gap: 5px;">
+                                                               <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showDetails({{ $val->id }},{{$val->event_id}})" title="show" data-bs-toggle="modal" data-bs-target="#exampleModallaptop1">
+                                                            <i class="fa fa-eye btn btn-success btn-sm "></i>
+                                                        </a>
+
+                                                         <a data-toggle="modal" id="smallButton" data-target="#smallModal" href="javascript:void(0);" onClick="showCategoryDetails({{ $val->id }},{{$val->event_id}})" title="Change Races Category" data-bs-toggle="modal" data-bs-target="#exampleModallaptop2">
+                                                            <i class="fa fa-ticket btn btn-warning btn-sm "></i>
+                                                        </a>
+                                                        </div>
+                                                     
+                                                    </td>                                               
+                                                    <td>
+                                                        {{-- <a href=""><i
+                                                                class="fa fa-edit btn btn-primary btn-sm" title="edit"></i></a> --}}
+                                                        <i class="fa fa-trash-o btn btn-danger btn-sm" onclick="remove_type({{ $val->id }},{{$val->event_id}})" title="Delete"></i>
+                                                    </td>
+                                                </tr>
+                                          <?php }
+                                        }else{?>
+                                            <tr>
+                                                <td colspan="17" style="text-align:center; color:red;">No Record Found</td>
                                             </tr>
-                                      <?php }
-                                    }else{?>
-                                        <tr>
-                                            <td colspan="17" style="text-align:center; color:red;">No Record Found</td>
-                                        </tr>
-                                  <?php }?>
-                                </tbody>
-                            </table>
-                            <div class="card-body">
+                                      <?php }?>
+                                    </tbody>
+                                </table>
                                 <div class="d-flex justify-content-end">
                                     {{ $Paginator->links() }}
                                 </div>

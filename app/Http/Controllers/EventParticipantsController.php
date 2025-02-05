@@ -253,7 +253,9 @@ class EventParticipantsController extends Controller
                 bpd.amount AS amount,
                 bpd.id As booking_payment_details_id,
                 bpt.mihpayid AS payu_id,
-                et.early_bird,et.no_of_tickets,et.start_time,et.end_time,et.discount,et.discount_value
+                et.early_bird,et.no_of_tickets,et.start_time,et.end_time,et.discount,et.discount_value,
+                a.ticket_price as bulk_upload_ticket_price,
+                a.final_ticket_price as bulk_upload_final_price
             FROM attendee_booking_details a
             LEFT JOIN booking_details b ON a.booking_details_id = b.id
             INNER JOIN event_booking e ON b.booking_id = e.id
@@ -296,8 +298,9 @@ class EventParticipantsController extends Controller
             }else{
                 $value->total_amount = $numberFormate->formatInIndianCurrency($value->final_ticket_price);
             }
-            $value->amount = $numberFormate->formatInIndianCurrency($value->amount);
-            $value->ticket_amount = $numberFormate->formatInIndianCurrency($value->ticket_amount);
+            $value->amount = !empty($value->bulk_upload_final_price) ? $numberFormate->formatInIndianCurrency($value->bulk_upload_final_price) : $numberFormate->formatInIndianCurrency($value->amount);
+
+            $value->ticket_amount = !empty($value->bulk_upload_ticket_price) ? $numberFormate->formatInIndianCurrency($value->bulk_upload_ticket_price) : $numberFormate->formatInIndianCurrency($value->ticket_amount);
 
             //-------------------
             $now = strtotime("now");
@@ -326,7 +329,6 @@ class EventParticipantsController extends Controller
         $Return['event_participants'] = (count($event_participants) > 0) ? $event_participants : [];
         // $Return['event_participants']  = DB::select($sSQL, array());
         // dd($Return['event_participants']);
-
         
         $sql = 'SELECT name FROM events where id ='.$event_id;
         $Return['event_name'] = DB::select($sql,array());
@@ -634,7 +636,7 @@ class EventParticipantsController extends Controller
                         if($val->question_label == 'Race Category'){
                             // $aTemp->answer_value = !empty($res1->TicketName) ? str_replace("&#233;", "é", $res1->TicketName) : '';
                             // $aTemp->answer_value = !empty($res1->TicketName) ? html_entity_decode($res1->TicketName) : '';
-                            $aTemp->answer_value = htmlspecialchars($aTemp->answer_value, ENT_QUOTES, 'UTF-8');
+                            $aTemp->answer_value = htmlspecialchars($res1->TicketName, ENT_QUOTES, 'UTF-8');
                         }
 
                         if($val->question_label == 'Bulk Upload Group Name'){

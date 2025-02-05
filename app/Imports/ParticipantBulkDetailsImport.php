@@ -101,23 +101,26 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                 'event_id'  => $event_id,
                                 'ticket_id' => $ticket->id
                             ]);
-                           // dd($FormQuestions,$FinalHeaderData);
+                           // dd($FinalHeaderData);
                             
                             if(!empty($FormQuestions))
                                 foreach ($FormQuestions as $value) {
                                     //---------- check type [select, radio] $value->question_form_type == "select" || 
-                                    if (!empty($value->question_form_option) && ($value->question_form_type == "select" || $value->question_form_type == "radio") ) {
+                                    if (!empty($value->question_form_option) && ($value->question_form_type == "select" || $value->question_form_type == "radio")) {
                                 
                                         $question_form_name = str_replace("_?", "", strtolower(trim($value->question_form_name)));
                                         $question_form_name = str_replace("?", "", $question_form_name);
                                         $question_form_name = str_replace("-", "_", $question_form_name);
                                         $question_form_name = str_replace("'", "", $question_form_name);
                                         $question_form_name = str_replace(".", "", $question_form_name);
+                                        $question_form_name = str_replace("(", "", $question_form_name);
+                                        $question_form_name = str_replace(")", "", $question_form_name);
                                         // dd($question_form_name);
                                         if(isset($FinalHeaderData[$question_form_name])){
                                             $selectedValue = (isset($FinalHeaderData[$question_form_name])) ? $FinalHeaderData[$question_form_name] : "";
                                         }else if($value->question_form_name == "sub_question"){
-                                            $question_label_name = str_replace(" ", "_", strtolower(trim($value->question_label)));
+                                            $question_label_name = str_replace("-", "_", strtolower(trim($value->question_label)));
+                                            $question_label_name = str_replace(" ", "_", strtolower(trim($question_label_name)));
                                             $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
                                         }
                                         else{
@@ -194,6 +197,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                                         $question_label_name = str_replace("(", "", strtolower(trim($question_label_name)));   
                                         $question_label_name = str_replace(")", "", strtolower(trim($question_label_name))); 
                                         $question_label_name = str_replace("'", "", $question_label_name);  
+                                        // dd($question_label_name);
                                         $selectedValue = (isset($FinalHeaderData[$question_label_name])) ? $FinalHeaderData[$question_label_name] : "";
 
                                         $value->ActualValue = !empty($selectedValue) ? $selectedValue : '';
@@ -566,7 +570,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
 
                 }
             }
-            // dd($Final_ticket_amount,$Final_Extra_Amount);
+            // dd($Final_ticket_amount,$Final_Extra_Amount,$cart_details_array);
 
             //----------- Ticket grand total
             // $Final_calculated_ticket_amount = (($Final_ticket_amount*$Final_ticket_count)+$Final_Extra_Amount);
