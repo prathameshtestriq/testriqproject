@@ -422,12 +422,12 @@ class OrganizerController extends Controller
             $ResponseData['Organizer'] = $Organizer;
 
             #UPCOMING EVETNS
-            $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.created_by=:user_id AND u.start_time >=:start_time";
+            $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND event_info_status = 1 AND u.created_by=:user_id AND u.start_time >=:start_time";
             $UpcomingEvents = DB::select($UpcomingSql, array('user_id' => $UserId, 'start_time' => $NowTime));
             $ResponseData['UpcomingEvents'] = app('App\Http\Controllers\Api\EventController')->ManipulateEvents($UpcomingEvents, $UserId);
 
             #PAST EVENTS
-            $PastSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.created_by=:user_id AND u.start_time < :start_time";
+            $PastSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0  AND event_info_status = 1 AND u.created_by=:user_id AND u.start_time < :start_time";
             $PastEvents = DB::select($PastSql, array('user_id' => $UserId, 'start_time' => $NowTime));
             $ResponseData['PastEvents'] = app('App\Http\Controllers\Api\EventController')->ManipulateEvents($PastEvents, $UserId);
 

@@ -33,7 +33,7 @@ class EventTicketController extends Controller
                 ));
 
                 $ResposneCode = 200;
-                $message = 'Request processed successfully';
+                $message = 'Request processed successfully.';
 
             }else {
                 $ResposneCode = 400;

@@ -1780,7 +1780,7 @@ class EventTicketController extends Controller
         // echo $MessageContent; die;
        
         //--------------- new added for generate pdf ----------------
-        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_id,$EventUrl,$TotalPrice);
+        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_id,$EventUrl,$TotalPrice,$booking_detail_id);
         // dd($generatePdf);
       
         $Email = new Emails();
@@ -2009,7 +2009,7 @@ class EventTicketController extends Controller
                 //echo $MessageContent.'<br><br>';
                 if (!empty($attendee_email) && strtolower($UserEmail) != strtolower($attendee_email)) {
 
-                    $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->id,$EventUrl,$TotalPrice);
+                    $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$res->ticket_id,$res->id,$EventUrl,$TotalPrice,$booking_detail_id);
                    
                     $Email = new Emails();
                     $Email->send_booking_mail($UserId, $attendee_email, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf, $EventId);
@@ -2021,12 +2021,36 @@ class EventTicketController extends Controller
         return;
     }
 
-    public function generateParticipantPDF($EventId,$UserId,$TicketId,$attendeeId,$EventUrl,$TotalPrice)
+    public function generateParticipantPDF($EventId,$UserId,$TicketId,$attendeeId,$EventUrl,$TotalPrice,$booking_detail_id)
     {
         // dd($EventId,$UserId,$TicketId,$attendeeId,$TotalPrice);
         $master = new Master();
+		$createdById = 0;
+		if (!empty($booking_detail_id)) {
+			$Sql50 = 'SELECT booking_id FROM booking_details WHERE id = "' . $booking_detail_id . '" ';
+			$aResult50 = DB::select($Sql50);
+			if (!empty($aResult50)) {
+				$bookingId = !empty($aResult50[0]->booking_id) ? $aResult50[0]->booking_id : 0;
+				if (!empty($bookingId)) {
+					$Sql60 = 'SELECT booking_pay_id FROM event_booking WHERE id = "' . $bookingId . '" ';
+					$aResult60 = DB::select($Sql60);
+					if (!empty($aResult60)) {
+						$bookingPayId = !empty($aResult60[0]->booking_pay_id) ? $aResult60[0]->booking_pay_id : 0;
+						if (!empty($bookingPayId)) {
+							$Sql70 = 'SELECT created_by FROM booking_payment_details WHERE id = "' . $bookingPayId . '" ';
+							$aResult70 = DB::select($Sql70);
+							if (!empty($aResult70)) {
+								$createdById = !empty($aResult70[0]->created_by) ? $aResult70[0]->created_by : 0;
+							}
+						}
+					}
+				}	
+			}
+		}
+		$createdBy = !empty($createdById) ? $createdById : $UserId;
+		
         $sql1 = "SELECT CONCAT(firstname,' ',lastname) AS username,email,mobile FROM users WHERE id=:user_id";
-        $User = DB::select($sql1, ['user_id' => $UserId]);
+        $User = DB::select($sql1, ['user_id' => $createdBy]);
 
         $Venue = "";
         if (!empty($attendeeId)) {
@@ -2153,7 +2177,9 @@ class EventTicketController extends Controller
             }
 
         // Generate QR code
-        $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($UniqueTicketId));
+		$qrCode = '';
+		if(!empty($UniqueTicketId))
+			$qrCode = base64_encode(QrCode::format('png')->size(200)->generate($UniqueTicketId));
         // dd($qrCode);
         $data = [
                 'ticket_details' => $TicketArr,
@@ -2661,8 +2687,9 @@ class EventTicketController extends Controller
 
                 if (!empty($EventId) && !empty($TicketIds)) {
 
+					// (SELECT COUNT(id) FROM applied_coupons WHERE coupon_id = ecd.event_coupon_id AND event_id = ecd.event_id) AS coupon_count   // previous code, modified on 17-01-2025
                     $SQL = "SELECT ecd.*, ec.*, ec.id AS coupon_id,
-                    (SELECT COUNT(id) FROM applied_coupons WHERE coupon_id = ecd.event_coupon_id AND event_id = ecd.event_id) AS coupon_count
+					(SELECT COUNT(ac.coupon_id) FROM applied_coupons ac LEFT JOIN event_booking eb on ac.booking_id=eb.id WHERE ac.coupon_id = ecd.event_coupon_id AND eb.transaction_status IN (1,3) AND eb.event_id = ecd.event_id) AS coupon_count
                     FROM event_coupon_details AS ecd
                     JOIN event_coupon AS ec ON ecd.event_coupon_id = ec.id
                     WHERE ecd.event_id = :event_id
@@ -3283,7 +3310,7 @@ class EventTicketController extends Controller
         // dd($MessageContent);
          //--------------- new added for generate pdf ----------------
         // dd($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,$ticket_paid_amount);
-        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,'₹ '.$total_ticket_amount);
+        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_array['attendee_id'],$EventUrl,'₹ '.$total_ticket_amount,$booking_detail_id);
          // dd($generatePdf);
 
         $Email = new Emails();

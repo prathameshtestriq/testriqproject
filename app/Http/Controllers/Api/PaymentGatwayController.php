@@ -87,7 +87,7 @@ class PaymentGatwayController extends Controller
             }
 
             $EventId = !empty($request->event_id) && $request->event_id != NULL ? $request->event_id : 0;
-            $Amount = !empty($request->amount) && $request->amount != NULL ? $request->amount : '';
+            $Amount = !empty($request->amount) && $request->amount != NULL ? $request->amount : 0;
             // $Amount = '';
             $TicketType = !empty($request->ticket_type) ? $request->ticket_type : 'free';
             $Datetime = time();
