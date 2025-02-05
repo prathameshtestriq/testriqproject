@@ -37,6 +37,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
         $start_booking_date = Session::has('start_booking_date') ? Session::get('start_booking_date') : '';
         $end_booking_date = Session::has('end_booking_date') ? Session::get('end_booking_date') : '';
         $event_name = Session::has('event_name') ? Session::get('event_name') : '';
+        $transaction_order_id = Session::has('transaction_order_id') ? Session::get('transaction_order_id') : '';
 
         // Build the SQL query with search criteria
         // $sSQL = 'SELECT a.*,e.booking_date, e.cart_details,e.booking_pay_id,e.total_amount, e.transaction_status, b.ticket_amount, b.event_id,a.id AS aId, CONCAT(a.firstname, " ", a.lastname) AS user_name,
@@ -101,6 +102,10 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
         if (!empty($end_booking_date)) {
             $sSQL .= ' AND e.booking_date <= '. strtotime($end_booking_date);
         }
+
+        if(!empty($transaction_order_id)){
+            $sSQL .= ' AND (LOWER((SELECT bpd.txnid FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id)) LIKE \'%' . strtolower($transaction_order_id) . '%\')';
+        } 
         
         // if (!empty($event_name)) {
         //     $sSQL .= ' AND b.event_id = '.$event_name;
@@ -456,6 +461,7 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
             $category = Session::has('category') ? Session::get('category') : '';
             $start_booking_date = Session::has('start_booking_date') ? Session::get('start_booking_date') : '';
             $end_booking_date = Session::has('end_booking_date') ? Session::get('end_booking_date') : '';
+            $transaction_order_id = Session::has('transaction_order_id') ? Session::get('transaction_order_id') : '';
     
             // Build the SQL query with search criteria
             $sSQL = 'SELECT count(a.id) as count FROM attendee_booking_details a
@@ -492,10 +498,13 @@ class ParticipantsEventRevenueExport implements FromArray,WithStyles, WithHeadin
             if (!empty($end_booking_date)) {
                 $sSQL .= ' AND e.booking_date <= '. strtotime($end_booking_date);
             }
+
+            if(!empty($transaction_order_id)){
+                $sSQL .= ' AND (LOWER((SELECT bpd.txnid FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id)) LIKE \'%' . strtolower($transaction_order_id) . '%\')';
+            } 
     
             $sSQL .= ' ORDER BY a.id DESC';
     
-            
             $event_participants = DB::select($sSQL, array());
 
         return [

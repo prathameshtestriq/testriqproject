@@ -128,8 +128,10 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match(['get', 'post'],'/participants_event/{event_id?}/{dashboard_id?}', [EventParticipantsController::class, 'index'])->name('participants_event_index');
     Route::match (['get'],'/participants_event/{event_id}/delete/{id}', [EventParticipantsController::class, 'delete_participants_event'])->name('delete_participants_event');
     Route::get('/participants_event/{event_id}/{dashboard_id?}/clear_search', [EventParticipantsController::class, 'clear_search'])->name('clear_search_participants_event');
-    Route::match(['get','post'],'participants_event/{event_id}/export_download',[EventParticipantsController::class,'export_event_participants'])->name('export_event_participants');
+    Route::match(['get','post'],'participants_event/{event_id}/{dashboard_id?}/export_participant_download',[EventParticipantsController::class,'export_event_participants'])->name('export_event_participants');
+
     Route::match(['get','post'],'participants_event/{event_id}/{dashboard_id?}/export_revenue',[EventParticipantsController::class,'export_participants_revenue'])->name('export_participants_revenue');
+    
     Route::match(['get','post'],'participants_event/{event_id}/view/{id}',[EventParticipantsController::class,'view'])->name('question_participants_event');
     Route::match(['get','post'],'participants_event/{event_id}/edit/{id}',[EventParticipantsController::class,'Edit_question'])->name('participants_question_edit');
     Route::match (['get', 'post'], '/get_states/{country_id}', [EventParticipantsController::class, 'get_states'])->name('get_states')->name('get_states');

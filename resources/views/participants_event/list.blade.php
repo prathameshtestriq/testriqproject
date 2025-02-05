@@ -223,16 +223,11 @@
                                                     <?php }else{ ?>
                                                         <a href="{{ url('participants_event/'.$event_id.'/'.$dashboard_id.'/export_revenue') }}" class="btn btn-danger text-white " title = "Revenue">Revenue </a>
                                                     <?php } ?>    
-                                                  <!--   @if (!empty($event_participants))
-                                                      <a href="{{ url('participants_event/'.$event_id.'/export_download') }}" class="btn btn-danger text-white " title = "Download">Download </a>
-                                                    @endif -->
-                                                     @if (!empty($event_participants))
-                                                        <?php if((!empty($search_event) || !empty($event_id)) && $dashboard_id == 0) { ?>
-                                                            <a href="{{ $ParticipantsExcelLink }}" class="btn btn-danger text-white " title = "Download" download>Download </a>
-                                                        <?php }else{ ?>
-                                                            <a href="{{ $ParticipantsExcelLink }}" class="btn btn-danger text-white " title = "Download" download>Download </a>
-                                                        <?php } ?>    
-                                                    @endif
+                                                  
+                                                    @if (!empty($event_participants))
+                                                      <a href="{{ url('participants_event/'.$event_id.'/0/export_participant_download') }}" class="btn btn-danger text-white " title = "Download">Download </a>
+                                                    @endif 
+
                                                     <?php  if($event_id > 0 && $dashboard_id == 0){ ?>
                                                         <a href="{{ url('/event') }}"  class="btn btn-primary ">
                                                             <span>Back</span></a>

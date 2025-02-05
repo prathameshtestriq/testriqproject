@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Exports\ParticipantsEventExport;
 use App\Exports\ParticipantsEventRevenueExport;
 use App\Exports\AttendeeDetailsDataExport;
+use App\Exports\ParticipantsDatailsDataExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Response;
@@ -44,7 +45,7 @@ class EventParticipantsController extends Controller
     }
     public function index(Request $request, $event_id=0,$dashboard_id = 0)
     {
-        
+      // dd($excel_download_flag);  
         $numberFormate = new Numberformate();
         ini_set('max_execution_time', 1000);
         // dd($event_id);
@@ -431,16 +432,99 @@ class EventParticipantsController extends Controller
             }
               
         }
+
+        $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
+        $Return['EventsData'] = DB::select($SQL, array());
         // $AttendeeData = [];
-        $Return['ParticipantsExcelLink'] = EventParticipantsController::participants_excel_export($AttendeeData, $event_id, $serach_event_id);
+        // if($excel_download_flag == 1 || $excel_download_flag == '1'){
+        //     $Return['ParticipantsExcelLink'] = EventParticipantsController::participants_excel_export($AttendeeData, $event_id, $serach_event_id);
+        //     // dd($Return);
+        //     return view('participants_event.list', $Return); 
+        // }else{
+        //     $Return['ParticipantsExcelLink'] = '';
+        //     return view('participants_event.list', $Return);
+        // }
+        
         
         // $Return['ParticipantsExcelLink'] = '';
         // dd($Return['ParticipantsExcelLink']);
-        $SQL = "SELECT id,name FROM events WHERE active=1 AND deleted = 0";
-        $Return['EventsData'] = DB::select($SQL, array());
-      
-
+        $Return['ParticipantsExcelLink'] = '';
         return view('participants_event.list', $Return);
+
+       
+    }
+
+    public function export_event_participants(Request $request,$event_id)
+    {         
+        // dd($event_id);
+        // $filename = "participant_report_" . time();
+        // return Excel::download(new ParticipantsEventExport($event_id),  $filename.'.xlsx');
+
+        $AttendeeData = [];
+
+        $participant_name = Session::has('participant_name') ? Session::get('participant_name') : '';
+        $transaction_status = Session::has('transaction_status') ? Session::get('transaction_status') : '';
+        $registration_id = Session::has('registration_id') ? Session::get('registration_id') : '';
+        $mobile_no = Session::has('mobile_no') ? Session::get('mobile_no') : '';
+        $email_id = Session::has('email_id') ? Session::get('email_id') : '';
+        $category = Session::has('category') ? Session::get('category') : '';
+        $start_booking_date = Session::has('start_booking_date') ? Session::get('start_booking_date') : '';
+        $end_booking_date = Session::has('end_booking_date') ? Session::get('end_booking_date') : '';
+        $transaction_order_id = Session::has('transaction_order_id') ? Session::get('transaction_order_id') : '';
+
+        $sql = "SELECT *,a.id AS aId,e.total_amount,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,(SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id) AS category_name, (SELECT ticket_status FROM event_tickets WHERE id=a.ticket_id) AS ticket_status FROM attendee_booking_details AS a 
+                LEFT JOIN booking_details AS b ON a.booking_details_id = b.id
+                LEFT JOIN event_booking AS e ON b.booking_id = e.id WHERE 1=1 ";
+        
+        if(!empty($event_id)){
+            $sql .= " AND b.event_id = ".$event_id." ";
+        }
+
+        // if(!empty($Return['search_event'])) {
+        //     $sql .= ' AND b.event_id = '.$Return['search_event'];
+        // }
+
+        if(!empty($participant_name)){
+            $sql .= ' AND (LOWER((CONCAT(a.firstname, " ", a.lastname))) LIKE \'%' . strtolower($participant_name) . '%\')';
+        } 
+
+        if(!empty($transaction_status)){
+            $sql .= ' AND e.transaction_status = '.$transaction_status;
+        }
+
+        if(!empty($registration_id)){
+            $sql .= ' AND (LOWER(a.registration_id) LIKE \'%' . strtolower($registration_id) . '%\')';
+        }  
+
+        if(!empty($email_id)){
+            $sql .= ' AND (LOWER(a.email) LIKE \'%' . strtolower($email_id) . '%\')';
+            $sql .= ' OR (LOWER(a.mobile) LIKE \'%' . strtolower($mobile_no) . '%\')'; 
+        } 
+
+        if(!empty($category)){
+            $sql .= ' AND (LOWER((SELECT et.ticket_name FROM event_tickets et WHERE et.id = a.ticket_id)) LIKE \'%' . strtolower($category) . '%\')';
+        } 
+
+        if(!empty($transaction_order_id)){
+            $sql .= ' AND (LOWER((SELECT bpd.txnid FROM booking_payment_details bpd WHERE bpd.id = e.booking_pay_id)) LIKE \'%' . strtolower($transaction_order_id) . '%\')';
+        } 
+
+        if(!empty($start_booking_date)){
+            $startdate = strtotime($start_booking_date);
+            $sql .= " AND e.booking_date >= "." $startdate";
+        }
+
+        if(!empty($end_booking_date)){
+            $endDate = strtotime($end_booking_date);
+            $sql .= " AND e.booking_date <="." $endDate";
+        }
+
+        $sql .= " ORDER BY a.id DESC";
+        $AttendeeData = DB::select($sql, array());
+
+        // dd($AttendeeData);
+        $serach_event_id = $event_id;
+        EventParticipantsController::participants_excel_export($AttendeeData, $event_id, $serach_event_id);
     }
 
     public function delete_participants_event($event_id,$iId){
@@ -457,14 +541,7 @@ class EventParticipantsController extends Controller
        return redirect(url('participants_event/'.$event_id))->with('success', 'Participants event user deleted successfully');
 
     }
-    
-    public function export_event_participants(Request $request,$event_id)
-    {         
-        $filename = "participant_report_" . time();
-        return Excel::download(new ParticipantsEventExport($event_id),  $filename.'.xlsx');
-        // dd($event_id);
-    }
-
+   
     function participants_excel_export($AttendeeData,$event_id, $serach_event_id)
     {         
        // dd($Return['search_participant_name']);
@@ -685,14 +762,29 @@ class EventParticipantsController extends Controller
                
                 $data = Excel::store(new AttendeeDetailsDataExport($ExcellDataArray, $header_data_array), $path . '/' . $filename . '.xlsx', 'excel_uploads');
                 $excel_url = url($path) . "/" . $filename . ".xlsx";
-                // dd($excel_url); 
-                return $excel_url;
+                 
+                $excel_url = $path. $filename . ".xlsx";
+                //dd($excel_url); 
+                //echo  filesize($excel_url);
+                //die;
+                header('Content-Description: File Transfer'); 
+                header('Content-Type: application/octet-stream'); 
+                header('Content-Disposition: attachment; filename="'.basename($excel_url).'"'); 
+                header('Expires: 0'); 
+                header('Cache-Control: must-revalidate'); 
+                header('Pragma: public'); 
+                header('Content-Length: ' . filesize($excel_url)); 
+      
+                // Flush system output buffer 
+                flush();  
+                readfile($excel_url); 
+                die(); 
         }
         
     }
 
     public function export_participants_revenue(Request $request,$event_id)
-    {         
+    {   
         $filename = "revenue_report_" . time();
         return Excel::download(new ParticipantsEventRevenueExport($event_id),  $filename.'.xlsx');
     }
