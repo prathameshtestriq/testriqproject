@@ -456,10 +456,6 @@ class EventParticipantsController extends Controller
 
     public function export_event_participants(Request $request,$event_id)
     {         
-        // dd($event_id);
-        // $filename = "participant_report_" . time();
-        // return Excel::download(new ParticipantsEventExport($event_id),  $filename.'.xlsx');
-
         $AttendeeData = [];
 
         $participant_name = Session::has('participant_name') ? Session::get('participant_name') : '';
@@ -701,7 +697,7 @@ class EventParticipantsController extends Controller
                         }
 
                         if($val->question_label == 'Total Amount'){
-                            $aTemp->answer_value = !empty($res1->total_amount) ? number_format($res1->total_amount,2) : '0.00';
+                            $aTemp->answer_value = !empty($res1->final_ticket_price) ? number_format($res1->final_ticket_price,2) :  number_format($res1->total_amount,2);
                         }
 
                         if($val->question_label == 'Free/Paid'){

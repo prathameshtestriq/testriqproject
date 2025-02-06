@@ -198,7 +198,7 @@
                                                         <button type="submit"
                                                             class="btn btn-primary waves-effect waves-float waves-light">Search</button>
                                                         <?php if((!empty($search_filter) || !empty($search_category) || !empty($search_event_name) || !empty($search_from_date) || !empty($search_to_date))){ ?>
-                                                            <a title="Clear" href="{{ url('dashboard/clear_search') }}"
+                                                            &nbsp;<a title="Clear" href="{{ url('dashboard/clear_search') }}"
                                                                 type="button" class="btn btn-outline-primary">
                                                                 <i data-feather="rotate-ccw" class="me-25"></i> Clear
                                                             </a>
@@ -658,7 +658,7 @@
                        
                         <?php if(!empty($search_event_name) && !empty($BookingData)){ ?>
                            <div class="card-min-height d-flex align-items-center justify-content-center py-2">
-                                <div id="top_x_div" style="width: 700px; height: 500px;"></div>
+                                <div id="top_x_div" style="width: 700px; height: 400px;"></div>
                            </div>
                         <?php }else{ ?>
                            <div class="card-min-height d-flex align-items-center justify-content-center py-2">
@@ -673,7 +673,7 @@
 
         <!-- ----------------------------------------------------- -->
 
-         <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
+        <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6 my-1">
                 <div class="card">
                     <div class="card-body">
 
@@ -682,8 +682,8 @@
                             <h4 class="text-dark m-0">Coupons</h4>
                             </div>
                         </div>
-                    
-                        <div class="card-min-height d-flex justify-content-center py-2">
+
+                        <div class="card-min-height d-flex justify-content-center py-2" style="height: 450px;">
                             <div class="table-responsive">
                             <table class="table table-striped table-bordered">
                                 <thead>
@@ -695,42 +695,46 @@
                                     </tr>
                                 </thead>
                                 <tbody class="text-center">
-                                <?php 
+                                <?php
                                     if (!empty($CouponCodes)){
-                                    $totalDiscountCodeSum = 0;
-                                    $couponCountSum = 0;
-                                    $availableSum = 0;
-                                    $i = 0;
+                                        $totalDiscountCodeSum = 0;
+                                        $couponCountSum = 0;
+                                        $availableSum = 0;
+                                        $i = 0;
+                                        
+                                        foreach ($CouponCodes as $val){
+                                            if(!empty($val->DiscountCode)){
+                                         
+                                            $available = $val->TotalDiscountCode - $val->CouponCount;
+                                            $totalDiscountCodeSum += $val->TotalDiscountCode;
+                                            $couponCountSum += $val->CouponCount;
+                                            $availableSum += $available;
+                                            $i++;
                                 ?>
-                                    <?php foreach ($CouponCodes as $val){
-                                    $available = $val->TotalDiscountCode - $val->CouponCount;
-                                    $totalDiscountCodeSum += $val->TotalDiscountCode;
-                                    $couponCountSum += $val->CouponCount;
-                                    $availableSum += $available;
-                                    $i++;
-                                ?>
-                                <tr>
-                                    <td style="text-align: left;">{{ $val->DiscountCode }}</td>
-                                    <td style="text-align: center;">{{ $val->TotalDiscountCode }}</td>
-                                    <td style="text-align: center;">{{ $val->CouponCount }}</td>
-                                    <td style="text-align: center;">{{ $available }}</td>
-                                </tr>
-                                <?php } ?>
-                                <tr>
-                                    <td style="text-align: left;"><strong>Total</strong></td>
-                                    <td style="text-align: center;"><strong>{{ $totalDiscountCodeSum }}</strong></td>
-                                    <td style="text-align: center;"><strong>{{ $couponCountSum }}</strong></td>
-                                    <td style="text-align: center;"><strong>{{ $availableSum }}</strong></td>
-                                </tr>
+                                        <tr>
+                                            <td style="text-align: left;">{{ $val->DiscountCode }}</td>
+                                            <td style="text-align: center;">{{ $val->TotalDiscountCode }}</td>
+                                            <td style="text-align: center;">{{ $val->CouponCount }}</td>
+                                            <td style="text-align: center;">{{ $available }}</td>
+                                        </tr>
+                                <?php }} ?>
+                                        <tr>
+                                            <td style="text-align: left;"><strong>Total</strong></td>
+                                            <td style="text-align: center;"><strong>{{ $totalDiscountCodeSum }}</strong></td>
+                                            <td style="text-align: center;"><strong>{{ $couponCountSum }}</strong></td>
+                                            <td style="text-align: center;"><strong>{{ $availableSum }}</strong></td>
+                                        </tr>
                                 <?php }else{ ?>
+                                
                                 <tr>
                                     <td colspan="8" style="text-align:center; color:red;">No Record Found
                                     </td>
                                 </tr>
+                               
                                 <?php }?>
                                 </tbody>
                             </table>
-                            
+
                         </div>
                         </div>
                     </div>
