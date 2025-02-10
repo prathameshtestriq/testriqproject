@@ -721,27 +721,35 @@ class ParticipantBulkController extends Controller
 
         $SQL1 = "SELECT id FROM booking_details WHERE booking_id =".$eventData[0]->id;
         $eventBookingData = DB::select($SQL1, array());
+        
+        if(!empty($eventBookingData)){
+            $event_booking_array = !empty($eventBookingData) ? array_column($eventBookingData, 'id') : [];
 
-        $event_booking_array = !empty($eventBookingData) ? array_column($eventBookingData, 'id') : [];
+            $SQL1 = "SELECT id FROM attendee_booking_details WHERE booking_details_id IN(".implode(",", $event_booking_array).")";
+            $attendeeData = DB::select($SQL1, array());
 
-        $SQL1 = "SELECT id FROM attendee_booking_details WHERE booking_details_id IN(".implode(",", $event_booking_array).")";
-        $attendeeData = DB::select($SQL1, array());
+            $attendee_array = !empty($attendeeData) ? array_column($attendeeData, 'id') : [];
+            // dd($attendee_array);
 
-        $attendee_array = !empty($attendeeData) ? array_column($attendeeData, 'id') : [];
-        // dd($attendee_array);
+            $sSQL11 = 'DELETE FROM `attendee_booking_details` WHERE id IN('.implode(",", $attendee_array).')';
+            DB::delete($sSQL11,array());
 
-        $sSQL11 = 'DELETE FROM `attendee_booking_details` WHERE id IN('.implode(",", $attendee_array).')';
-        DB::delete($sSQL11,array());
+            $sSQL12 = 'DELETE FROM `booking_details` WHERE id IN('.implode(",", $event_booking_array).')';
+            DB::delete($sSQL12,array());
 
-        $sSQL12 = 'DELETE FROM `booking_details` WHERE id IN('.implode(",", $event_booking_array).')';
-        DB::delete($sSQL12,array());
+            $sSQL14 = 'DELETE FROM `event_booking` WHERE booking_pay_id ='.$iId;
+            DB::delete($sSQL14,array());
 
-        $sSQL14 = 'DELETE FROM `event_booking` WHERE booking_pay_id ='.$iId;
-        DB::delete($sSQL14,array());
+            $sSQL15 = 'DELETE FROM `booking_payment_details` WHERE id ='.$iId;
+            DB::delete($sSQL15,array());
+        }else{
+            $sSQL14 = 'DELETE FROM `event_booking` WHERE booking_pay_id ='.$iId;
+            DB::delete($sSQL14,array());
 
-        $sSQL15 = 'DELETE FROM `booking_payment_details` WHERE id ='.$iId;
-        DB::delete($sSQL15,array());
-
+            $sSQL15 = 'DELETE FROM `booking_payment_details` WHERE id ='.$iId;
+            DB::delete($sSQL15,array());
+        }
+       
         $aResult = [
             'message' => 'Record deleted successfully'
         ];

@@ -619,6 +619,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
             $BookingId = DB::getPdo()->lastInsertId();
             
             // $BookingId = 3271;
+            // dd($AllTickets);
             //----------------------------- insert data for (booking_details) table
             if(!empty($AllTickets)){
 
@@ -639,6 +640,7 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
                             "ticket_discount" => isset($ticket->ticket_discount) ? ($ticket->ticket_discount) : 0,
                             "booking_date" => strtotime("now"),
                         );
+                        // dd($Binding2);
                         $Sql2 = "INSERT INTO booking_details (booking_id,event_id,user_id,ticket_id,quantity,ticket_amount,ticket_discount,booking_date) VALUES (:booking_id,:event_id,:user_id,:ticket_id,:quantity,:ticket_amount,:ticket_discount,:booking_date)";
                         $aResult = DB::insert($Sql2, $Binding2);
                         #Get the last inserted id of booking_details
@@ -646,7 +648,6 @@ class ParticipantBulkDetailsImport implements ToCollection, WithHeadingRow
 
                         $BookingDetailsIds[$ticket->id] = $BookingDetailsId;
                         $new_ticket_id = !empty($aResult[0]->ticket_id) ? $aResult[0]->ticket_id : $ticket->id;
-
                     }
                 }
             }
