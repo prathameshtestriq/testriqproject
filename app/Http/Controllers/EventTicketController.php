@@ -2614,8 +2614,12 @@ class EventTicketController extends Controller
                 }
                 // dd($Organizer);
                 // Generate QR code
-                $qrCode = base64_encode(QrCode::format('png')->size(200)->generate($TicketArr['unique_ticket_id']));
-                // $qrCode = "";
+				$qrCode = ''
+				if($TicketArr['unique_ticket_id'] != '')
+				{
+					$qrCode = base64_encode(QrCode::format('png')->size(200)->generate($TicketArr['unique_ticket_id']));
+                }
+				// $qrCode = "";
                 // dd($TicketArr);
                 $data = [
                     'ticket_details' => $TicketArr,
