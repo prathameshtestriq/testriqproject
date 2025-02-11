@@ -1189,22 +1189,53 @@ class EventTicketController extends Controller
 
                                 $Sql7 = "";
                                 $Binding7 = [];
-
-                                $Sql7 = "SELECT discount_type FROM event_coupon_details WHERE event_coupon_id=:event_coupon_id";
+                                
+                                //-----------------
+                                $Sql7 = "SELECT no_of_discount FROM event_coupon_details WHERE event_coupon_id=:event_coupon_id";
                                 $Binding7 = array("event_coupon_id" => $appliedCouponId);
                                 $Result = DB::select($Sql7, $Binding7);
-                                $IsDiscountOneTime = 0;
+                                $no_of_discount = 0;
 
-                                if (count($Result) > 0) {
-                                    $IsDiscountOneTime = $Result[0]->discount_type;
+                                //---------- new added used coupon code on 11-02-25
+                                $SQL3 = "SELECT ec.id AS coupon_id,(SELECT COUNT(ac.coupon_id) FROM applied_coupons ac LEFT JOIN event_booking eb on ac.booking_id=eb.id WHERE ac.coupon_id = ecd.event_coupon_id AND eb.transaction_status IN (1,3) AND eb.event_id = ecd.event_id) AS coupon_count
+                                FROM event_coupon_details AS ecd
+                                JOIN event_coupon AS ec ON ecd.event_coupon_id = ec.id
+                                WHERE ecd.event_id =:event_id
+                                AND ecd.event_coupon_id =:eventCouponId
+                                AND ec.coupon_status = 1";
+
+                                $aCouponAppliedResult = DB::select($SQL3, array('event_id' => $EventId, 'eventCouponId' => $appliedCouponId));
+
+                                if (!empty($Result) && !empty($aCouponAppliedResult)) {
+                                   
+                                    $no_of_discount    = $Result[0]->no_of_discount;
+                                    $used_coupon_count = $aCouponAppliedResult[0]->coupon_count; 
+
                                     $Sql8 = "";
                                     $Binding8 = [];
-                                    if ($IsDiscountOneTime == 1) {
+                                    if ($no_of_discount <= $used_coupon_count) {
                                         $Binding8 = array("event_coupon_id" => $appliedCouponId);
                                         $Sql8 = "UPDATE event_coupon_details SET end_coupon=1 WHERE event_coupon_id=:event_coupon_id";
                                         DB::update($Sql8, $Binding8);
                                     }
                                 }
+                                
+                                //---------------- temp hide
+                                // $Sql7 = "SELECT discount_type FROM event_coupon_details WHERE event_coupon_id=:event_coupon_id";
+                                // $Binding7 = array("event_coupon_id" => $appliedCouponId);
+                                // $Result = DB::select($Sql7, $Binding7);
+                                // $IsDiscountOneTime = 0;
+           
+                                // if (count($Result) > 0) {
+                                //     $IsDiscountOneTime = $Result[0]->discount_type;
+                                //     $Sql8 = "";
+                                //     $Binding8 = [];
+                                //     if ($IsDiscountOneTime == 1) {
+                                //         $Binding8 = array("event_coupon_id" => $appliedCouponId);
+                                //         $Sql8 = "UPDATE event_coupon_details SET end_coupon=1 WHERE event_coupon_id=:event_coupon_id";
+                                //         DB::update($Sql8, $Binding8);
+                                //     }
+                                // }
                             }
                         }
                     }
@@ -2026,6 +2057,8 @@ class EventTicketController extends Controller
         // dd($EventId,$UserId,$TicketId,$attendeeId,$TotalPrice);
         $master = new Master();
 		$createdById = 0;
+        $TicketArr = [];
+
 		if (!empty($booking_detail_id)) {
 			$Sql50 = 'SELECT booking_id FROM booking_details WHERE id = "' . $booking_detail_id . '" ';
 			$aResult50 = DB::select($Sql50);
@@ -2181,7 +2214,8 @@ class EventTicketController extends Controller
 		if(!empty($UniqueTicketId))
 			$qrCode = base64_encode(QrCode::format('png')->size(200)->generate($UniqueTicketId));
         // dd($qrCode);
-        $data = [
+        if(!empty($TicketArr)){
+            $data = [
                 'ticket_details' => $TicketArr,
                 'event_details' => (sizeof($Event) > 0) ? $Event[0] : [],
                 'org_details' => (sizeof($Organizer) > 0) ? $Organizer[0] : [],
@@ -2190,7 +2224,9 @@ class EventTicketController extends Controller
                 'QrCode' => $qrCode,
                 'amount_details' => $amount_details,
                 'extra_details' => $extra_details
-        ];
+            ];
+        }
+        
         // dd($data);
         $pdf = PDF::loadView('pdf_template', $data);
         $PdfName = $EventId . $TicketId . time() . '.pdf';
