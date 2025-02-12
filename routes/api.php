@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\TestCronController;
 
 //----------- added by neha
 use App\Http\Controllers\Api\AthleteIdCardController;
+use App\Http\Controllers\Api\ParticipantDetailsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -130,8 +131,6 @@ Route::controller(UserController::class)->group(function () {
     Route::post('org_user_details', 'OrgUserDetails');
     Route::post('delete_org_user', 'DeleteOrgUser');
     Route::post('edit_org_user', 'EditOrgUser');
-
-
 });
 
 Route::controller(EventUserFollowController::class)->group(function () {
@@ -262,4 +261,6 @@ Route::controller(AthleteIdCardController::class)->group(function () {
     Route::post('/athleteCard', 'athleteCardPreview');
 });
 
-
+Route::controller(ParticipantDetailsController::class)->group(function () {
+    Route::post('/participant_details', 'participantdetails');
+});
