@@ -23,7 +23,7 @@ class ParticipantDetailsController extends Controller
             $field = 'Event Id';
         }
         if (!$empty) {
-            $sSQL = 'SELECT a.id,e.event_id,a.registration_id,a.id,a.firstname,a.lastname,a.mobile,a.email,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,a.attendee_details FROM event_booking e LEFT JOIN booking_details As bd ON e.id = bd.booking_id LEFT JOIN attendee_booking_details As a ON bd.id = a.booking_details_id WHERE e.event_id=:event_id AND e.transaction_status IN (1,3) AND a.id IS NOT NULL ';  // LIMIT 5
+            $sSQL = 'SELECT a.id,e.event_id,a.registration_id,a.id,a.firstname,a.lastname,a.mobile,a.email,(SELECT ticket_name FROM event_tickets WHERE id=a.ticket_id) AS TicketName,a.attendee_details FROM event_booking e LEFT JOIN booking_details As bd ON e.id = bd.booking_id LEFT JOIN attendee_booking_details As a ON bd.id = a.booking_details_id WHERE e.event_id=:event_id AND e.transaction_status IN (1,3) AND a.id IS NOT NULL';  // LIMIT 5
 
             $participantData = DB::select($sSQL, array('event_id' => $aPost['event_id']));
            
