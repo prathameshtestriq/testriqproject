@@ -103,9 +103,9 @@ class ParticipantDetailsController extends Controller
                         // Participant + Accompanying Parent + Sibling (1 or 2 ) ?
 
                         if($aPost['event_id'] == 49){
-                            if($detail->question_form_type == 'select' && $detail->question_form_name == 'sub_question' && $detail->question_label == 'Select number of siblings participating in run:'){
+                            if($detail->question_form_type == 'select' && $detail->question_form_name == 'sub_question' && $detail->question_label == 'Select number of siblings participating in run:' && $detail->ActualValue != ''){
                                 $accompanying_user_count = !empty($detail->ActualValue) ? ((int)$detail->ActualValue + 1) : 0;
-                                //                                              Sibling (1 or 2 ) + Accompanying Parent
+                                // Sibling (1 or 2 ) + Accompanying Parent
                             }else if($detail->question_form_type == 'text' && $detail->question_form_name == 'accompanying_parent_name' && $detail->ActualValue != ''){
                                 $accompanying_user_count = 1;
                             }
@@ -117,7 +117,6 @@ class ParticipantDetailsController extends Controller
                             // ------- To calculate Year
                             $loc_year = ParticipantDetailsController::calculateYear($loc_date_of_birth);
                             $this->year = $loc_year;
-
                         }
                     }
                     
@@ -133,7 +132,6 @@ class ParticipantDetailsController extends Controller
                             break;
                         }
                     }
-
 
                     $aTemp->event_id         = $res->event_id;
                     $aTemp->registration_id  = $res->registration_id;
@@ -157,7 +155,6 @@ class ParticipantDetailsController extends Controller
                     $participant_details[] = $aTemp;
 
                 }
-
             }
 
             // dd($participant_details);
