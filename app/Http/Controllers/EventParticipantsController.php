@@ -563,6 +563,9 @@ class EventParticipantsController extends Controller
             $sql .= ' order by sort_order asc';
             $EventQuestionData = DB::select($sql, array());
             // dd($EventQuestionData);
+			foreach ($EventQuestionData as $key => $row) {
+				$EventQuestionData[$key]->question_label = htmlspecialchars($row->question_label, ENT_QUOTES, 'UTF-8');
+			}
 
             $card_array = array(
                     array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),

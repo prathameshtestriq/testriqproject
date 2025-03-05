@@ -968,7 +968,11 @@ class EventDashboardController extends Controller
                         $sql = "SELECT id,question_label,question_form_type,question_form_name,(select name from events where id = event_form_question.event_id) as event_name FROM event_form_question WHERE event_id = :event_id AND question_status = 1 order by sort_order asc";
                         $EventQuestionData = DB::select($sql, array('event_id' => $EventId));
                         // dd($EventQuestionData);
-
+						
+						foreach ($EventQuestionData as $key => $row) {
+							$EventQuestionData[$key]->question_label = htmlspecialchars($row->question_label, ENT_QUOTES, 'UTF-8');
+						}
+						
                         $card_array = array(
                             array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),
                             array("id" => 101191, "question_label" => "Registration ID", "question_form_type" => "text", "ActualValue" => ""),
