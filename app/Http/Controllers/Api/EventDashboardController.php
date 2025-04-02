@@ -972,6 +972,7 @@ class EventDashboardController extends Controller
 						foreach ($EventQuestionData as $key => $row) {
 							$EventQuestionData[$key]->question_label = htmlspecialchars($row->question_label, ENT_QUOTES, 'UTF-8');
 						}
+                        // dd($EventQuestionData);
 						
                         $card_array = array(
                             array("id" => 101190, "question_label" => "Transaction/Order ID", "question_form_type" => "text", "ActualValue" => ""),
@@ -1026,7 +1027,9 @@ class EventDashboardController extends Controller
 
                                     $aTemp = new stdClass;
                                     $aTemp->question_form_type = $val->question_form_type;
-                                    $aTemp->question_label = $val->question_label;
+                                    // $aTemp->question_label = $val->question_label; // old
+                                    // --- added this condtion for special character purpose   on 02-04-25
+                                    $aTemp->question_label = htmlspecialchars($val->question_label, ENT_QUOTES, 'UTF-8');
                                     $labels = [];
 
                                     if ($val->question_label != 'Registration ID' || $val->question_label != 'Payu ID') {
