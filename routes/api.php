@@ -80,6 +80,7 @@ Route::controller(LoginController::class)->group(function () {
     Route::post('validate_otp', 'validateOtp');
     Route::post('resend_otp', 'resendOtp');
     Route::post('country_phonecode', 'countryPhoneCode');
+    Route::post('user_send_otp', 'user_send_otp'); // new added
 });
 
 Route::controller(EventController::class)->group(function () {

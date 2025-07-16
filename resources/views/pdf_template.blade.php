@@ -200,7 +200,7 @@
                     <tr>
                         <th colspan="2">Participant Details</th>
                     </tr>
-
+                    
                     <tr>
                         <td style="width: 35%;">Name</td>
                         <td>{{ isset($ticket_details["firstname"]) ? ucfirst($ticket_details["firstname"]) . " " . ucfirst($ticket_details["lastname"]) : "" }}
@@ -248,20 +248,22 @@
                     <tr>
                         <th colspan="2">Registration Details</th>
                     </tr>
-                    <tr>
-                        <td>Registered By</td>
-                        <td>{{ isset($user_details->username) ? ucfirst($user_details->username) : "" }}</td>
-                    </tr>
+                    <?php if($event_details->allow_guest_login == 0){ ?>
+                        <tr>
+                            <td>Registered By</td>
+                            <td>{{ isset($user_details->username) ? ucfirst($user_details->username) : "" }}</td>
+                        </tr>
 
-                    <tr>
-                        <td>Email</td>
-                        <td>{{ isset($user_details->email) ? $user_details->email : "" }}</td>
-                    </tr>
+                        <tr>
+                            <td>Email</td>
+                            <td>{{ isset($user_details->email) ? $user_details->email : "" }}</td>
+                        </tr>
 
-                    <tr>
-                        <td>Mobile</td>
-                        <td>{{ isset($user_details->mobile) ? $user_details->mobile : "" }}</td>
-                    </tr>
+                        <tr>
+                            <td>Mobile</td>
+                            <td>{{ isset($user_details->mobile) ? $user_details->mobile : "" }}</td>
+                        </tr>
+                    <?php } ?>
 
                     <tr>
                         <td>Registration Date &amp; Time</td>

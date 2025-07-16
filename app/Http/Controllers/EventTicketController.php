@@ -2176,7 +2176,7 @@ class EventTicketController extends Controller
 
         $created_by = 0;
         if (!empty($EventId)) {
-            $sql2 = "SELECT name,start_time,end_time,address,city,state,country,pincode,created_by,event_type FROM events WHERE id=:event_id";
+            $sql2 = "SELECT id,name,start_time,end_time,address,city,state,country,pincode,created_by,event_type,allow_guest_login FROM events WHERE id=:event_id";
             $Event = DB::select($sql2, ['event_id' => $EventId]);
             // dd($Event);
             if (sizeof($Event) > 0) {

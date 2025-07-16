@@ -358,6 +358,84 @@ class LoginController extends Controller
 
         return response()->json($response, $ResposneCode);
     }
+    
+    //---------- New added on 14-07-25
+    public function user_send_otp(Request $request)
+    {
+        $aPost = $request->all();
+        //dd($aPost);
+        $Auth = new Authenticate();
+        $Auth->apiLog($request);
+
+        $ResponseData = [];
+        $ResposneCode = 200;
+        $empty = false;
+        $message = 'Success';
+        $field = $validate_msg = '';
+     
+        $ValidatEmail  = !empty($aPost['Email']) ? $aPost['Email'] : '';
+        $ValidatMobile = !empty($aPost['Mobile']) ? $aPost['Mobile'] : '';
+        $LoginType     = !empty($aPost['LoginType']) ? $aPost['LoginType'] : '';
+       
+        if($LoginType == 1){
+            if (empty($ValidatEmail)) {
+                $empty = true;
+                $field = 'Email Id';
+            }
+            $validate_msg = 'Invalid Email Id';
+        }else if($LoginType == 2){
+            if (empty($ValidatMobile)) {
+                $empty = true;
+                $field = 'Mobile Number';
+            } 
+            $validate_msg = 'Invalid Mobile Number';
+        }
+
+        if (!$empty) {
+           
+            $SQL1 = 'SELECT id,email,mobile,firstname,lastname FROM users WHERE (email=:email OR mobile=:mobile) AND is_deleted = 0';
+            $Exist = DB::select($SQL1, array('email' => $ValidatEmail, 'mobile' => $ValidatMobile));
+            
+            if(!empty($Exist)){
+                
+                if($LoginType == 1){
+                    $email_otp = rand(1000, 9999);
+                    if (!empty($email_otp)) {
+                        $data = DB::table('users')->where('id', $Exist[0]->id)->update(['email_otp' => $email_otp]);
+                        #SEND OTP MAIL
+                        $Email = new Emails();
+                        $Email->post_email($Exist[0]->email, $email_otp, $Exist[0]->firstname, $Exist[0]->lastname);
+                    }
+                }else if($LoginType == 2){
+                    $mobile_otp = rand(1000, 9999);
+                    if (!empty($mobile_otp)) {
+                        $data = DB::table('users')->where('id', $Exist[0]->id)->update(['mobile_otp' => $mobile_otp]);
+                        #SEND OTP MESSAGE
+                        $SmsObj = new SmsApis();
+                        $SmsObj->post_sms($aResult[0]->mobile, $mobile_otp);
+                    }
+                }
+
+                $ResposneCode = 200;
+                $message = 'OTP Send Successfully';
+            }else{
+                $ResposneCode = 200;
+                $message = $validate_msg;
+            }
+
+        } else {
+            $ResposneCode = 400;
+            $message = $field . ' is empty';
+        }
+
+        $response = [
+            'status' => $ResposneCode,
+            'data' => $ResponseData,
+            'message' => $message
+        ];
+
+        return response()->json($response, $ResposneCode);
+    }
 
     public function resendOtp(Request $request)
     {
@@ -430,40 +508,84 @@ class LoginController extends Controller
         $ResposneCode = 200;
         $empty = false;
         $message = 'Success';
-        $field = '';
-        $validate = 0;
-        $user_id = 0;
+        $field = $MsgField = '';
+        $validate = $user_id = 0;
 
-        if (empty($aPost['Email'])) {
-            $empty = true;
-            $field = 'Email';
-        }
-        if (empty($aPost['Password'])) {
-            $empty = true;
-            $field = 'Password';
-        }
+        $LoginType     = !empty($aPost['LoginType']) ? $aPost['LoginType'] : 3;
+        
+        if($LoginType == 1){
+            if (empty($aPost['Email'])) {
+                $empty = true;
+                $field = 'Email';
+            } 
 
+            if (empty($aPost['ValidOpt'])) {
+                $empty = true;
+                $field = 'OTP';
+            }
+            $MsgField = 'Email'; 
+        }else if($LoginType == 2){
+            if (empty($aPost['Mobile'])) {
+                $empty = true;
+                $field = 'Mobile';
+            } 
+
+            if (empty($aPost['ValidOpt'])) {
+                $empty = true;
+                $field = 'OTP';
+            } 
+            $MsgField = 'Mobile'; 
+        }else{
+
+            if (empty($aPost['Email'])) {
+                $empty = true;
+                $field = 'Email';
+            } 
+
+            if (empty($aPost['Password'])) {
+                $empty = true;
+                $field = 'Password';
+            }
+        }
+        
         //------------------- Login As Organiser
         $LoginAsOrganiser = isset($aPost['LoginAsOrganiser']) && !empty($aPost['LoginAsOrganiser']) ? $aPost['LoginAsOrganiser'] : 0;
         //  dd($LoginAsOrganiser);
 
-        //--------------------------
+        //--------------
         if (!$empty) {
-            // Check Multple Athlete Exists or not with same email or mobile?
-            $sql1 = 'SELECT id FROM users WHERE email = :email';
-            $oUser = DB::select($sql1, array('email' => $aPost['Email']));
-            // dd(count($oUser));
+            
+            //---------- To check multiple login feature 
+            if($LoginType == 1){  // email
+            
+                $sql1 = 'SELECT id FROM users WHERE email=:email AND email_otp =:email_otp AND is_deleted = 0';
+                $oUser = DB::select($sql1, array('email' => $aPost['Email'], 'email_otp' => $aPost['ValidOpt']));
+            
+            }else if($LoginType == 2){  // mobile
+               
+                $sql1 = 'SELECT id FROM users WHERE mobile=:mobile AND mobile_otp =:mobile_otp AND is_deleted = 0';
+                $oUser = DB::select($sql1, array('mobile' => $aPost['Mobile'], 'mobile_otp' => $aPost['ValidOpt']));
+            
+            }else{  // Username & Password
+               
+                $sql1 = 'SELECT id FROM users WHERE email = :email AND is_deleted = 0';
+                $oUser = DB::select($sql1, array('email' => $aPost['Email']));
+            }
+         
+           // dd(count($oUser));
 
             //--------------- alredy exist user to update in role (for organising team user register only)
-            $SQL1 = 'SELECT id,user_role FROM organiser_users WHERE email=:email AND status = 1';
-            $aOrgUserResult = DB::select($SQL1, array('email' => $aPost['Email']));
-            
-            if(!empty($aOrgUserResult) && !empty($oUser[0]->id)){
-                $UserRole = $aOrgUserResult[0]->user_role;
-                $OrgID = $aOrgUserResult[0]->id;
+            if($LoginType == 1 || $LoginType == 3){
+                $SQL1 = 'SELECT id,user_role FROM organiser_users WHERE email=:email AND status = 1';
+                $aOrgUserResult = DB::select($SQL1, array('email' => $aPost['Email']));
                 
-                $SQL = 'UPDATE users SET organizer_user =:organizer_user, role =:role WHERE id =:id';
-                DB::update($SQL, array('organizer_user' => $OrgID,'role' => $UserRole, 'id' => $oUser[0]->id));
+                if(!empty($aOrgUserResult) && !empty($oUser[0]->id)){
+                    $UserRole = $aOrgUserResult[0]->user_role;
+                    $OrgID = $aOrgUserResult[0]->id;
+                    
+                    $SQL = 'UPDATE users SET organizer_user =:organizer_user, role =:role WHERE id =:id';
+                    DB::update($SQL, array('organizer_user' => $OrgID,'role' => $UserRole, 'id' => $oUser[0]->id));
+                }
             }
 
             if (count($oUser) == 1) {
@@ -576,7 +698,11 @@ class LoginController extends Controller
                 }
             } else {
                 $ResposneCode = 400;
-                $message = 'User is not exist';
+                if($LoginType == 1 || $LoginType == 2){
+                   $message = 'Invalid ' . $MsgField . ' OTP';
+                }else{
+                   $message = 'User is not exist'; 
+                }
             }
         } else {
             $ResposneCode = 400;
