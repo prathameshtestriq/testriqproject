@@ -822,6 +822,14 @@ class EventController extends Controller
             $EventSql = "SELECT * FROM events AS e WHERE e.id=:event_id";
             $Events = DB::select($EventSql, array('event_id' => $EventId));
             $EventId = !empty($Events) ? $Events[0]->id : 0;
+            
+            $guest_user_id = !empty($Events[0]->guest_user_id) ? $Events[0]->guest_user_id : 0;
+            
+            $sSQL1 = 'SELECT email,password FROM  users WHERE id =:guest_user_id AND is_active = 1';
+            $aUserResult = DB::select($sSQL1, array('guest_user_id' => $guest_user_id));
+            
+            $ResponseData['UserEmail'] = !empty($aUserResult) && !empty($aUserResult[0]->email) ? $aUserResult[0]->email : '';
+            // $ResponseData['UserPassword'] = '1234567a';
         }
 
         // Get Event Tickets 
