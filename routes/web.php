@@ -122,7 +122,7 @@ Route::group(['middleware' => ['checkLogin']], function () {
     Route::match (['get'], ' /event/remove_event_image/{event_id}/{id}', [EventController::class, 'delete_event_image'])->name('delete_event_image');
     Route::match(['get', 'post'],'/ckeditor_event_description/upload', [EventController::class, 'upload'])->name('ckeditor_event_description.upload');
     Route::match(['get', 'post'], 'event/change_verify_status', [EventController::class, 'change_verify_status'])->name('change_verify_status');
-  
+    Route::match(['get', 'post'], 'event/guest_login_status', [EventController::class, 'guest_login_status'])->name('guest_login_status');
 
    //  EVENT Participants 
     Route::match(['get', 'post'],'/participants_event/{event_id?}/{dashboard_id?}', [EventParticipantsController::class, 'index'])->name('participants_event_index');

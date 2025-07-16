@@ -2058,6 +2058,7 @@ class EventTicketController extends Controller
         $master = new Master();
 		$createdById = 0;
         $TicketArr = [];
+        $data = [];
 
 		if (!empty($booking_detail_id)) {
 			$Sql50 = 'SELECT booking_id FROM booking_details WHERE id = "' . $booking_detail_id . '" ';

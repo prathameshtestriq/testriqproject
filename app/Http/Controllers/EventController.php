@@ -154,7 +154,7 @@ class EventController extends Controller
         //  WHERE vm.deleted = 0 ' . $FiltersSql . ' 
         //  ORDER BY vm.id DESC';
 
-        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,vm.banner_image,vm.event_info_status,vm.is_verify,
+        $sSQL = 'SELECT vm.id, vm.name, vm.start_time, vm.end_time,vm.created_by,vm.banner_image,vm.event_info_status,vm.is_verify,vm.allow_guest_login,
                 (SELECT name FROM cities WHERE 
                 Id = vm.city) AS city,(SELECT name FROM states WHERE Id = vm.state) AS state, 
                 (SELECT name FROM countries WHERE Id = vm.country) AS country, 
@@ -525,6 +525,91 @@ class EventController extends Controller
         );
         $result = DB::update($sSQL, $Bindings);
         $successMessage  = 'Status changed successfully';
+        $sucess = 'true';
+        $result = [];
+        $result['message'] =  $successMessage ;
+        $result['sucess'] = $sucess;
+        return $result;
+    }
+
+    public function guest_login_status(Request $request)
+    {
+        //  dd('here');
+        if(isset($request->guest_login) && !empty($request->id)){
+            
+            $sSQL = 'SELECT id FROM events WHERE allow_guest_login = 1 AND id=:id';
+            $Exist = DB::select($sSQL, array('id' => $request->id));
+            
+            // dd($Exist);
+            if(empty($Exist)){
+               
+                $sSQL1 = 'SELECT id,guest_user_id FROM events WHERE guest_user_id = 0 AND allow_guest_login = 0 AND id=:id';
+                $Exist1 = DB::select($sSQL1, array('id' => $request->id));
+                $lastInsertId = !empty($Exist1) ? $Exist1[0]->guest_user_id : 0;
+
+                if(!empty($Exist1)){
+                    $email_address = 'guestuser'.$request->id.'@gmail.com';
+               
+                    $sSQL = 'INSERT INTO users(firstname, lastname, email, password, mobile, type,country,state,city,dob,gender,role, pincode, created_at, is_login, auth_token, login_time, ResetPasswordToken, email_otp,mobile_otp, user_validated, theme_mode, profile_completion_percentage)
+                    VALUES(:firstname, :lastname, :email, :password, :mobile, :type,:country,:state,:city,:dob,:gender,:role, :pincode, :created_at, :is_login, :auth_token, :login_time, :ResetPasswordToken, :email_otp, :mobile_otp, :user_validated, :theme_mode, :profile_completion_percentage)';
+
+                    $bindings = array(
+                        'firstname' => 'Guest',
+                        'lastname' => 'User',
+                        'email' => $email_address,
+                        'password' => 'fe008700f25cb28940ca8ed91b23b354',
+                        'mobile' => '1234567809',
+                        'type' => 3,
+                        'country' => 101,
+                        'state'=> 4009,
+                        'city'=> 133024,
+                        'dob'=> '2025-07-10',
+                        'gender'=> 1,
+                        'role'=> 0,
+                        'pincode' => 400098,
+                        'created_at' => time(),
+                        'is_login' => 1,
+                        'auth_token' => 'Bearer P^7XPZF0X74CfXi80TSPj9xoHy1QUFbezxpBQ0J1dT74lFveEp2Cxp5ZDiz9AH2nZ8ekWS8QyXdSwtDFPlChf99QYrlXKJ8oZO2p0GaZAIQCIvAgSG4fTCPe90pzNdM7SGqFspsEt9t9vKOk3i2m5Q==',
+                        'login_time' => time(),
+                        'ResetPasswordToken' => '94c8f0a6784747375f4943c3cf715203',
+                        'email_otp' => 0,
+                        'mobile_otp' => 0,
+                        'user_validated' => 1,
+                        'theme_mode' => 0,
+                        'profile_completion_percentage' => 26
+                    );
+                    //  dd($bindings);
+                    $result = DB::insert($sSQL, $bindings);
+                    $lastInsertId = DB::getPdo()->lastInsertId();
+                }else{
+                    $sSQL2 = 'SELECT id,guest_user_id FROM events WHERE guest_user_id != 0 AND id=:id';
+                    $Exist2 = DB::select($sSQL2, array('id' => $request->id));
+                    $lastInsertId = !empty($Exist2) ? $Exist2[0]->guest_user_id : 0;
+                }
+                    //------------ update value
+                    if(!empty($lastInsertId)){
+
+                        $up_sSQL = 'UPDATE events SET allow_guest_login =:allow_guest_login, guest_user_id =:guest_user_id WHERE id=:id';
+                        $Bindings = array(
+                            'allow_guest_login' => $request->guest_login,
+                            'guest_user_id' => $lastInsertId,
+                            'id' => $request->id
+                        );
+                        DB::update($up_sSQL, $Bindings);
+                    }
+            }else{
+                //------------ update value
+                $up_sSQL = 'UPDATE events SET allow_guest_login =:allow_guest_login WHERE id=:id';
+                $Bindings = array(
+                    'allow_guest_login' => 0,
+                    'id' => $request->id
+                );
+                DB::update($up_sSQL, $Bindings);
+            }
+           
+        }
+
+        $successMessage  = 'Allow Guest Login status changed successfully.';
         $sucess = 'true';
         $result = [];
         $result['message'] =  $successMessage ;

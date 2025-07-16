@@ -256,6 +256,7 @@
                                         <th>State</th>
                                         <th>City</th>
                                         <th>Event Image</th>
+                                        <th>Allow Guest Login</th>
                                         <th>Event Status</th>
                                         <th>Verify Status</th>
                                         <th style="text-align: center;">Status</th>
@@ -291,6 +292,21 @@
                                                     <?php   echo '-'; ?>
                                                     @endif
                                                 </td>
+                                                <td class="text-center">
+                                                    <div class="custom-control custom-switch custom-switch-success">
+                                                        <input type="checkbox" class="custom-control-input"
+                                                            id="guest-{{ $event->id }}"
+                                                            {{ $event->allow_guest_login ? 'checked' : '' }}
+                                                            onclick="guest_login_status(event.target, {{ $event->id }});" />
+
+                                                        <label class="custom-control-label" style="cursor: pointer;"
+                                                            for="guest-{{ $event->id }}">
+
+                                                            <span class="switch-icon-left"></span>
+                                                            <span class="switch-icon-right"></span>
+                                                        </label> 
+                                                    </div>
+                                                </td>
                                                 <td style="text-align:center;">
                                                     <?php  
                                                         if($event->event_info_status == 1) {
@@ -303,32 +319,28 @@
                                                     ?>
                                                 </td>
                                                 <td class="text-center">
-
                                                     <div class="custom-control custom-switch custom-switch-success">
                                                         <input type="checkbox" class="custom-control-input"
-                                                            id="{{ $event->id }}"
+                                                            id="verify-{{ $event->id }}"
                                                             {{ $event->is_verify ? 'checked' : '' }}
                                                             onclick="change_verify_status(event.target, {{ $event->id }});" />
 
                                                         <label class="custom-control-label" style="cursor: pointer;"
-                                                            for="{{ $event->id }}">
-
+                                                            for="verify-{{ $event->id }}">
                                                             <span class="switch-icon-left"></span>
                                                             <span class="switch-icon-right"></span>
                                                         </label>
                                                     </div>
                                                 </td>
                                                 <td class="text-center">
-
                                                     <div class="custom-control custom-switch custom-switch-success">
                                                         <input type="checkbox" class="custom-control-input"
-                                                            id="{{ $event->id }}"
+                                                            id="status-{{ $event->id }}"
                                                             {{ $event->active ? 'checked' : '' }}
                                                             onclick="change_status(event.target, {{ $event->id }});" />
 
                                                         <label class="custom-control-label" style="cursor: pointer;"
-                                                            for="{{ $event->id }}">
-
+                                                            for="status-{{ $event->id }}">
                                                             <span class="switch-icon-left"></span>
                                                             <span class="switch-icon-right"></span>
                                                         </label>
@@ -420,7 +432,7 @@
                         // Optionally hide the alert after a few seconds
                         setTimeout(function() {
                             $("#success-alert").fadeOut();
-                        }, 2000); // Adjust time (2000 = 2 seconds)
+                        }, 5000); // Adjust time (2000 = 2 seconds)
 
                     }else{
                         alert('Some error occured');
@@ -436,7 +448,7 @@
                     }
                 });
             } else {
-                $(_this).prop("checked", !active);
+                $(_this).prop("checked", !is_verify);
             }
         }
 
@@ -462,7 +474,7 @@
                         // Optionally hide the alert after a few seconds
                         setTimeout(function() {
                             $("#success-alert").fadeOut();
-                        }, 2000); // Adjust time (2000 = 2 seconds)
+                        }, 5000); // Adjust time (2000 = 2 seconds)
 
                     }else{
                         alert('Some error occured');
@@ -482,7 +494,47 @@
             }
         }
 
+       
+        function guest_login_status(_this, id) {
+            var allow_guest_login = $(_this).prop('checked') == true ? 1 : 0;
+            //alert(allow_guest_login);
 
+            if (confirm("Are you sure you want to change this status in guest login?")) {
+                $.ajax({
+                    url: "<?php echo url('event/guest_login_status'); ?>",
+                    type: 'post',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: id,
+                        guest_login: allow_guest_login
+                    },
+                    success: function(result) {
+                    if (result.sucess == 'true') {
+                       
+                        $("#success-message").text(result.message); // Update success message
+                        $("#success-alert").show(); // Show the success alert
+                        // Optionally hide the alert after a few seconds
+                        setTimeout(function() {
+                            $("#success-alert").fadeOut();
+                        }, 5000); // Adjust time (2000 = 2 seconds)
+
+                    }else{
+                        alert('Some error occured');
+                        if(status)
+                            $(_this).prop("checked" , false)
+                        else
+                            $(_this).prop("checked" , true)
+                            return false;
+                    }
+                },
+                    error: function() {
+                        alert('Some error occurred');
+                    }
+                });
+            } else {
+                $(_this).prop("checked", !allow_guest_login);
+            }
+        }
 
 
         $(document).ready(function() {
