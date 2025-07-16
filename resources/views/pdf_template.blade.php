@@ -248,7 +248,7 @@
                     <tr>
                         <th colspan="2">Registration Details</th>
                     </tr>
-                    <?php if($event_details->allow_guest_login == 0){ ?>
+                    <?php if(isset($event_details->allow_guest_login) && $event_details->allow_guest_login == 0){ ?>
                         <tr>
                             <td>Registered By</td>
                             <td>{{ isset($user_details->username) ? ucfirst($user_details->username) : "" }}</td>
