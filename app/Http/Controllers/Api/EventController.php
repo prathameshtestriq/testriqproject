@@ -153,8 +153,11 @@ class EventController extends Controller
 
         #GET EVENTS COUNTRY WISE
         $EventSql = "SELECT e.* FROM events AS e WHERE e.active=1 AND e.deleted=0 AND e.event_info_status=1 AND e.is_verify = 1 AND e.registration_end_time >=:registration_end_time";
+
         $UpcomingSql = "SELECT * from events AS u WHERE u.active=1 AND u.deleted=0 AND u.event_info_status=1 AND u.registration_end_time >=:registration_end_time AND u.is_verify = 1";
+
         $RegistrationSql = "SELECT * from events AS r WHERE r.active=1 AND r.deleted=0 AND r.event_info_status=1 AND r.registration_start_time >=:registration_start_time AND r.is_verify = 1";
+
         $BannerSql = "SELECT b.* FROM banner AS b WHERE b.active=1";
 
         $CountryCode = $request->country_code;
@@ -602,166 +605,309 @@ class EventController extends Controller
 
 
     #API FOR SEARCH EVENTS PAGE
+    // public function getEvents(Request $request)
+    // {
+    //     $ResponseData = [];
+    //     $ResposneCode = 200;
+    //     $empty = false;
+    //     $message = 'Success';
+    //     $field = '';
+    //     $FewSuggestionFlag = 0;
+    //     $aData = array();
+    //     $aPost = $request->all();
+
+    //     $Auth = new Authenticate();
+    //     $Auth->apiLog($request);
+
+    //     #IF USER IS LOGIN GET USER ID
+    //     // $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
+    //     // $UserId = $aToken['data']->ID;
+
+    //     #ELSE USER NOT LOGIN
+    //     $aToken = $Auth->decode_token($request->header('Authorization'));
+    //     $UserId = 0;
+    //     if (!empty($aToken)) {
+    //         $UserId = $aToken->ID;
+    //     }
+    //     // dd($aToken,$UserId);
+
+    //     $EventId = isset($request->event_id) ? $request->event_id : 0;//for view event (Event Details page)
+    //     $EventName = isset($request->event_name) ? $request->event_name : '';
+    //     $Filter = isset($request->filter) ? $request->filter : '';
+    //     $Category = isset($request->category_id) ? $request->category_id : 0;
+    //     $StartDateTime = isset($request->start_date) ? strtotime($request->start_date) : 0;
+    //     $CityId = isset($request->city) ? $request->city : 0;
+    //     $StateId = isset($request->state) ? $request->state : 0;
+    //     $CountryId = isset($request->country) ? $request->country : 0;
+    //     $EndDateTime = (isset($request->end_date) && !empty($request->end_date)) ? strtotime(date("Y-m-d 23:59:59", strtotime($request->end_date))) : 0;
+    //     $Distance = isset($request->distance) ? $request->distance : 0;
+    //     // dd($StartDateTime,$EndDateTime);
+    //     $event_ids = '';
+    //     if (!empty($Category)) {
+    //         $aSql = "SELECT e.id FROM events as e LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category = ".$Category." AND e.is_verify = 1";
+    //         $aResult = DB::select($aSql);
+    //         // dd($aResult);
+    //         $event_array = !empty($aResult) ? array_column($aResult,'id') : [];
+    //         $event_ids = !empty($event_array) ? implode(",",$event_array) : "";
+    //     }
+    //     // dd($event_ids);
+
+    //     $EventSql = "SELECT * FROM events AS e WHERE 1=1 AND e.is_verify = 1";
+    //     if (!empty($EventId)) {
+    //         $EventSql .= " AND e.id=" . $EventId;
+    //     }
+    //     // dd($Category);
+    //     if (!empty($Category)) {
+    //         //$EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
+    //         // $EventSql .= " LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category =" . $Category;
+    //     }
+
+    //     if (!empty($Category) && !empty($event_ids)) {
+    //         $EventSql .= " AND e.id IN(".$event_ids.") ";
+    //     }
+
+    //     if (empty($Category) && empty($EventId)) {
+    //         $EventSql .= " AND e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+    //     } else {
+    //         $EventSql .= " AND e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+    //     }
+    //     if ($EventName != "") {
+    //         $EventSql .= " AND e.name LIKE '%" . $EventName . "%' ";
+    //     }
+    //     if ((!empty($StartDateTime)) && (empty($EndDateTime))) {
+    //         $EventSql .= " AND e.registration_start_time >=" . $StartDateTime;
+    //     }
+    //     if ((!empty($EndDateTime)) && (empty($StartDateTime))) {
+    //         $EventSql .= " AND e.registration_end_time <=" . $EndDateTime;
+    //     }
+    //     if ((!empty($StartDateTime)) && (!empty($EndDateTime))) {
+    //         $EventSql .= ' AND e.registration_end_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
+    //         // $EventSql .= ' AND e.registration_start_time >=' . $StartDateTime . ' AND e.registration_end_time <= ' . $EndDateTime;
+    //     }
+
+    //     if (!empty($Distance)) {
+    //         $EventSql .= " AND e.distance =" . $Distance;
+    //     }
+    //     if (!empty($CountryId)) {
+    //         $EventSql .= " AND e.country=" . $CountryId;
+    //     }
+    //     if (!empty($StateId)) {
+    //         $EventSql .= " AND e.state=" . $StateId;
+    //     }
+    //     if (!empty($CityId)) {
+    //         $EventSql .= " AND e.city=" . $CityId;
+    //     }
+
+    //     // return $EventSql;
+    //     if (!empty($Filter)) {
+    //         switch ($Filter) {
+    //             case 'today':
+    //                 $StartDate = strtotime(date('Y-m-d 00:00:00'));
+    //                 $EndDate = strtotime(date('Y-m-d 23:59:59'));
+    //                 break;
+
+    //             case 'tomorrow':
+    //                 $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime("+1 day")));
+    //                 $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime("+1 day")));
+    //                 break;
+
+    //             case 'month':
+    //                 $StartDate = strtotime(date('Y-m-01'));
+    //                 $EndDate = strtotime(date('Y-m-t'));
+    //                 break;
+
+    //             case 'week':
+    //                 $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
+    //                 $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('saturday this week')));
+    //                 break;
+
+    //             case 'weekend':
+    //                 $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('saturday this week')));
+    //                 $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
+    //                 break;
+
+    //             case 'quarter':
+    //                 $currentMonth = date('m');
+    //                 $currentYear = date('Y');
+    //                 $StartDate = strtotime(date('Y-m-d', strtotime("$currentYear-$currentMonth-01 -1 month")));
+    //                 $EndDate = strtotime(date('Y-m-t 23:59:59', strtotime("$currentYear-$currentMonth-01 +1 months")));
+    //                 break;
+
+    //             default:
+    //                 break;
+    //         }
+
+    //         // dd($StartDate, $EndDate);
+    //         if (isset($StartDate) && isset($EndDate)) {
+    //             $EventSql .= ' AND e.start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
+    //             // $EventSql .= ' AND e.start_time >=' . $StartDate . ' AND e.end_time <= ' . $EndDate;
+
+    //         } else if ($Filter == 'free') {
+    //             $EventSql .= " AND e.is_paid=0";
+    //         }
+    //     }
+    //     // dd($EventSql);
+
+    //     $Events = DB::select($EventSql);
+
+    //     // $temp_array = array_unique(array_column($Events, 'event_id'));
+    //     // $filteredData = array_intersect_key($Events, $temp_array);
+
+    //     // dd($Events);
+    //     $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
+    //     $response = [
+    //         'status' => 200,
+    //         'data' => $ResponseData,
+    //         'message' => $message,
+    //         'FewSuggestionFlag' => $FewSuggestionFlag
+    //     ];
+
+    //     return response()->json($response, $ResposneCode);
+    // }
+
     public function getEvents(Request $request)
     {
         $ResponseData = [];
         $ResposneCode = 200;
-        $empty = false;
         $message = 'Success';
-        $field = '';
         $FewSuggestionFlag = 0;
-        $aData = array();
-        $aPost = $request->all();
 
         $Auth = new Authenticate();
         $Auth->apiLog($request);
 
-        #IF USER IS LOGIN GET USER ID
-        // $aToken = app('App\Http\Controllers\Api\LoginController')->validate_request($request);
-        // $UserId = $aToken['data']->ID;
-
-        #ELSE USER NOT LOGIN
         $aToken = $Auth->decode_token($request->header('Authorization'));
-        $UserId = 0;
-        if (!empty($aToken)) {
-            $UserId = $aToken->ID;
-        }
-        // dd($aToken,$UserId);
+        $UserId = $aToken->ID ?? 0;
 
-        $EventId = isset($request->event_id) ? $request->event_id : 0;//for view event (Event Details page)
-        $EventName = isset($request->event_name) ? $request->event_name : '';
-        $Filter = isset($request->filter) ? $request->filter : '';
-        $Category = isset($request->category_id) ? $request->category_id : 0;
-        $StartDateTime = isset($request->start_date) ? strtotime($request->start_date) : 0;
-        $CityId = isset($request->city) ? $request->city : 0;
-        $StateId = isset($request->state) ? $request->state : 0;
-        $CountryId = isset($request->country) ? $request->country : 0;
-        $EndDateTime = (isset($request->end_date) && !empty($request->end_date)) ? strtotime(date("Y-m-d 23:59:59", strtotime($request->end_date))) : 0;
-        $Distance = isset($request->distance) ? $request->distance : 0;
-        // dd($StartDateTime,$EndDateTime);
-        $event_ids = '';
-        if (!empty($Category)) {
-            $aSql = "SELECT e.id FROM events as e LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category = ".$Category." AND e.is_verify = 1";
-            $aResult = DB::select($aSql);
-            // dd($aResult);
-            $event_array = !empty($aResult) ? array_column($aResult,'id') : [];
-            $event_ids = !empty($event_array) ? implode(",",$event_array) : "";
-        }
-        // dd($event_ids);
+        $EventId = $request->input('event_id', 0);
+        $EventName = $request->input('event_name', '');
+        $Filter = $request->input('filter', '');
+        $Category = $request->input('category_id', 0);
+        $StartDateTime = $request->input('start_date') ? strtotime($request->input('start_date')) : 0;
+        $EndDateTime = $request->input('end_date') ? strtotime(date("Y-m-d 23:59:59", strtotime($request->input('end_date')))) : 0;
+        $CityId = $request->input('city', 0);
+        $StateId = $request->input('state', 0);
+        $CountryId = $request->input('country', 0);
+        $Distance = $request->input('distance', 0);
 
-        $EventSql = "SELECT * FROM events AS e WHERE 1=1 AND e.is_verify = 1";
+        $query = DB::table('events as e')
+            ->select('e.*')
+            ->where('e.is_verify', 1)
+            ->where('e.active', 1)
+            ->where('e.deleted', 0)
+            ->where('e.event_info_status', 1);
+
         if (!empty($EventId)) {
-            $EventSql .= " AND e.id=" . $EventId;
-        }
-        // dd($Category);
-        if (!empty($Category)) {
-            //$EventSql .= " LEFT JOIN event_category AS ec ON e.id = ec.event_id WHERE ec.category_id=" . $Category;
-            // $EventSql .= " LEFT JOIN event_tickets AS et ON e.id = et.event_id WHERE et.category =" . $Category;
+            $query->where('e.id', $EventId);
         }
 
-        if (!empty($Category) && !empty($event_ids)) {
-            $EventSql .= " AND e.id IN(".$event_ids.") ";
+        if (!empty($EventName)) {
+            $query->where('e.name', 'like', "%{$EventName}%");
         }
 
-        if (empty($Category) && empty($EventId)) {
-            $EventSql .= " AND e.active=1 AND e.deleted=0 AND e.event_info_status=1";
-        } else {
-            $EventSql .= " AND e.active=1 AND e.deleted=0 AND e.event_info_status=1";
+        if ($StartDateTime && !$EndDateTime) {
+            $query->where('e.registration_start_time', '>=', $StartDateTime);
         }
-        if ($EventName != "") {
-            $EventSql .= " AND e.name LIKE '%" . $EventName . "%' ";
+
+        if ($EndDateTime && !$StartDateTime) {
+            $query->where('e.registration_end_time', '<=', $EndDateTime);
         }
-        if ((!empty($StartDateTime)) && (empty($EndDateTime))) {
-            $EventSql .= " AND e.registration_start_time >=" . $StartDateTime;
-        }
-        if ((!empty($EndDateTime)) && (empty($StartDateTime))) {
-            $EventSql .= " AND e.registration_end_time <=" . $EndDateTime;
-        }
-        if ((!empty($StartDateTime)) && (!empty($EndDateTime))) {
-            $EventSql .= ' AND e.registration_end_time BETWEEN ' . $StartDateTime . ' AND ' . $EndDateTime;
-            // $EventSql .= ' AND e.registration_start_time >=' . $StartDateTime . ' AND e.registration_end_time <= ' . $EndDateTime;
+
+        if ($StartDateTime && $EndDateTime) {
+            $query->whereBetween('e.registration_end_time', [$StartDateTime, $EndDateTime]);
         }
 
         if (!empty($Distance)) {
-            $EventSql .= " AND e.distance =" . $Distance;
-        }
-        if (!empty($CountryId)) {
-            $EventSql .= " AND e.country=" . $CountryId;
-        }
-        if (!empty($StateId)) {
-            $EventSql .= " AND e.state=" . $StateId;
-        }
-        if (!empty($CityId)) {
-            $EventSql .= " AND e.city=" . $CityId;
+            $query->where('e.distance', $Distance);
         }
 
-        // return $EventSql;
+        if (!empty($CountryId)) {
+            $query->where('e.country', $CountryId);
+        }
+
+        if (!empty($StateId)) {
+            $query->where('e.state', $StateId);
+        }
+
+        if (!empty($CityId)) {
+            $query->where('e.city', $CityId);
+        }
+
+        if (!empty($Category)) {
+            $eventIds = DB::table('event_tickets')
+                ->where('category', $Category)
+                ->join('events', 'events.id', '=', 'event_tickets.event_id')
+                ->where('events.is_verify', 1)
+                ->pluck('events.id')
+                ->unique()
+                ->toArray();
+
+            if (!empty($eventIds)) {
+                $query->whereIn('e.id', $eventIds);
+            } else {
+                $query->whereRaw('1 = 0'); // Return empty if no matching IDs
+            }
+        }
+
+        // Apply filter conditions
         if (!empty($Filter)) {
+            $StartDate = $EndDate = null;
             switch ($Filter) {
                 case 'today':
-                    $StartDate = strtotime(date('Y-m-d 00:00:00'));
-                    $EndDate = strtotime(date('Y-m-d 23:59:59'));
+                    $StartDate = strtotime('today');
+                    $EndDate = strtotime('today 23:59:59');
                     break;
-
                 case 'tomorrow':
-                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime("+1 day")));
-                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime("+1 day")));
+                    $StartDate = strtotime('tomorrow');
+                    $EndDate = strtotime('tomorrow 23:59:59');
                     break;
-
                 case 'month':
                     $StartDate = strtotime(date('Y-m-01'));
-                    $EndDate = strtotime(date('Y-m-t'));
+                    $EndDate = strtotime(date('Y-m-t 23:59:59'));
                     break;
-
                 case 'week':
-                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('monday this week')));
-                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('saturday this week')));
+                    $StartDate = strtotime('monday this week');
+                    $EndDate = strtotime('saturday this week 23:59:59');
                     break;
-
                 case 'weekend':
-                    $StartDate = strtotime(date('Y-m-d 00:00:00', strtotime('saturday this week')));
-                    $EndDate = strtotime(date('Y-m-d 23:59:59', strtotime('sunday this week')));
+                    $StartDate = strtotime('saturday this week');
+                    $EndDate = strtotime('sunday this week 23:59:59');
                     break;
-
                 case 'quarter':
                     $currentMonth = date('m');
                     $currentYear = date('Y');
-                    $StartDate = strtotime(date('Y-m-d', strtotime("$currentYear-$currentMonth-01 -1 month")));
-                    $EndDate = strtotime(date('Y-m-t 23:59:59', strtotime("$currentYear-$currentMonth-01 +1 months")));
+                    $StartDate = strtotime("$currentYear-$currentMonth-01 -1 month");
+                    $EndDate = strtotime("$currentYear-$currentMonth-01 +1 month");
                     break;
-
-                default:
+                case 'free':
+                    $query->where('e.is_paid', 0);
                     break;
             }
 
-            // dd($StartDate, $EndDate);
-            if (isset($StartDate) && isset($EndDate)) {
-                $EventSql .= ' AND e.start_time BETWEEN ' . $StartDate . ' AND ' . $EndDate;
-                // $EventSql .= ' AND e.start_time >=' . $StartDate . ' AND e.end_time <= ' . $EndDate;
-
-            } else if ($Filter == 'free') {
-                $EventSql .= " AND e.is_paid=0";
+            if ($StartDate && $EndDate) {
+                $query->whereBetween('e.start_time', [$StartDate, $EndDate]);
             }
         }
-        // dd($EventSql);
 
-        $Events = DB::select($EventSql);
+        // Paginate for performance
+        $Events = $query->orderBy('e.start_time', 'asc')->paginate(20);
 
-        // $temp_array = array_unique(array_column($Events, 'event_id'));
-        // $filteredData = array_intersect_key($Events, $temp_array);
-
-        // dd($Events);
-        $ResponseData['EventData'] = $this->ManipulateEvents($Events, $UserId);
+        $ResponseData['EventData'] = $this->ManipulateEvents($Events->items(), $UserId);
         $response = [
             'status' => 200,
             'data' => $ResponseData,
             'message' => $message,
-            'FewSuggestionFlag' => $FewSuggestionFlag
+            'FewSuggestionFlag' => $FewSuggestionFlag,
+            'pagination' => [
+                'total' => $Events->total(),
+                'per_page' => $Events->perPage(),
+                'current_page' => $Events->currentPage(),
+                'last_page' => $Events->lastPage()
+            ]
         ];
 
         return response()->json($response, $ResposneCode);
-
     }
+
 
     #API FOR EVENT DETAILS PAGE
     public function EventDetailsPage(Request $request)
@@ -929,6 +1075,7 @@ class EventController extends Controller
                             "by_admin" => $ByAdmin
                         );
                         $SQL = "INSERT INTO events (event_info_status,name,event_visibilty,event_display_name,event_type,created_by,created_date,ytcr_base_price,by_admin) VALUES(:event_info_status,:event_name,:display_name_status,:display_name,:event_type,:created_by,:created_date,:ytcr_base_price,:by_admin)";
+                        
                         DB::insert($SQL, $Bindings);
                         $EventId = DB::getPdo()->lastInsertId();
 

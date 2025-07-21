@@ -372,23 +372,24 @@ class LoginController extends Controller
         $empty = false;
         $message = 'Success';
         $field = $validate_msg = '';
+        $error = 0;
      
         $ValidatEmail  = !empty($aPost['Email']) ? $aPost['Email'] : '';
         $ValidatMobile = !empty($aPost['Mobile']) ? $aPost['Mobile'] : '';
         $LoginType     = !empty($aPost['LoginType']) ? $aPost['LoginType'] : '';
        
-        if($LoginType == 1){
-            if (empty($ValidatEmail)) {
-                $empty = true;
-                $field = 'Email Id';
-            }
-            $validate_msg = 'Invalid Email Id';
-        }else if($LoginType == 2){
+        if($LoginType == 2){
             if (empty($ValidatMobile)) {
                 $empty = true;
                 $field = 'Mobile Number';
             } 
             $validate_msg = 'Invalid Mobile Number';
+        }else if($LoginType == 3){
+            if (empty($ValidatEmail)) {
+                $empty = true;
+                $field = 'Email Id';
+            }
+            $validate_msg = 'Invalid Email Id';
         }
 
         if (!$empty) {
@@ -398,7 +399,15 @@ class LoginController extends Controller
             
             if(!empty($Exist)){
                 
-                if($LoginType == 1){
+                if($LoginType == 2){
+                    $mobile_otp = rand(1000, 9999);
+                    if (!empty($mobile_otp)) {
+                        $data = DB::table('users')->where('id', $Exist[0]->id)->update(['mobile_otp' => $mobile_otp]);
+                        #SEND OTP MESSAGE
+                        $SmsObj = new SmsApis();
+                        $SmsObj->post_sms($Exist[0]->mobile, $mobile_otp);
+                    }
+                }else if($LoginType == 3){
                     $email_otp = rand(1000, 9999);
                     if (!empty($email_otp)) {
                         $data = DB::table('users')->where('id', $Exist[0]->id)->update(['email_otp' => $email_otp]);
@@ -406,32 +415,28 @@ class LoginController extends Controller
                         $Email = new Emails();
                         $Email->post_email($Exist[0]->email, $email_otp, $Exist[0]->firstname, $Exist[0]->lastname);
                     }
-                }else if($LoginType == 2){
-                    $mobile_otp = rand(1000, 9999);
-                    if (!empty($mobile_otp)) {
-                        $data = DB::table('users')->where('id', $Exist[0]->id)->update(['mobile_otp' => $mobile_otp]);
-                        #SEND OTP MESSAGE
-                        $SmsObj = new SmsApis();
-                        $SmsObj->post_sms($aResult[0]->mobile, $mobile_otp);
-                    }
                 }
 
                 $ResposneCode = 200;
                 $message = 'OTP Send Successfully';
+                $error = 0;
             }else{
                 $ResposneCode = 200;
                 $message = $validate_msg;
+                $error = 1;
             }
 
         } else {
             $ResposneCode = 400;
             $message = $field . ' is empty';
+            $error = 1;
         }
 
         $response = [
-            'status' => $ResposneCode,
-            'data' => $ResponseData,
-            'message' => $message
+            'status'  => $ResposneCode,
+            'data'    => $ResponseData,
+            'message' => $message,
+            'error'   => $error
         ];
 
         return response()->json($response, $ResposneCode);
@@ -511,9 +516,9 @@ class LoginController extends Controller
         $field = $MsgField = '';
         $validate = $user_id = 0;
 
-        $LoginType     = !empty($aPost['LoginType']) ? $aPost['LoginType'] : 3;
+        $LoginType     = !empty($aPost['LoginType']) ? $aPost['LoginType'] : 1;
         
-        if($LoginType == 1){
+        if($LoginType == 3){
             if (empty($aPost['Email'])) {
                 $empty = true;
                 $field = 'Email';
@@ -556,19 +561,19 @@ class LoginController extends Controller
         if (!$empty) {
             
             //---------- To check multiple login feature 
-            if($LoginType == 1){  // email
+            if($LoginType == 3){  // email
             
-                $sql1 = 'SELECT id FROM users WHERE email=:email AND email_otp =:email_otp AND is_deleted = 0';
+                $sql1 = 'SELECT id,password FROM users WHERE email=:email AND email_otp =:email_otp AND is_deleted = 0';
                 $oUser = DB::select($sql1, array('email' => $aPost['Email'], 'email_otp' => $aPost['ValidOpt']));
             
             }else if($LoginType == 2){  // mobile
                
-                $sql1 = 'SELECT id FROM users WHERE mobile=:mobile AND mobile_otp =:mobile_otp AND is_deleted = 0';
+                $sql1 = 'SELECT id,password FROM users WHERE mobile=:mobile AND mobile_otp =:mobile_otp AND is_deleted = 0';
                 $oUser = DB::select($sql1, array('mobile' => $aPost['Mobile'], 'mobile_otp' => $aPost['ValidOpt']));
             
             }else{  // Username & Password
                
-                $sql1 = 'SELECT id FROM users WHERE email = :email AND is_deleted = 0';
+                $sql1 = 'SELECT id,password FROM users WHERE email = :email AND is_deleted = 0';
                 $oUser = DB::select($sql1, array('email' => $aPost['Email']));
             }
          
@@ -589,14 +594,24 @@ class LoginController extends Controller
             }
 
             if (count($oUser) == 1) {
-                $sql2 = 'SELECT *,(select name from role_master where id = users.role) as role_name FROM users WHERE id=:id AND password =:password';
 
-                if(!empty($LoginAsOrganiser)){
-                    $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => $aPost['Password'])); 
+                if($LoginType == 2 || $LoginType == 3){ 
+                    $loc_password = !empty($oUser[0]->password) ? $oUser[0]->password : '';
+
+                    $sql2 = 'SELECT *,(select name from role_master where id = users.role) as role_name FROM users WHERE id=:id AND password =:password';
+                    $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => $loc_password));
                 }else{
-                     $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => md5($aPost['Password'])));
+                    $loc_password = $aPost['Password'];
+
+                    $sql2 = 'SELECT *,(select name from role_master where id = users.role) as role_name FROM users WHERE id=:id AND password =:password';
+
+                    if(!empty($LoginAsOrganiser)){
+                        $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => $loc_password)); 
+                    }else{
+                        $aResult = DB::select($sql2, array('id' => $oUser[0]->id, 'password' => md5($loc_password)));
+                    }
                 }
-               
+
                 // dd($aResult);
                 if ($aResult) {
                     if ($aResult[0]->is_deleted == 0) {
@@ -698,11 +713,12 @@ class LoginController extends Controller
                 }
             } else {
                 $ResposneCode = 400;
-                if($LoginType == 1 || $LoginType == 2){
+                if($LoginType == 2 || $LoginType == 3){
                    $message = 'Invalid ' . $MsgField . ' OTP';
                 }else{
                    $message = 'User is not exist'; 
                 }
+                $validate = 2;
             }
         } else {
             $ResposneCode = 400;
