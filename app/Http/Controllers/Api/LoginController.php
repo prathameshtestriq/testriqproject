@@ -383,13 +383,15 @@ class LoginController extends Controller
                 $empty = true;
                 $field = 'Mobile Number';
             } 
-            $validate_msg = 'Invalid Mobile Number';
+            // $validate_msg = 'Invalid Mobile Number';
+            $validate_msg = 'You have not signed up. Please complete the sign-up process before attempting to log in.';
         }else if($LoginType == 3){
             if (empty($ValidatEmail)) {
                 $empty = true;
                 $field = 'Email Id';
             }
-            $validate_msg = 'Invalid Email Id';
+            // $validate_msg = 'Invalid Email Id';
+            $validate_msg = 'You have not signed up. Please complete the sign-up process before attempting to log in.';
         }
 
         if (!$empty) {
