@@ -769,7 +769,7 @@ class EventTicketController extends Controller
                         $CustomQue = DB::select($SQL6, $bind);
                         $CustomQuestions = [];
                          $questionIdsArray = !empty($QuestionIds) ? explode(',', $QuestionIds) : [];
-                        //dd($CustomQue);
+                        // dd(count($CustomQue));
                         
                         if(!empty($CustomQue)){
                             foreach ($CustomQue as $key => $value) {
@@ -788,62 +788,124 @@ class EventTicketController extends Controller
                         // dd($CustomQuestions);
                         $CountArray = array();
                         
-                        if(!empty($CustomQuestions)){
+                        // if(!empty($CustomQuestions)){
+                        //     foreach ($CustomQuestions as $key => $items) {
+
+                        //         foreach ($items as $item) {
+
+                        //             $actualValue = $item->ActualValue;
+                        //             $question_label = $item->question_label;
+
+                        //             $options = json_decode($item->question_form_option, true);
+                        //             $label = "";
+                        //             $limit = 0;
+                        //             $limit_flag = false;
+                        //             $labels = [];
+                        //             $option_id = 0;
+                        //             // && $item->question_form_name == 'time_slots_for_dadar_location'
+                        //             if($item->question_form_type == 'select'){
+
+                        //                 $new_array = [];
+                        //                 $questionSizArray = !empty($QueData) ? json_decode($QueData[0]->question_form_option) : [];
+                        //                 if(!empty($questionSizArray)){
+                        //                     foreach($questionSizArray as $val){
+                        //                         $new_array[$val->id] = $val->count;
+                        //                     }
+                        //                 }
+
+                        //                 // dd($new_array); 
+                        //                 foreach ($options as $option) {
+                        //                     if (in_array($option['id'], explode(',', $actualValue))) {
+                        //                         $labels[] = $option['label'];
+
+                        //                         $final_limit = (isset($new_array[$option['id']])) ? $new_array[$option['id']] : 0;
+                        //                         $limit =  (int)$final_limit;
+                        //                         $limit_flag = true;
+                        //                         $option_id = $option['id'];
+                        //                     } 
+                        //                     $label = implode(', ', $labels);
+                        //                 }
+
+                        //                 if (!isset($CountArray[$actualValue])) {
+                        //                     $CountArray[$actualValue] = ["id" => $option_id,  "label" => $label, "count" => 0];
+                        //                 }
+
+                        //                 $CountArray[$actualValue]["count"]++;
+                        //             }
+                        //         }//die;
+                        //     }
+                        // }
+
+                        // // dd($CountArray);
+
+                        // $finalArray = [];
+                        // if(!empty($CountArray)){
+                        //     foreach($CountArray as $item) {
+                        //        $finalArray[$item['id']] = $item['count'];
+                        //     } 
+                        // }
+
+                        $CountArray = [];
+
+                        if (!empty($CustomQuestions)) {
                             foreach ($CustomQuestions as $key => $items) {
-
                                 foreach ($items as $item) {
-
-                                    $actualValue = $item->ActualValue;
+                                    $actualValue    = $item->ActualValue;
                                     $question_label = $item->question_label;
 
                                     $options = json_decode($item->question_form_option, true);
-                                    $label = "";
-                                    $limit = 0;
-                                    $limit_flag = false;
-                                    $labels = [];
+                                    $labels  = [];
                                     $option_id = 0;
 
-                                    if($item->question_form_type == 'select'){
-
+                                    if ($item->question_form_type == 'select') {
                                         $new_array = [];
                                         $questionSizArray = !empty($QueData) ? json_decode($QueData[0]->question_form_option) : [];
-                                        if(!empty($questionSizArray)){
-                                            foreach($questionSizArray as $val){
+                                        if (!empty($questionSizArray)) {
+                                            foreach ($questionSizArray as $val) {
                                                 $new_array[$val->id] = $val->count;
                                             }
                                         }
 
-                                        // dd($new_array); 
                                         foreach ($options as $option) {
                                             if (in_array($option['id'], explode(',', $actualValue))) {
                                                 $labels[] = $option['label'];
 
-                                                $final_limit = (isset($new_array[$option['id']])) ? $new_array[$option['id']] : 0;
-                                                $limit =  (int)$final_limit;
-                                                $limit_flag = true;
-                                                $option_id = $option['id'];
-                                            } 
-                                            $label = implode(', ', $labels);
+                                                $final_limit = $new_array[$option['id']] ?? 0;
+                                                $limit_flag  = true;
+                                                $option_id   = $option['id'];
+                                            }
                                         }
 
-                                        if (!isset($CountArray[$actualValue])) {
-                                            $CountArray[$actualValue] = ["id" => $option_id,  "label" => $label, "count" => 0];
+                                        $label = implode(', ', $labels);
+
+                                        // Make key unique for each question and option
+                                        $uniqueKey = $item->id . '_' . $option_id;
+
+                                        if (!isset($CountArray[$uniqueKey])) {
+                                            $CountArray[$uniqueKey] = [
+                                                "question_id" => $item->id,
+                                                "id"          => $option_id,
+                                                "label"       => $label,
+                                                "count"       => 0
+                                            ];
                                         }
 
-                                        $CountArray[$actualValue]["count"]++;
+                                        $CountArray[$uniqueKey]["count"]++;
                                     }
-                                }//die;
+                                }
                             }
                         }
 
+                        // Build final array with counts per question-option
                         $finalArray = [];
-                        if(!empty($CountArray)){
-                            foreach($CountArray as $item) {
-                               $finalArray[$item['id']] = $item['count'];
-                            } 
+                        if (!empty($CountArray)) {
+                            foreach ($CountArray as $item) {
+                                $finalArray[$item['question_id']][$item['id']] = $item['count'];
+                            }
                         }
 
-                        // dd($finalArray);
+
+                        // dd($FormQuestions);
                         //-----------------------
                         foreach ($FormQuestions as $value) {
                             $hasCountriesQuestion = $hasStatesQuestion = false;
@@ -856,7 +918,7 @@ class EventTicketController extends Controller
                             if (!empty($value->question_form_option) && $value->question_form_type == "select") {
                                 $jsonString = $value->question_form_option;
                                 $array = json_decode($jsonString, true);
-                            // dd($array);
+                                // dd($array);
                                
                                 if(!empty($array)){
                                    
@@ -873,7 +935,7 @@ class EventTicketController extends Controller
                                             //     $item['select_count']  = 0;
                                             // }
                                         
-                                            $final_count = (isset($finalArray[$item["id"]])) ? $finalArray[$item["id"]] : 0;
+                                            $final_count = (isset($finalArray[$value->id][$item["id"]])) ? $finalArray[$value->id][$item["id"]] : 0;
                                             $item['current_count'] = $final_count;
 
                                         }
@@ -1809,13 +1871,17 @@ class EventTicketController extends Controller
         // Output the filled message
         // dd($MessageContent,$Subject); 
         // echo $MessageContent; die;
-       
+        
+        
         //--------------- new added for generate pdf ----------------
-        $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_id,$EventUrl,$TotalPrice,$booking_detail_id);
-        // dd($generatePdf);
-      
-        $Email = new Emails();
-        $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf, $EventId);
+        if(!empty($User) && $User[0]->firstname != "Guest"){
+
+            $generatePdf = EventTicketController::generateParticipantPDF($EventId,$UserId,$ticket_id,$attendee_id,$EventUrl,$TotalPrice,$booking_detail_id);
+            // dd($generatePdf);
+          
+            $Email = new Emails();
+            $Email->send_booking_mail($UserId, $UserEmail, $MessageContent, $Subject, $flag, $send_email_status, $generatePdf, $EventId);
+        }
 
 
         //--------- Send emails to participants also along with registering person
