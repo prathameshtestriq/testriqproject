@@ -92,7 +92,7 @@
                                             <?php  } else if(($item['question_form_type'] == 'email')){ ?>
                                                 <input type="text" id="question_answer" class="form-control"
                                                     placeholder=" Question Answer" name="text[{{$item['question_label']}}]"
-                                                    value="{{ old('question_answer',  strtolower($ActualValue)) }}"  autocomplete="off" readonly/>
+                                                    value="{{ old('question_answer',  strtolower($ActualValue)) }}"  autocomplete="off" />
                                                 <h5><small class="text-danger" id="text_err"></small></h5><?php } else if($item['question_form_type'] == 'checkbox'){ ?>
                                                 <?php  
                                                     $optionsJson = $item['question_form_option']; 
