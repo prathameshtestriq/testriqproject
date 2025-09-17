@@ -15,10 +15,11 @@ class LoginController extends Controller
     
     public function index(Request $request){
         if ($request->post('command') == 'login') {
-            $request->validate([
-                'email' => 'required',
-                'password' => 'required|min:5'
-            ]);
+            // $request->validate([
+            //     'email' => 'required',
+            //     'passwords' => 'required|min:5'
+            // ]);
+            
             //echo md5($request['password']);
         //     dd($request);
             $aResult = LoginModel::where(array('email' => $request['email'], 'password' => md5($request['password'])))->first();

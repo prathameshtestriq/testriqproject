@@ -5,19 +5,19 @@
 $flag = 2; // prime - 1 / live - 2 / local - 3 
 
 if($flag == 1){                   // prime
-    $servername = 'localhost'; 
-    $username   = 'root'; 
-    $password   = 'pf4hP$v3g^xD'; 
+    $servername = '172.31.26.29'; 
+    $username   = 'racewebroot'; 
+    $password   = 'zXtcr@dWt156'; 
     $database   = 'Races2.0_Web'; 
 }else if($flag == 2){             // live
-    $servername = 'localhost'; 
-    $username   = 'newroot'; 
-    $password   = 'ytcr@Swt12'; 
+    $servername = '172.31.26.29'; 
+    $username   = 'racewebroot'; 
+    $password   = 'zXtcr@dWt156'; 
     $database   = 'Races2.0_Web'; 
 }else{                            // local
     $servername = 'localhost'; 
-    $username   = 'root'; 
-    $password   = '12345'; 
+    $username   = 'racewebroot'; 
+    $password   = 'zXtcr@dWt156'; 
     $database   = 'Races2.0_Web_Live'; 
 }
 
