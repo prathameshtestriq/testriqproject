@@ -95,8 +95,8 @@ class AdvertiseController extends Controller
                     'required',
                     'regex:/^(www\.|http:\/\/|https:\/\/).*/i', 
                 ],
-                'start_date' => 'required',
-                'end_date' => 'required',
+               'start_date' => 'required|date|after_or_equal:today',
+                 'end_date'   => 'required|date|after_or_equal:start_date',
                 'position' => 'required', 
                 'img' => empty($aResult) || $aResult['img'] === '' ? 'required|mimes:jpeg,jpg,png,gif|max:2048' : 'mimes:jpeg,jpg,png,gif|Max:2048',
             ];

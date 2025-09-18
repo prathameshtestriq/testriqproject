@@ -136,8 +136,8 @@ class BannerController extends Controller
                     'regex:/^(www\.|http:\/\/|https:\/\/).*/i', 
                 ],
                 'banner_image' => empty($edit_array) || $edit_array['banner_image'] === '' ? 'required|mimes:jpeg,jpg,png,gif|max:10240' : 'mimes:jpeg,jpg,png,gif|max:10240',
-                'start_date' => 'required',
-                'end_date' => 'required',
+                 'start_date' => 'required|date|after_or_equal:today',
+                 'end_date'   => 'required|date|after_or_equal:start_date',
                 // 'city' => 'required',
                 // 'state' => 'required',
                 // 'country' => 'required'

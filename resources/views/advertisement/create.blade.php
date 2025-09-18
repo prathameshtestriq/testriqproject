@@ -100,7 +100,7 @@ if (!empty($edit_data)) {
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="name">Name <span
+                                                <label for="name">Name<span
                                                         style="color:red;">*</span></label>
                                                 <input type="text" id="name" class="form-control"
                                                     placeholder=" Name" name="name"
@@ -194,7 +194,8 @@ if (!empty($edit_data)) {
                                                 <input type="date" id="start_date" class="form-control"
                                                     placeholder="Start Date" name="start_date"
                                                     value="{{ old('start_date', $start_date ? \Carbon\Carbon::parse($start_date)->format('Y-m-d') : '') }}" 
-                                                    autocomplete="off" onkeydown="return false;" onchange="setEndDateMin()" />
+                                                    autocomplete="off" onchange="setEndDateMin()" 
+                                                    min="{{ date('Y-m-d') }}" />
                                                 <h5><small class="text-danger" id="start_date_err"></small></h5>
                                                 @error('start_date')
                                                     <span class="error" style="color:red;">{{ $message }}</span>
