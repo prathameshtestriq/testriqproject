@@ -92,27 +92,36 @@
                                 <div class="row w-100">
                                     <div class="col-sm-12">
                                         <div class="row">
-                                            <div class="col-sm-3 col-12 ">
-                                                <?php 
-                                                   $Email_Type = array(1=>'Select Filter ',2=>'Manual Emails',3=>'Upload CSV' ); 
-                                                ?>
-                                                <label for="form-control">Email Type</label>
-                                                <select id="email_type" name="search_email_type" class="form-control select2 form-control">
-                                                    <option value="">Select  Email Type</option>
-                                                    <?php 
-                                                        foreach ($Email_Type as $key => $value)
-                                                        {
-                                                            $selected = '';
-                                                            if(old('search_email_type',$search_email_type) == $key){
-                                                                $selected = 'selected';
-                                                            }
-                                                            ?>
-                                                            <option value="<?php echo $key; ?>" <?php echo $selected; ?>><?php echo $value; ?></option>
-                                                            <?php 
-                                                        }
+                                            <div class="col-sm-3 col-12">
+                                               <?php 
+                                                  $Email_Type = array(
+                                                      1 => 'Manual Emails',
+                                                      2 => 'Upload CSV'
+                                                  ); 
+                                               ?>
+                                               <label for="email_type">Email Type</label>
+                                               <select id="email_type" name="search_email_type" class="form-control select2">
+                                                   <!-- Always selected placeholder -->
+                                                   <option value="" disabled selected>Select Email Type</option>
+                                           
+                                                   <?php 
+                                                       foreach ($Email_Type as $key => $value) {
+                                                           echo "<option value=\"$key\">$value</option>";
+                                                       }
                                                     ?>
                                                 </select>
                                             </div>
+
+                                              <!-- Initialize select2 with placeholder only -->
+                                              <script>
+                                              $(document).ready(function() {
+                                                  $('#email_type').select2({
+                                                      placeholder: "Select Email Type",
+                                                      width: '100%'
+                                                  });
+                                              });
+                                              </script>
+
 
                                             <div class="col-sm-3 col-12 ">
                                                 <?php 
