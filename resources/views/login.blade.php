@@ -73,41 +73,36 @@
                             <div class="col-12 col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
                                 <h2 class="card-title font-weight-bold mb-1">Welcome Back 👋</h2>
                                 <p class="card-text mb-2">Please sign-in to your account</p>
-                                @if ($message = Session::get('success'))
-                                    <div class="demo-spacing-0 mb-1">
-                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                            <div class="alert-body">
-                                                <i class="fa fa-check-circle" style="font-size:16px;"
-                                                    aria-hidden="true"></i>
-                                                {{ $message }}
-                                                <button type="button" class="close" data-dismiss="alert"
-                                                    aria-label="Close">
+                               @if ($message = Session::get('success'))
+                              <div class="demo-spacing-0 mb-1">
+                                  <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                      <div class="alert-body">
+                                          <i class="fa fa-check-circle" style="font-size:16px;" aria-hidden="true"></i>
+                                          {{ $message }}
+                                      </div>
+                                      <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"
+                                       style="background:none; border:none; line-height:1; float:right; cursor:pointer;">
+                                         <span aria-hidden="true">&times;</span>
+                                      </button>
 
-                                            </div>
-                                            <button type="button" class="close" data-dismiss="alert"
-                                                aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
                                     </div>
-                                @elseif ($message = Session::get('error'))
+                                    </div>
+                                   @elseif ($message = Session::get('error'))
                                     <div class="demo-spacing-0 mb-1">
                                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                             <div class="alert-body">
                                                 <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
                                                 {{ $message }}
-                                                <button type="button" class="close" data-dismiss="alert"
-                                                    aria-label="Close">
-
                                             </div>
-                                            <button type="button" class="close" data-dismiss="alert"
-                                                aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endif
+                                            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"
+                                        style="background:none; border:none; line-height:1; float:right; cursor:pointer;">
+                                        <span aria-hidden="true">&times;</span>
+                                  </button>
 
+                                   </div>
+                                </div>
+                                @endif
+                                
                                 <form class="auth-login-form mt-2" action="{{ url('login') }}" method="post">
                                     {{ @csrf_field() }}
                                     <div class="form-group">
@@ -158,4 +153,7 @@
         </div>
     </div>
     <!-- END: Content-->
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

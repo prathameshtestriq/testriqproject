@@ -216,56 +216,63 @@ if (!empty($edit_data)) {
                                             </div>
                                         </div>
 
-                                        <div class="col-sm-6 col-12">
-                                            <label for="country">Country:</label>
-                                            <select id="country" name="country" class="select2 form-control">
-                                                <option value="">All country</option>
-                                                <?php  
-                                                foreach ($countries as $value)
-                                                {  
-                                                    $selected = '';
-                                                    if(old('country', $country) == $value->id){
-                                                        $selected = 'selected';
-                                                    }
-                                                    ?>
-                                                    <option value="<?php echo $value->id; ?>" <?php echo $selected; ?>><?php echo $value->name; ?></option>
-                                                    <?php 
-                                                }
-                                                ?>
-                                            </select>
-                                            <h5><small class="text-danger" id="country_err"></small></h5>
-                                                @error('country')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                        </div>
-                                        <div class="col-sm-6 col-12">
-                                            <label for="state">State: </label>
-                                            <select id="state" name="state" class="select2 form-control">
-                                                <option value="" class="placeholder">All state</option>
-                                            </select>  
-                                            <h5><small class="text-danger" id="state_err"></small></h5>
-                                                @error('state')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                        </div>
+                                       <div class="col-sm-6 col-12">
+                                        <label for="country">Country:</label>
+                                        <select id="country" name="country" class="select2 form-control">
+                                            <option value="">Select Country</option>
+                                            @foreach($countries as $value)
+                                                <option value="{{ $value->id }}" {{ old('country', $country) == $value->id ? 'selected' : '' }}>
+                                                    {{ $value->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <h5><small class="text-danger" id="country_err"></small></h5>
+                                        @error('country')
+                                            <span class="error" style="color:red;">{{ $message }}</span>
+                                        @enderror
+                                    </div>
 
-                                        <div class="col-sm-6 col-12">
-                                            <label for="city">City:</label>
-                                            <select id="city" name="city" class="select2 form-control">
-                                                <option value="">All City</option>
-                                            </select>  
-                                            <h5><small class="text-danger" id="city_err"></small></h5>
-                                                @error('city')
-                                                    <span class="error" style="color:red;">{{ $message }}</span>
-                                                @enderror
-                                        </div>
+                                    <div class="col-sm-6 col-12">
+                                        <label for="state">State:</label>
+                                        <select id="state" name="state" class="select2 form-control">
+                                     <option value="">Select State</option>
+                                     @if(!empty($states))
+                                     @foreach($states as $s)
+                                    <option value="{{ $s->id }}" {{ old('state', $state) == $s->id ? 'selected' : '' }}>
+                                       {{ $s->name }}
+                                    </option>
+                                     @endforeach
+                                       @endif
+                                    </select>
+                                     <h5><small class="text-danger" id="state_err"></small></h5>
+                                       @error('state')
+                                     <span class="error" style="color:red;">{{ $message }}</span>
+                                    @enderror
+                                </div>
 
-                                        <div class="col-12 text-center mt-1">
-                                            <button type="submit" class="btn btn-primary mr-1"
-                                                onClick="return validation()">Submit</button>
-                                            <a href="{{ url('/banner') }}" type="reset"
-                                                class="btn btn-outline-secondary">Cancel</a>
-                                        </div>
+                                 <div class="col-sm-6 col-12">
+                                     <label for="city">City:</label>
+                                     <select id="city" name="city" class="select2 form-control">
+                                         <option value="">Select City</option>
+                                         @if(!empty($cities))
+                                             @foreach($cities as $c)
+                                                 <option value="{{ $c->id }}" {{ old('city', $city) == $c->id ? 'selected' : '' }}>
+                                                     {{ $c->name }}
+                                                 </option>
+                                             @endforeach
+                                         @endif
+                                     </select>
+                                     <h5><small class="text-danger" id="city_err"></small></h5>
+                                     @error('city')
+                                         <span class="error" style="color:red;">{{ $message }}</span>
+                                     @enderror
+                                 </div>
+
+                                 <div class="col-12 text-center mt-1">
+                                     <button type="submit" class="btn btn-primary mr-1">Submit</button>
+                                     <a href="{{ url('/banner') }}" class="btn btn-outline-secondary">Cancel</a>
+                                 </div>
+
                                     </div>
                                 </form>
                             </div>
