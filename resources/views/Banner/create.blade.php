@@ -187,7 +187,7 @@ if (!empty($edit_data)) {
                                                 <input type="date" id="start_date" class="form-control"
                                                     placeholder="Enter Start Date" name="start_date"
                                                     value="{{ old('start_date', $start_time ? \Carbon\Carbon::parse($start_time)->format('Y-m-d') : '') }}" 
-                                                    autocomplete="off" onkeydown="return false;" onchange="setEndDateMin()" />
+                                                    autocomplete="off" onchange="setEndDateMin()" min="{{ date('Y-m-d') }}" />
                                                 <h5><small class="text-danger" id="start_date_err"></small></h5>
                                                 @error('start_date')
                                                     <span class="error" style="color:red;">{{ $message }}</span>

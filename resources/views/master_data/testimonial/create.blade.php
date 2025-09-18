@@ -115,7 +115,7 @@
                                         <div class="col-md-4 col-12">
                                             <div class="form-group">
                                                 <label for="testimonial_image">Testimonial Image <span style="color:red;">*</span>
-                                                    <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 2 MB)</span>  
+                                                    <span style="color: #949090">(Allowed JPEG, JPG or PNG. Max file size of 5 MB)</span>  
                                                 </label>
                                                 
                                                 <input type="file" id="testimonial_image" class="form-control"
