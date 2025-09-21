@@ -5,7 +5,7 @@
          <li class="nav-item mr-auto">
            
             <?php if(Session::get('logged_in')['type'] == 1 || Session::get('logged_in')['user_login'] == 1){ ?>
-            <a class="navbar-brand" href="{{ url('/admin_dashboard') }}">
+            <a class="navbar-brand" href="{{ url('/dashboard') }}">
                <span class="brand-logo">
                <img src={{ asset('app-assets/images/logo/logo.png') }} alt="">
                </span>
