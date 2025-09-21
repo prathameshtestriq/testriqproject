@@ -175,15 +175,19 @@ if (!empty($edit_data)) {
                                             <span><br /></span>
                                             <!-- Image preview section -->
                                             <div id="imagePreview">
-                                                <?php if(!empty($img)){ ?>
-                                                    <a href="{{ asset('uploads/images/' . $img) }}" target="_blank">
-                                                        <img id="preview" src="{{ asset('uploads/images/' . $img) }}" alt="Current Image" style="width: 50px;">
-                                                    </a>
-                                                    <input type="hidden" name="hidden_image" value="{{ old('img', $img) }}" accept="image/jpeg, image/png">
-                                                <?php } else { ?>
-                                                    <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
-                                                <?php } ?>
-                                            </div>    
+        @if(!empty($img))
+            {{-- पुरानी image with link --}}
+            <a id="previewLink" href="{{ asset('uploads/images/' . $img) }}" target="_blank">
+                <img id="preview" src="{{ asset('uploads/images/' . $img) }}" 
+                     alt="Current Image" style="width: 50px;">
+            </a>
+            <input type="hidden" id="hidden_image" name="hidden_image" 
+                   value="{{ old('img', $img) }}">
+        @else
+            <img id="preview" class="preview-image" src="#" 
+                 alt="Image Preview" style="display:none; width: 50px;">
+        @endif
+    </div>        
                                         </div>
                                           
                                         
@@ -246,8 +250,28 @@ if (!empty($edit_data)) {
                 var preview = document.getElementById('preview');
                 preview.src = e.target.result;
                 preview.style.display = 'block';
+                
+           // ✅ Blob URL बनाओ
+            var blobUrl = URL.createObjectURL(file);
+
+            if (previewLink) {
+                previewLink.href = blobUrl;
+            } else {
+                var link = document.createElement('a');
+                link.id = "previewLink";
+                link.href = blobUrl;
+                link.target = "_blank";
+
+                preview.parentNode.insertBefore(link, preview);
+                link.appendChild(preview);
             }
+        }
             reader.readAsDataURL(file);
+     // Hidden image reset
+        var hiddenInput = document.getElementById('hidden_image');
+        if(hiddenInput){
+            hiddenInput.value = '';
+        }
         }
     }
 </script>
