@@ -176,7 +176,6 @@ if (!empty($edit_data)) {
                                             <!-- Image preview section -->
                                             <div id="imagePreview">
         @if(!empty($img))
-            {{-- पुरानी image with link --}}
             <a id="previewLink" href="{{ asset('uploads/images/' . $img) }}" target="_blank">
                 <img id="preview" src="{{ asset('uploads/images/' . $img) }}" 
                      alt="Current Image" style="width: 50px;">
@@ -251,7 +250,6 @@ if (!empty($edit_data)) {
                 preview.src = e.target.result;
                 preview.style.display = 'block';
                 
-           // ✅ Blob URL बनाओ
             var blobUrl = URL.createObjectURL(file);
 
             if (previewLink) {

@@ -134,25 +134,27 @@
                                             @endif
                                         </div> --}}
 
-                                        <div class="col-sm-2 col-12">
-                                            <span><br /></span>
-                                            <!-- Image preview section -->
-                                            <div id="imagePreview">
+                                     <div class="col-sm-2 col-12">
+    <span><br /></span>
+    <!-- Image preview section -->
+    <div id="imagePreview">
+        @if(!empty($logo))
+            <a id="previewLink" href="{{ asset('uploads/type_images/' . $logo) }}" target="_blank">
+                <img id="preview" src="{{ asset('uploads/type_images/' . $logo) }}" alt="Current Image"
+                     style="width: 50px; height:auto; cursor:pointer;">
+            </a>
+            <input type="hidden" name="hidden_logo" value="{{ old('logo', $logo) }}">
+        @else
+            <a id="previewLink" href="#" target="_blank" style="display:none;">
+                <img id="preview" class="preview-image" alt="Image Preview" 
+                     style="display:none; width: 50px; height:auto; cursor:pointer;">
+            </a>
+        @endif
+    </div>    
+</div>
 
-                                                <?php 
-                                                    if(!empty($logo)){ ?>
-                                                    <a href="{{ asset('uploads/type_images/' . $logo) }}" target="_blank">
-                                                        <img id="preview" src="{{ asset('uploads/type_images/' . $logo) }}" alt="Current Image"
-                                                        style="width: 50px;">
-                                                    </a>
-                                                    <input type="hidden" name="hidden_logo" value="{{ old('logo', $logo) }}"
-                                                        accept="image/jpeg, image/png">
-                                                <?php } else { ?>
-                                                    <img id="preview" class="preview-image" src="#" alt="Image Preview" style="display:none; width: 50px;">
-                                                <?php } ?>
-                                            </div>    
 
-                                        </div>
+
 
                                         
 
@@ -212,19 +214,35 @@
 </script>
 
 <script type="text/javascript">
-    function previewImage(input) {
-        var file = input.files[0];
-        if (file) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var preview = document.getElementById('preview');
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            }
-            reader.readAsDataURL(file);
+  function previewImage(input) {
+    var file = input.files[0];
+    if (file) {
+        var preview = document.getElementById('preview');
+        var previewLink = document.getElementById('previewLink');
+
+       
+        if (previewLink.dataset.url) {
+            URL.revokeObjectURL(previewLink.dataset.url);
         }
+
+        var blobUrl = URL.createObjectURL(file);
+
+       
+        preview.src = blobUrl;
+        preview.style.display = 'block';
+        preview.style.width = '50px';
+        preview.style.height = 'auto';
+        preview.style.cursor = 'pointer';
+
+        
+        previewLink.href = blobUrl;
+        previewLink.target = "_blank";
+        previewLink.style.display = 'inline-block';
+
+        
+        previewLink.dataset.url = blobUrl;
     }
-   
-   
+}
+
 </script>
 

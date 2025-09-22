@@ -121,7 +121,7 @@ class TestimonialController extends Controller
                 'testimonial_image'  => !empty($iId) || $aReturn[ "testimonial_img"] === '' ? 'required|mimes:jpeg,jpg,png,gif|max:2048' :'mimes:jpeg,jpg,png,gif|max:2048'
             ]; 
             $message = [
-                'testimonial_image.max' => 'Testimonial image must be less than 5MB.',
+                'testimonial_image.max' => 'Testimonial image must be less than 2MB.',
             ];
 
             $testimonial_name = (!empty($request->testimonial_name)) ? $request->testimonial_name : '';
