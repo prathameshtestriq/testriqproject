@@ -152,8 +152,9 @@
                                                 @endif
                                                
                                                 <div class="float-right">
-                                                    @if (!empty($Registration_successful))
-                                                       <a href="{{ url('/registration_successful/'.$event_id.'/export_registration') }}" class="btn btn-danger text-white ">Download </a>
+                                                   @if (!empty($Registration_successful))
+                                                    <a href="{{ route('export_registration_successful', ['event_id' => $event_id, 'dashboard_id' => $dashboard_id ?? 0]) }}" 
+                                                     class="btn btn-danger text-white">Download</a>
                                                     @endif
                                                     <?php  if($event_id > 0){ ?>
                                                        <a href="{{ url('/event') }}"  class="btn btn-primary ">

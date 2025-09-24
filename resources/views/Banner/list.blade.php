@@ -21,7 +21,9 @@
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item">Home</a></li>
+                                        <li class="breadcrumb-item">
+                                             <a href="{{ url('/dashboard') }}" type="reset" class="text-reset text-decoration-none">Home</a>
+                                        </li>
                                         <li class="breadcrumb-item">Banner</li>
                                         <li class="breadcrumb-item active" aria-current="page">Banner List</li>
                                     </ol>

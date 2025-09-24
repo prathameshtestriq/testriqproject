@@ -32,8 +32,12 @@
                             <div class="d-flex justify-content-end breadcrumb-wrapper">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb mr-1">
-                                        <li class="breadcrumb-item">Home</li>
-                                        <li class="breadcrumb-item">Category Type</li>
+                                         <li class="breadcrumb-item">
+                                             <a href="{{ url('/dashboard') }}" type="reset" class="text-reset text-decoration-none">Home</a>
+                                        </li>
+                                        <li class="breadcrumb-item">
+                                             <a href="{{ url('/category') }}" type="reset" class="text-reset text-decoration-none">Category Type</a>
+                                        </li>
                                         <li class="breadcrumb-item active" aria-current="page">
                                             @if (!empty($aReturn['id']))
                                                 Edit Category Type
@@ -147,7 +151,7 @@
                                         <div class="col-12 text-center mt-1">
                                             <button type="submit" class="btn btn-primary mr-1"
                                                 onClick="return validation()">Submit</button>
-                                            <a href="{{ url('/category') }}" type="reset"
+                                            <a href="{{ url('/category') }}" type="reset" 
                                                 class="btn btn-outline-secondary">Cancel</a>
                                         </div>
                                     </div>
