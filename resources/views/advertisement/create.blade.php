@@ -179,18 +179,18 @@ if (!empty($edit_data)) {
                                             <span><br /></span>
                                             <!-- Image preview section -->
                                             <div id="imagePreview">
-        @if(!empty($img))
-            <a id="previewLink" href="{{ asset('uploads/images/' . $img) }}" target="_blank">
-                <img id="preview" src="{{ asset('uploads/images/' . $img) }}" 
-                     alt="Current Image" style="width: 50px;">
-            </a>
-            <input type="hidden" id="hidden_image" name="hidden_image" 
-                   value="{{ old('img', $img) }}">
-        @else
-            <img id="preview" class="preview-image" src="#" 
-                 alt="Image Preview" style="display:none; width: 50px;">
-        @endif
-    </div>        
+                                             @if(!empty($img))
+                                             <a id="previewLink" href="{{ asset('uploads/images/' . $img) }}" target="_blank">
+                                              <img id="preview" src="{{ asset('uploads/images/' . $img) }}" 
+                                              alt="Current Image" style="width: 50px;">
+                                                </a>
+                                            <input type="hidden" id="hidden_image" name="hidden_image" 
+                                                value="{{ old('img', $img) }}">
+                                               @else
+                                             <img id="preview" class="preview-image" src="#" 
+                                              alt="Image Preview" style="display:none; width: 50px;">
+                                                    @endif
+                                            </div>        
                                         </div>
                                           
                                         

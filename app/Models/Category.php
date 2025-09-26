@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Str;
 
 class Category extends Model
 {
-   // use HasApiTokens, HasFactory, Notifiable;
+    // use HasApiTokens, HasFactory, Notifiable;
 
     protected $primaryKey = 'id';
     protected $table = 'category';
 
-    /**
+      /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -25,8 +25,8 @@ class Category extends Model
         'active',
         'created_at'
     ];
-    
-    /**
+
+     /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
@@ -36,7 +36,7 @@ class Category extends Model
         'remember_token',
     ];
 
-    /**
+     /**
      * The attributes that should be cast.
      *
      * @var array<string, string>
@@ -45,7 +45,7 @@ class Category extends Model
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-
+    
     /**
      * Interact with the user's first name.
      *
@@ -66,7 +66,7 @@ class Category extends Model
             get: fn($value) => ["superadmin", "admin", "user"][$value],
         );
     }
-    
+
 
     public $timestamps = false;
 
@@ -81,7 +81,7 @@ class Category extends Model
             $s_sql .= ' AND LOWER(name) LIKE \'%' . strtolower($a_search['search_category']) . '%\'';
         }
      
-        if(isset( $a_search['search_category_status']) &&  $a_search['search_category_status'] != ''){
+        if(isset($a_search['search_category_status']) && $a_search['search_category_status'] != ''){
             $s_sql .= ' AND active = '.$a_search['search_category_status'];
         } 
         
@@ -93,21 +93,21 @@ class Category extends Model
         return $a_return;
     }
 
-   
-    
-    
+
+
+
     public static function get_count($a_search = array())
     {
         $count = 0;
-        // dd($a_search);
+         // dd($a_search);
         $s_sql = 'SELECT count(id) as count FROM category c WHERE 1=1';
 
         if (!empty($a_search['search_name'])) {
-            $s_sql .= ' AND (LOWER(c.name) LIKE \'%' . strtolower($a_search['search_name']) . '%\'';
+            $s_sql .= ' AND (LOWER(c.name) LIKE \'%' . strtolower($a_search['search_name']) . '%\')';
         }
 
 
-        if(isset( $a_search['search_category_status']) &&  $a_search['search_category_status'] != ''){
+        if(isset($a_search['search_category_status']) && $a_search['search_category_status'] != ''){
             $s_sql .= ' AND active = '.$a_search['search_category_status'];
         } 
 
@@ -121,10 +121,21 @@ class Category extends Model
 
     public static function add_category($request)
     {
-        
+
         $name = $request['category_type_name'];
-        $logo = $request['category_logo_name'];
-        //dd($logo);
+
+        
+        $logo = null;
+        if (isset($request['category_logo_name']) && $request['category_logo_name'] instanceof \Illuminate\Http\UploadedFile) {
+            $file = $request['category_logo_name'];
+            $img_extension = $file->getClientOriginalExtension();
+            $img_name = uniqid() . '_' . time() . '.' . $img_extension;
+            $file->move(public_path('uploads/category'), $img_name);
+            $logo = $img_name;
+        } else {
+            $logo = $request['category_logo_name'] ?? null;
+        }
+
         $active = $request['status'] == 'active' ? 1 : 0;
     
         $sSQL = 'INSERT INTO category(name, logo, active)
@@ -141,32 +152,46 @@ class Category extends Model
         return $result;
     }
     
+
+  public static function update_category($iId, $request)
+{
+    $name = $request['category_type_name'];
+    $active = $request['status'] == 'active' ? 1 : 0;
+
+    $logo = null;
+
     
-    public static function update_category($iId, $request)
-    {
-        $name = $request['category_type_name'];
-        $logo = $request['category_logo_name'];
-        $active = $request['status'] == 'active' ? 1 : 0;
-    
-        if ($iId > 0) {
-            $sSQL = 'UPDATE category SET
-                name = :name,
-                logo = :logo,
-                active = :active
-                WHERE id = :id';
-    
-            $bindings = array(
-                'name' => $name,
-                'logo' => $logo,
-                'active' => $active, 
-                'id' => $iId
-            );
-    
-            $result = DB::update($sSQL, $bindings);
-        }
+    if (isset($request['category_logo_name']) && $request['category_logo_name'] instanceof \Illuminate\Http\UploadedFile) {
+        $file = $request['category_logo_name'];
+        $img_extension = $file->getClientOriginalExtension();
+        $img_name = uniqid() . '_' . time() . '.' . $img_extension;
+        $file->move(public_path('uploads/category'), $img_name);
+        $logo = $img_name;
+    } else {
+        
+        $oldCategory = DB::table('category')->where('id', $iId)->first();
+        $logo = $oldCategory ? $oldCategory->logo : null;
     }
-    
-    
+
+    if ($iId > 0) {
+        $sSQL = 'UPDATE category SET
+            name = :name,
+            logo = :logo,
+            active = :active
+            WHERE id = :id';
+
+        $bindings = array(
+            'name' => $name,
+            'logo' => $logo,
+            'active' => $active,
+            'id' => $iId
+        );
+
+        $result = DB::update($sSQL, $bindings);
+    }
+}
+
+
 
     public static function change_active_status_category($request)
     {
